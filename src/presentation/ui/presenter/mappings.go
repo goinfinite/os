@@ -10,7 +10,7 @@ import (
 	"github.com/goinfinite/os/src/presentation/service"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	"github.com/goinfinite/os/src/presentation/ui/layout"
-	"github.com/goinfinite/os/src/presentation/ui/page"
+	uiPage "github.com/goinfinite/os/src/presentation/ui/page/mappings"
 	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/labstack/echo/v4"
 )
@@ -128,7 +128,7 @@ func (presenter *MappingsPresenter) readSecRulesLabelValueOptions() []uiForm.Sel
 func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 	vhostWithMappings := presenter.readVirtualHostWithMappings()
 
-	pageContent := page.MappingsIndex(
+	pageContent := uiPage.MappingsIndex(
 		vhostWithMappings, presenter.extractVirtualHostHostnames(vhostWithMappings),
 		presenter.readInstalledServiceNames(),
 		presenter.readSecRulesLabelValueOptions(),

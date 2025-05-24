@@ -14,8 +14,7 @@ import (
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/goinfinite/os/src/presentation/ui/layout"
-	"github.com/goinfinite/os/src/presentation/ui/page"
-	pageOverview "github.com/goinfinite/os/src/presentation/ui/page/overview"
+	uiPage "github.com/goinfinite/os/src/presentation/ui/page/overview"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
@@ -44,8 +43,8 @@ func NewOverviewPresenter(
 
 func (presenter *OverviewPresenter) installableServicesGroupedByTypeFactory(
 	installableServicesList []entity.InstallableService,
-) page.InstallableServicesGroupedByType {
-	installableServicesGroupedByType := page.InstallableServicesGroupedByType{
+) uiPage.InstallableServicesGroupedByType {
+	installableServicesGroupedByType := uiPage.InstallableServicesGroupedByType{
 		Runtime:   []entity.InstallableService{},
 		Database:  []entity.InstallableService{},
 		Webserver: []entity.InstallableService{},
@@ -133,7 +132,7 @@ func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 }
 
 func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
-	overview page.ServicesOverview, err error,
+	overview uiPage.ServicesOverview, err error,
 ) {
 	installedItemsResponseDto, err := presenter.readInstalledServices(c)
 	if err != nil {
@@ -155,7 +154,7 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 		installableItemsTypedOutputBody.InstallableServices,
 	)
 
-	return page.ServicesOverview{
+	return uiPage.ServicesOverview{
 		InstalledServicesResponseDto: installedItemsResponseDto,
 		InstallableServices:          installableServicesGroupedByType,
 	}, nil
@@ -189,7 +188,7 @@ func (presenter *OverviewPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := pageOverview.OverviewIndex(
+	pageContent := uiPage.OverviewIndex(
 		vhostsHostnames, marketplaceOverview, o11yOverview, servicesOverview,
 	)
 	return layout.Renderer(layout.LayoutRendererSettings{

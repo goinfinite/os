@@ -1,8 +1,8 @@
-package page
+package uiPage
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"github.com/goinfinite/os/src/presentation/ui/helper"
 	"github.com/goinfinite/ui/src/control"
@@ -16,10 +16,13 @@ const (
 	MappingSecurityRulesDisplayRefreshEventName string = "refresh:" + MappingSecurityRulesDisplayId
 )
 
+//go:embed mappingSecurityRules.js
+var mappingSecurityRulesIndexAlpineState string
+
 templ MappingSecurityRulesIndex(mappingSecurityRules []entity.MappingSecurityRule) {
-	<!-- MappingSecurityRules JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappingSecurityRules.js" }></script>
-	<!-- MappingSecurityRules HTML -->
+	<!-- MappingSecurityRulesIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + mappingSecurityRulesIndexAlpineState + `</script>`)
+	<!-- MappingSecurityRulesIndex HTML -->
 	<div x-data="mappingSecurityRules">
 		@componentStructural.PageTitle(
 			"Mapping Security Rules",

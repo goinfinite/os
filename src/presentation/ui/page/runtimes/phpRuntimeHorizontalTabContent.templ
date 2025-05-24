@@ -1,22 +1,25 @@
-package pageRuntimes
+package uiPage
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 	"strconv"
 )
 
+//go:embed phpRuntimeHorizontalTabContent.js
+var phpRuntimeHorizontalTabContentAlpineState string
+
 templ PhpRuntimeHorizontalTabContent(
 	runtimeOverview presenterDto.RuntimeOverview,
 	vhostsHostnames []string,
 ) {
-	<!-- PhpRuntimeHorizontalTabContent Page JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/runtimes/phpRuntimeHorizontalTabContent.js" }></script>
-	<!-- PhpRuntimeHorizontalTabContent Page HTML -->
+	<!-- PhpRuntimeHorizontalTabContent JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + phpRuntimeHorizontalTabContentAlpineState + `</script>`)
+	<!-- PhpRuntimeHorizontalTabContent HTML -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg p-6">
 			if runtimeOverview.IsInstalled {

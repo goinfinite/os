@@ -1,19 +1,21 @@
-package page
+package uiPage
 
 import (
-	"github.com/goinfinite/os/src/infra/envs"
+	_ "embed"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
-	pageRuntimes "github.com/goinfinite/os/src/presentation/ui/page/runtimes"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 )
+
+//go:embed runtimes.js
+var runtimesIndexAlpineState string
 
 templ RuntimesIndex(
 	runtimeOverview presenterDto.RuntimeOverview,
 	vhostsHostnames []string,
 ) {
-	<!-- Runtimes Page JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/runtimes.js" }></script>
-	<!-- Runtimes Page HTML -->
+	<!-- RuntimesIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + runtimesIndexAlpineState + `</script>`)
+	<!-- RuntimesIndex HTML -->
 	<data id="selectedVhostHostname" class="hidden" value={ runtimeOverview.VirtualHostHostname.String() }></data>
 	<data id="selectedRuntimeType" class="hidden" value={ runtimeOverview.Type.String() }></data>
 	<div class="flex flex-col" x-data="runtimes">
@@ -48,6 +50,6 @@ templ RuntimesTabs(
 		}, runtimeOverview.Type.String(), "updateSelectedRuntimeType",
 	)
 	if runtimeOverview.Type.String() == "php" {
-		@pageRuntimes.PhpRuntimeHorizontalTabContent(runtimeOverview, vhostsHostnames)
+		@PhpRuntimeHorizontalTabContent(runtimeOverview, vhostsHostnames)
 	}
 }

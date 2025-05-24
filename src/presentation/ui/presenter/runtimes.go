@@ -10,7 +10,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
 	"github.com/goinfinite/os/src/presentation/ui/layout"
-	"github.com/goinfinite/os/src/presentation/ui/page"
+	uiPage "github.com/goinfinite/os/src/presentation/ui/page/runtimes"
 	presenterDto "github.com/goinfinite/os/src/presentation/ui/presenter/dto"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
@@ -110,7 +110,7 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	pageContent := page.RuntimesIndex(runtimeOverview, vhostsHostnames)
+	pageContent := uiPage.RuntimesIndex(runtimeOverview, vhostsHostnames)
 	return layout.Renderer(layout.LayoutRendererSettings{
 		EchoContext:  c,
 		PageContent:  pageContent,

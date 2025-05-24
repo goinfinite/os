@@ -1,16 +1,19 @@
-package page
+package uiPage
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
 
+//go:embed crons.js
+var cronsIndexAlpineState string
+
 templ CronsIndex(crons []entity.Cron) {
-	<!-- Crons Page JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/crons.js" }></script>
-	<!-- Crons Page HTML -->
+	<!-- CronsIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + cronsIndexAlpineState + `</script>`)
+	<!-- CronsIndex HTML -->
 	<div x-data="crons">
 		@componentStructural.PageTitle(
 			"Crons",

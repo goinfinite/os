@@ -8,7 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	filesInfra "github.com/goinfinite/os/src/infra/files"
 	"github.com/goinfinite/os/src/presentation/ui/layout"
-	"github.com/goinfinite/os/src/presentation/ui/page"
+	uiPage "github.com/goinfinite/os/src/presentation/ui/page/fileManager"
 	"github.com/labstack/echo/v4"
 )
 
@@ -49,7 +49,7 @@ func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
 
 	readFilesResponseDto := presenter.readUnixFilesByWorkingDir(workingDirPath)
 
-	pageContent := page.FileManagerIndex(workingDirPath, readFilesResponseDto)
+	pageContent := uiPage.FileManagerIndex(workingDirPath, readFilesResponseDto)
 	return layout.Renderer(layout.LayoutRendererSettings{
 		EchoContext:  c,
 		PageContent:  pageContent,

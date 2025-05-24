@@ -1,8 +1,8 @@
-package page
+package uiPage
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 )
@@ -12,10 +12,13 @@ const (
 	SslPairsRecordsDisplayRefreshEventName string = "refresh:" + SslPairsRecordsDisplayId
 )
 
+//go:embed ssls.js
+var sslsIndexAlpineState string
+
 templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
-	<!-- SslPairsPage JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/ssls.js" }></script>
-	<!-- SslPairsPage HTML -->
+	<!-- SslsIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + sslsIndexAlpineState + `</script>`)
+	<!-- SslsIndex HTML -->
 	<div x-data="ssls">
 		@componentStructural.PageTitle(
 			"SSL Certificate",

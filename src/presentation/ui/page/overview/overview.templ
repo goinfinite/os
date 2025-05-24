@@ -1,14 +1,15 @@
-package page
+package uiPage
 
 import (
+	_ "embed"
 	"fmt"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	pageMarketplace "github.com/goinfinite/os/src/presentation/ui/page/marketplace"
 	"math"
 	"strconv"
 )
@@ -25,15 +26,18 @@ type ServicesOverview struct {
 	InstallableServices          InstallableServicesGroupedByType
 }
 
+//go:embed overview.js
+var overviewIndexAlpineState string
+
 templ OverviewIndex(
 	vhostsHostnames []string,
-	marketplaceOverview MarketplaceOverview,
+	marketplaceOverview pageMarketplace.MarketplaceOverview,
 	o11yOverview entity.O11yOverview,
 	servicesOverview ServicesOverview,
 ) {
-	<!-- Overview Page JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/overview.js" }></script>
-	<!-- Overview Page HTML -->
+	<!-- OverviewIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + overviewIndexAlpineState + `</script>`)
+	<!-- OverviewIndex HTML -->
 	<div class="flex flex-col">
 		@componentStructural.PageTitle(
 			"Overview",
@@ -179,7 +183,7 @@ func transformMarketplaceCatalogItemsIntoCarouselItems(
 
 templ ScheduleMarketplaceItemInstallationForm(
 	vhostsHostnames []string,
-	marketplaceCatalogItems CatalogItemsGroupedByType,
+	marketplaceCatalogItems pageMarketplace.CatalogItemsGroupedByType,
 ) {
 	<!-- ScheduleMarketplaceItemInstallationForm -->
 	<form
@@ -288,7 +292,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 
 templ ScheduleMarketplaceItemInstallationModal(
 	vhostsHostnames []string,
-	marketplaceCatalogItems CatalogItemsGroupedByType,
+	marketplaceCatalogItems pageMarketplace.CatalogItemsGroupedByType,
 ) {
 	@componentStructural.RegularModal(
 		"Install marketplace item", "isMarketplaceItemInstallationModalOpen",

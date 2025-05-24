@@ -1,17 +1,20 @@
-package page
+package uiPage
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"strconv"
 )
 
+//go:embed accounts.js
+var accountsIndexAlpineState string
+
 templ AccountsIndex(accountsEntities []entity.Account) {
-	<!-- Accounts Page JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/accounts.js" }></script>
-	<!-- Accounts Page HTML -->
+	<!-- AccountsIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + accountsIndexAlpineState + `</script>`)
+	<!-- AccountsIndex HTML -->
 	<div x-data="accounts">
 		@componentStructural.PageTitle(
 			"Accounts",

@@ -1,10 +1,10 @@
-package page
+package uiPageFileManager
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	"github.com/goinfinite/os/src/infra/envs"
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"maps"
@@ -12,13 +12,16 @@ import (
 	"strings"
 )
 
+//go:embed fileManager.js
+var fileManagerIndexAlpineState string
+
 templ FileManagerIndex(
 	workingDirPath valueObject.UnixFilePath,
 	readFilesResponseDto dto.ReadFilesResponse,
 ) {
-	<!-- FileManager JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/file-manager.js" }></script>
-	<!-- FileManager HTML -->
+	<!-- FileManagerIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + fileManagerIndexAlpineState + `</script>`)
+	<!-- FileManagerIndex HTML -->
 	<div x-data="fileManager">
 		@componentStructural.PageTitle("File Manager", "", "ph-files")
 		<div id="file-manager-content">

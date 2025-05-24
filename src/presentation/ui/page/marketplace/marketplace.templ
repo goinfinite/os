@@ -1,9 +1,9 @@
-package page
+package uiPage
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
@@ -21,12 +21,15 @@ type MarketplaceOverview struct {
 	CatalogItemsList   CatalogItemsGroupedByType
 }
 
+//go:embed marketplace.js
+var marketplaceIndexAlpineState string
+
 templ MarketplaceIndex(
 	vhostsHostnames []string,
 	marketplaceOverview MarketplaceOverview,
 ) {
 	<!-- Marketplace Page JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/marketplace.js" }></script>
+	@templ.Raw(`<script type="text/javascript">` + marketplaceIndexAlpineState + `</script>`)
 	<!-- Marketplace Page HTML -->
 	<div class="flex flex-col" x-data="marketplace">
 		@componentStructural.PageTitle(

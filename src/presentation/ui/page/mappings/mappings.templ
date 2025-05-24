@@ -1,9 +1,9 @@
-package page
+package uiPage
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
@@ -17,15 +17,18 @@ const (
 	MappingsRecordsDisplayRefreshEventName string = "refresh:" + MappingsRecordsDisplayId
 )
 
+//go:embed mappings.js
+var mappingsIndexAlpineState string
+
 templ MappingsIndex(
 	vhostsWithMappings []dto.VirtualHostWithMappings,
 	vhostsHostnames []string,
 	installedServiceNames []string,
 	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
-	<!-- Mappings Page JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/page/mappings.js" }></script>
-	<!-- Mappings Page HTML -->
+	<!-- MappingsIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + mappingsIndexAlpineState + `</script>`)
+	<!-- MappingsIndex HTML -->
 	<div x-data="mappings" class="flex flex-col gap-2">
 		<div class="flex flex-row items-center justify-between">
 			@componentStructural.PageTitle(
