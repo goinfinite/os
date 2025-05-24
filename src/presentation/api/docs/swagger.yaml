@@ -1353,7 +1353,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.2.4
+  version: 0.2.5
 paths:
   /v1/account/:
     get:

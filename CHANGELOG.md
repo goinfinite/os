@@ -1,6 +1,9 @@
 # Changelog
 
 ```log
+0.2.5 - 2025/06/XX
+refactor: sidebar
+
 0.2.4 - 2025/05/08
 feat!: add pagination to database read ops
 feat: mappings security rules
