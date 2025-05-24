@@ -10,10 +10,5 @@ import (
 func Render(c echo.Context, pageContent templ.Component, statusCode int) error {
 	c.Response().Writer.WriteHeader(statusCode)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
-	currentUrl := c.Request().URL.String()
-
-	return layout.Main(pageContent, currentUrl).Render(
-		c.Request().Context(),
-		c.Response().Writer,
-	)
+	return layout.Main(pageContent).Render(c.Request().Context(), c.Response().Writer)
 }

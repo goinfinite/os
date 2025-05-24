@@ -1,89 +1,96 @@
 package layout
 
+import "github.com/goinfinite/ui/src/display"
+
 import infraEnvs "github.com/goinfinite/os/src/infra/envs"
 
 type SidebarItem struct {
-	Label             string
-	Icon              string
-	Link              string
-	AdditionalClasses string
+	Label string
+	Icon  string
+	Link  string
 }
 
-func sidebarItemsGetter(currentUrl string) []SidebarItem {
-	sidebarItems := []SidebarItem{
-		{Label: "Overview", Icon: "ph-speedometer", Link: "/overview/"},
-		{Label: "Accounts", Icon: "ph-users-three", Link: "/accounts/"},
-		{Label: "Databases", Icon: "ph-database", Link: "/databases/"},
-		{Label: "Runtime", Icon: "ph-code", Link: "/runtimes/"},
-		{Label: "Cron Jobs", Icon: "ph-clock", Link: "/crons/"},
-		{Label: "File Manager", Icon: "ph-files", Link: "/file-manager/"},
-		{Label: "Mappings", Icon: "ph-graph", Link: "/mappings/"},
-		{Label: "SSL Certificates", Icon: "ph-lock", Link: "/ssls/"},
-		{Label: "Marketplace", Icon: "ph-storefront", Link: "/marketplace/"},
-	}
-
-	for itemIndex := range sidebarItems {
-		if sidebarItems[itemIndex].Link != currentUrl {
-			continue
-		}
-
-		sidebarItems[itemIndex].AdditionalClasses = " text-infinite-500"
-		break
-	}
-
-	return sidebarItems
+var SidebarItems = []SidebarItem{
+	{"Overview", "ph-speedometer", "/overview/"},
+	{"Accounts", "ph-users-three", "/accounts/"},
+	{"Databases", "ph-database", "/databases/"},
+	{"Runtime", "ph-code", "/runtimes/"},
+	{"Cron Jobs", "ph-clock", "/crons/"},
+	{"File Manager", "ph-files", "/file-manager/"},
+	{"Mappings", "ph-graph", "/mappings/"},
+	{"SSL Certificates", "ph-lock", "/ssls/"},
+	{"Marketplace", "ph-storefront", "/marketplace/"},
 }
 
-templ Sidebar(currentUrl string) {
-	<!-- Sidebar Layout JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/sidebar.js" }></script>
-	<!-- Sidebar Layout HTML -->
-	<sidebar
-		id="sidebar"
-		x-data="sidebar"
-		class="bg-os-900 w-30 z-1 flex h-screen flex-col items-center"
-	>
-		<div class="my-7">
-			<a href="https://goinfinite.net/os/" target="_blank" class="mx-auto mb-2 flex w-[80px] max-w-[80px] items-center justify-center">
+templ SidebarHeader() {
+	<div class="mx-auto flex flex-col items-center justify-center gap-4 py-8">
+		<!-- Logo -->
+		<div class="flex flex-col items-center justify-center gap-1">
+			<a
+				href="https://goinfinite.net/os/"
+				title="Infinite OS"
+				target="_blank"
+				:class={ "{'w-12':isSidebarCollapsed, 'w-24':!isSidebarCollapsed}" }
+			>
 				<img src="/assets/os-logo.svg" alt="Infinite OS" class="fill-white"/>
 			</a>
-			<p class="text-center text-xs">v{ infraEnvs.InfiniteOsVersion }</p>
+			<p class="text-center text-[0.5rem]">v{ infraEnvs.InfiniteOsVersion }</p>
 		</div>
+		<!-- LogoutButton -->
 		<button
 			type="button"
 			@click="clearSession()"
-			class="hover:bg-infinite-500 flex items-center justify-center rounded-md border border-neutral-500 bg-transparent px-3 py-1.5 text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-white"
+			class="hover:bg-secondary-500 flex items-center justify-center rounded border border-neutral-400/50 bg-transparent text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-neutral-50"
+			:class={ "{'p-0.75':isSidebarCollapsed, 'p-2 gap-1':!isSidebarCollapsed}" }
 		>
-			<i class="ph-bold ph-sign-out pr-1 pt-1"></i>
-			logout
+			<i class="ph-bold ph-sign-out"></i>
+			<span :class="{'hidden':isSidebarCollapsed}">logout</span>
 		</button>
-		<button
-			id="scrollButton"
-			@click="scrollToTop()"
-			class="hover:bg-infinite-500 mt-2 hidden rounded-full border border-neutral-500 bg-transparent p-2 transition-all hover:border-transparent"
-		>
-			<i class="ph-duotone ph-arrow-fat-up block"></i>
-		</button>
-		<!-- SidebarMenu -->
-		<div
-			id="sidebarMenu"
-			@scroll="toggleScrollButtonDisplay()"
-			class="scrollbar-hide hover:scrollbar-show mt-2 w-full flex-1 overflow-y-auto"
-		>
-			<ul>
-				for _, item := range sidebarItemsGetter(currentUrl) {
-					<li class={ "my-1 py-3 px-2 transition-all hover:bg-neutral-100 hover:bg-opacity-10" + item.AdditionalClasses }>
-						<a href={ templ.URL(item.Link) }>
-							<div class="mx-auto flex h-[48px] max-h-[48px] w-[48px] max-w-[48px] items-center justify-center rounded-full bg-neutral-950 bg-opacity-40 p-1">
-								<i class={ "ph-duotone " + item.Icon + " block text-xl" }></i>
-							</div>
-							<div class="text-center text-sm">
-								{ item.Label }
-							</div>
-						</a>
-					</li>
-				}
-			</ul>
-		</div>
-	</sidebar>
+	</div>
+}
+
+templ SidebarMiddle() {
+	<ul class="flex flex-col gap-4 py-8" :class="{'items-center':isSidebarCollapsed, 'px-4':!isSidebarCollapsed}">
+		for _, sidebarItem := range SidebarItems {
+			<li>
+				<a
+					hx-get={ templ.URL(sidebarItem.Link) }
+					hx-select="#page-content"
+					hx-target="#page-content"
+					hx-swap="outerHTML transition:true"
+					hx-push-url="true"
+					@click={ "updateCurrentPath('" + sidebarItem.Link + "')" }
+					class="group flex cursor-pointer items-center gap-2"
+				>
+					<div class="group-hover:text-secondary-500 flex items-center justify-center rounded-md bg-neutral-50/5 p-2 group-hover:bg-neutral-50/10">
+						<i
+							class={ "ph-duotone " + sidebarItem.Icon + " block text-2xl" }
+							:class={ "{'text-secondary-500':isActivePath('" + sidebarItem.Link + "')}" }
+						></i>
+					</div>
+					<span
+						class="group-hover:text-secondary-500 text-center text-sm"
+						:class={ "{'text-secondary-500':isActivePath('" + sidebarItem.Link + "'), 'hidden':isSidebarCollapsed}" }
+					>
+						{ sidebarItem.Label }
+					</span>
+				</a>
+			</li>
+		}
+	</ul>
+}
+
+templ Sidebar() {
+	<!-- Sidebar Layout JavaScript -->
+	<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/sidebar.js" }></script>
+	<div x-data="sidebar">
+		@uiDisplay.Sidebar(uiDisplay.SidebarSettings{
+			MiddleContent:              SidebarMiddle(),
+			HeaderContent:              SidebarHeader(),
+			IsCollapsedTwoWayStatePath: "isSidebarCollapsed",
+			AttachmentMode:             uiDisplay.SidebarAttachmentModeFixed,
+			BackgroundColor:            "bg-primary-800",
+			Width:                      "w-48",
+		})
+	</div>
 }

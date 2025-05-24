@@ -12,6 +12,7 @@ templ HeadTag() {
 	<head>
 		<title>Infinite OS</title>
 		<meta charset="utf-8"/>
+		<meta name="robots" content="noindex"/>
 		<link rel="icon" type="image/ico" href="/assets/favicon.ico"/>
 		<script src="/assets/additional.js"></script>
 		@uiImport.HeadTagsFull()
@@ -22,7 +23,7 @@ templ HeadTag() {
 	</head>
 }
 
-templ Main(pageContent templ.Component, currentUrl string) {
+templ Main(pageContent templ.Component) {
 	<!DOCTYPE html>
 	<html>
 		@HeadTag()
@@ -34,11 +35,11 @@ templ Main(pageContent templ.Component, currentUrl string) {
 		<!-- Main Layout HTML -->
 		<body class="bg-os-500 flex overflow-hidden text-white">
 			@componentUtil.LoadingOverlay()
-			@Sidebar(currentUrl)
+			@Sidebar()
 			<!-- Page Content -->
-			<div class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
+			<section id="page-content" class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
 				@pageContent
-			</div>
+			</section>
 			@FooterSkeleton()
 			@componentUtil.Toast()
 		</body>
