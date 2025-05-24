@@ -23,22 +23,26 @@ templ HeadTag() {
 	</head>
 }
 
-templ Main(pageContent templ.Component) {
+type MainLayoutSettings struct {
+	PageContent templ.Component
+}
+
+templ Main(componentSettings MainLayoutSettings) {
 	<!DOCTYPE html>
 	<html>
 		@HeadTag()
-		<!-- Main Layout JavaScript -->
+		<!-- MainLayout JavaScript -->
 		<script src={ infraEnvs.GlobalStatesAssetsPath + "/layout/main.js" }></script>
 		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 			@templ.JSFuncCall("devWsHotReload")
 		}
-		<!-- Main Layout HTML -->
-		<body class="bg-os-500 flex overflow-hidden text-white">
+		<!-- MainLayout HTML -->
+		<body class="bg-primary-500 flex overflow-hidden text-neutral-50">
 			@componentUtil.LoadingOverlay()
 			@Sidebar()
-			<!-- Page Content -->
+			<!-- PageContent -->
 			<section id="page-content" class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
-				@pageContent
+				@componentSettings.PageContent
 			</section>
 			@FooterSkeleton()
 			@componentUtil.Toast()
