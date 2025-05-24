@@ -5,9 +5,9 @@ import "github.com/goinfinite/ui/src/display"
 import infraEnvs "github.com/goinfinite/os/src/infra/envs"
 
 type SidebarItem struct {
-	Label string
-	Icon  string
-	Link  string
+	Label string `json:"label"`
+	Icon  string `json:"icon"`
+	Link  string `json:"link"`
 }
 
 var SidebarItems = []SidebarItem{
@@ -59,19 +59,18 @@ templ SidebarMiddle() {
 					hx-target="#page-content"
 					hx-swap="outerHTML transition:true"
 					hx-push-url="true"
-					@click={ "updateCurrentPath('" + sidebarItem.Link + "')" }
 					class="group relative flex cursor-pointer items-center gap-2"
 					title={ sidebarItem.Label }
 				>
 					<div class="group-hover:text-secondary-500 flex items-center justify-center rounded-md bg-neutral-50/5 p-2 transition-colors group-hover:bg-neutral-50/10">
 						<i
 							class={ "ph-duotone " + sidebarItem.Icon + " block text-2xl" }
-							:class={ "{'text-secondary-500':isActivePath('" + sidebarItem.Link + "')}" }
+							:class={ "isActivePath('" + sidebarItem.Link + "') && 'text-secondary-500'" }
 						></i>
 					</div>
 					<span
 						class="group-hover:text-secondary-500 text-sm"
-						:class={ "{'text-secondary-500':isActivePath('" + sidebarItem.Link + "'), 'hidden':isSidebarCollapsed}" }
+						:class={ "{'text-secondary-500' : isActivePath('" + sidebarItem.Link + "'), 'hidden' : isSidebarCollapsed}" }
 					>
 						{ sidebarItem.Label }
 					</span>
@@ -82,8 +81,9 @@ templ SidebarMiddle() {
 }
 
 templ Sidebar() {
-	<!-- Sidebar Layout JavaScript -->
+	<!-- Sidebar JavaScript -->
 	<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/sidebar.js" }></script>
+	<!-- Sidebar HTML -->
 	<div x-data="sidebar">
 		@uiDisplay.Sidebar(uiDisplay.SidebarSettings{
 			MiddleContent:              SidebarMiddle(),
