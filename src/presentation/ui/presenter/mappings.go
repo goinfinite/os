@@ -9,7 +9,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
-	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
+	"github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/goinfinite/os/src/presentation/ui/page"
 	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/labstack/echo/v4"
@@ -133,5 +133,9 @@ func (presenter *MappingsPresenter) Handler(c echo.Context) error {
 		presenter.readInstalledServiceNames(),
 		presenter.readSecRulesLabelValueOptions(),
 	)
-	return uiHelper.Render(c, pageContent, http.StatusOK)
+	return layout.Renderer(layout.LayoutRendererSettings{
+		EchoContext:  c,
+		PageContent:  pageContent,
+		ResponseCode: http.StatusOK,
+	})
 }

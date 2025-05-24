@@ -7,7 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	filesInfra "github.com/goinfinite/os/src/infra/files"
-	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
+	"github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/goinfinite/os/src/presentation/ui/page"
 	"github.com/labstack/echo/v4"
 )
@@ -50,5 +50,9 @@ func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
 	readFilesResponseDto := presenter.readUnixFilesByWorkingDir(workingDirPath)
 
 	pageContent := page.FileManagerIndex(workingDirPath, readFilesResponseDto)
-	return uiHelper.Render(c, pageContent, http.StatusOK)
+	return layout.Renderer(layout.LayoutRendererSettings{
+		EchoContext:  c,
+		PageContent:  pageContent,
+		ResponseCode: http.StatusOK,
+	})
 }

@@ -9,7 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
-	uiHelper "github.com/goinfinite/os/src/presentation/ui/helper"
+	"github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/goinfinite/os/src/presentation/ui/page"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
@@ -123,5 +123,9 @@ func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
 	}
 
 	pageContent := page.MarketplaceIndex(vhostsHostnames, marketplaceOverview)
-	return uiHelper.Render(c, pageContent, http.StatusOK)
+	return layout.Renderer(layout.LayoutRendererSettings{
+		EchoContext:  c,
+		PageContent:  pageContent,
+		ResponseCode: http.StatusOK,
+	})
 }
