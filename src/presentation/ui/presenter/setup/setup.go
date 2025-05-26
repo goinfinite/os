@@ -5,7 +5,7 @@ import (
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
-	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
+	layoutSetup "github.com/goinfinite/os/src/presentation/ui/layout/setup"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
@@ -31,6 +31,6 @@ func (presenter *SetupPresenter) Handler(c echo.Context) error {
 	c.Response().Writer.WriteHeader(http.StatusOK)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 
-	return uiLayout.Setup().
+	return layoutSetup.Setup().
 		Render(c.Request().Context(), c.Response().Writer)
 }

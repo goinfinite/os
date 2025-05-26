@@ -2,7 +2,10 @@ package uiLayout
 
 import "github.com/goinfinite/ui/src/display"
 
-import infraEnvs "github.com/goinfinite/os/src/infra/envs"
+import (
+	_ "embed"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+)
 
 type SidebarItem struct {
 	Label string `json:"label"`
@@ -21,6 +24,9 @@ var SidebarItems = []SidebarItem{
 	{"SSL Certificates", "ph-lock", "/ssls/"},
 	{"Marketplace", "ph-storefront", "/marketplace/"},
 }
+
+//go:embed state.js
+var sidebarLayoutAlpineState string
 
 templ SidebarHeader() {
 	<div class="mx-auto flex flex-col items-center justify-center gap-4 py-6">
@@ -82,7 +88,7 @@ templ SidebarMiddle() {
 
 templ Sidebar() {
 	<!-- Sidebar JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/sidebar.js" }></script>
+	@templ.Raw(`<script type="text/javascript">` + sidebarLayoutAlpineState + `</script>`)
 	<!-- Sidebar HTML -->
 	<div x-data="sidebar">
 		@uiDisplay.Sidebar(uiDisplay.SidebarSettings{

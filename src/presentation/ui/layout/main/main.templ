@@ -1,12 +1,17 @@
 package uiLayout
 
 import (
+	_ "embed"
 	"github.com/goinfinite/os/src/domain/valueObject/helper"
-	"github.com/goinfinite/os/src/infra/envs"
 	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
+	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
+	layoutSidebar "github.com/goinfinite/os/src/presentation/ui/layout/sidebar"
 	uiImport "github.com/goinfinite/ui/src/import"
 	"os"
 )
+
+//go:embed state.js
+var mainLayoutAlpineState string
 
 templ HeadTag() {
 	<head>
@@ -32,19 +37,19 @@ templ Main(componentSettings MainLayoutSettings) {
 	<html>
 		@HeadTag()
 		<!-- MainLayout JavaScript -->
-		<script src={ infraEnvs.GlobalStatesAssetsPath + "/layout/main.js" }></script>
+		@templ.Raw(`<script type="text/javascript">` + mainLayoutAlpineState + `</script>`)
 		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 			@templ.JSFuncCall("devWsHotReload")
 		}
 		<!-- MainLayout HTML -->
 		<body class="bg-primary-500 flex overflow-hidden text-neutral-50">
 			@componentUtil.LoadingOverlay()
-			@Sidebar()
+			@layoutSidebar.Sidebar()
 			<!-- PageContent -->
 			<section id="page-content" class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
 				@componentSettings.PageContent
 			</section>
-			@FooterSkeleton()
+			@layoutFooter.FooterSkeleton()
 			@componentUtil.Toast()
 		</body>
 	</html>

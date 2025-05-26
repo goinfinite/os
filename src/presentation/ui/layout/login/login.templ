@@ -1,17 +1,22 @@
 package uiLayout
 
 import (
+	_ "embed"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
+	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
 )
+
+//go:embed state.js
+var loginLayoutAlpineState string
 
 templ Login() {
 	<!DOCTYPE html>
 	<html>
-		@HeadTag()
+		@layoutMain.HeadTag()
 		<!-- Login Layout JavaScript -->
-		<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/login.js" }></script>
+		@templ.Raw(`<script type="text/javascript">` + loginLayoutAlpineState + `</script>`)
 		<!-- Login Layout HTML -->
 		<body class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50">
 			@componentUtil.LoadingOverlay()

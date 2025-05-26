@@ -8,7 +8,7 @@ import (
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
-	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
+	layoutLogin "github.com/goinfinite/os/src/presentation/ui/layout/login"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
@@ -51,6 +51,6 @@ func (presenter *LoginPresenter) Handler(c echo.Context) error {
 	c.Response().Writer.WriteHeader(http.StatusOK)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 
-	return uiLayout.Login().
+	return layoutLogin.Login().
 		Render(c.Request().Context(), c.Response().Writer)
 }

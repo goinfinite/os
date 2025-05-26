@@ -1,17 +1,22 @@
 package uiLayout
 
 import (
+	_ "embed"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
+	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
 )
+
+//go:embed state.js
+var setupLayoutAlpineState string
 
 templ Setup() {
 	<!DOCTYPE html>
 	<html>
-		@HeadTag()
+		@layoutMain.HeadTag()
 		<!-- Setup Layout JavaScript -->
-		<script src={ infraEnvs.LocalStatesAssetsPath + "/layout/setup.js" }></script>
+		@templ.Raw(`<script type="text/javascript">` + setupLayoutAlpineState + `</script>`)
 		<!-- Setup Layout HTML -->
 		<body
 			x-data="setup"

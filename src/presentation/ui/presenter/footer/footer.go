@@ -8,7 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
-	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
+	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
 	"github.com/labstack/echo/v4"
 )
 
@@ -68,6 +68,6 @@ func (presenter *FooterPresenter) Handler(c echo.Context) error {
 	c.Response().Writer.WriteHeader(http.StatusOK)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 
-	return uiLayout.Footer(o11yOverviewEntity, tasksResponseDto.Tasks).
+	return layoutFooter.Footer(o11yOverviewEntity, tasksResponseDto.Tasks).
 		Render(c.Request().Context(), c.Response().Writer)
 }

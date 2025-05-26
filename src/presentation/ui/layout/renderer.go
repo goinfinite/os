@@ -2,6 +2,7 @@ package uiLayout
 
 import (
 	"github.com/a-h/templ"
+	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
 	"github.com/labstack/echo/v4"
 )
 
@@ -25,7 +26,7 @@ func Renderer(componentSettings LayoutRendererSettings) error {
 			)
 	}
 
-	return Main(MainLayoutSettings{
+	return layoutMain.Main(layoutMain.MainLayoutSettings{
 		PageContent: componentSettings.PageContent,
 	}).Render(
 		componentSettings.EchoContext.Request().Context(),
