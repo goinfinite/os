@@ -63,8 +63,9 @@ templ SidebarMiddle() {
 					hx-get={ templ.URL(sidebarItem.Link) }
 					hx-select="#page-content"
 					hx-target="#page-content"
-					hx-swap="outerHTML transition:true"
 					hx-push-url="true"
+					hx-swap="outerHTML transition:true"
+					@htmx:after-request="$dispatch('alpine:reload')"
 					class="group relative flex cursor-pointer items-center gap-2"
 					title={ sidebarItem.Label }
 				>
