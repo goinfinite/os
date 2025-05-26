@@ -1,4 +1,4 @@
-package presenterHelper
+package uiPresenterHelper
 
 import (
 	"github.com/goinfinite/os/src/domain/dto"

@@ -1,0 +1,895 @@
+package uiPresenter
+
+import (
+	_ "embed"
+	"fmt"
+	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
+	"math"
+	"strconv"
+)
+
+type InstallableServicesGroupedByType struct {
+	Runtime   []entity.InstallableService
+	Database  []entity.InstallableService
+	Webserver []entity.InstallableService
+	Other     []entity.InstallableService
+}
+
+type ServicesOverview struct {
+	InstalledServicesResponseDto dto.ReadInstalledServicesItemsResponse
+	InstallableServices          InstallableServicesGroupedByType
+}
+
+//go:embed state.js
+var overviewIndexAlpineState string
+
+templ OverviewIndex(
+	vhostsHostnames []string,
+	marketplaceOverview presenterMarketplace.MarketplaceOverview,
+	o11yOverview entity.O11yOverview,
+	servicesOverview ServicesOverview,
+) {
+	<!-- OverviewIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + overviewIndexAlpineState + `</script>`)
+	<!-- OverviewIndex HTML -->
+	<div class="flex flex-col">
+		@componentStructural.PageTitle(
+			"Overview",
+			"Welcome! Take a quick peek at your installed services and marketplace items, as well as OS performance such as the server resource usage and system information.",
+			"ph-speedometer",
+		)
+		<div class="space-y-5">
+			<div id="marketplace" class="card w-full" x-data="marketplace">
+				@InstalledMarketplaceItemsTable(marketplaceOverview.InstalledItemsList)
+				@componentStructural.ScheduleDeletionModal(
+					"isUninstallMarketplaceItemModalOpen",
+					"closeUninstallMarketplaceItemModal()",
+					"uninstallMarketplaceItem()", "marketplaceItem.name",
+					"marketplaceItem.id",
+				)
+				@ScheduleMarketplaceItemInstallationModal(
+					vhostsHostnames, marketplaceOverview.CatalogItemsList,
+				)
+			</div>
+			<div id="system-info" class="card w-full" x-data="resourceUsage">
+				@SystemInfoTableAndGraphic(o11yOverview)
+			</div>
+			<div id="services" class="card w-full" x-data="services">
+				@InstalledServicesItemsTable(servicesOverview.InstalledServicesResponseDto)
+				@ServiceInstallationModal(servicesOverview.InstallableServices)
+				@UpdateInstalledServiceModal()
+				@componentStructural.DeleteModal(
+					"isUninstallServiceModalOpen", "closeUninstallServiceModal()",
+					"uninstallService()", "service.name", "",
+				)
+			</div>
+		</div>
+	</div>
+}
+
+templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInstalledItem) {
+	<div class="rounded-lg bg-neutral-950/20 p-5">
+		<div class="mb-2">
+			@componentStructural.PageSubHeading("Marketplace", "", "ph-storefront")
+		</div>
+		<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
+				<tr class="*:p-3 border-y border-neutral-50/10 text-center">
+					<th scope="col" class="w-[25%] text-left">Name</th>
+					<th scope="col" class="w-[20%]">Type/Installation Path</th>
+					<th scope="col" class="w-[20%]">Installation Directory</th>
+					<th scope="col" class="w-[15%]">Created At</th>
+					<th scope="col" class="w-[20%]">
+						@componentForm.SubmitButton(
+							"", "Install catalog item", "ph-arrow-line-down",
+							"openMarketplaceItemInstallationModal()", false,
+						)
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, installedItem := range installedItemsList {
+					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
+						<td class="text-left">
+							<div class="flex items-center gap-2">
+								<img class="h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
+								{ installedItem.Name.String() }
+							</div>
+						</td>
+						<td>
+							<div class="flex items-center justify-center">
+								@componentStructural.Tag(
+									"", installedItem.Type.String(),
+									installedItem.Hostname.String()+installedItem.UrlPath.String(),
+									"infinite-500",
+								)
+							</div>
+						</td>
+						<td>{ installedItem.InstallDirectory.String() }</td>
+						<td>{ installedItem.CreatedAt.ReadDateOnly() }</td>
+						<td class="float-right text-right">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-trash", "red-800", "red-600",
+								"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
+								"Uninstall", "red-500",
+							)
+						</td>
+					</tr>
+				}
+				if len(installedItemsList) == 0 {
+					<tr class="border-b border-neutral-500 border-opacity-30 bg-neutral-950 bg-opacity-20">
+						<td class="px-3 py-4 text-center italic text-slate-500" colspan="12">No marketplace items installed yet.</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalogItem) {
+	<div>
+		<!-- MarketplaceCatalogItemsCarousel JavaScript -->
+		@templ.JSONScript("marketplaceCatalogItem_"+catalogItemEntity.Id.String(), catalogItemEntity)
+		<!-- MarketplaceCatalogItemsCarousel HTML -->
+		<div
+			@click={ "updateSelectedMarketplaceItem(" + catalogItemEntity.Id.String() + ")" }
+			class="bg-os-500 hover:ring-infinite-500 hover:text-infinite-500 group relative flex cursor-pointer flex-col items-center justify-center rounded-md p-2 transition-all duration-300 hover:ring-1"
+			:class={ "{'text-infinite-500 ring-1 ring-infinite-500': selectedMarketplaceItemId === " + catalogItemEntity.Id.String() + "}" }
+		>
+			<img
+				src={ catalogItemEntity.AvatarUrl.String() }
+				alt={ catalogItemEntity.Name.String() + " Avatar" }
+				class="max-w-18 m-auto rounded-md transition-all duration-300 group-hover:sepia"
+				:class={ "{'sepia': selectedMarketplaceItemId === " + catalogItemEntity.Id.String() + "}" }
+			/>
+			<div class="text-wrap mt-1 break-words text-center text-xs">
+				{ catalogItemEntity.Name.String() }
+			</div>
+			<div class="bg-os-600 min-w-100 absolute left-1/2 top-full z-10 mt-1 hidden -translate-x-1/2 transform rounded-md p-3 text-xs text-neutral-50 shadow-lg transition-all duration-500 group-hover:block group-hover:translate-y-0.5">
+				<div class="flex flex-row items-center gap-3">
+					<div class="basis-3/4 text-xs">
+						{ catalogItemEntity.Description.String() }
+					</div>
+					<div class="basis-1/4 space-y-1.5">
+						@componentStructural.TinyTag(componentStructural.TinyTagDto{
+							HighlightedIcon: "ph-hard-drives",
+							TagValue:        catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(),
+							TagColor:        "infinite-500",
+						})
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+func transformMarketplaceCatalogItemsIntoCarouselItems(
+	catalogItems []entity.MarketplaceCatalogItem,
+) []templ.Component {
+	carouselItems := []templ.Component{}
+	for _, itemEntity := range catalogItems {
+		carouselItem := MarketplaceCatalogItemsCarousel(itemEntity)
+		carouselItems = append(carouselItems, carouselItem)
+	}
+
+	return carouselItems
+}
+
+templ ScheduleMarketplaceItemInstallationForm(
+	vhostsHostnames []string,
+	marketplaceCatalogItems presenterMarketplace.CatalogItemsGroupedByType,
+) {
+	<!-- ScheduleMarketplaceItemInstallationForm -->
+	<form
+		id="schedule-marketplace-item-installation-form"
+		hx-post="/api/v1/marketplace/catalog/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="$store.main.refreshScheduledTasksPopover()"
+	>
+		<input type="hidden" name="id" :value="marketplaceItem.id"/>
+		<input type="hidden" name="dataFields" :value="dataFieldsAsString"/>
+		<div class="my-6 space-y-2">
+			<div class="w-100% inline-flex space-x-2">
+				<div class="w-60%">
+					@componentForm.SelectInput(
+						"hostname", "Hostname", "marketplaceItem.hostname",
+						"", vhostsHostnames, true,
+					)
+				</div>
+				<div class="w-40%">
+					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
+						Type:                "text",
+						Id:                  "urlPath",
+						Label:               "URL Path",
+						BindInputValuePath:  "marketplaceItem.urlPath",
+						BindPrefixValuePath: "hostnameWithTrailingSlash",
+						InfoTooltipContent:  "Path where the respective installed item will be available for access.",
+					})
+				</div>
+			</div>
+			<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
+				<div class="flex justify-stretch gap-4">
+					<div>
+						@componentStructural.VerticalTabHeader(
+							[]componentStructural.TabHeaderItem{
+								{Label: "Apps", Value: "apps"},
+								{Label: "Frameworks", Value: "frameworks"},
+								{Label: "Stacks", Value: "stacks"},
+							}, "selectedMarketplaceItemType",
+						)
+					</div>
+					<!-- MarketplaceVerticalTabContent -->
+					<div class="bg-os-400 flex w-full justify-center rounded-lg px-5 py-2.5">
+						<div x-show="selectedMarketplaceItemType === 'apps'">
+							@componentMisc.MultiItemCarousel(
+								"marketplaceAppItemsCarousel",
+								transformMarketplaceCatalogItemsIntoCarouselItems(marketplaceCatalogItems.Apps),
+								4,
+							)
+						</div>
+						<div x-show="selectedMarketplaceItemType === 'frameworks'">
+							@componentMisc.MultiItemCarousel(
+								"marketplaceFrameworksItemsCarousel",
+								transformMarketplaceCatalogItemsIntoCarouselItems(marketplaceCatalogItems.Frameworks),
+								4,
+							)
+						</div>
+						<div x-show="selectedMarketplaceItemType === 'stacks'">
+							@componentMisc.MultiItemCarousel(
+								"marketplaceStacksItemsCarousel",
+								transformMarketplaceCatalogItemsIntoCarouselItems(marketplaceCatalogItems.Stacks),
+								4,
+							)
+						</div>
+					</div>
+				</div>
+			</div>
+			<template x-if="marketplaceItem.id !== ''">
+				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
+					@componentStructural.Alert(
+						componentStructural.AlertTypeWarning,
+						"All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
+					)
+					<div class="mt-6 grid grid-cols-2 gap-4">
+						<template x-for="dataField in marketplaceItem.dataFields">
+							<div>
+								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
+									@componentForm.InputFieldClientSide(
+										"dataField.type", "dataField.label", "dataField.value",
+									)
+								</template>
+								<template x-if="dataField.type === 'password'">
+									@componentForm.PasswordInputClientSide(
+										"dataField.label", "dataField.value", true,
+									)
+								</template>
+								<template x-if="dataField.type === 'select'">
+									@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+										BindLabel:     "dataField.label",
+										BindModelPath: "dataField.value",
+										BindOptions:   "dataField.options",
+									})
+								</template>
+							</div>
+						</template>
+					</div>
+				}
+			</template>
+		</div>
+		@componentForm.SubmitButton(
+			"install-marketplace-item-button", "Schedule installation",
+			"ph-queue", "closeMarketplaceItemInstallationModal()", false,
+		)
+	</form>
+}
+
+templ ScheduleMarketplaceItemInstallationModal(
+	vhostsHostnames []string,
+	marketplaceCatalogItems presenterMarketplace.CatalogItemsGroupedByType,
+) {
+	@componentStructural.RegularModal(
+		"Install marketplace item", "isMarketplaceItemInstallationModalOpen",
+		"closeMarketplaceItemInstallationModal()", "",
+	) {
+		@ScheduleMarketplaceItemInstallationForm(
+			vhostsHostnames, marketplaceCatalogItems,
+		)
+	}
+}
+
+func transformUptimeSecsIntoHumanReadable(uptimeSecs uint64) string {
+	uptimeHours := uptimeSecs / 3600
+	uptimeMinutes := (uptimeSecs % 3600) / 60
+	uptimeSeconds := uptimeSecs % 60
+
+	return fmt.Sprintf("%dh %dm %ds", uptimeHours, uptimeMinutes, uptimeSeconds)
+}
+
+func transformCpuInfoIntoHumanReadable(cpuCores float64, cpuFrequency float64) string {
+	cpuFrequency = math.Round(cpuFrequency/1000*10) / 10
+	return fmt.Sprintf("%.0f CPU @ %.1f GHz", cpuCores, cpuFrequency)
+}
+
+templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
+	<!-- SystemInfoTableAndGraphic -->
+	<div class="rounded-lg bg-neutral-950/20 p-5">
+		<div class="mb-2">
+			@componentStructural.PageSubHeading("System Information", "", "ph-chart-line")
+		</div>
+		<div class="grid grid-cols-3 items-center gap-3">
+			<!-- Observability Table -->
+			<div class="*:text-sm *:rounded-md *:p-2.5 *:flex *:justify-between *:bg-neutral-500/5 *:items-center flex flex-col space-y-2 rounded-lg p-3">
+				<div>
+					<span class="font-bold">Hostname</span>
+					<span class="text-right">{ o11yOverview.Hostname.String() }</span>
+				</div>
+				<div>
+					<span class="font-bold">Uptime</span>
+					<span class="text-right">{ transformUptimeSecsIntoHumanReadable(o11yOverview.UptimeSecs) }</span>
+				</div>
+				<div>
+					<span class="font-bold">Hardware Specs</span>
+					<div class="space-y-2">
+						<div class="flex justify-end">
+							@componentStructural.TinyTag(componentStructural.TinyTagDto{
+								HighlightedIcon: "ph-memory",
+								TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+								TagColor:        "infinite-500",
+							})
+						</div>
+						<div class="flex justify-end">
+							@componentStructural.TinyTag(componentStructural.TinyTagDto{
+								HighlightedIcon: "ph-cpu",
+								TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+								TagColor:        "infinite-500",
+							})
+						</div>
+						<div class="flex justify-end">
+							@componentStructural.TinyTag(componentStructural.TinyTagDto{
+								HighlightedIcon: "ph-sim-card",
+								TagValue:        o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
+								TagColor:        "infinite-500",
+							})
+						</div>
+					</div>
+				</div>
+				<div>
+					<span class="font-bold">Public IP Address</span>
+					<span class="text-right">{ o11yOverview.PublicIpAddress.String() }</span>
+				</div>
+			</div>
+			<!-- Resource Usage Graphic -->
+			<div class="col-span-2 rounded-md bg-neutral-950/20 p-4">
+				<div class="flex cursor-default flex-row items-center justify-center gap-2 text-[11px] text-neutral-300">
+					<div class="flex flex-row items-center gap-1">
+						<span class="h-4 w-4 rounded-full border-2 border-[#145952] bg-[#0E3E39]"></span>
+						Memory Usage (%)
+					</div>
+					<div class="flex flex-row items-center gap-1">
+						<span class="h-4 w-4 rounded-full border-2 border-[#E89500] bg-[#A26800]"></span>
+						CPU Usage (%)
+					</div>
+					<div class="flex flex-row items-center gap-1">
+						<span class="h-4 w-4 rounded-full border-2 border-[#281B86] bg-[#1C125D]"></span>
+						Storage Usage (%)
+					</div>
+				</div>
+				<div class="h-64 w-full p-2">
+					<div id="cpuAndMemoryUsageChart" class="h-full w-full"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+templ InstalledServicesItemsTable(
+	installedServicesResponseDto dto.ReadInstalledServicesItemsResponse,
+) {
+	<!-- InstalledServicesItemsTable -->
+	<div class="rounded-lg bg-neutral-950/20 p-5">
+		<div class="mb-2">
+			@componentStructural.PageSubHeading("Services", "", "ph-package")
+		</div>
+		<div
+			id="installed-services-table"
+			hx-get="/overview/"
+			hx-trigger="install:custom-service from:window delay:250ms, update:service from:window delay:250ms, delete:service from:window delay:250ms"
+			hx-select="#installed-services-table"
+			hx-target="#installed-services-table"
+			hx-swap="outerHTML transition:true"
+			@update:installed-services-pagination="reloadInstalledServicesTable()"
+			@update:installed-services-record-filters="reloadInstalledServicesTable()"
+		>
+			<div class="bg-neutral-950/15 rounded-t-md p-2">
+				@componentStructural.RecordFilters("installed-services", "installedServicesFilters")
+			</div>
+			<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
+				<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
+					<tr class="*:p-3 border-y border-neutral-50/10 text-center">
+						<th scope="col" class="w-[35%] text-left">Service</th>
+						<th scope="col" class="w-[7.5%]">Status</th>
+						<th scope="col" class="w-[7.5%]">CPU</th>
+						<th scope="col" class="w-[7.5%]">RAM</th>
+						<th scope="col">Port Bindings</th>
+						<th scope="col" class="w-[20%]">
+							@componentForm.SubmitButton(
+								"", "Install service", "ph-arrow-line-down",
+								"openServiceInstallationModal()", false,
+							)
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					for _, installedServiceEntity := range installedServicesResponseDto.InstalledServicesWithMetrics {
+						<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
+							@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
+							<td class="text-left">
+								<div class="mb-2 flex items-center gap-2">
+									<img
+										class="h-10 w-10 rounded-full"
+										if installedServiceEntity.AvatarUrl != nil {
+											src={ installedServiceEntity.AvatarUrl.String() }
+										} else {
+											src="/assets/default-avatar.jpg"
+										}
+									/>
+									{ installedServiceEntity.Name.String() }
+								</div>
+								<div class="flex flex-wrap items-center justify-normal gap-2">
+									@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
+										HighlightedLabel: "type",
+										TagValue:         installedServiceEntity.Type.String(),
+										TagColor:         "infinite-500",
+										FilterValue:      installedServiceEntity.Type.String(),
+										FilterBindPath:   "installedServicesFilters['type']",
+									})
+									@componentStructural.Tag(
+										"", "version", installedServiceEntity.Version.String(),
+										"infinite-500",
+									)
+									@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
+										HighlightedLabel: "nature",
+										TagValue:         installedServiceEntity.Nature.String(),
+										TagColor:         "infinite-500",
+										FilterValue:      installedServiceEntity.Nature.String(),
+										FilterBindPath:   "installedServicesFilters['nature']",
+									})
+								</div>
+							</td>
+							<td>
+								{ installedServiceEntity.Status.String() }
+							</td>
+							<td>
+								if installedServiceEntity.Metrics != nil {
+									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
+										ComponentColor:       "os-950",
+										CompletionRate:       uint8(installedServiceEntity.Metrics.CpuUsagePercent),
+										Label:                fmt.Sprintf("%.2f", installedServiceEntity.Metrics.CpuUsagePercent) + "%",
+										LabelBackgroundColor: "os-200",
+									})
+								} else {
+									<span class="text-center text-slate-500">--</span>
+								}
+							</td>
+							<td>
+								if installedServiceEntity.Metrics != nil {
+									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
+										ComponentColor:       "os-950",
+										CompletionRate:       uint8(installedServiceEntity.Metrics.MemUsagePercent),
+										Label:                fmt.Sprintf("%.2f", installedServiceEntity.Metrics.MemUsagePercent) + "%",
+										LabelBackgroundColor: "os-200",
+									})
+								} else {
+									<span class="text-center text-slate-500">--</span>
+								}
+							</td>
+							<td>
+								if installedServiceEntity.PortBindings != nil && len(installedServiceEntity.PortBindings) > 0 {
+									@componentStructural.PortBindingsTable(installedServiceEntity.PortBindings)
+								} else {
+									<span class="text-center text-slate-500">--</span>
+								}
+							</td>
+							<td>
+								<div class="flex justify-end space-x-2">
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-arrow-clockwise", "os-200", "os-300",
+										"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'restart')",
+										"Restart", "os-200",
+									)
+									if installedServiceEntity.Type != valueObject.ServiceTypeSystem {
+										switch installedServiceEntity.Status.String() {
+											case "running":
+												@componentStructural.CircularIconButtonWithTooltip(
+													"ph-pause", "yellow-900", "yellow-700",
+													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'pause')",
+													"Pause", "yellow-700",
+												)
+											case "stopped":
+												@componentStructural.CircularIconButtonWithTooltip(
+													"ph-play", "cyan-900", "cyan-700",
+													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'start')",
+													"Start", "cyan-700",
+												)
+										}
+										if installedServiceEntity.Nature != valueObject.ServiceNatureSolo {
+											@componentStructural.CircularIconButtonWithTooltip(
+												"ph-gear", "os-200", "os-300",
+												"openUpdateInstalledServiceModal('"+installedServiceEntity.Name.String()+"')",
+												"Edit", "os-200",
+											)
+										}
+										@componentStructural.CircularIconButtonWithTooltip(
+											"ph-trash", "red-800", "red-600",
+											"openUninstallServiceModal('"+installedServiceEntity.Name.String()+"')",
+											"Uninstall", "red-500",
+										)
+									}
+								</div>
+							</td>
+						</tr>
+					}
+					if len(installedServicesResponseDto.InstalledServicesWithMetrics) == 0 {
+						<tr class="border-b border-neutral-500 border-opacity-30 bg-neutral-950 bg-opacity-20 text-center">
+							<td class="px-3 py-4 text-center italic text-slate-500" colspan="12">No services installed yet.</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<div class="bg-os-800 border-t border-neutral-500 border-opacity-90 p-3">
+				<data
+					id="installedServicesCurrentPageNumber"
+					class="hidden"
+					value={ strconv.Itoa(int(installedServicesResponseDto.Pagination.PageNumber)) }
+				></data>
+				@componentStructural.Pagination(
+					"installed-services", installedServicesResponseDto.Pagination,
+					"installedServicesPagination.pageNumber", "installedServicesPagination.itemsPerPage",
+				)
+			</div>
+		</div>
+	</div>
+}
+
+templ InstallableServiceItemsCarousel(installableServiceEntity entity.InstallableService) {
+	<div>
+		<!-- InstallableServicesCarousel JavaScript -->
+		@templ.JSONScript("installableServiceEntity_"+installableServiceEntity.Name.String(), installableServiceEntity)
+		<!-- InstallableServicesCarousel HTML -->
+		<div
+			@click={ "updateSelectedInstallableService('" + installableServiceEntity.Name.String() + "')" }
+			class="bg-os-500 hover:ring-infinite-500 hover:text-infinite-500 group relative flex cursor-pointer flex-col items-center justify-center rounded-md p-2 transition-all duration-300 hover:ring-1"
+			:class={ "{'text-infinite-500 ring-1 ring-infinite-500': selectedInstallableServiceName === '" + installableServiceEntity.Name.String() + "'}" }
+		>
+			<img
+				src={ installableServiceEntity.AvatarUrl.String() }
+				alt={ installableServiceEntity.Name.String() + " Avatar" }
+				class="max-w-18 m-auto rounded-md transition-all duration-300 group-hover:sepia"
+				:class={ "{'sepia': selectedInstallableServiceName === '" + installableServiceEntity.Name.String() + "'}" }
+			/>
+			<div class="text-wrap mt-1 break-words text-center text-xs">
+				{ installableServiceEntity.Name.String() }
+			</div>
+			<div class="bg-os-600 min-w-100 absolute left-1/2 top-full z-10 mt-1 hidden -translate-x-1/2 transform rounded-md p-3 text-xs text-neutral-50 shadow-lg transition-all duration-500 group-hover:block group-hover:translate-y-0.5">
+				<div class="flex flex-row items-center gap-3">
+					<div class="basis-3/4 text-xs">
+						{ installableServiceEntity.Description.String() }
+					</div>
+					<div class="basis-1/4 space-y-1.5">
+						@componentStructural.TinyTag(componentStructural.TinyTagDto{
+							HighlightedIcon: "ph-memory",
+							TagValue:        installableServiceEntity.EstimatedSizeBytes.StringWithSuffix(),
+							TagColor:        "infinite-500",
+						})
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+}
+
+func transformInstallableServicesIntoCarouselItems(
+	installableServices []entity.InstallableService,
+) []templ.Component {
+	carouselItems := []templ.Component{}
+	for _, itemEntity := range installableServices {
+		carouselItem := InstallableServiceItemsCarousel(itemEntity)
+		carouselItems = append(carouselItems, carouselItem)
+	}
+
+	return carouselItems
+}
+
+templ InstallableServiceForm(
+	submitButtonId, submitButtonText, submitButtonIcon, submitButtonOnClick string,
+	installableServices *InstallableServicesGroupedByType,
+) {
+	<!-- InstallableServiceForm -->
+	if installableServices != nil {
+		<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
+			<div class="flex justify-center gap-4">
+				for _, serviceType := range valueObject.ValidServiceTypes {
+					if serviceType != "system" {
+						@componentForm.RadioInput(
+							"targetType", serviceType, serviceType,
+							"selectedInstallableServiceType",
+						)
+					}
+				}
+			</div>
+			<!-- InstallableServicesCarousel -->
+			<div class="bg-os-400 flex w-full justify-center rounded-lg p-4">
+				<div x-show="selectedInstallableServiceType === 'runtime'">
+					@componentMisc.MultiItemCarousel(
+						"installableRuntimeServicesCarousel",
+						transformInstallableServicesIntoCarouselItems(installableServices.Runtime),
+						7,
+					)
+				</div>
+				<div x-show="selectedInstallableServiceType === 'database'">
+					@componentMisc.MultiItemCarousel(
+						"installableDatabaseServicesCarousel",
+						transformInstallableServicesIntoCarouselItems(installableServices.Database),
+						7,
+					)
+				</div>
+				<div x-show="selectedInstallableServiceType === 'webserver'">
+					@componentMisc.MultiItemCarousel(
+						"installableWebserverServicesCarousel",
+						transformInstallableServicesIntoCarouselItems(installableServices.Webserver),
+						7,
+					)
+				</div>
+				<div x-show="selectedInstallableServiceType === 'other'">
+					@componentMisc.MultiItemCarousel(
+						"installableOtherServicesCarousel",
+						transformInstallableServicesIntoCarouselItems(installableServices.Other),
+						7,
+					)
+				</div>
+			</div>
+			<template
+				x-if={ strconv.FormatBool(installableServices == nil) + " || selectedInstallableServiceName !== ''" }
+			>
+				@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+					BindLabel:     "'Version'",
+					BindModelPath: "service.version",
+					BindOptions:   "selectedInstallableServiceAvailableVersions",
+				})
+			</template>
+		</div>
+	}
+	<div class="my-4">
+		@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
+			<div class="flex w-full flex-col gap-4">
+				<template
+					x-if={ strconv.FormatBool(installableServices == nil) + " || selectedInstallableServiceName !== ''" }
+				>
+					<div class="mt-4 grid grid-rows-2 gap-2">
+						<div class="grid grid-cols-2 gap-2">
+							@componentForm.InputField(componentForm.InputFieldDto{
+								Type:               "number",
+								Label:              "Timeout Start Secs",
+								BindModelValuePath: "service.timeoutStartSecs",
+							})
+							@componentForm.InputField(componentForm.InputFieldDto{
+								Type:               "number",
+								Label:              "Max Start Retries",
+								BindModelValuePath: "service.maxStartRetries",
+							})
+						</div>
+						<div class="grid grid-cols-3 place-items-center gap-2">
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Label:         "Auto Restart",
+								BindModelPath: "service.autoRestart",
+							})
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Label:         "Auto Start",
+								BindModelPath: "service.autoStart",
+							})
+							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+								Label:         "Auto Create Mapping",
+								BindModelPath: "service.autoCreateMapping",
+							})
+						</div>
+					</div>
+				</template>
+				@componentForm.MultiColumnRepeatableFieldset(
+					"envs", "Environment Variables", "", "service.envs",
+					[]componentForm.RepeatableField{
+						{InputType: "text", Id: "name", Label: "Name"},
+						{InputType: "text", Id: "value", Label: "Value"},
+					},
+				)
+				@componentForm.MultiColumnRepeatableFieldset(
+					"portBindings", "Port Bindings", "",
+					"service.portBindings", []componentForm.RepeatableField{
+						{InputType: "text", Id: "port", Label: "Public Port"},
+						{
+							InputType: "select",
+							Id:        "protocol",
+							Label:     "Protocol",
+							Options:   valueObject.ValidNetworkProtocols,
+						},
+					},
+				)
+			</div>
+		}
+	</div>
+	@componentForm.SubmitButton(
+		submitButtonId, submitButtonText, submitButtonIcon, submitButtonOnClick, false,
+	)
+}
+
+templ CustomServiceForm(
+	submitButtonId, submitButtonText, submitButtonIcon, submitButtonOnClick string,
+) {
+	<!-- CustomServiceForm -->
+	<div class="grid grid-rows-2 gap-4">
+		<div class="grid grid-cols-2 gap-x-2">
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Label:              "Name",
+				BindModelValuePath: "service.name",
+			})
+			@componentForm.SelectInput(
+				"", "Type", "service.type", "", valueObject.ValidServiceTypes,
+				true,
+			)
+		</div>
+		<div class="flex justify-center">
+			<div class="w-2/3">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Label:              "Start Command",
+					BindModelValuePath: "service.startCmd",
+					InfoTooltipContent: `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
+				})
+			</div>
+		</div>
+	</div>
+	<div class="my-4">
+		@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
+			<div class="flex w-full flex-col gap-4">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Label:              "Avatar URL",
+					BindModelValuePath: "service.avatarUrl",
+				})
+				<div class="grid grid-cols-3 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Exec User",
+						BindModelValuePath: "service.execUser",
+						InfoTooltipContent: "Unix user that will be used to execute your service commands.",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "number",
+						Label:              "Timeout Start Secs",
+						BindModelValuePath: "service.timeoutStartSecs",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "number",
+						Label:              "Max Start Retries",
+						BindModelValuePath: "service.maxStartRetries",
+					})
+				</div>
+				<div class="grid grid-cols-2 gap-2">
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Log Output Path",
+						BindModelValuePath: "service.logOutputPath",
+						InfoTooltipContent: "Path to the file that will receive the custom service output logs.",
+					})
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Label:              "Log Error Path",
+						BindModelValuePath: "service.logErrorPath",
+						InfoTooltipContent: "Path to the file that will receive the custom service error logs.",
+					})
+				</div>
+				<div class="grid grid-cols-3 place-items-center gap-2">
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Label:         "Auto Restart",
+						BindModelPath: "service.autoRestart",
+					})
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Label:         "Auto Start",
+						BindModelPath: "service.autoStart",
+					})
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Label:         "Auto Create Mapping",
+						BindModelPath: "service.autoCreateMapping",
+					})
+				</div>
+				@componentForm.MultiColumnRepeatableFieldset(
+					"envs", "Environment Variables", "", "service.envs",
+					[]componentForm.RepeatableField{
+						{InputType: "text", Id: "name", Label: "Name"},
+						{InputType: "text", Id: "value", Label: "Value"},
+					},
+				)
+				@componentForm.MultiColumnRepeatableFieldset(
+					"portBindings", "Port Bindings", "",
+					"service.portBindings", []componentForm.RepeatableField{
+						{InputType: "text", Id: "port", Label: "Public Port"},
+						{
+							InputType: "select",
+							Id:        "protocol",
+							Label:     "Protocol",
+							Options:   valueObject.ValidNetworkProtocols,
+						},
+					},
+				)
+			</div>
+		}
+	</div>
+	@componentForm.SubmitButton(
+		submitButtonId, submitButtonText, submitButtonIcon, submitButtonOnClick, false,
+	)
+}
+
+templ ServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
+	<form @submit.prevent="">
+		<div class="-mt-4 mb-4 flex justify-start gap-4">
+			@componentForm.RadioInput("", "Installable", "installables", "targetServiceType")
+			@componentForm.RadioInput("", "Custom", "custom", "targetServiceType")
+		</div>
+		<div x-show="targetServiceType === 'installables'">
+			@InstallableServiceForm(
+				"schedule-service-installation-button", "Schedule installation",
+				"ph-queue", "installService()", &installableServices,
+			)
+		</div>
+		<div x-show="targetServiceType === 'custom'">
+			@CustomServiceForm(
+				"install-service-button", "Install immediately", "ph-arrow-line-down",
+				"installService()",
+			)
+		</div>
+	</form>
+}
+
+templ ServiceInstallationModal(
+	installableServices InstallableServicesGroupedByType,
+) {
+	@componentStructural.RegularModal(
+		"Install service", "isServiceInstallationModalOpen",
+		"closeServiceInstallationModal()", "",
+	) {
+		@ServiceInstallationForm(installableServices)
+	}
+}
+
+templ UpdateInstalledServiceForm() {
+	<form @submit.prevent="">
+		<div x-show="service.nature !== 'custom'">
+			@InstallableServiceForm(
+				"update-installed-service-button", "Update service", "ph-check-fat",
+				"updateService()", nil,
+			)
+		</div>
+		<div x-show="service.nature === 'custom'">
+			@CustomServiceForm(
+				"update-installed-service-button", "Update service", "ph-check-fat",
+				"updateService()",
+			)
+		</div>
+	</form>
+}
+
+templ UpdateInstalledServiceModal() {
+	@componentStructural.RegularModal(
+		"Update service", "isUpdateInstalledServiceModalOpen",
+		"closeUpdateInstalledServiceModal()", "service.name",
+	) {
+		@UpdateInstalledServiceForm()
+	}
+}

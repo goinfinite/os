@@ -1,0 +1,333 @@
+package uiPresenter
+
+import (
+	_ "embed"
+	"github.com/goinfinite/os/src/domain/entity"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+)
+
+//go:embed state.js
+var cronsIndexAlpineState string
+
+templ CronsIndex(crons []entity.Cron) {
+	<!-- CronsIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + cronsIndexAlpineState + `</script>`)
+	<!-- CronsIndex HTML -->
+	<div x-data="crons">
+		@componentStructural.PageTitle(
+			"Crons",
+			"Manage cron jobs to automate routines and keep your environment organically configured, enabling certain operations to occur periodically without the need for manual execution.",
+			"ph-clock",
+		)
+		<div
+			id="crons-page-content"
+			hx-get="/crons/"
+			hx-trigger="submit from:form delay:500ms, delete:cron from:window delay:250ms"
+			hx-select="#crons-page-content"
+			hx-target="#crons-page-content"
+			hx-swap="outerHTML transition:true"
+		>
+			<div id="crons-table" class="card w-full">
+				@CronsTable(crons)
+			</div>
+		</div>
+		@CreateCronJobModal()
+		@UpdateCronJobModal()
+		@componentStructural.DeleteModal(
+			"isDeleteCronJobModalOpen", "closeDeleteCronJobModal()", "deleteCronJob()",
+			"cron.comment", "cron.id",
+		)
+	</div>
+}
+
+templ CronsTable(crons []entity.Cron) {
+	<!-- CronsTable -->
+	<div class="bg-os-800 rounded-md p-4">
+		<div class="bg-os-500 space-y-3 rounded-md p-4">
+			<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
+				<!-- CronsTable Header -->
+				<thead class="text-xs uppercase text-neutral-400">
+					<tr class="border-b border-neutral-500 border-opacity-90 text-center">
+						<th scope="col" class="w-1/8 px-5 py-3 text-left">Schedule(s)</th>
+						<th scope="col" class="w-3/8 px-5 py-3 text-center">Command(s)</th>
+						<th scope="col" class="w-2/8 px-5 py-3 text-center">Comment(s)</th>
+						<th scope="col" class="flex justify-end py-3">
+							<div class="mr-2">
+								@componentForm.SubmitButton(
+									"open-create-cron-job-form-button", "Schedule new job",
+									"ph-clock-clockwise", "openCreateCronJobModal()", true,
+								)
+							</div>
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					<!-- CronsTable Items -->
+					for _, cronEntity := range crons {
+						<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+							<th class="hidden">
+								@templ.JSONScript("cronEntity_"+cronEntity.Id.String(), cronEntity)
+							</th>
+							<th scope="row" class="w-1/8 px-5 py-3 text-left font-normal">{ cronEntity.Schedule.String() }</th>
+							<th scope="row" class="w-3/8 px-5 py-3 text-center font-normal">{ cronEntity.Command.String() }</th>
+							<th scope="row" class="w-2/8 px-5 py-3 text-center font-normal">
+								if cronEntity.Comment != nil {
+									{ cronEntity.Comment.String() }
+								}
+							</th>
+							<th scope="row" class="w-2/4 px-5 py-3 text-right">
+								<div class="inline-flex space-x-2">
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-pencil", "os-200", "os-100",
+										"openUpdateCronJobModal("+cronEntity.Id.String()+")",
+										"update job", "os-100",
+									)
+									@componentStructural.CircularIconButtonWithTooltip(
+										"ph-trash", "red-800", "red-600",
+										"openDeleteCronJobModal("+cronEntity.Id.String()+")",
+										"delete job", "red-500",
+									)
+								</div>
+							</th>
+						</tr>
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+}
+
+templ customScheduleInput() {
+	<!-- CustomScheduleInput -->
+	<div>
+		<div class="flex justify-center">
+			<div class="border-os-200 w-100 border-b-2 pb-2 text-3xl">
+				for _, customSchedulePart := range []string{"minute", "hour", "day", "month", "weekday"} {
+					<input
+						type="text"
+						class="-mt-3 w-20 bg-inherit text-center outline-none"
+						x-model:value={ "customScheduleParts." + customSchedulePart }
+					/>
+				}
+			</div>
+		</div>
+		<div class="mt-6 grid grid-cols-2 gap-4">
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Minute", "customScheduleParts.minute",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every minute", Value: "*"},
+					{Label: "Every 5 minutes", Value: "*/5"},
+					{Label: "Every 10 minutes", Value: "*/10"},
+					{Label: "Every 15 minutes", Value: "*/15"},
+					{Label: "Every 30 minutes", Value: "*/30"},
+					{Label: "Every 45 minutes", Value: "*/45"},
+					{Label: "At minute 0", Value: "0"},
+					{Label: "At minute 5", Value: "5"},
+					{Label: "At minute 10", Value: "10"},
+					{Label: "At minute 15", Value: "15"},
+					{Label: "At minute 30", Value: "30"},
+					{Label: "At minute 45", Value: "45"},
+				},
+			)
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Hour", "customScheduleParts.hour",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every hour", Value: "*"},
+					{Label: "Every 2 hour", Value: "*/2"},
+					{Label: "Every 6 hour", Value: "*/6"},
+					{Label: "Every 12 hour", Value: "*/12"},
+					{Label: "At midnight", Value: "0"},
+					{Label: "At 02h00 (2h00 AM)", Value: "2"},
+					{Label: "At 06h00 (6h00 AM)", Value: "6"},
+					{Label: "At midday", Value: "12"},
+					{Label: "At 14h00 (2h00 PM)", Value: "14"},
+					{Label: "At 18h00 (6h00 PM)", Value: "18"},
+				},
+			)
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Day", "customScheduleParts.day",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every day", Value: "*"},
+					{Label: "Weekly", Value: "*/7"},
+					{Label: "Every 15 days", Value: "*/15"},
+					{Label: "Every 30 days", Value: "*/30"},
+					{Label: "At day 1", Value: "1"},
+					{Label: "At day 5", Value: "5"},
+					{Label: "At day 10", Value: "10"},
+					{Label: "At day 15", Value: "15"},
+					{Label: "At day 20", Value: "20"},
+					{Label: "At day 25", Value: "25"},
+					{Label: "At day 30", Value: "30"},
+				},
+			)
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Month", "customScheduleParts.month",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every month", Value: "*"},
+					{Label: "Every 2 months", Value: "*/2"},
+					{Label: "Every 6 months", Value: "*/6"},
+					{Label: "Every year", Value: "*/12"},
+					{Label: "January", Value: "1"},
+					{Label: "February", Value: "2"},
+					{Label: "March", Value: "3"},
+					{Label: "April", Value: "4"},
+					{Label: "May", Value: "5"},
+					{Label: "June", Value: "6"},
+					{Label: "July", Value: "7"},
+					{Label: "August", Value: "8"},
+					{Label: "September", Value: "9"},
+					{Label: "October", Value: "10"},
+					{Label: "November", Value: "11"},
+					{Label: "December", Value: "12"},
+				},
+			)
+			@componentForm.DualSelectInputWithLabelValueInputField(
+				"text", "", "Week Day", "customScheduleParts.weekday",
+				[]componentForm.SelectLabelValuePair{
+					{Label: "Custom", Value: ""},
+					{Label: "Every day", Value: "*"},
+					{Label: "Monday to Friday", Value: "1-5"},
+					{Label: "Only weekends", Value: "6-0"},
+					{Label: "Every Monday", Value: "1"},
+					{Label: "Every Tuesday", Value: "2"},
+					{Label: "Every Wednesday", Value: "3"},
+					{Label: "Every Thursday", Value: "4"},
+					{Label: "Every Friday", Value: "5"},
+					{Label: "Every Saturday", Value: "6"},
+					{Label: "Every Sunday", Value: "7"},
+				},
+			)
+		</div>
+	</div>
+}
+
+templ CreateCronJobForm() {
+	<!-- CreateCronJobForm -->
+	<form
+		hx-post="/api/v1/cron/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="-mt-4 mb-3 space-x-3">
+			@componentForm.RadioInput("", "Predefined", "predefined", "selectedScheduleType")
+			@componentForm.RadioInput("", "Custom", "custom", "selectedScheduleType")
+		</div>
+		<div class="mb-6 space-y-6">
+			<input
+				name="schedule"
+				type="hidden"
+				:value="selectedScheduleType === 'predefined' ? cron.schedule : customSchedule"
+			/>
+			<template x-if="selectedScheduleType === 'predefined'">
+				@componentForm.SelectInputWithLabelValuePair(
+					"", "Schedule", "cron.schedule", []componentForm.SelectLabelValuePair{
+						{Label: "Hourly", Value: "@hourly"},
+						{Label: "Every 3 hours", Value: "0 */3 * * *"},
+						{Label: "Every 6 hours", Value: "0 */6 * * *"},
+						{Label: "Every 12 hours", Value: "0 */12 * * *"},
+						{Label: "Daily", Value: "@daily"},
+						{Label: "Weekly", Value: "@weekly"},
+						{Label: "Monthly", Value: "@monthly"},
+						{Label: "Annually", Value: "@annually"},
+						{Label: "Reboot", Value: "@reboot"},
+					}, false,
+				)
+			</template>
+			<template x-if="selectedScheduleType === 'custom'">
+				@customScheduleInput()
+			</template>
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Id:                 "command",
+				Label:              "Command",
+				BindModelValuePath: "cron.command",
+			})
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Id:                 "comment",
+				Label:              "Comment",
+				BindModelValuePath: "cron.comment",
+			})
+		</div>
+		@componentForm.SubmitButton(
+			"create-cron-job-button", "Schedule", "ph-clock-countdown",
+			"closeCreateCronJobModal()", false,
+		)
+	</form>
+}
+
+templ CreateCronJobModal() {
+	@componentStructural.RegularModal(
+		"Create Job", "isCreateCronJobModalOpen", "closeCreateCronJobModal()", "",
+	) {
+		@CreateCronJobForm()
+	}
+}
+
+templ UpdateCronJobForm() {
+	<!-- UpdateCronJobForm -->
+	<form
+		hx-put="/api/v1/cron/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="-mt-4 mb-3 space-x-3">
+			@componentForm.RadioInput("", "Predefined", "predefined", "selectedScheduleType")
+			@componentForm.RadioInput("", "Custom", "custom", "selectedScheduleType")
+		</div>
+		<div class="mb-6 space-y-6">
+			<input name="id" type="hidden" :value="cron.id"/>
+			<input
+				name="schedule"
+				type="hidden"
+				:value="selectedScheduleType === 'predefined' ? cron.schedule : customSchedule"
+			/>
+			<template x-if="selectedScheduleType === 'predefined'">
+				@componentForm.SelectInputWithLabelValuePair(
+					"", "Schedule", "cron.schedule", []componentForm.SelectLabelValuePair{
+						{Label: "Hourly", Value: "@hourly"},
+						{Label: "Every 3 hours", Value: "0 */3 * * *"},
+						{Label: "Every 6 hours", Value: "0 */6 * * *"},
+						{Label: "Every 12 hours", Value: "0 */12 * * *"},
+						{Label: "Daily", Value: "@daily"},
+						{Label: "Weekly", Value: "@weekly"},
+						{Label: "Monthly", Value: "@monthly"},
+						{Label: "Annually", Value: "@annually"},
+						{Label: "Reboot", Value: "@reboot"},
+					}, false,
+				)
+			</template>
+			<template x-if="selectedScheduleType === 'custom'">
+				@customScheduleInput()
+			</template>
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Id:                 "command",
+				Label:              "Command",
+				BindModelValuePath: "cron.command",
+			})
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Id:                 "comment",
+				Label:              "Comment",
+				BindModelValuePath: "cron.comment",
+			})
+		</div>
+		@componentForm.SubmitButton(
+			"update-cron-job-button", "Update", "ph-clock-countdown",
+			"closeUpdateCronJobModal()", false,
+		)
+	</form>
+}
+
+templ UpdateCronJobModal() {
+	@componentStructural.RegularModal(
+		"Update Job", "isUpdateCronJobModalOpen", "closeUpdateCronJobModal()",
+		"cron.id",
+	) {
+		@UpdateCronJobForm()
+	}
+}

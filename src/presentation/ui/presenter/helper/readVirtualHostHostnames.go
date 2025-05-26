@@ -1,4 +1,4 @@
-package presenterHelper
+package uiPresenterHelper
 
 import (
 	"errors"

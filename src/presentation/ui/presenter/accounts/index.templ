@@ -1,0 +1,332 @@
+package uiPresenter
+
+import (
+	_ "embed"
+	"github.com/goinfinite/os/src/domain/entity"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"strconv"
+)
+
+//go:embed state.js
+var accountsIndexAlpineState string
+
+templ AccountsIndex(accountsEntities []entity.Account) {
+	<!-- AccountsIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + accountsIndexAlpineState + `</script>`)
+	<!-- AccountsIndex HTML -->
+	<div x-data="accounts">
+		@componentStructural.PageTitle(
+			"Accounts",
+			"Create and manage accounts with their own API keys, allowing each one to access and use every Infinite OS resource individually.",
+			"ph-users-three",
+		)
+		<div
+			id="accounts-page-content"
+			hx-get="/accounts/"
+			hx-trigger="submit from:form delay:500ms, refresh:accounts-page-content from:window delay:250ms, delete:account from:window delay:250ms, delete:secure-access-public-key from:window delay:250ms"
+			hx-select="#accounts-page-content"
+			hx-target="#accounts-page-content"
+			hx-swap="outerHTML transition:true"
+			class="flex flex-col"
+		>
+			<div id="accounts-table" class="card w-full">
+				@AccountsTable(accountsEntities)
+			</div>
+		</div>
+		@CreateAccountModal()
+		@UpdateAccountModal()
+		@UpdateApiKeyModal()
+		@componentStructural.DeleteModal(
+			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
+			"account.username", "account.id",
+		)
+		@SecureAccessPublicKeysModal()
+		@CreateSecureAccessPublicKeyModal()
+		@componentStructural.DeleteModal(
+			"isDeleteSecureAccessPublicKeyModalOpen", "closeDeleteSecureAccessPublicKeyModal()",
+			"deleteSecureAccessPublicKey(); closeSecureAccessPublicKeysModal()",
+			"secureAccessPublicKey.name", "secureAccessPublicKey.id",
+		)
+	</div>
+}
+
+templ AccountsTable(accountsEntities []entity.Account) {
+	<!-- AccountsTable -->
+	<div class="space-y-3 rounded-lg bg-neutral-950/20 p-5 pt-3">
+		<table class="w-full table-auto border-collapse transition-all duration-300 ease-in-out">
+			<!-- AccountsTable Header -->
+			<thead class="text-xs uppercase text-neutral-400">
+				<tr class="*:py-3 border-b border-neutral-500/50 text-center">
+					<th class="w-1/5 text-left">Username(s)</th>
+					<th class="w-1/5">UserId(s)/GroupId(s)</th>
+					<th class="w-1/5">Home Directory</th>
+					<th class="w-1/5">Created At</th>
+					<th class="float-right">
+						@componentForm.SubmitButton(
+							"open-create-account-form-button", "Create account",
+							"ph-user-plus", "openCreateAccountModal()", true,
+						)
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				<!-- AccountsTable Items -->
+				for _, accountEntity := range accountsEntities {
+					<tr class="*:px-5 *:py-3 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
+						@templ.JSONScript("secureAccessPublicKeys_"+accountEntity.Id.String(), accountEntity.SecureAccessPublicKeys)
+						<td class="w-1/5 text-left">
+							<div class="flex items-center">
+								{ accountEntity.Username.String() }
+								if accountEntity.IsSuperAdmin {
+									<div class="group/accountType translate-y-10% relative top-1/2 ml-2">
+										<div class="bg-infinite-500 invisible absolute left-1/2 -mt-8 w-max -translate-x-1/2 rounded p-1.5 text-xs group-hover/accountType:visible group-hover/accountType:block">
+											super admin
+										</div>
+										<i class="ph-bold ph-shield-star text-infinite-500"></i>
+									</div>
+								}
+							</div>
+						</td>
+						<td class="w-1/5">{ accountEntity.Id.String() + "/" + accountEntity.GroupId.String() }</td>
+						<td class="w-1/5">{ accountEntity.HomeDirectory.String() }</td>
+						<td class="w-1/5">{ accountEntity.CreatedAt.ReadDateOnly() }</td>
+						<td class="float-right">
+							<div class="flex gap-2">
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-gear", "os-200", "os-100",
+									"openUpdateAccountModal("+accountEntity.Id.String()+", "+strconv.FormatBool(accountEntity.IsSuperAdmin)+")",
+									"update account", "os-100",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-key", "os-200", "os-100",
+									"openUpdateApiKeyModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+									"update api key", "os-100",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-fingerprint", "os-200", "os-100",
+									"openSecureAccessPublicKeysModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+									"view secure access public keys", "os-100",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-trash", "red-800", "red-600",
+									"openDeleteAccountModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
+									"delete account", "red-500",
+								)
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ CreateAccountForm() {
+	<!-- CreateAccountForm -->
+	<form
+		hx-post="/api/v1/account/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@htmx:after-request="$dispatch('refresh:accounts-page-content')"
+	>
+		<div class="mb-6 space-y-6">
+			<div class="flex items-center justify-center gap-2">
+				@componentForm.InputField(componentForm.InputFieldDto{
+					Type:               "text",
+					Id:                 "username",
+					Label:              "Username",
+					BindModelValuePath: "account.username",
+				})
+				<div class="flex w-1/4 justify-center">
+					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+						Id:            "isSuperAdmin",
+						Label:         "Super Admin",
+						BindModelPath: "account.isSuperAdmin",
+					})
+				</div>
+			</div>
+			@componentForm.PasswordInput(componentForm.PasswordInputDto{
+				Id:                                "password",
+				Label:                             "Password",
+				BindModelPath:                     "account.password",
+				ShouldIncludeGenRandomPassBtn:     true,
+				ShouldIncludePassStrengthCriteria: true,
+			})
+		</div>
+		@componentForm.SubmitButton(
+			"create-account-button", "Create", "ph-check-fat",
+			"closeCreateAccountModal()", false,
+		)
+	</form>
+}
+
+templ CreateAccountModal() {
+	@componentStructural.RegularModal(
+		"Create Account", "isCreateAccountModalOpen", "closeCreateAccountModal()", "",
+	) {
+		@CreateAccountForm()
+	}
+}
+
+templ UpdateAccountForm() {
+	<!-- UpdateAccountForm -->
+	<form
+		hx-put="/api/v1/account/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6">
+			<input type="hidden" name="id" x-bind:value="account.id"/>
+			@componentForm.PasswordInput(componentForm.PasswordInputDto{
+				Id:                                "password",
+				Label:                             "Password",
+				BindModelPath:                     "account.password",
+				ShouldIncludeGenRandomPassBtn:     true,
+				ShouldIncludePassStrengthCriteria: true,
+			})
+			<div class="flex justify-end">
+				@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+					Id:            "isSuperAdmin",
+					Label:         "Super Admin",
+					BindModelPath: "account.isSuperAdmin",
+				})
+			</div>
+		</div>
+		@componentForm.SubmitButton(
+			"update-account-button", "Update", "ph-check-fat",
+			"closeUpdateAccountModal()", false,
+		)
+	</form>
+}
+
+templ UpdateAccountModal() {
+	@componentStructural.RegularModal(
+		"Update Account", "isUpdateAccountModalOpen", "closeUpdateAccountModal()",
+		"account.id",
+	) {
+		@UpdateAccountForm()
+	}
+}
+
+templ UpdateApiKeyContent() {
+	<!-- UpdateApiKeyContent -->
+	<div class="mb-6">
+		@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
+			Id:                 "apiKey",
+			Name:               "apiKey",
+			Label:              "API Key",
+			BindModelValuePath: "account.apiKey",
+		})
+		<div x-show="account.apiKey !== ''">
+			@componentStructural.Alert(
+				componentStructural.AlertTypeWarning,
+				"This API key will not be stored on the server side. Please save it securely, as you will not be able to retrieve it again if lost. If you need to access your API key in the future, you will need to generate a new one.",
+			)
+		</div>
+	</div>
+	@componentForm.SubmitButton(
+		"generate-new-api-key", "Generate new api key", "ph-key", "updateApiKey()",
+		false,
+	)
+}
+
+templ UpdateApiKeyModal() {
+	@componentStructural.RegularModal(
+		"Update Api Key", "isUpdateApiKeyModalOpen", "closeUpdateApiKeyModal()",
+		"account.username",
+	) {
+		@UpdateApiKeyContent()
+	}
+}
+
+templ SecureAccessPublicKeysList() {
+	<!-- SecureAccessPublicKeysList -->
+	@componentStructural.Alert(
+		componentStructural.AlertTypeInfo,
+		"These keys will be used by the secure remote connection service for user authentication. If the OpenSSH service is not installed, this connection will not be possible, making the keys irrelevant. But you cant still manage them.",
+	)
+	<div class="mt-2">
+		<div id="account-secure-access-public-keys-list">
+			<template x-for="key of account.secureAccessPublicKeys">
+				<div class="bg-os-500 mt-2 flex rounded-md p-4">
+					<div class="w-90% flex-col">
+						<div class="flex items-center">
+							<i class="ph-duotone ph-key mr-2 text-lg"></i>
+							<p class="mb-0.5" x-text="key.name"></p>
+						</div>
+						<p x-text="key.fingerprint" class="max-w-150 text-xs italic text-slate-500"></p>
+					</div>
+					<div class="w-10% flex flex-col justify-center">
+						<div class="ml-auto">
+							@componentStructural.CircularIconButtonWithTooltip(
+								"ph-trash", "red-800", "red-600",
+								"openDeleteSecureAccessPublicKeyModal(key.id, key.name)",
+								"delete public key", "red-500",
+							)
+						</div>
+					</div>
+				</div>
+			</template>
+		</div>
+		<div class="flex">
+			<div class="ml-auto mt-2">
+				@componentForm.SubmitButton(
+					"open-create-secure-access-public-key-modal",
+					"upload secure access public key", "ph-fingerprint",
+					"openCreateSecureAccessPublicKeyModal()", true,
+				)
+			</div>
+		</div>
+	</div>
+}
+
+templ SecureAccessPublicKeysModal() {
+	@componentStructural.RegularModal(
+		"Secure Access Public Keys", "isSecureAccessPublicKeysModalOpen",
+		"closeSecureAccessPublicKeysModal()", "account.username",
+	) {
+		@SecureAccessPublicKeysList()
+	}
+}
+
+templ CreateSecureAccessPublicKeyForm() {
+	<!-- CreateSecureAccessPublicKeyForm -->
+	<form
+		hx-post="/api/v1/account/secure-access-public-key"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+	>
+		<div class="mb-6 space-y-6">
+			<input type="hidden" name="accountId" x-bind:value="account.id"/>
+			@componentForm.InputField(componentForm.InputFieldDto{
+				Type:               "text",
+				Id:                 "name",
+				Label:              "Key Name (Aliases)",
+				BindModelValuePath: "secureAccessPublicKey.name",
+				InfoTooltipContent: "Optional as long as there is a name in the key's content. Otherwise, must be provided.",
+			})
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Id:                 "content",
+				Label:              "Key Content",
+				BindModelValuePath: "secureAccessPublicKey.content",
+				InfoTooltipContent: "If no name is provide, the name from the content added here will be used.",
+			})
+		</div>
+		@componentForm.SubmitButton(
+			"create-new-secure-access-public-key", "upload secure access public key",
+			"ph-check-fat",
+			"closeCreateSecureAccessPublicKeyModal(); closeSecureAccessPublicKeysModal()",
+			false,
+		)
+	</form>
+}
+
+templ CreateSecureAccessPublicKeyModal() {
+	@componentStructural.RegularModal(
+		"Upload Secure Access Key", "isCreateSecureAccessPublicKeyModalOpen",
+		"closeCreateSecureAccessPublicKeyModal()", "account.username",
+	) {
+		@CreateSecureAccessPublicKeyForm()
+	}
+}
