@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, passwordInputAlpineState);
+});
+
+function passwordInputAlpineState() {
   Alpine.data("passwordInput", () => ({
-    // Random Password Generator States
+    // RandomPasswordGeneratorState
     isPasswordReadable: false,
     generateRandomPassword() {
       const passwordContent = Infinite.CreateRandomPassword();
@@ -56,4 +60,4 @@ document.addEventListener("alpine:init", () => {
       this.passwordStrengthPercentage = passwordStrengthPercentage;
     },
   }));
-});
+}

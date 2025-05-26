@@ -1,4 +1,8 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, multiSelectInputAlpineState);
+});
+
+function multiSelectInputAlpineState() {
   Alpine.data("multiSelectInput", () => ({
     getFormattedSelectedItems(bindSelectedItemsPath) {
       if (bindSelectedItemsPath.length == 0) {
@@ -24,4 +28,4 @@ document.addEventListener("alpine:init", () => {
       this.shouldExpandOptions = true;
     },
   }));
-});
+}

@@ -1,12 +1,12 @@
-document.addEventListener("alpine:init", () => {
-  const selectedVhostHostname = document.getElementById(
-    "selectedVhostHostname"
-  ).value;
-  const selectedRuntimeType = document.getElementById(
-    "selectedRuntimeType"
-  ).value;
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, runtimesIndexAlpineState);
+});
 
+function runtimesIndexAlpineState() {
   Alpine.data("runtimes", () => ({
+    // PrimaryState
+    selectedVhostHostname: "",
+    selectedRuntimeType: "",
     vhostHostname: selectedVhostHostname,
     reloadRuntimePageContent(vhostHostname, runtimeType) {
       htmx.ajax(
@@ -23,11 +23,20 @@ document.addEventListener("alpine:init", () => {
         }
       );
     },
+    init() {
+      this.selectedVhostHostname = document.getElementById(
+        "selectedVhostHostname"
+      ).value;
+      this.selectedRuntimeType = document.getElementById(
+        "selectedRuntimeType"
+      ).value;
+    },
+
     updateSelectedVhostHostname(vhostHostname) {
-      this.reloadRuntimePageContent(vhostHostname, selectedRuntimeType);
+      this.reloadRuntimePageContent(vhostHostname, this.selectedRuntimeType);
     },
     updateSelectedRuntimeType(runtimeType) {
-      this.reloadRuntimePageContent(selectedVhostHostname, runtimeType);
+      this.reloadRuntimePageContent(this.selectedVhostHostname, runtimeType);
     },
   }));
-});
+}

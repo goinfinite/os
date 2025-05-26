@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, phpIndexAlpineState);
+});
+
+function phpIndexAlpineState() {
   Alpine.data("php", () => ({
-    // Primary States
+    // PrimaryState
     phpConfigs: {},
     resetPrimaryStates() {
       phpConfigsElement = document.getElementById("phpConfigs");
@@ -24,10 +28,10 @@ document.addEventListener("alpine:init", () => {
       ).then(() => this.$dispatch("refresh:runtimes-page-content"));
     },
 
-    // Auxiliary States
+    // AuxiliaryState
     selectedPhpVerticalTab: "modules",
 
-    // Modal States
+    // ModalState
     isUpdatePhpVersionModalOpen: false,
     openUpdatePhpVersionModal() {
       this.isUpdatePhpVersionModalOpen = true;
@@ -45,4 +49,4 @@ document.addEventListener("alpine:init", () => {
         .then(() => this.$dispatch("refresh:runtimes-page-content"));
     },
   }));
-});
+}

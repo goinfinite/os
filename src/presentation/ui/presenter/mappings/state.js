@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, mappingsIndexAlpineState);
+});
+
+function mappingsIndexAlpineState() {
   Alpine.data("mappings", () => ({
-    // Primary states
+    // PrimaryState
     virtualHost: {},
     get vhostHostnameWithTrailingSlash() {
       return this.virtualHost.hostname + "/";
@@ -30,7 +34,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
-    // Auxiliary states
+    // AuxiliaryState
     isAdvancedSettingsClosed: true,
     isCreateMappingFromVirtualHost: false,
     resetAuxiliaryStates() {
@@ -60,7 +64,7 @@ document.addEventListener("alpine:init", () => {
       return this.virtualHost.hostname == "";
     },
 
-    // Modal states
+    // ModalState
     isCreateVirtualHostModalOpen: false,
     openCreateVirtualHostModal() {
       this.resetPrimaryStates();
@@ -157,4 +161,4 @@ document.addEventListener("alpine:init", () => {
         .then(() => this.$dispatch("refresh:mappings-table"));
     },
   }));
-});
+}

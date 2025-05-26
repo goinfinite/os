@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, fileManagerIndexAlpineState);
+});
+
+function fileManagerIndexAlpineState() {
   Alpine.data("fileManager", () => ({
-    // Primary States
+    // PrimaryState
     currentWorkingDirPath: "",
     file: {},
     resetPrimaryStates() {
@@ -23,7 +27,7 @@ document.addEventListener("alpine:init", () => {
       this.desiredWorkingDirPath = this.currentWorkingDirPath;
     },
 
-    // Auxiliary States
+    // AuxiliaryState
     desiredWorkingDirPath: "",
     reloadFileManagerContent() {
       this.resetAuxiliaryStates();
@@ -193,7 +197,7 @@ document.addEventListener("alpine:init", () => {
       this.selectedFileNames = [];
     },
 
-    // Code Editor States
+    // CodeEditorState
     codeEditorInstance: null,
     codeEditorFontSize: 12,
     codeEditorMaxFileSize: 5242880,
@@ -284,7 +288,7 @@ document.addEventListener("alpine:init", () => {
       this.codeEditorInstance.destroy();
     },
 
-    // Generic Modal States
+    // ModalState
     isCreateFileModalOpen: false,
     openCreateFileModal() {
       this.resetPrimaryStates();
@@ -429,4 +433,4 @@ document.addEventListener("alpine:init", () => {
       this.isCompressFilesModalOpen = false;
     },
   }));
-});
+}

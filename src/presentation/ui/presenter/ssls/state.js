@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, sslsIndexAlpineState);
+});
+
+function sslsIndexAlpineState() {
   Alpine.data("ssls", () => ({
-    // Primary states
+    // PrimaryState
     sslPair: {},
     resetPrimaryStates() {
       this.sslPair = {
@@ -15,7 +19,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
-    // Auxiliary states
+    // AuxiliaryState
     get shouldDisableImportSslCertificateSubmitButton() {
       return (
         this.sslPair.virtualHostsHostnames.length == 0 ||
@@ -36,7 +40,7 @@ document.addEventListener("alpine:init", () => {
       Infinite.DownloadFile(pemFileNameWithExtension, pemFileContent);
     },
 
-    // Modal states
+    // ModalState
     isImportSslCertificateModalOpen: false,
     openImportSslCertificateModal(vhostHostname = "") {
       this.resetPrimaryStates();
@@ -95,4 +99,4 @@ document.addEventListener("alpine:init", () => {
         .finally(() => this.$store.main.refreshScheduledTasksPopover());
     },
   }));
-});
+}

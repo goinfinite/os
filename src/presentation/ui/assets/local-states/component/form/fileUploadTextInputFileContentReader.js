@@ -1,4 +1,11 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(
+    loadEvent,
+    fileUploadTextInputFileContentReaderAlpineState
+  );
+});
+
+function fileUploadTextInputFileContentReaderAlpineState() {
   Alpine.data("fileUploadTextInputFileContentReader", () => ({
     uploadedFileName: "",
     get uploadedFileNameLabel() {
@@ -27,4 +34,4 @@ document.addEventListener("alpine:init", () => {
       reader.readAsText(uploadedFile);
     },
   }));
-});
+}

@@ -1,4 +1,8 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, dropzoneAlpineState);
+});
+
+function dropzoneAlpineState() {
   Alpine.data("dropzone", () => ({
     files: [],
     updateFileInput() {
@@ -27,4 +31,4 @@ document.addEventListener("alpine:init", () => {
       });
     },
   }));
-});
+}

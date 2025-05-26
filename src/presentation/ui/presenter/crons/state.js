@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, cronsIndexAlpineState);
+});
+
+function cronsIndexAlpineState() {
   Alpine.data("crons", () => ({
-    // Primary states
+    // PrimaryState
     cron: {},
     resetPrimaryStates() {
       this.cron = {
@@ -14,7 +18,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
-    // Auxiliary states
+    // AuxiliaryState
     selectedScheduleType: "predefined",
     customScheduleParts: {},
     get customSchedule() {
@@ -37,7 +41,7 @@ document.addEventListener("alpine:init", () => {
       };
     },
 
-    // Modal states
+    // ModalState
     isCreateCronJobModalOpen: false,
     openCreateCronJobModal() {
       this.resetPrimaryStates();
@@ -114,4 +118,4 @@ document.addEventListener("alpine:init", () => {
         });
     },
   }));
-});
+}

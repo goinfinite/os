@@ -1,10 +1,10 @@
-document.addEventListener("alpine:init", () => {
-  const installedServicesCurrentPageNumber = document.getElementById(
-    "installedServicesCurrentPageNumber"
-  ).value;
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, overviewIndexAlpineState);
+});
 
+function overviewIndexAlpineState() {
   Alpine.data("marketplace", () => ({
-    // Primary States
+    // PrimaryState
     marketplaceItem: {},
     get hostnameWithTrailingSlash() {
       return this.marketplaceItem.hostname + "/";
@@ -20,6 +20,7 @@ document.addEventListener("alpine:init", () => {
       }
       return dataFieldsAsString.slice(0, -1);
     },
+    installedServicesCurrentPageNumber: 0,
     resetPrimaryStates() {
       this.marketplaceItem = {
         id: "",
@@ -31,9 +32,12 @@ document.addEventListener("alpine:init", () => {
     },
     init() {
       this.resetPrimaryStates();
+      this.installedServicesCurrentPageNumber = document.getElementById(
+        "installedServicesCurrentPageNumber"
+      ).value;
     },
 
-    // Auxiliary States
+    // AuxiliaryState
     selectedMarketplaceItemType: "apps",
     selectedMarketplaceItemId: 0,
     updateSelectedMarketplaceItem(marketplaceItemId) {
@@ -57,7 +61,7 @@ document.addEventListener("alpine:init", () => {
       this.selectedMarketplaceItemId = 0;
     },
 
-    // Modal States
+    // ModalState
     isMarketplaceItemInstallationModalOpen: false,
     openMarketplaceItemInstallationModal() {
       this.resetPrimaryStates();
@@ -91,7 +95,7 @@ document.addEventListener("alpine:init", () => {
   }));
 
   Alpine.data("resourceUsage", () => ({
-    // Auxiliary States
+    // AuxiliaryState
     refreshIntervalSecs: 20,
     async updateResourceUsageCharts(chartInstance) {
       const o11yCurrentUsageResource = await fetch("/api/v1/o11y/overview/", {
@@ -297,7 +301,7 @@ document.addEventListener("alpine:init", () => {
   }));
 
   Alpine.data("services", () => ({
-    // Primary States
+    // PrimaryState
     service: {},
     resetPrimaryStates() {
       this.service = {
@@ -323,7 +327,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
-    // Auxiliary States
+    // AuxiliaryState
     installedServicesFilters: {
       name: "",
       nature: "",
@@ -331,7 +335,7 @@ document.addEventListener("alpine:init", () => {
       status: "",
     },
     installedServicesPagination: {
-      pageNumber: installedServicesCurrentPageNumber,
+      pageNumber: this.installedServicesCurrentPageNumber,
       itemsPerPage: 5,
     },
     reloadInstalledServicesTable() {
@@ -384,7 +388,7 @@ document.addEventListener("alpine:init", () => {
         status: "",
       };
       this.installedServicesPagination = {
-        pageNumber: installedServicesCurrentPageNumber,
+        pageNumber: this.installedServicesCurrentPageNumber,
         itemsPerPage: 5,
       };
       this.targetServiceType = "installables";
@@ -393,7 +397,7 @@ document.addEventListener("alpine:init", () => {
       this.selectedInstallableServiceAvailableVersions = [];
     },
 
-    // Modal States
+    // ModalState
     isServiceInstallationModalOpen: false,
     openServiceInstallationModal() {
       this.resetPrimaryStates();
@@ -527,4 +531,4 @@ document.addEventListener("alpine:init", () => {
         .finally(() => this.closeUninstallServiceModal());
     },
   }));
-});
+}

@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, marketplaceIndexAlpineState);
+});
+
+function marketplaceIndexAlpineState() {
   Alpine.data("marketplace", () => ({
-    // Primary States
+    // PrimaryState
     marketplaceItem: {},
     get hostnameWithTrailingSlash() {
       return this.marketplaceItem.hostname + "/";
@@ -29,7 +33,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
-    // Auxiliary States
+    // AuxiliaryState
     selectedMarketplaceCatalogVerticalTab: "apps",
     updateSelectedMarketplaceCatalogVerticalTab(tabName) {
       this.selectedMarketplaceCatalogVerticalTab = tabName;
@@ -55,7 +59,7 @@ document.addEventListener("alpine:init", () => {
       this.imageLightbox.imageUrl = "";
     },
 
-    // Modal States
+    // ModalState
     isScheduleSelectedMarketplaceItemInstallationModalOpen: false,
     openScheduleSelectedMarketplaceItemInstallationModal(catalogItemId) {
       this.resetPrimaryStates();
@@ -104,4 +108,4 @@ document.addEventListener("alpine:init", () => {
         });
     },
   }));
-});
+}

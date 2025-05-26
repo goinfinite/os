@@ -1,5 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, mappingSecurityRulesIndexAlpineState);
+});
+
+function mappingSecurityRulesIndexAlpineState() {
   Alpine.data("mappingSecurityRules", () => ({
+    // PrimaryState
     mappingSecurityRule: {},
     resetPrimaryStates() {
       this.mappingSecurityRule = {
@@ -21,6 +26,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
+    // ModalState
     isCreateMappingSecurityRuleModalOpen: false,
     openCreateMappingSecurityRuleModal() {
       this.resetPrimaryStates();
@@ -69,4 +75,4 @@ document.addEventListener("alpine:init", () => {
         .then(() => this.$dispatch("refresh:mapping-security-rules-table"));
     },
   }));
-});
+}

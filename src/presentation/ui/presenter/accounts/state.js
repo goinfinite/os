@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, accountsIndexAlpineState);
+});
+
+function accountsIndexAlpineState() {
   Alpine.data("accounts", () => ({
-    // Primary states
+    // PrimaryState
     account: {},
     secureAccessPublicKey: {},
     resetPrimaryStates() {
@@ -23,7 +27,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
-    // Modal states
+    // ModalState
     isCreateAccountModalOpen: false,
     openCreateAccountModal() {
       this.resetPrimaryStates();
@@ -126,4 +130,4 @@ document.addEventListener("alpine:init", () => {
         .finally(() => this.closeDeleteAccountModal());
     },
   }));
-});
+}

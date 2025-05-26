@@ -1,6 +1,10 @@
-document.addEventListener("alpine:init", () => {
+["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  document.addEventListener(loadEvent, databasesIndexAlpineState);
+});
+
+function databasesIndexAlpineState() {
   Alpine.data("databases", () => ({
-    // Primary states
+    // PrimaryState
     database: {},
     databaseUser: {},
     resetPrimaryStates() {
@@ -18,7 +22,7 @@ document.addEventListener("alpine:init", () => {
       this.resetPrimaryStates();
     },
 
-    // Auxiliary states
+    // AuxiliaryState
     changeSelectedDatabaseType(databaseType) {
       htmx.ajax("GET", "/databases/?dbType=" + databaseType, {
         select: "#databases-page-content",
@@ -37,7 +41,7 @@ document.addEventListener("alpine:init", () => {
       );
     },
 
-    // Modal states
+    // ModalState
     isCreateDatabaseModalOpen: false,
     openCreateDatabaseModal() {
       this.resetPrimaryStates();
@@ -106,4 +110,4 @@ document.addEventListener("alpine:init", () => {
         });
     },
   }));
-});
+}
