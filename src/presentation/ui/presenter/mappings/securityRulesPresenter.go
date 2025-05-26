@@ -7,7 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
-	"github.com/goinfinite/os/src/presentation/ui/layout"
+	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/labstack/echo/v4"
 )
 
@@ -42,7 +42,7 @@ func (presenter *MappingSecurityRulesPresenter) Handler(c echo.Context) error {
 	}
 
 	pageContent := MappingSecurityRulesIndex(secRulesReadResponse.MappingSecurityRules)
-	return layout.Renderer(layout.LayoutRendererSettings{
+	return uiLayout.Renderer(uiLayout.LayoutRendererSettings{
 		EchoContext:  c,
 		PageContent:  pageContent,
 		ResponseCode: http.StatusOK,

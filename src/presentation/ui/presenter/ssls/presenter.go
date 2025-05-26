@@ -7,7 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/service"
-	"github.com/goinfinite/os/src/presentation/ui/layout"
+	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
@@ -54,7 +54,7 @@ func (presenter *SslsPresenter) Handler(c echo.Context) error {
 	}
 
 	pageContent := SslsIndex(sslPairsReadResponse.SslPairs, vhostHostnames)
-	return layout.Renderer(layout.LayoutRendererSettings{
+	return uiLayout.Renderer(uiLayout.LayoutRendererSettings{
 		EchoContext:  c,
 		PageContent:  pageContent,
 		ResponseCode: http.StatusOK,
