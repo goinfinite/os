@@ -65,7 +65,7 @@ templ SidebarMiddle() {
 					hx-target="#page-content"
 					hx-push-url="true"
 					hx-swap="outerHTML transition:true"
-					@htmx:after-request="$dispatch('alpine:reload')"
+					@htmx:after-request={ "$dispatch('alpine:reload'); activeItemPath = " + sidebarItem.Link }
 					class="group relative flex cursor-pointer items-center gap-2"
 					title={ sidebarItem.Label }
 				>
@@ -76,7 +76,7 @@ templ SidebarMiddle() {
 						></i>
 					</div>
 					<span
-						class="group-hover:text-secondary-500 text-sm"
+						class="group-hover:text-secondary-500 select-none text-sm"
 						:class={ "{'text-secondary-500' : isActivePath('" + sidebarItem.Link + "'), 'hidden' : isSidebarCollapsed}" }
 					>
 						{ sidebarItem.Label }
