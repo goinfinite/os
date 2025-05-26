@@ -1,6 +1,6 @@
 package componentForm
 
-import "github.com/goinfinite/os/src/infra/envs"
+import _ "embed"
 
 templ SelectInput(
 	id, label, bindModelPath, onSelect string,
@@ -126,12 +126,15 @@ templ SelectInputWithLabelValuePair(
 	</div>
 }
 
+//go:embed multiSelectInputState.js
+var multiSelectInputAlpineState string
+
 templ MultiSelectInput(
 	id, label, bindModelPath string,
 	options []string,
 ) {
 	<!-- MultiSelectInput JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/component/form/multiSelectInput.js" }></script>
+	@templ.Raw(`<script type="text/javascript">` + multiSelectInputAlpineState + `</script>`)
 	<!-- MultiSelectInput HTML -->
 	<div
 		class="relative w-full"

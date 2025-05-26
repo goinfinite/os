@@ -1,7 +1,13 @@
 package componentForm
 
 script FileUploadTextInputFileContentReaderLocalState() {
-	document.addEventListener('alpine:init', () => {
+	["alpine:init", "alpine:reload"].forEach((loadEvent) => {
+  	document.addEventListener(
+			loadEvent, fileUploadTextInputFileContentReaderAlpineState,
+		);
+	});
+
+	function fileUploadTextInputFileContentReaderAlpineState() {
 		Alpine.data('fileUploadTextInputFileContentReader', () => ({
 			uploadedFileName: '',
 			get uploadedFileNameLabel() {
@@ -30,7 +36,7 @@ script FileUploadTextInputFileContentReaderLocalState() {
 				reader.readAsText(uploadedFile);
 			}
 		}));
-	});
+	}
 }
 
 templ FileUploadTextInputFileContentReader(
@@ -49,7 +55,7 @@ templ FileUploadTextInputFileContentReader(
 		/>
 		<div
 			@click={ "$refs." + id + "FileInput.click()" }
-			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-default cursor-pointer rounded-md border px-3 pt-2 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
+			class="bg-os-300 border-os-200 hover:border-os-100 autofill:bg-os-300 focus:border-os-50 peer relative h-10 w-full cursor-pointer rounded-md border px-3 pt-2 text-sm text-slate-400 placeholder-transparent outline-none transition-all"
 		>
 			<label class="cursor-pointer" x-text="uploadedFileNameLabel"></label>
 		</div>

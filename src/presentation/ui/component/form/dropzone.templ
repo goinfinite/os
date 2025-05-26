@@ -1,6 +1,9 @@
 package componentForm
 
-import "github.com/goinfinite/os/src/infra/envs"
+import _ "embed"
+
+//go:embed dropzoneState.js
+var dropzoneAlpineState string
 
 type DropzoneInputDto struct {
 	Id                 string
@@ -11,7 +14,7 @@ type DropzoneInputDto struct {
 
 templ Dropzone(inputDto DropzoneInputDto) {
 	<!-- Dropzone JavaScript -->
-	<script src={ infraEnvs.LocalStatesAssetsPath + "/component/form/dropzone.js" }></script>
+	@templ.Raw(`<script type="text/javascript">` + dropzoneAlpineState + `</script>`)
 	<!-- Dropzone HTML -->
 	<div
 		x-data="dropzone"
