@@ -18,7 +18,7 @@ templ Login() {
 		<!-- Login Layout JavaScript -->
 		@templ.Raw(`<script type="text/javascript">` + loginLayoutAlpineState + `</script>`)
 		<!-- Login Layout HTML -->
-		<body class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50">
+		<body class="bg-primary-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50" un-cloak>
 			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
 			<div>
 				<a href="https://goinfinite.net/os/" target="_blank" class="mb-4 flex w-[120px] gap-2 hover:opacity-90">

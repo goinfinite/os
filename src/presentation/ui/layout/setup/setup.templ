@@ -20,7 +20,8 @@ templ Setup() {
 		<!-- Setup Layout HTML -->
 		<body
 			x-data="setup"
-			class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50"
+			class="bg-primary-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50"
+			un-cloak
 		>
 			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
 			<div>
@@ -31,7 +32,7 @@ templ Setup() {
 				<form
 					x-data="setup"
 					onsubmit="event.preventDefault()"
-					class="bg-os-400 min-w-110 flex flex-col items-center justify-center gap-4 rounded-lg p-8 drop-shadow-md"
+					class="bg-primary-400 min-w-110 flex flex-col items-center justify-center gap-4 rounded-lg p-8 drop-shadow-md"
 				>
 					<div class="mb-1 w-full">
 						<h1 class="text-2xl">Welcome!</h1>
