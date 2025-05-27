@@ -1,9 +1,13 @@
 # Changelog
 
 ```log
-0.2.5 - 2025/06/XX
-refactor: sidebar
-fix: lazy load marketplace and services avatar images
+0.2.5 - 2025/06/27
+refactor(ui): sidebar
+refactor(ui): merge page and presenters
+refactor(ui): move state.js to individual embeds
+feat(ui): add cloak and loading overlay (from goinfinite/ui)
+fix(improvement): lazy load marketplace and services avatar images
+fix(bug): database service is creating a default mapping [#261]
 
 0.2.4 - 2025/05/08
 feat!: add pagination to database read ops
