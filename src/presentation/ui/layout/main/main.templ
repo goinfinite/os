@@ -3,9 +3,9 @@ package uiLayout
 import (
 	_ "embed"
 	"github.com/goinfinite/os/src/domain/valueObject/helper"
-	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
 	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
 	layoutSidebar "github.com/goinfinite/os/src/presentation/ui/layout/sidebar"
+	"github.com/goinfinite/ui/src/display"
 	uiImport "github.com/goinfinite/ui/src/import"
 	"os"
 )
@@ -22,9 +22,9 @@ templ HeadTag() {
 		<script src="/assets/additional.js"></script>
 		@uiImport.HeadTagsFull()
 		<link rel="stylesheet" type="text/css" href="/assets/additional.css"/>
-		<script src="https://cdn.jsdelivr.net/npm/vega@5.31.0/build/vega.min.js" integrity="sha256-cYdMz6q7m7D3OhasQJRy1/5Th1YCEncQpVT0dz1Zmjc=" crossorigin="anonymous"></script>
-		<script src="https://cdn.jsdelivr.net/npm/vega-lite@5.23.0/build/vega-lite.min.js" integrity="sha256-WMJzWOJvLTGc9i9FvBekyDYvCGRQAd8uyNNB7uQJfH8=" crossorigin="anonymous"></script>
-		<script src="https://cdn.jsdelivr.net/npm/vega-embed@6.29.0/build/vega-embed.min.js" integrity="sha256-EtAqz74+xZ75o33UgiouBOKWG1u7Zxu+Zh0iIXFbmdo=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vega@6.1.2/build/vega.min.js" integrity="sha256-CPeWtqVxsLRtgZ8H+3WByhZWWvhpheF2a7GAY4V2s/g=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vega-lite@6.1.0/build/vega-lite.min.js" integrity="sha256-Z1UPjkQutWekUKkE8IPBO8R393KNMFiYRVLMNel5/Lc=" crossorigin="anonymous"></script>
+		<script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2/build/vega-embed.min.js" integrity="sha256-xxEaQRkAgJOLFMHeAAdNm9oW7yGZ4pGd0DjN35fYc1Q=" crossorigin="anonymous"></script>
 	</head>
 }
 
@@ -42,15 +42,18 @@ templ Main(componentSettings MainLayoutSettings) {
 			@templ.JSFuncCall("devWsHotReload")
 		}
 		<!-- MainLayout HTML -->
-		<body class="bg-primary-500 flex overflow-hidden text-neutral-50">
-			@componentUtil.LoadingOverlay()
+		<body
+			class="bg-primary-500 flex overflow-hidden text-neutral-50"
+			un-cloak
+		>
+			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
 			@layoutSidebar.Sidebar()
 			<!-- PageContent -->
 			<section id="page-content" class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
 				@componentSettings.PageContent
 			</section>
 			@layoutFooter.FooterSkeleton()
-			@componentUtil.Toast()
+			@uiDisplay.Toast(uiDisplay.ToastSettings{})
 		</body>
 	</html>
 }

@@ -4,8 +4,8 @@ import (
 	_ "embed"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
-	componentUtil "github.com/goinfinite/os/src/presentation/ui/component/util"
 	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
+	"github.com/goinfinite/ui/src/display"
 )
 
 //go:embed state.js
@@ -19,7 +19,7 @@ templ Login() {
 		@templ.Raw(`<script type="text/javascript">` + loginLayoutAlpineState + `</script>`)
 		<!-- Login Layout HTML -->
 		<body class="bg-os-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50">
-			@componentUtil.LoadingOverlay()
+			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
 			<div>
 				<a href="https://goinfinite.net/os/" target="_blank" class="mb-4 flex w-[120px] gap-2 hover:opacity-90">
 					<img src="/assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
@@ -52,7 +52,7 @@ templ Login() {
 					)
 				</form>
 			</div>
-			@componentUtil.Toast()
+			@uiDisplay.Toast(uiDisplay.ToastSettings{})
 		</body>
 	</html>
 }
