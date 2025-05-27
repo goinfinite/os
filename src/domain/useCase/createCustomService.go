@@ -46,7 +46,13 @@ func CreateServiceAutoMapping(
 	}
 	for _, mappingEntity := range vhostWithMappings.Mappings {
 		if mappingEntity.Path == *mappingPath {
-			return errors.New("MappingAlreadyExists")
+			slog.Debug(
+				"MappingAlreadyExists",
+				slog.String("method", "CreateServiceAutoMapping"),
+				slog.String("hostname", mappingHostname.String()),
+				slog.String("path", mappingPath.String()),
+			)
+			return nil
 		}
 	}
 
