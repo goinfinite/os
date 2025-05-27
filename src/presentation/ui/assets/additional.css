@@ -29,3 +29,7 @@ input::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
+[un-cloak] {
+  display: none;
+}
