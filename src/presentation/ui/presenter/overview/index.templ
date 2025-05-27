@@ -143,10 +143,12 @@ templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalo
 			:class={ "{'text-infinite-500 ring-1 ring-infinite-500': selectedMarketplaceItemId === " + catalogItemEntity.Id.String() + "}" }
 		>
 			<img
-				src={ catalogItemEntity.AvatarUrl.String() }
 				alt={ catalogItemEntity.Name.String() + " Avatar" }
 				class="max-w-18 m-auto rounded-md transition-all duration-300 group-hover:sepia"
 				:class={ "{'sepia': selectedMarketplaceItemId === " + catalogItemEntity.Id.String() + "}" }
+				x-intersect.once={ "$el.src = '" + catalogItemEntity.AvatarUrl.String() + "'" }
+				src="/assets/placeholder-100x100.svg"
+				x-transition
 			/>
 			<div class="text-wrap mt-1 break-words text-center text-xs">
 				{ catalogItemEntity.Name.String() }
@@ -569,10 +571,12 @@ templ InstallableServiceItemsCarousel(installableServiceEntity entity.Installabl
 			:class={ "{'text-infinite-500 ring-1 ring-infinite-500': selectedInstallableServiceName === '" + installableServiceEntity.Name.String() + "'}" }
 		>
 			<img
-				src={ installableServiceEntity.AvatarUrl.String() }
 				alt={ installableServiceEntity.Name.String() + " Avatar" }
 				class="max-w-18 m-auto rounded-md transition-all duration-300 group-hover:sepia"
 				:class={ "{'sepia': selectedInstallableServiceName === '" + installableServiceEntity.Name.String() + "'}" }
+				x-intersect.once={ "$el.src = '" + installableServiceEntity.AvatarUrl.String() + "'" }
+				src="/assets/placeholder-100x100.svg"
+				x-transition
 			/>
 			<div class="text-wrap mt-1 break-words text-center text-xs">
 				{ installableServiceEntity.Name.String() }
