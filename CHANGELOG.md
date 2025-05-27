@@ -3,6 +3,7 @@
 ```log
 0.2.5 - 2025/06/XX
 refactor: sidebar
+fix: lazy load marketplace and services avatar images
 
 0.2.4 - 2025/05/08
 feat!: add pagination to database read ops
