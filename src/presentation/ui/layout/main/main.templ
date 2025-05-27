@@ -22,9 +22,7 @@ templ HeadTag() {
 		<script src="/assets/additional.js"></script>
 		@uiImport.HeadTagsFull()
 		<link rel="stylesheet" type="text/css" href="/assets/additional.css"/>
-		<script src="https://cdn.jsdelivr.net/npm/vega@6.1.2/build/vega.min.js" integrity="sha256-CPeWtqVxsLRtgZ8H+3WByhZWWvhpheF2a7GAY4V2s/g=" crossorigin="anonymous"></script>
-		<script src="https://cdn.jsdelivr.net/npm/vega-lite@6.1.0/build/vega-lite.min.js" integrity="sha256-Z1UPjkQutWekUKkE8IPBO8R393KNMFiYRVLMNel5/Lc=" crossorigin="anonymous"></script>
-		<script src="https://cdn.jsdelivr.net/npm/vega-embed@7.0.2/build/vega-embed.min.js" integrity="sha256-xxEaQRkAgJOLFMHeAAdNm9oW7yGZ4pGd0DjN35fYc1Q=" crossorigin="anonymous"></script>
+		@uiImport.HeadTagsVega()
 	</head>
 }
 
@@ -42,10 +40,8 @@ templ Main(componentSettings MainLayoutSettings) {
 			@templ.JSFuncCall("devWsHotReload")
 		}
 		<!-- MainLayout HTML -->
-		<body
-			class="bg-primary-500 flex overflow-hidden text-neutral-50"
-			un-cloak
-		>
+		<body class="bg-primary-500 flex overflow-hidden text-neutral-50">
+			@uiDisplay.CloakLoading(uiDisplay.CloakLoadingSettings{})
 			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
 			@layoutSidebar.Sidebar()
 			<!-- PageContent -->
