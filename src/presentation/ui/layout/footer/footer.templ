@@ -158,7 +158,7 @@ templ ScheduledTasksPopover(
 												hx-vals={ "{\"taskId\": " + scheduledTask.Id.String() + ", \"status\": \"cancelled\"}" }
 												hx-trigger="click"
 												hx-swap="none"
-												@click="$dispatch('refresh:footer')"
+												@click="$store.main.refreshFooter()"
 												class="rounded-md border-none bg-red-800 bg-opacity-60 px-2 py-1 text-center text-sm font-bold lowercase leading-none hover:bg-opacity-80"
 											>
 												<i class="ph-bold ph-hand-palm mr-0.5 align-middle"></i>
@@ -171,7 +171,7 @@ templ ScheduledTasksPopover(
 													hx-vals={ "{\"taskId\": " + scheduledTask.Id.String() + ", \"status\": \"pending\"}" }
 													hx-trigger="click"
 													hx-swap="none"
-													@click="$dispatch('refresh:footer')"
+													@click="$store.main.refreshFooter()"
 													class="rounded-md border-none bg-amber-700 bg-opacity-60 px-2 py-1 text-center text-sm font-bold lowercase leading-none hover:bg-opacity-80"
 												>
 													<i class="ph-bold ph-repeat mr-0.5 align-middle"></i>
@@ -213,7 +213,7 @@ templ Footer(
 	<footer
 		id="footer"
 		hx-get="/fragment/footer"
-		hx-trigger="every 20s, refresh:footer from:window delay:200ms"
+		hx-trigger="every 20s"
 		hx-target="this"
 		hx-swap="outerHTML"
 		class="bg-os-800 border-os-400 h-8.5 fixed bottom-0 z-50 flex w-full items-center justify-end border-t-2 px-3 text-sm transition-all duration-300 ease-in-out"
