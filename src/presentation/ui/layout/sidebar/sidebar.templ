@@ -47,20 +47,24 @@ templ SidebarHeader() {
 
 templ SidebarMiddle() {
 	<ul
-		class="flex flex-col gap-4 py-6"
-		:class="{'items-center':isSidebarCollapsed, 'px-3':!isSidebarCollapsed}"
+		class="flex flex-col gap-1.5 py-6"
+		:class="{'items-center gap-4':isSidebarCollapsed}"
 	>
 		for _, sidebarItem := range SidebarItems {
 			<li>
 				<a
 					@click={ "$store.main.navigateTo('" + sidebarItem.Link + "')" }
 					class="group relative flex cursor-pointer items-center gap-2"
+					:class="{'px-3 hover:bg-neutral-50/5 py-2':!isSidebarCollapsed}"
 					title={ sidebarItem.Label }
 				>
-					<div class="group-hover:text-secondary-500 flex items-center justify-center rounded-md bg-neutral-50/5 p-2 transition-colors group-hover:bg-neutral-50/10">
+					<div
+						class="group-hover:text-secondary-500 flex items-center justify-center rounded-md bg-neutral-50/5 transition-colors group-hover:bg-neutral-50/10"
+						:class="isSidebarCollapsed ? 'p-2' : 'p-1.5'"
+					>
 						<i
 							class={ "ph-duotone " + sidebarItem.Icon + " block text-2xl" }
-							:class={ "{'text-secondary-500' : $store.main.isActiveRoute('" + sidebarItem.Link + "')}" }
+							:class={ "{'text-secondary-500' : $store.main.isActiveRoute('" + sidebarItem.Link + "'), 'text-xl': !isSidebarCollapsed}" }
 						></i>
 					</div>
 					<span
@@ -82,11 +86,11 @@ templ SidebarFooter() {
 		<button
 			type="button"
 			@click="clearSession()"
-			class="hover:bg-secondary-500 flex items-center justify-center rounded border border-neutral-400/50 bg-transparent text-center text-sm text-neutral-400 transition-all hover:border-transparent hover:text-neutral-50"
+			class="hover:bg-secondary-500 flex items-center justify-center rounded border border-neutral-400/50 bg-transparent text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-neutral-50"
 			:class="isSidebarCollapsed ? 'p-0.75' : 'px-2 py-1 gap-1'"
 		>
-			<i class="ph-bold ph-power"></i>
-			<span :class="isSidebarCollapsed && 'hidden'">logout</span>
+			<i class="ph-bold ph-person-simple-run text-sm"></i>
+			<span class="select-none leading-none pb-0.5" :class="isSidebarCollapsed && 'hidden'">logout</span>
 		</button>
 	</div>
 }
@@ -103,7 +107,7 @@ templ Sidebar() {
 			IsCollapsedTwoWayStatePath: "isSidebarCollapsed",
 			AttachmentMode:             uiDisplay.SidebarAttachmentModeFixed,
 			BackgroundColor:            "bg-primary-800",
-			Width:                      "w-45",
+			Width:                      "w-42",
 		})
 	</div>
 }
