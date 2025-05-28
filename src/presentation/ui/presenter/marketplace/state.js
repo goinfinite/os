@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, marketplaceIndexAlpineState);
-});
+Infinite.RegisterAlpineState(marketplaceIndexAlpineState);
 
 function marketplaceIndexAlpineState() {
   Alpine.data("marketplace", () => ({

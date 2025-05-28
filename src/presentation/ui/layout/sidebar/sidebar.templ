@@ -42,16 +42,6 @@ templ SidebarHeader() {
 			</a>
 			<p class="text-center text-[0.5rem]">v{ infraEnvs.InfiniteOsVersion }</p>
 		</div>
-		<!-- LogoutButton -->
-		<button
-			type="button"
-			@click="clearSession()"
-			class="hover:bg-secondary-500 flex items-center justify-center rounded border border-neutral-400/50 bg-transparent text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-neutral-50"
-			:class="isSidebarCollapsed ? 'p-0.75' : 'px-2 py-1 gap-1'"
-		>
-			<i class="ph-bold ph-sign-out"></i>
-			<span :class="isSidebarCollapsed && 'hidden'">logout</span>
-		</button>
 	</div>
 }
 
@@ -60,24 +50,19 @@ templ SidebarMiddle() {
 		for _, sidebarItem := range SidebarItems {
 			<li>
 				<a
-					hx-get={ templ.URL(sidebarItem.Link) }
-					hx-select="#page-content"
-					hx-target="#page-content"
-					hx-push-url="true"
-					hx-swap="outerHTML transition:true"
-					@htmx:after-request={ "$dispatch('alpine:reload'); activeItemPath = " + sidebarItem.Link }
+					@click={ "$store.main.navigateTo('" + sidebarItem.Link + "')" }
 					class="group relative flex cursor-pointer items-center gap-2"
 					title={ sidebarItem.Label }
 				>
 					<div class="group-hover:text-secondary-500 flex items-center justify-center rounded-md bg-neutral-50/5 p-2 transition-colors group-hover:bg-neutral-50/10">
 						<i
 							class={ "ph-duotone " + sidebarItem.Icon + " block text-2xl" }
-							:class={ "isActivePath('" + sidebarItem.Link + "') && 'text-secondary-500'" }
+							:class={ "$store.main.isActiveRoute('" + sidebarItem.Link + "') && 'text-secondary-500'" }
 						></i>
 					</div>
 					<span
 						class="group-hover:text-secondary-500 select-none text-sm"
-						:class={ "{'text-secondary-500' : isActivePath('" + sidebarItem.Link + "'), 'hidden' : isSidebarCollapsed}" }
+						:class={ "{'text-secondary-500' : $store.main.isActiveRoute('" + sidebarItem.Link + "'), 'hidden' : isSidebarCollapsed}" }
 					>
 						{ sidebarItem.Label }
 					</span>
@@ -85,6 +70,21 @@ templ SidebarMiddle() {
 			</li>
 		}
 	</ul>
+}
+
+templ SidebarFooter() {
+	<div class="mx-auto flex flex-col items-center justify-center gap-4 pb-12 pt-4">
+		<!-- LogoutButton -->
+		<button
+			type="button"
+			@click="clearSession()"
+			class="hover:bg-secondary-500 flex items-center justify-center rounded border border-neutral-400/50 bg-transparent text-center text-sm text-neutral-400 transition-all hover:border-transparent hover:text-neutral-50"
+			:class="isSidebarCollapsed ? 'p-0.75' : 'px-2 py-1 gap-1'"
+		>
+			<i class="ph-bold ph-power"></i>
+			<span :class="isSidebarCollapsed && 'hidden'">logout</span>
+		</button>
+	</div>
 }
 
 templ Sidebar() {
@@ -95,6 +95,7 @@ templ Sidebar() {
 		@uiDisplay.Sidebar(uiDisplay.SidebarSettings{
 			MiddleContent:              SidebarMiddle(),
 			HeaderContent:              SidebarHeader(),
+			FooterContent:              SidebarFooter(),
 			IsCollapsedTwoWayStatePath: "isSidebarCollapsed",
 			AttachmentMode:             uiDisplay.SidebarAttachmentModeFixed,
 			BackgroundColor:            "bg-primary-800",

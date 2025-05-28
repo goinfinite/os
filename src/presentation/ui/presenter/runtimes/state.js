@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, runtimesIndexAlpineState);
-});
+Infinite.RegisterAlpineState(runtimesIndexAlpineState);
 
 function runtimesIndexAlpineState() {
   Alpine.data("runtimes", () => ({

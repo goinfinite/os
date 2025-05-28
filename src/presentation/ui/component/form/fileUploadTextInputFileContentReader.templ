@@ -1,11 +1,7 @@
 package componentForm
 
 script FileUploadTextInputFileContentReaderLocalState() {
-	["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  	document.addEventListener(
-			loadEvent, fileUploadTextInputFileContentReaderAlpineState,
-		);
-	});
+	Infinite.RegisterAlpineState(fileUploadTextInputFileContentReaderAlpineState);
 
 	function fileUploadTextInputFileContentReaderAlpineState() {
 		Alpine.data('fileUploadTextInputFileContentReader', () => ({

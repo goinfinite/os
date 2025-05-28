@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, multiSelectInputAlpineState);
-});
+Infinite.RegisterAlpineState(multiSelectInputAlpineState);
 
 function multiSelectInputAlpineState() {
   Alpine.data("multiSelectInput", () => ({

@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, mappingsIndexAlpineState);
-});
+Infinite.RegisterAlpineState(mappingsIndexAlpineState);
 
 function mappingsIndexAlpineState() {
   Alpine.data("mappings", () => ({

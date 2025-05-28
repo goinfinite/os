@@ -1,4 +1,6 @@
-document.addEventListener("alpine:init", () => {
+Infinite.RegisterAlpineState(setupAlpineState);
+
+function setupAlpineState() {
   Alpine.data("setup", () => ({
     username: "",
     password: "",
@@ -40,4 +42,4 @@ document.addEventListener("alpine:init", () => {
         );
     },
   }));
-});
+}

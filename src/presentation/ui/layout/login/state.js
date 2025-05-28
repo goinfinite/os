@@ -1,4 +1,6 @@
-document.addEventListener("alpine:init", () => {
+Infinite.RegisterAlpineState(loginAlpineState);
+
+function loginAlpineState() {
   Alpine.data("login", () => ({
     username: "",
     password: "",
@@ -26,4 +28,4 @@ document.addEventListener("alpine:init", () => {
       document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     },
   }));
-});
+}

@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, passwordInputAlpineState);
-});
+Infinite.RegisterAlpineState(passwordInputAlpineState);
 
 function passwordInputAlpineState() {
   Alpine.data("passwordInput", () => ({

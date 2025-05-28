@@ -8,9 +8,7 @@ type RepeatableField struct {
 }
 
 script MultiColumnRepeatableFieldsetLocalState(id string) {
-	["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  	document.addEventListener(loadEvent, multiColumnRepeatableFieldsetAlpineState);
-	});
+	Infinite.RegisterAlpineState(multiColumnRepeatableFieldsetAlpineState);
 
 	function multiColumnRepeatableFieldsetAlpineState() {
 		Alpine.data(id+'MultiColumnRepeatableFieldset', () => ({

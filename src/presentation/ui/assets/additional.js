@@ -60,111 +60,122 @@ window.__unocss = {
   },
 };
 
-document.addEventListener("alpine:init", () => {
-  async function jsonAjax(method, url, payload, shouldDisplayToast = true) {
-    const loadingOverlayElement = document.getElementById("loading-overlay");
-    loadingOverlayElement.classList.add("htmx-request");
+async function jsonAjax(method, url, payload, shouldDisplayToast = true) {
+  const loadingOverlayElement = document.getElementById("loading-overlay");
+  loadingOverlayElement.classList.add("htmx-request");
 
-    try {
-      const requestSettings = {
-        method: method,
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      };
-      if (Object.keys(payload).length > 0) {
-        requestSettings.body = JSON.stringify(payload);
-      }
-      const response = await fetch(url, requestSettings);
-      const parsedResponse = await response.json();
-
-      loadingOverlayElement.classList.remove("htmx-request");
-
-      if (!response.ok) {
-        throw new Error(parsedResponse.body);
-      }
-
-      if (shouldDisplayToast) {
-        Alpine.store("toast").displayToast(parsedResponse.body, "success");
-      }
-      return parsedResponse.body;
-    } catch (error) {
-      loadingOverlayElement.classList.remove("htmx-request");
-
-      if (shouldDisplayToast) {
-        Alpine.store("toast").displayToast(error.message, "danger");
-        return;
-      }
-      throw error;
-    }
-  }
-
-  function createRandomPassword() {
-    const passwordLength = 16;
-    const chars =
-      "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
-
-    let passwordContent = "";
-    let passwordIterationCount = 0;
-    while (passwordIterationCount < passwordLength) {
-      const randomIndex = Math.floor(Math.random() * chars.length);
-      const indexAfterRandomIndex = randomIndex + 1;
-      passwordContent += chars.substring(randomIndex, indexAfterRandomIndex);
-
-      passwordIterationCount++;
-    }
-
-    return passwordContent;
-  }
-
-  function createFilterQueryParams(filtersObject, paginationObject) {
-    const queryParams = new URLSearchParams();
-
-    const filtersAndPaginationObject = {
-      ...filtersObject,
-      ...paginationObject,
+  try {
+    const requestSettings = {
+      method: method,
+      headers: {
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
     };
-    for (let [key, value] of Object.entries(filtersAndPaginationObject)) {
-      if (typeof value === "number") {
-        queryParams.set(key, value);
-        continue;
-      }
+    if (Object.keys(payload).length > 0) {
+      requestSettings.body = JSON.stringify(payload);
+    }
+    const response = await fetch(url, requestSettings);
+    const parsedResponse = await response.json();
 
-      const trimValue = value.trim();
-      if (trimValue === "") {
-        continue;
-      }
-      queryParams.set(key, trimValue);
+    loadingOverlayElement.classList.remove("htmx-request");
+
+    if (!response.ok) {
+      throw new Error(parsedResponse.body);
     }
 
-    return queryParams;
+    if (shouldDisplayToast) {
+      Alpine.store("toast").displayToast(parsedResponse.body, "success");
+    }
+    return parsedResponse.body;
+  } catch (error) {
+    loadingOverlayElement.classList.remove("htmx-request");
+
+    if (shouldDisplayToast) {
+      Alpine.store("toast").displayToast(error.message, "danger");
+      return;
+    }
+    throw error;
+  }
+}
+
+function createRandomPassword() {
+  const passwordLength = 16;
+  const chars =
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
+
+  let passwordContent = "";
+  let passwordIterationCount = 0;
+  while (passwordIterationCount < passwordLength) {
+    const randomIndex = Math.floor(Math.random() * chars.length);
+    const indexAfterRandomIndex = randomIndex + 1;
+    passwordContent += chars.substring(randomIndex, indexAfterRandomIndex);
+
+    passwordIterationCount++;
   }
 
-  // JavaScript doesn't provide any API capable of directly downloading a blob
-  // file, so it's necessary to create an invisible anchor element and artificially
-  // trigger a click on it to emulate this process.
-  function downloadFile(nameWithExtension, content, mimeType = "text/plain") {
-    const blobFile = new Blob([content], { type: mimeType });
-    const blobFileUrlObject = window.URL.createObjectURL(blobFile);
-    const downloadFileElement = document.createElement("a");
+  return passwordContent;
+}
 
-    downloadFileElement.href = blobFileUrlObject;
-    downloadFileElement.download = nameWithExtension;
-    document.body.appendChild(downloadFileElement);
+function createFilterQueryParams(filtersObject, paginationObject) {
+  const queryParams = new URLSearchParams();
 
-    downloadFileElement.click();
-    window.URL.revokeObjectURL(blobFileUrlObject);
-    document.body.removeChild(downloadFileElement);
-  }
-
-  window.Infinite = {
-    Envs: {
-      AccessTokenCookieKey: "os-access-token",
-    },
-    JsonAjax: jsonAjax,
-    CreateRandomPassword: createRandomPassword,
-    CreateFilterQueryParams: createFilterQueryParams,
-    DownloadFile: downloadFile,
+  const filtersAndPaginationObject = {
+    ...filtersObject,
+    ...paginationObject,
   };
+  for (let [key, value] of Object.entries(filtersAndPaginationObject)) {
+    if (typeof value === "number") {
+      queryParams.set(key, value);
+      continue;
+    }
+
+    const trimValue = value.trim();
+    if (trimValue === "") {
+      continue;
+    }
+    queryParams.set(key, trimValue);
+  }
+
+  return queryParams;
+}
+
+// JavaScript doesn't provide any API capable of directly downloading a blob
+// file, so it's necessary to create an invisible anchor element and artificially
+// trigger a click on it to emulate this process.
+function downloadFile(nameWithExtension, content, mimeType = "text/plain") {
+  const blobFile = new Blob([content], { type: mimeType });
+  const blobFileUrlObject = window.URL.createObjectURL(blobFile);
+  const downloadFileElement = document.createElement("a");
+
+  downloadFileElement.href = blobFileUrlObject;
+  downloadFileElement.download = nameWithExtension;
+  document.body.appendChild(downloadFileElement);
+
+  downloadFileElement.click();
+  window.URL.revokeObjectURL(blobFileUrlObject);
+  document.body.removeChild(downloadFileElement);
+}
+
+function registerAlpineState(stateFunction) {
+  if (window.Alpine) {
+    stateFunction();
+    return;
+  }
+
+  document.addEventListener("alpine:init", stateFunction);
+}
+
+window.Infinite = {
+  Envs: {
+    AccessTokenCookieKey: "os-access-token",
+  },
+  CreateRandomPassword: createRandomPassword,
+  CreateFilterQueryParams: createFilterQueryParams,
+  DownloadFile: downloadFile,
+  RegisterAlpineState: registerAlpineState,
+};
+
+document.addEventListener("alpine:init", () => {
+  window.Infinite.JsonAjax = jsonAjax;
 });

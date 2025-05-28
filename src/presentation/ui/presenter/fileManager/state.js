@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, fileManagerIndexAlpineState);
-});
+Infinite.RegisterAlpineState(fileManagerIndexAlpineState);
 
 function fileManagerIndexAlpineState() {
   Alpine.data("fileManager", () => ({

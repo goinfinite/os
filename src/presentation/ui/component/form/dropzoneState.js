@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, dropzoneAlpineState);
-});
+Infinite.RegisterAlpineState(dropzoneAlpineState);
 
 function dropzoneAlpineState() {
   Alpine.data("dropzone", () => ({

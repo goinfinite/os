@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, cronsIndexAlpineState);
-});
+Infinite.RegisterAlpineState(cronsIndexAlpineState);
 
 function cronsIndexAlpineState() {
   Alpine.data("crons", () => ({

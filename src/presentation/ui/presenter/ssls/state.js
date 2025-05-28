@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, sslsIndexAlpineState);
-});
+Infinite.RegisterAlpineState(sslsIndexAlpineState);
 
 function sslsIndexAlpineState() {
   Alpine.data("ssls", () => ({

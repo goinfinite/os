@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, mappingSecurityRulesIndexAlpineState);
-});
+Infinite.RegisterAlpineState(mappingSecurityRulesIndexAlpineState);
 
 function mappingSecurityRulesIndexAlpineState() {
   Alpine.data("mappingSecurityRules", () => ({

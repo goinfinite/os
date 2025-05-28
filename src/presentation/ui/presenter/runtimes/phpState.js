@@ -1,6 +1,4 @@
-["alpine:init", "alpine:reload"].forEach((loadEvent) => {
-  document.addEventListener(loadEvent, phpIndexAlpineState);
-});
+Infinite.RegisterAlpineState(phpIndexAlpineState);
 
 function phpIndexAlpineState() {
   Alpine.data("php", () => ({
