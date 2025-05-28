@@ -25,9 +25,6 @@ var SidebarItems = []SidebarItem{
 	{"Marketplace", "ph-storefront", "/marketplace/"},
 }
 
-//go:embed state.js
-var sidebarLayoutAlpineState string
-
 templ SidebarHeader() {
 	<div class="mx-auto flex flex-col items-center justify-center gap-4 py-6">
 		<!-- Logo -->
@@ -85,7 +82,7 @@ templ SidebarFooter() {
 		<!-- LogoutButton -->
 		<button
 			type="button"
-			@click="clearSession()"
+			@click="$store.main.clearUserSession()"
 			class="hover:bg-secondary-500 flex items-center justify-center rounded border border-neutral-400/50 bg-transparent text-center text-xs text-neutral-400 transition-all hover:border-transparent hover:text-neutral-50"
 			:class="isSidebarCollapsed ? 'p-0.75' : 'px-2 py-1 gap-1'"
 		>
@@ -96,10 +93,8 @@ templ SidebarFooter() {
 }
 
 templ Sidebar() {
-	<!-- Sidebar JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + sidebarLayoutAlpineState + `</script>`)
 	<!-- Sidebar HTML -->
-	<div x-data="sidebar">
+	<div x-data="{isSidebarCollapsed: $persist(false).as('osDash.isSidebarCollapsed')}">
 		@uiDisplay.Sidebar(uiDisplay.SidebarSettings{
 			MiddleContent:              SidebarMiddle(),
 			HeaderContent:              SidebarHeader(),

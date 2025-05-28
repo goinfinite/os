@@ -25,6 +25,10 @@ document.addEventListener("alpine:initializing", () => {
         swap: "outerHTML transition:true",
       });
     },
+    clearUserSession() {
+      document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      window.location.href = "/login/";
+    },
     init() {
       window.addEventListener("popstate", () => {
         this.activeRoute = String(document.location.pathname);
@@ -33,15 +37,20 @@ document.addEventListener("alpine:initializing", () => {
 
     // FooterState
     refreshFooter() {
-      htmx.ajax("GET", "/fragment/footer", {
-        select: "#footer",
-        target: "#footer",
-        swap: "outerHTML transition:true",
-      });
+      htmx
+        .ajax("GET", "/fragment/footer", {
+          select: "#footer",
+          target: "#footer",
+          swap: "outerHTML transition:true",
+        })
+        .catch(() => {
+          console.error("FooterRefreshFailed");
+          this.clearUserSession();
+        });
     },
     // - ScheduledTasksState
     displayScheduledTasksPopover: Alpine.$persist(false).as(
-      "dash.displayScheduledTasksPopover"
+      "osDash.displayScheduledTasksPopover"
     ),
     toggleScheduledTasksPopover() {
       this.displayScheduledTasksPopover = !this.displayScheduledTasksPopover;
