@@ -16,7 +16,7 @@ const (
 	MappingSecurityRulesDisplayRefreshEventName string = "refresh:" + MappingSecurityRulesDisplayId
 )
 
-//go:embed state.js
+//go:embed securityRulesState.js
 var mappingSecurityRulesIndexAlpineState string
 
 templ MappingSecurityRulesIndex(mappingSecurityRules []entity.MappingSecurityRule) {
