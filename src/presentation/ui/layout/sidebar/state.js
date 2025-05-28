@@ -2,7 +2,7 @@ Infinite.RegisterAlpineState(sidebarAlpineState);
 
 function sidebarAlpineState() {
   Alpine.data("sidebar", () => ({
-    isSidebarCollapsed: Alpine.$persist(true).as(
+    isSidebarCollapsed: Alpine.$persist(false).as(
       "osDashboard.isSidebarCollapsed"
     ),
     clearSession() {
