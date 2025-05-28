@@ -1,0 +1,57 @@
+package uiLayout
+
+import (
+	_ "embed"
+	"github.com/goinfinite/os/src/domain/valueObject/helper"
+	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
+	layoutSidebar "github.com/goinfinite/os/src/presentation/ui/layout/sidebar"
+	"github.com/goinfinite/ui/src/display"
+	uiImport "github.com/goinfinite/ui/src/import"
+	"os"
+)
+
+//go:embed state.js
+var mainLayoutAlpineState string
+
+templ HeadTag() {
+	<head>
+		<meta charset="utf-8"/>
+		<meta name="robots" content="noindex"/>
+		<meta name="viewport" content="width=device-width, initial-scale=1"/>
+		<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/>
+		<title>Infinite OS</title>
+		<link rel="icon" type="image/ico" href="/assets/favicon.ico"/>
+		<script src="/assets/additional.js"></script>
+		@uiImport.HeadTagsFull()
+		<link rel="stylesheet" type="text/css" href="/assets/additional.css"/>
+		@uiImport.HeadTagsVega()
+	</head>
+}
+
+type MainLayoutSettings struct {
+	PageContent templ.Component
+}
+
+templ Main(componentSettings MainLayoutSettings) {
+	<!DOCTYPE html>
+	<html>
+		@HeadTag()
+		<!-- MainLayout JavaScript -->
+		@templ.Raw(`<script type="text/javascript">` + mainLayoutAlpineState + `</script>`)
+		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+			@templ.JSFuncCall("devWsHotReload")
+		}
+		<!-- MainLayout HTML -->
+		<body class="bg-primary-500 flex overflow-hidden text-neutral-50">
+			@uiDisplay.CloakLoading(uiDisplay.CloakLoadingSettings{})
+			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
+			@layoutSidebar.Sidebar()
+			<!-- PageContent -->
+			<section id="page-content" class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
+				@componentSettings.PageContent
+			</section>
+			@layoutFooter.FooterSkeleton()
+			@uiDisplay.Toast(uiDisplay.ToastSettings{})
+		</body>
+	</html>
+}

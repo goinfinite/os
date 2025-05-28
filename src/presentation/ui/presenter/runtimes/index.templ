@@ -1,0 +1,64 @@
+package uiPresenter
+
+import (
+	_ "embed"
+	"github.com/goinfinite/os/src/domain/entity"
+	"github.com/goinfinite/os/src/domain/valueObject"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+)
+
+//go:embed state.js
+var runtimesIndexAlpineState string
+
+type RuntimeOverview struct {
+	VirtualHostHostname       valueObject.Fqdn        `json:"vhostHostname"`
+	Type                      valueObject.RuntimeType `json:"type"`
+	IsInstalled               bool                    `json:"-"`
+	IsVirtualHostUsingRuntime bool                    `json:"-"`
+	PhpConfigs                *entity.PhpConfigs      `json:"phpConfigs"`
+}
+
+templ RuntimesIndex(
+	runtimeOverview RuntimeOverview,
+	vhostsHostnames []string,
+) {
+	<!-- RuntimesIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + runtimesIndexAlpineState + `</script>`)
+	<!-- RuntimesIndex HTML -->
+	<data id="selectedVhostHostname" class="hidden" value={ runtimeOverview.VirtualHostHostname.String() }></data>
+	<data id="selectedRuntimeType" class="hidden" value={ runtimeOverview.Type.String() }></data>
+	<div class="flex flex-col" x-data="runtimes">
+		@componentStructural.PageTitle(
+			"Runtimes",
+			"Install the runtime services you want and manage each service by configuring the intrinsic aspects of each runtime as you see fit. Install only once and propagate to all the virtual hosts hostnames you need, configuring each one individually. This is an advanced section, so keep in mind that any changes made without knowledge of the configurations or modules may cause undesired effects.",
+			"ph-code",
+		)
+		<div
+			id="runtimes-page-content"
+			hx-get={ "/runtimes/?vhostHostname=" + runtimeOverview.VirtualHostHostname.String() + "&runtimeType=" + runtimeOverview.Type.String() }
+			hx-trigger="submit from:form delay:500ms, refresh:runtimes-page-content from:window delay:250ms"
+			hx-select="#runtimes-page-content"
+			hx-target="#runtimes-page-content"
+			hx-swap="outerHTML transition:true"
+			class="card w-full"
+		>
+			<div id="runtimes-tabs">
+				@RuntimesTabs(runtimeOverview, vhostsHostnames)
+			</div>
+		</div>
+	</div>
+}
+
+templ RuntimesTabs(
+	runtimeOverview RuntimeOverview,
+	vhostsHostnames []string,
+) {
+	@componentStructural.HorizontalTabHeader(
+		[]componentStructural.TabHeaderItem{
+			{Label: "PHP", Value: "php"},
+		}, runtimeOverview.Type.String(), "updateSelectedRuntimeType",
+	)
+	if runtimeOverview.Type.String() == "php" {
+		@PhpRuntimeHorizontalTabContent(runtimeOverview, vhostsHostnames)
+	}
+}

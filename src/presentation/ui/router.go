@@ -11,7 +11,18 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/api"
-	"github.com/goinfinite/os/src/presentation/ui/presenter"
+	presenterAccounts "github.com/goinfinite/os/src/presentation/ui/presenter/accounts"
+	presenterCrons "github.com/goinfinite/os/src/presentation/ui/presenter/crons"
+	presenterDatabases "github.com/goinfinite/os/src/presentation/ui/presenter/databases"
+	presenterFileManager "github.com/goinfinite/os/src/presentation/ui/presenter/fileManager"
+	presenterFooter "github.com/goinfinite/os/src/presentation/ui/presenter/footer"
+	presenterLogin "github.com/goinfinite/os/src/presentation/ui/presenter/login"
+	presenterMappings "github.com/goinfinite/os/src/presentation/ui/presenter/mappings"
+	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
+	presenterOverview "github.com/goinfinite/os/src/presentation/ui/presenter/overview"
+	presenterRuntimes "github.com/goinfinite/os/src/presentation/ui/presenter/runtimes"
+	presenterSetup "github.com/goinfinite/os/src/presentation/ui/presenter/setup"
+	presenterSsls "github.com/goinfinite/os/src/presentation/ui/presenter/ssls"
 	"github.com/labstack/echo/v4"
 	"golang.org/x/net/websocket"
 )
@@ -37,27 +48,31 @@ func NewRouter(
 	}
 }
 
-//go:embed assets/*
-var assetsFiles embed.FS
-
 func (router *Router) assetsRoute() {
-	assetsFs, err := fs.Sub(assetsFiles, "assets")
-	if err != nil {
-		slog.Error("ReadAssetsFilesError", slog.String("err", err.Error()))
-		os.Exit(1)
-	}
-	assetsFileServer := http.FileServer(http.FS(assetsFs))
+	router.baseRoute.GET("/assets/*", func(c echo.Context) error {
+		assetsFiles, assertOk := c.Get("assets").(embed.FS)
+		if !assertOk {
+			slog.Error("AssertAssetsFilesFailed")
+			os.Exit(1)
+		}
 
-	router.baseRoute.GET(
-		"/assets/*",
-		echo.WrapHandler(http.StripPrefix("/assets/", assetsFileServer)),
-	)
+		assetsFs, err := fs.Sub(assetsFiles, "assets")
+		if err != nil {
+			slog.Error("ReadAssetsFilesError", slog.String("err", err.Error()))
+			os.Exit(1)
+		}
+		assetsFileServer := http.FileServer(http.FS(assetsFs))
+
+		http.StripPrefix("/assets/", assetsFileServer).
+			ServeHTTP(c.Response(), c.Request())
+		return nil
+	})
 }
 
 func (router *Router) accountsRoutes() {
 	accountGroup := router.baseRoute.Group("/accounts")
 
-	accountsPresenter := presenter.NewAccountsPresenter(
+	accountsPresenter := presenterAccounts.NewAccountsPresenter(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	accountGroup.GET("/", accountsPresenter.Handler)
@@ -66,14 +81,14 @@ func (router *Router) accountsRoutes() {
 func (router *Router) cronsRoutes() {
 	cronsGroup := router.baseRoute.Group("/crons")
 
-	cronsPresenter := presenter.NewCronsPresenter(router.trailDbSvc)
+	cronsPresenter := presenterCrons.NewCronsPresenter(router.trailDbSvc)
 	cronsGroup.GET("/", cronsPresenter.Handler)
 }
 
 func (router *Router) databasesRoutes() {
 	databaseGroup := router.baseRoute.Group("/databases")
 
-	databasesPresenter := presenter.NewDatabasesPresenter(
+	databasesPresenter := presenterDatabases.NewDatabasesPresenter(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	databaseGroup.GET("/", databasesPresenter.Handler)
@@ -82,14 +97,14 @@ func (router *Router) databasesRoutes() {
 func (router *Router) fileManagerRoutes() {
 	fileManagerGroup := router.baseRoute.Group("/file-manager")
 
-	fileManagerPresenter := presenter.NewFileManagerPresenter()
+	fileManagerPresenter := presenterFileManager.NewFileManagerPresenter()
 	fileManagerGroup.GET("/", fileManagerPresenter.Handler)
 }
 
 func (router *Router) loginRoutes() {
 	loginGroup := router.baseRoute.Group("/login")
 
-	loginPresenter := presenter.NewLoginPresenter(
+	loginPresenter := presenterLogin.NewLoginPresenter(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	loginGroup.GET("/", loginPresenter.Handler)
@@ -99,13 +114,13 @@ func (router *Router) loginRoutes() {
 func (router *Router) mappingsRoutes() {
 	mappingsGroup := router.baseRoute.Group("/mappings")
 
-	mappingsPresenter := presenter.NewMappingsPresenter(
+	mappingsPresenter := presenterMappings.NewMappingsPresenter(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	mappingsGroup.GET("/", mappingsPresenter.Handler)
 
 	secRulesGroup := mappingsGroup.Group("/security-rules")
-	secRulesPresenter := presenter.NewMappingSecurityRulesPresenter(
+	secRulesPresenter := presenterMappings.NewMappingSecurityRulesPresenter(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	secRulesGroup.GET("/", secRulesPresenter.Handler)
@@ -114,7 +129,7 @@ func (router *Router) mappingsRoutes() {
 func (router *Router) marketplaceRoutes() {
 	marketplaceGroup := router.baseRoute.Group("/marketplace")
 
-	marketplacePresenter := presenter.NewMarketplacePresenter(
+	marketplacePresenter := presenterMarketplace.NewMarketplacePresenter(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	marketplaceGroup.GET("/", marketplacePresenter.Handler)
@@ -123,7 +138,7 @@ func (router *Router) marketplaceRoutes() {
 func (router *Router) overviewRoutes() {
 	overviewGroup := router.baseRoute.Group("/overview")
 
-	overviewPresenter := presenter.NewOverviewPresenter(
+	overviewPresenter := presenterOverview.NewOverviewPresenter(
 		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	overviewGroup.GET("/", overviewPresenter.Handler)
@@ -133,7 +148,7 @@ func (router *Router) overviewRoutes() {
 func (router *Router) runtimesRoutes() {
 	runtimesGroup := router.baseRoute.Group("/runtimes")
 
-	runtimesPresenter := presenter.NewRuntimesPresenter(
+	runtimesPresenter := presenterRuntimes.NewRuntimesPresenter(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	runtimesGroup.GET("/", runtimesPresenter.Handler)
@@ -142,7 +157,7 @@ func (router *Router) runtimesRoutes() {
 func (router *Router) setupRoutes() {
 	setupGroup := router.baseRoute.Group("/setup")
 
-	setupPresenter := presenter.NewSetupPresenter(
+	setupPresenter := presenterSetup.NewSetupPresenter(
 		router.persistentDbSvc, router.trailDbSvc,
 	)
 	setupGroup.GET("/", setupPresenter.Handler)
@@ -152,7 +167,7 @@ func (router *Router) setupRoutes() {
 func (router *Router) sslsRoutes() {
 	sslsGroup := router.baseRoute.Group("/ssls")
 
-	sslsPresenter := presenter.NewSslsPresenter(
+	sslsPresenter := presenterSsls.NewSslsPresenter(
 		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	sslsGroup.GET("/", sslsPresenter.Handler)
@@ -183,7 +198,7 @@ func (router *Router) devRoutes() {
 func (router *Router) fragmentRoutes() {
 	fragmentGroup := router.baseRoute.Group("/fragment")
 
-	footerPresenter := presenter.NewFooterPresenter(
+	footerPresenter := presenterFooter.NewFooterPresenter(
 		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	fragmentGroup.GET("/footer", footerPresenter.Handler)

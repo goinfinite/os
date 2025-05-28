@@ -1,0 +1,58 @@
+package uiLayout
+
+import (
+	_ "embed"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
+	"github.com/goinfinite/ui/src/display"
+)
+
+//go:embed state.js
+var loginLayoutAlpineState string
+
+templ Login() {
+	<!DOCTYPE html>
+	<html>
+		@layoutMain.HeadTag()
+		<!-- Login Layout JavaScript -->
+		@templ.Raw(`<script type="text/javascript">` + loginLayoutAlpineState + `</script>`)
+		<!-- Login Layout HTML -->
+		<body class="bg-primary-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50" un-cloak>
+			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
+			<div>
+				<a href="https://goinfinite.net/os/" target="_blank" class="mb-4 flex w-[120px] gap-2 hover:opacity-90">
+					<img src="/assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
+					<p class="text-[8px] text-neutral-500">v{ infraEnvs.InfiniteOsVersion }</p>
+				</a>
+				<form
+					x-data="login"
+					onsubmit="event.preventDefault()"
+					class="bg-os-400 min-w-110 flex flex-col items-center justify-center gap-4 rounded-lg p-8 drop-shadow-md"
+				>
+					<div class="mb-1 w-full">
+						<h1 class="text-2xl">Hello Again!</h1>
+						<p class="mt-1 text-sm">Please enter your credentials to continue.</p>
+					</div>
+					@componentForm.InputField(componentForm.InputFieldDto{
+						Type:               "text",
+						Id:                 "username",
+						Label:              "Username",
+						BindModelValuePath: "username",
+					})
+					@componentForm.PasswordInput(componentForm.PasswordInputDto{
+						Id:                                "password",
+						Label:                             "Password",
+						BindModelPath:                     "password",
+						ShouldIncludeGenRandomPassBtn:     false,
+						ShouldIncludePassStrengthCriteria: false,
+					})
+					@componentForm.SubmitButton(
+						"login-btn", "Login", "ph-sign-in", "createSessionToken()", false,
+					)
+				</form>
+			</div>
+			@uiDisplay.Toast(uiDisplay.ToastSettings{})
+		</body>
+	</html>
+}

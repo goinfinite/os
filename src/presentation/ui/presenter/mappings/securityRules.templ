@@ -1,0 +1,461 @@
+package uiPresenter
+
+import (
+	_ "embed"
+	"github.com/goinfinite/os/src/domain/entity"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/os/src/presentation/ui/helper"
+	"github.com/goinfinite/ui/src/control"
+	"github.com/goinfinite/ui/src/display"
+	"github.com/goinfinite/ui/src/form"
+	"strconv"
+)
+
+const (
+	MappingSecurityRulesDisplayId               string = "mapping-security-rules-table"
+	MappingSecurityRulesDisplayRefreshEventName string = "refresh:" + MappingSecurityRulesDisplayId
+)
+
+//go:embed securityRulesState.js
+var mappingSecurityRulesIndexAlpineState string
+
+templ MappingSecurityRulesIndex(mappingSecurityRules []entity.MappingSecurityRule) {
+	<!-- MappingSecurityRulesIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + mappingSecurityRulesIndexAlpineState + `</script>`)
+	<!-- MappingSecurityRulesIndex HTML -->
+	<div x-data="mappingSecurityRules">
+		@componentStructural.PageTitle(
+			"Mapping Security Rules",
+			"Create and manage security rules for your mappings to control access, rate limits, and bandwidth.",
+			"ph-shield",
+		)
+		@MappingSecurityRulesTable(mappingSecurityRules)
+		@CreateMappingSecurityRuleModal()
+		@UpdateMappingSecurityRuleModal()
+		@componentStructural.DeleteModal(
+			"isDeleteMappingSecurityRuleModalOpen", "closeDeleteMappingSecurityRuleModal()",
+			"deleteMappingSecurityRule()", "mappingSecurityRule.name", "mappingSecurityRule.id",
+		)
+	</div>
+}
+
+templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecurityRule) {
+	<!-- MappingSecurityRulesTable -->
+	<div
+		id={ MappingSecurityRulesDisplayId }
+		hx-get="/mappings/security-rules/"
+		hx-trigger={ MappingSecurityRulesDisplayRefreshEventName + " from:window" }
+		hx-select={ "#" + MappingSecurityRulesDisplayId }
+		hx-target={ "#" + MappingSecurityRulesDisplayId }
+		hx-indicator="#loading-overlay"
+		hx-swap="outerHTML transition:true"
+		class="flex flex-col gap-4 rounded-lg bg-neutral-950/20 p-5"
+	>
+		<table class="w-full table-fixed border-collapse rounded-md transition-all duration-300 ease-in-out">
+			<!-- MappingSecurityRulesTable Header -->
+			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
+				<tr class="*:px-2 *:py-3 border-y border-neutral-50/10 text-center">
+					<th scope="col" class="w-[35%] text-left">Identification</th>
+					<th scope="col" class="w-[17.5%]">
+						Rate Limit
+						<br/>
+						<small>Requests per Second (RPS)</small>
+					</th>
+					<th scope="col" class="w-[12%]">
+						Connection Limit
+						<br/>
+						<small>(per ip address)</small>
+					</th>
+					<th scope="col" class="w-[13%]">
+						Bandwidth Limit
+						<br/>
+						<small>(per connection)</small>
+					</th>
+					<th scope="col" class="w-[17.5%]">
+						@uiControl.Button(uiControl.ButtonSettings{
+							Label:                "create security rule",
+							BackgroundColor:      "secondary-500",
+							BackgroundColorHover: "secondary-300",
+							IconLeft:             "ph-plus-square",
+							IsFullWidth:          true,
+							Size:                 uiControl.ButtonSizeSm,
+							OnClickFunc:          "openCreateMappingSecurityRuleModal()",
+						})
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, secRuleEntity := range mappingSecurityRuleEntities {
+					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center text-sm last:border-b-0 even:bg-neutral-500/5">
+						@templ.JSONScript("secRuleEntity_"+secRuleEntity.Id.String(), secRuleEntity)
+						<td class="text-left">
+							<p class="font-bold">
+								{ secRuleEntity.Name.String() } <span class="text-secondary-500 text-[0.6rem] font-normal">#{ secRuleEntity.Id.String() }</span>
+							</p>
+							if secRuleEntity.Description != nil {
+								<p class="text-sm text-neutral-400">{ secRuleEntity.Description.String() }</p>
+							}
+						</td>
+						<td>
+							<div class="flex flex-col gap-3">
+								if secRuleEntity.RpsSoftLimitPerIp != nil && secRuleEntity.RpsHardLimitPerIp != nil {
+									{{ trackStartValue := int(*secRuleEntity.RpsSoftLimitPerIp - 5) }}
+									if trackStartValue < 1 {
+										{{ trackStartValue = 0 }}
+									}
+									{{ trackEndValue := int(*secRuleEntity.RpsHardLimitPerIp + 5) }}
+									@uiControl.RangeSlider(uiControl.RangeSliderSettings{
+										ThumbShape:                           uiControl.RangeSliderThumbShapePipe,
+										ThumbDualValueModeEnabled:            true,
+										Size:                                 uiControl.RangeSliderSizeMd,
+										TrackStartValue:                      strconv.Itoa(trackStartValue),
+										TrackEndValue:                        strconv.Itoa(trackEndValue),
+										TrackSteps:                           "1",
+										TrackFillColorFrom:                   "amber-500",
+										TrackFillColorTo:                     "red-500",
+										ThumbValue:                           uiHelper.FormatPointer(secRuleEntity.RpsSoftLimitPerIp),
+										ThumbBackgroundColor:                 "amber-500",
+										ThumbValueBubbleEnabled:              true,
+										ThumbValueBubbleShape:                uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleBackgroundColor:      "amber-500",
+										ThumbUpperValue:                      uiHelper.FormatPointer(secRuleEntity.RpsHardLimitPerIp),
+										ThumbUpperBackgroundColor:            "red-500",
+										ThumbUpperValueBubbleEnabled:         true,
+										ThumbUpperValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbUpperValueBubblePosition:        uiControl.RangeSliderThumbValueBubblePositionBottom,
+										ThumbUpperValueBubbleBackgroundColor: "red-500",
+									})
+								} else if secRuleEntity.RpsSoftLimitPerIp != nil {
+									@uiControl.RangeSlider(uiControl.RangeSliderSettings{
+										ThumbShape:                      uiControl.RangeSliderThumbShapePipe,
+										Size:                            uiControl.RangeSliderSizeMd,
+										TrackStartValue:                 "0",
+										TrackEndValue:                   "30",
+										TrackSteps:                      "1",
+										ThumbValue:                      uiHelper.FormatPointer(secRuleEntity.RpsSoftLimitPerIp),
+										ThumbBackgroundColor:            "amber-500",
+										ThumbValueBubbleEnabled:         true,
+										ThumbValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleBackgroundColor: "amber-500",
+									})
+								} else if secRuleEntity.RpsHardLimitPerIp != nil {
+									@uiControl.RangeSlider(uiControl.RangeSliderSettings{
+										ThumbShape:                      uiControl.RangeSliderThumbShapePipe,
+										Size:                            uiControl.RangeSliderSizeMd,
+										TrackStartValue:                 "0",
+										TrackEndValue:                   "30",
+										TrackSteps:                      "1",
+										ThumbValue:                      uiHelper.FormatPointer(secRuleEntity.RpsHardLimitPerIp),
+										ThumbBackgroundColor:            "red-500",
+										ThumbValueBubbleEnabled:         true,
+										ThumbValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleBackgroundColor: "red-500",
+									})
+								} else {
+									<span class="text-neutral-500">--</span>
+								}
+								if secRuleEntity.ResponseCodeOnMaxRequests != nil && *secRuleEntity.ResponseCodeOnMaxRequests != 429 {
+									<div class="flex justify-center">
+										@uiDisplay.Tag(uiDisplay.TagSettings{
+											Size:                 uiDisplay.TagSizeXs,
+											OuterBackgroundColor: "neutral-50/10",
+											OuterLeftLabel:       "responseCode",
+											InnerLabel:           uiHelper.FormatPointer(secRuleEntity.ResponseCodeOnMaxRequests),
+										})
+									</div>
+								}
+							</div>
+						</td>
+						<td>
+							<div class="flex flex-col gap-2">
+								if secRuleEntity.MaxConnectionsPerIp != nil {
+									<p>
+										<strong>{ uiHelper.FormatPointer(secRuleEntity.MaxConnectionsPerIp) }</strong> <small class="italic">conns</small>
+									</p>
+									if secRuleEntity.ResponseCodeOnMaxConnections != nil && *secRuleEntity.ResponseCodeOnMaxConnections != 420 {
+										<div class="flex justify-center">
+											@uiDisplay.Tag(uiDisplay.TagSettings{
+												Size:                 uiDisplay.TagSizeXs,
+												OuterBackgroundColor: "neutral-50/10",
+												OuterLeftLabel:       "responseCode",
+												InnerLabel:           uiHelper.FormatPointer(secRuleEntity.ResponseCodeOnMaxConnections),
+											})
+										</div>
+									}
+								} else {
+									<span class="text-neutral-500">--</span>
+								}
+							</div>
+						</td>
+						<td>
+							if secRuleEntity.BandwidthBpsLimitPerConnection != nil {
+								<div class="flex flex-row items-center justify-center gap-0.5">
+									<i class="ph-bold ph-arrows-down-up pt-0.5 text-base text-emerald-700"></i>
+									{ uiHelper.FormatPointer(secRuleEntity.BandwidthBpsLimitPerConnection) }/s
+								</div>
+								if secRuleEntity.BandwidthLimitOnlyAfterBytes != nil {
+									<p class="text-xs italic text-neutral-400">
+										(after { uiHelper.FormatPointer(secRuleEntity.BandwidthLimitOnlyAfterBytes) })
+									</p>
+								}
+							} else {
+								<span class="text-neutral-500">--</span>
+							}
+						</td>
+						<td class="flex flex-row items-center justify-center gap-2 py-8">
+							@uiControl.Button(uiControl.ButtonSettings{
+								BackgroundColor:        "cyan-800/50",
+								BackgroundColorHover:   "cyan-600/50",
+								IconLeft:               "ph-pencil",
+								Size:                   uiControl.ButtonSizeMd,
+								Shape:                  uiControl.ButtonShapeCircular,
+								OnClickFunc:            "openUpdateMappingSecurityRuleModal('" + secRuleEntity.Id.String() + "')",
+								TooltipContent:         "edit security rule",
+								TooltipBackgroundColor: "cyan-800",
+							})
+							@uiControl.Button(uiControl.ButtonSettings{
+								BackgroundColor:        "red-800",
+								BackgroundColorHover:   "red-600",
+								IconLeft:               "ph-trash",
+								Size:                   uiControl.ButtonSizeMd,
+								Shape:                  uiControl.ButtonShapeCircular,
+								OnClickFunc:            "openDeleteMappingSecurityRuleModal('" + secRuleEntity.Id.String() + "', '" + secRuleEntity.Name.String() + "')",
+								TooltipContent:         "delete security rule",
+								TooltipBackgroundColor: "red-800",
+							})
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ ListManager(inputName, inputLabel, listTwoWayStatePath string) {
+	<!-- ListManager -->
+	<div class="flex w-full flex-col gap-2" x-data="{currentItem: ''}">
+		<input type="hidden" name={ inputName } x-model:value={ listTwoWayStatePath + ".join(';')" }/>
+		<!-- ListManagerInput -->
+		<div class="flex w-full flex-row items-center justify-stretch gap-2">
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				Label:           inputLabel,
+				TwoWayStatePath: "currentItem",
+			})
+			@uiControl.Button(uiControl.ButtonSettings{
+				IconLeft:              "ph-plus",
+				Shape:                 uiControl.ButtonShapeRounded,
+				BackgroundColor:       "secondary-500",
+				OnClickFunc:           listTwoWayStatePath + ".push(currentItem); currentItem = ''",
+				OnClickPreventDefault: true,
+			})
+		</div>
+		<!-- ListManagerTable -->
+		<ul class="bg-neutral-50/2.5 rounded-lg p-1" x-show={ listTwoWayStatePath + ".length > 0" } x-cloak>
+			<template x-for={ "item in " + listTwoWayStatePath }>
+				<li class="flex w-full items-center justify-between border-b border-neutral-500/20 p-2 text-sm last:border-b-0">
+					<span x-text="item"></span>
+					<a
+						class="flex cursor-pointer items-center rounded-md text-base text-neutral-300 transition-colors hover:text-red-800"
+						@click.prevent={ listTwoWayStatePath + ".splice(" + listTwoWayStatePath + ".indexOf(item), 1)" }
+					><i class={ "ph-bold ph-x-circle" }></i></a>
+				</li>
+			</template>
+		</ul>
+	</div>
+}
+
+templ MappingSecurityRuleForm(isUpdate bool) {
+	<!-- MappingSecurityRuleForm -->
+	<form
+		class="flex flex-col gap-4"
+		if !isUpdate {
+			hx-post="/api/v1/vhost/mapping/security-rule/"
+		} else {
+			hx-put="/api/v1/vhost/mapping/security-rule/"
+		}
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		if !isUpdate {
+			@submit="closeCreateMappingSecurityRuleModal()"
+		} else {
+			@submit="closeUpdateMappingSecurityRuleModal()"
+		}
+		@htmx:after-request={ "$dispatch('" + MappingSecurityRulesDisplayRefreshEventName + "')" }
+	>
+		if isUpdate {
+			<input type="hidden" name="id" x-bind:value="mappingSecurityRule.id"/>
+		}
+		@uiForm.InputField(uiForm.InputFieldSettings{
+			Label:           "Name",
+			InputType:       "text",
+			InputName:       "name",
+			TwoWayStatePath: "mappingSecurityRule.name",
+		})
+		@uiForm.TextArea(uiForm.TextAreaSettings{
+			Label:           "Description",
+			InputName:       "description",
+			TwoWayStatePath: "mappingSecurityRule.description",
+		})
+		<div class="rounded-md bg-neutral-950/20 p-4">
+			<h3 class="mb-3 text-lg">IP Access Control</h3>
+			<div class="flex flex-row items-start justify-stretch gap-5">
+				<div class="flex w-full flex-col gap-1">
+					<h4>Allowed</h4>
+					<!-- AllowedIps -->
+					@ListManager("allowedIps", "IpAddress (or CIDR)", "mappingSecurityRule.allowedIps")
+				</div>
+				<div class="flex w-full flex-col gap-1">
+					<h4>Blocked</h4>
+					<!-- BlockedIps -->
+					@ListManager("blockedIps", "IpAddress (or CIDR)", "mappingSecurityRule.blockedIps")
+				</div>
+			</div>
+		</div>
+		<div class="rounded-md bg-neutral-950/20 p-4">
+			<h3 class="mb-3 text-lg">
+				Rate Limit <small class="italic">(Requests per Second (RPS))</small>
+			</h3>
+			<div class="flex flex-row items-center justify-stretch gap-5">
+				@uiForm.InputField(uiForm.InputFieldSettings{
+					InputType:       "number",
+					InputName:       "rpsSoftLimitPerIp",
+					Label:           "Soft Limit",
+					TwoWayStatePath: "mappingSecurityRule.rpsSoftLimitPerIp",
+					InputNumberMin:  "1",
+					InputNumberStep: "1",
+					InputNumberMax:  "1000",
+				})
+				@uiForm.InputField(uiForm.InputFieldSettings{
+					InputType:       "number",
+					InputName:       "rpsHardLimitPerIp",
+					Label:           "Hard Limit",
+					TwoWayStatePath: "mappingSecurityRule.rpsHardLimitPerIp",
+					InputNumberMin:  "1",
+					InputNumberStep: "1",
+					InputNumberMax:  "1000",
+				})
+				@uiForm.InputField(uiForm.InputFieldSettings{
+					InputType:       "number",
+					InputName:       "responseCodeOnMaxRequests",
+					Label:           "Max Requests Response Code",
+					TwoWayStatePath: "mappingSecurityRule.responseCodeOnMaxRequests",
+					InputNumberMin:  "100",
+					InputNumberStep: "1",
+					InputNumberMax:  "599",
+				})
+			</div>
+		</div>
+		<div class="rounded-md bg-neutral-950/20 p-4">
+			<h3 class="mb-3 text-lg">
+				Connection Limit <small class="italic">(per ip address)</small>
+			</h3>
+			<div class="flex flex-row items-center justify-stretch gap-5">
+				@uiForm.InputField(uiForm.InputFieldSettings{
+					InputType:       "number",
+					InputName:       "maxConnectionsPerIp",
+					Label:           "Max Connections",
+					TwoWayStatePath: "mappingSecurityRule.maxConnectionsPerIp",
+					InputNumberMin:  "1",
+					InputNumberStep: "1",
+					InputNumberMax:  "1000",
+				})
+				@uiForm.InputField(uiForm.InputFieldSettings{
+					InputType:       "number",
+					InputName:       "responseCodeOnMaxConnections",
+					Label:           "Max Connections Response Code",
+					TwoWayStatePath: "mappingSecurityRule.responseCodeOnMaxConnections",
+					InputNumberMin:  "100",
+					InputNumberStep: "1",
+					InputNumberMax:  "599",
+				})
+			</div>
+		</div>
+		<div class="rounded-md bg-neutral-950/20 p-4">
+			<h3 class="mb-3 text-lg">Bandwidth Limiting</h3>
+			<div class="flex flex-row items-center justify-stretch gap-5">
+				@uiForm.SelectInput(uiForm.SelectInputSettings{
+					Label:           "Bandwidth Limit per Connection",
+					InputName:       "bandwidthBpsLimitPerConnection",
+					TwoWayStatePath: "mappingSecurityRule.bandwidthBpsLimitPerConnection",
+					LabelValueOptions: []uiForm.SelectLabelValueOption{
+						{Label: "Unlimited", Value: "0"},
+						{Label: "2 MiB/s", Value: "2097152"},
+						{Label: "4 MiB/s", Value: "4194304"},
+						{Label: "8 MiB/s", Value: "8388608"},
+						{Label: "12 MiB/s", Value: "12582912"},
+						{Label: "16 MiB/s", Value: "16777216"},
+						{Label: "24 MiB/s", Value: "25165824"},
+						{Label: "32 MiB/s", Value: "33554432"},
+						{Label: "48 MiB/s", Value: "48318384"},
+						{Label: "64 MiB/s", Value: "67108864"},
+						{Label: "96 MiB/s", Value: "96468768"},
+						{Label: "128 MiB/s", Value: "134217728"},
+						{Label: "192 MiB/s", Value: "192737536"},
+						{Label: "256 MiB/s", Value: "268435456"},
+						{Label: "384 MiB/s", Value: "388536320"},
+						{Label: "512 MiB/s", Value: "536870912"},
+						{Label: "768 MiB/s", Value: "786432000"},
+						{Label: "1 GiB/s", Value: "1073741824"},
+					},
+					DropdownBackgroundColor: "primary-500/95",
+				})
+				@uiForm.SelectInput(uiForm.SelectInputSettings{
+					Label:           "Apply Bandwidth Limit After",
+					InputName:       "bandwidthLimitOnlyAfterBytes",
+					TwoWayStatePath: "mappingSecurityRule.bandwidthLimitOnlyAfterBytes",
+					LabelValueOptions: []uiForm.SelectLabelValueOption{
+						{Label: "Unlimited", Value: "0"},
+						{Label: "2 MiB", Value: "2097152"},
+						{Label: "4 MiB", Value: "4194304"},
+						{Label: "8 MiB", Value: "8388608"},
+						{Label: "12 MiB", Value: "12582912"},
+						{Label: "16 MiB", Value: "16777216"},
+						{Label: "24 MiB", Value: "25165824"},
+						{Label: "32 MiB", Value: "33554432"},
+						{Label: "48 MiB", Value: "48318384"},
+						{Label: "64 MiB", Value: "67108864"},
+						{Label: "96 MiB", Value: "96468768"},
+						{Label: "128 MiB", Value: "134217728"},
+						{Label: "192 MiB", Value: "192737536"},
+						{Label: "256 MiB", Value: "268435456"},
+						{Label: "384 MiB", Value: "388536320"},
+						{Label: "512 MiB", Value: "536870912"},
+						{Label: "768 MiB", Value: "786432000"},
+						{Label: "1 GiB", Value: "1073741824"},
+					},
+					DropdownBackgroundColor: "primary-500/95",
+				})
+			</div>
+		</div>
+		{{ buttonLabel := "create" }}
+		if isUpdate {
+			{{ buttonLabel = "update" }}
+		}
+		@uiControl.Button(uiControl.ButtonSettings{
+			Label:                buttonLabel,
+			IconLeft:             "ph-check-fat",
+			BackgroundColor:      "secondary-500",
+			BackgroundColorHover: "secondary-300",
+			IsSubmit:             true,
+			IsFullWidth:          true,
+		})
+	</form>
+}
+
+templ CreateMappingSecurityRuleModal() {
+	@componentStructural.RegularModal(
+		"Create Mapping Security Rule", "isCreateMappingSecurityRuleModalOpen",
+		"closeCreateMappingSecurityRuleModal()", "",
+	) {
+		@MappingSecurityRuleForm(false)
+	}
+}
+
+templ UpdateMappingSecurityRuleModal() {
+	@componentStructural.RegularModal(
+		"Update Mapping Security Rule", "isUpdateMappingSecurityRuleModalOpen",
+		"closeUpdateMappingSecurityRuleModal()", "",
+	) {
+		@MappingSecurityRuleForm(true)
+	}
+}

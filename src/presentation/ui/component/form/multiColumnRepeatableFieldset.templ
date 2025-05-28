@@ -8,7 +8,9 @@ type RepeatableField struct {
 }
 
 script MultiColumnRepeatableFieldsetLocalState(id string) {
-	document.addEventListener('alpine:init', () => {
+	Infinite.RegisterAlpineState(multiColumnRepeatableFieldsetAlpineState);
+
+	function multiColumnRepeatableFieldsetAlpineState() {
 		Alpine.data(id+'MultiColumnRepeatableFieldset', () => ({
 			newFieldset: {},
 			registeredFieldsets: [],
@@ -56,7 +58,7 @@ script MultiColumnRepeatableFieldsetLocalState(id string) {
 				});
 			},
 		}));
-	});
+	};
 }
 
 templ MultiColumnRepeatableFieldset(

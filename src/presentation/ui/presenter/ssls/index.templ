@@ -1,0 +1,262 @@
+package uiPresenter
+
+import (
+	_ "embed"
+	"github.com/goinfinite/os/src/domain/entity"
+	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
+	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+)
+
+const (
+	SslPairsRecordsDisplayId               string = "ssl-pairs-table"
+	SslPairsRecordsDisplayRefreshEventName string = "refresh:" + SslPairsRecordsDisplayId
+)
+
+//go:embed state.js
+var sslsIndexAlpineState string
+
+templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
+	<!-- SslsIndex JavaScript -->
+	@templ.Raw(`<script type="text/javascript">` + sslsIndexAlpineState + `</script>`)
+	<!-- SslsIndex HTML -->
+	<div x-data="ssls">
+		@componentStructural.PageTitle(
+			"SSL Certificate",
+			"Import, view, and swap your virtual host SSL certificates.",
+			"ph-lock",
+		)
+		@SslPairsTable(sslPairs)
+		<p class="mt-4 text-xs text-neutral-400">
+			NOTE: To update SSL certificates for aliases, you need to update the SSL certificate of the parent virtual host, as aliases do not have their own SSL certificates.
+		</p>
+		@ImportSslCertificateModal(vhostsHostnames)
+		@ViewPemFilesModal()
+		@SwapToSelfSignedModal()
+	</div>
+}
+
+templ SslPairsTable(sslPairEntities []entity.SslPair) {
+	<!-- SslPairsTable -->
+	<div
+		id={ SslPairsRecordsDisplayId }
+		hx-get="/ssls/"
+		hx-trigger={ SslPairsRecordsDisplayRefreshEventName + " from:window" }
+		hx-select={ "#" + SslPairsRecordsDisplayId }
+		hx-target={ "#" + SslPairsRecordsDisplayId }
+		hx-indicator="#loading-overlay"
+		hx-swap="outerHTML transition:true"
+		class="flex flex-col gap-4 rounded-lg bg-neutral-950/20 p-5"
+	>
+		<table class="w-full table-fixed border-collapse rounded-md transition-all duration-300 ease-in-out">
+			<!-- SslPairsTable Header -->
+			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
+				<tr class="*:p-3 border-y border-neutral-50/10 text-center">
+					<th scope="col" class="w-[25%] text-left">Virtual Hosts</th>
+					<th scope="col" class="w-[15%]">Issued At</th>
+					<th scope="col" class="w-[15%]">Expires At</th>
+					<th scope="col" class="w-[25%]">Certificate Authority (CA)</th>
+					<th scope="col" class="w-[20%]">
+						@componentForm.SubmitButton(
+							"import-ssl-certificate-button", "Import SSL certificate",
+							"ph-swap", "openImportSslCertificateModal()", false,
+						)
+					</th>
+				</tr>
+			</thead>
+			<tbody>
+				for _, sslPairEntity := range sslPairEntities {
+					{{ pairTrClasses := "*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center last:border-b-0" }}
+					if sslPairEntity.IsPubliclyTrusted() {
+						{{ pairTrClasses += " even:bg-neutral-500/5" }}
+					} else {
+						{{ pairTrClasses += " bg-red-900/15 even:bg-red-900/25" }}
+					}
+					<tr class={ pairTrClasses }>
+						@templ.JSONScript("sslPairEntity_"+sslPairEntity.Id.String(), sslPairEntity)
+						<td class="text-left">
+							<p class="font-bold">{ sslPairEntity.VirtualHostHostname.String() }</p>
+							<p class="text-infinite-500 text-[0.6rem]">#{ sslPairEntity.Id.String()[0:12] }</p>
+							<p class="mt-3 text-[0.75rem] font-bold text-neutral-300">
+								subject alternative names (SANs)
+							</p>
+							<div class="mt-0.5 flex flex-col items-center rounded-lg bg-neutral-500/5 text-xs">
+								for _, altName := range sslPairEntity.Certificate.AltNames {
+									<div class="flex w-full items-center justify-between border-t-2 border-neutral-500/20 px-3 py-1.5 first:border-t-0">
+										{ altName.String() }
+									</div>
+								}
+							</div>
+						</td>
+						<td>{ sslPairEntity.Certificate.IssuedAt.ReadDateOnly() }</td>
+						<td>
+							{{ expiresAtIcon := "ph-warning" }}
+							{{ expiresAtIconColor := "text-amber-500" }}
+							if sslPairEntity.Certificate.ExpiresAt.IsFuture() {
+								{{ expiresAtIcon = "ph-check-circle" }}
+								{{ expiresAtIconColor = "text-green-500" }}
+							}
+							{ sslPairEntity.Certificate.ExpiresAt.ReadDateOnly() }
+							<i class={ "ph-bold text-xs " + expiresAtIcon + " " + expiresAtIconColor }></i>
+						</td>
+						<td>
+							<div>
+								{{ caIcon := "ph-warning" }}
+								{{ caIconColor := "text-amber-500" }}
+								if !sslPairEntity.Certificate.CertificateAuthority.IsSelfSigned() {
+									{{ caIcon = "ph-check-circle" }}
+									{{ caIconColor = "text-green-500" }}
+								}
+								{ sslPairEntity.Certificate.CertificateAuthority.String() }
+								<i class={ "ph-bold text-xs " + caIcon + " " + caIconColor }></i>
+							</div>
+						</td>
+						<td>
+							<div class="inline-flex space-x-2">
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-file-magnifying-glass", "neutral-50/10", "neutral-50/30",
+									"openViewPemFilesModal('"+sslPairEntity.Id.String()+"')",
+									"view PEM files", "neutral-50/10",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-swap", "cyan-800/50", "cyan-600/50",
+									"openImportSslCertificateModal('"+sslPairEntity.VirtualHostHostname.String()+"')",
+									"replace/import certificate", "cyan-500",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-certificate", "green-800/50", "green-600/50",
+									"createPubliclyTrusted('"+sslPairEntity.VirtualHostHostname.String()+"')",
+									"issue trusted certificate", "green-500",
+								)
+								@componentStructural.CircularIconButtonWithTooltip(
+									"ph-trash", "red-800", "red-600",
+									"openSwapToSelfSignedModal('"+sslPairEntity.Id.String()+"')",
+									"swap to self-signed", "red-500",
+								)
+							</div>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+}
+
+templ ImportSslCertificateForm(vhostsHostnames []string) {
+	<!-- ImportSslCertificateForm -->
+	<form
+		id="import-ssl-certificate-form"
+		class="flex flex-col gap-4"
+		hx-post="/api/v1/ssl/"
+		hx-indicator="#loading-overlay"
+		hx-swap="none"
+		@submit="closeImportSslCertificateModal()"
+		@htmx:after-request={ "$dispatch('" + SslPairsRecordsDisplayRefreshEventName + "')" }
+	>
+		@componentForm.MultiSelectInput(
+			"virtualHostsHostnames", "Virtual Hosts Hostnames",
+			"sslPair.virtualHostsHostnames", vhostsHostnames,
+		)
+		<input name="encodedCertificate" type="hidden" :value="btoa(sslPair.certificate)"/>
+		<input name="encodedChainCertificates" type="hidden" :value="btoa(sslPair.chainCertificates)"/>
+		<input name="encodedKey" type="hidden" :value="btoa(sslPair.key)"/>
+		<div x-show="!shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Label:              "Certificate",
+				BindModelValuePath: "sslPair.certificate",
+				InfoTooltipContent: "Certificate in PEM format, with or without CA chain.<br />Separate each certificate with a new line.",
+			})
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Label:              "CA Chain/Bundle Certificates",
+				BindModelValuePath: "sslPair.chainCertificates",
+				InfoTooltipContent: "Optional. CA chain/bundle certificates in PEM format.<br />It's usually provided by the CA when you issue the certificate.<br />Separate each certificate with a new line.",
+			})
+			@componentForm.TextArea(componentForm.TextAreaDto{
+				Label:              "Private Key",
+				BindModelValuePath: "sslPair.key",
+			})
+		</div>
+		<div x-show="shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
+			@componentForm.FileUploadTextInputFileContentReader(
+				"", "Certificate", "sslPair.certificate", ".crt",
+			)
+			@componentForm.FileUploadTextInputFileContentReader(
+				"", "CA Chain/Bundle Certificates", "sslPair.chainCertificates", ".crt",
+			)
+			@componentForm.FileUploadTextInputFileContentReader(
+				"", "Private Key", "sslPair.key", ".key",
+			)
+		</div>
+		<div class="mb-4 flex justify-end">
+			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
+				Id:            "change-import-ssl-certificate-form-radio-input",
+				Label:         "OR upload files (.crt/.key - pem format)",
+				BindModelPath: "shouldImportSslCertificateAsFile",
+			})
+		</div>
+		@componentForm.DeactivableSubmitButton(
+			"Import SSL certificate", "ph-check-fat", "",
+			"shouldDisableImportSslCertificateSubmitButton", false,
+		)
+	</form>
+}
+
+templ ImportSslCertificateModal(vhostsHostnames []string) {
+	@componentStructural.RegularModal(
+		"Import SSL certificate", "isImportSslCertificateModalOpen",
+		"closeImportSslCertificateModal()", "",
+	) {
+		@ImportSslCertificateForm(vhostsHostnames)
+	}
+}
+
+templ ViewPemFilesModal() {
+	<!-- ViewPemFilesModal -->
+	@componentStructural.RegularModal(
+		"PEM files", "isViewPemFilesModalOpen",
+		"closeViewPemFilesModal()", "",
+	) {
+		<div class="space-y-6">
+			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", "")
+			<div class="space-y-1">
+				@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
+					Id:                 "certificate",
+					Label:              "Certificate",
+					BindModelValuePath: "sslPair.certificate",
+				})
+				@componentForm.SubmitButton(
+					"download-certificate-pem-file-button", "Download certificate",
+					"ph-download-simple", "downloadPemFile(false)", false,
+				)
+			</div>
+			<div class="space-y-1">
+				@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
+					Id:                 "key",
+					Label:              "Private Key",
+					BindModelValuePath: "sslPair.key",
+				})
+				@componentForm.SubmitButton(
+					"download-key-pem-file-button", "Download private key",
+					"ph-download-simple", "downloadPemFile(true)", false,
+				)
+			</div>
+		</div>
+	}
+}
+
+templ SwapToSelfSignedCriticalWarningContent() {
+	<!-- SwapToSelfSignedCriticalWarningContent -->
+	<h3 class="text-pretty mb-3 text-xl font-bold capitalize leading-relaxed">
+		Are you sure you want to replace the current SSL certificate with a self-signed SSL certificate?
+	</h3>
+	<p>This process cannot be undone. The system will replace the current certificate with a self-signed SSL until a new publicly trusted SSL certificate can be issued.</p>
+}
+
+templ SwapToSelfSignedModal() {
+	@componentStructural.CriticalModal(
+		"isSwapToSelfSignedModalOpen", "closeSwapToSelfSignedModal()",
+		"Cancel", "swapToSelfSigned()", "swap-to-self-signed-button",
+		"ph-trash", "yes, replace it!",
+	) {
+		@SwapToSelfSignedCriticalWarningContent()
+	}
+}

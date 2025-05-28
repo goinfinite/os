@@ -18,6 +18,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 
 	"github.com/shirou/gopsutil/process"
 )
@@ -394,7 +395,7 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 func (repo *ServicesQueryRepo) installableServiceFactory(
 	serviceFilePath valueObject.UnixFilePath,
 ) (installableService entity.InstallableService, err error) {
-	serviceMap, err := infraHelper.FileSerializedDataToMap(serviceFilePath)
+	serviceMap, err := tkInfra.FileDeserializer(serviceFilePath.String())
 	if err != nil {
 		return installableService, err
 	}

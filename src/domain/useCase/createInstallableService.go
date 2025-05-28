@@ -56,6 +56,14 @@ func CreateInstallableService(
 		return nil
 	}
 
+	if serviceEntity.Type == valueObject.ServiceTypeDatabase {
+		slog.Debug(
+			"AutoCreateMappingSkipped",
+			slog.String("reason", "ServiceTypeDoesNotRequireMapping"),
+		)
+		return nil
+	}
+
 	return CreateServiceAutoMapping(
 		vhostQueryRepo, mappingCmdRepo, installedServiceName, createDto.MappingHostname,
 		createDto.MappingPath, createDto.MappingUpgradeInsecureRequests,
