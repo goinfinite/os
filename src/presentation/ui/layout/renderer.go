@@ -1,6 +1,8 @@
 package uiLayout
 
 import (
+	"errors"
+
 	"github.com/a-h/templ"
 	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
 	"github.com/labstack/echo/v4"
@@ -14,6 +16,13 @@ type LayoutRendererSettings struct {
 }
 
 func Renderer(componentSettings LayoutRendererSettings) error {
+	if componentSettings.EchoContext == nil {
+		return errors.New("EchoContextIsMissing")
+	}
+	if componentSettings.PageContent == nil {
+		return errors.New("PageContentIsMissing")
+	}
+
 	componentSettings.EchoContext.Response().
 		Writer.WriteHeader(componentSettings.ResponseCode)
 	componentSettings.EchoContext.Response().
