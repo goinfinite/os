@@ -12,17 +12,22 @@ function devWsHotReload() {
 document.addEventListener("alpine:initializing", () => {
   Alpine.store("main", {
     // RoutingState
-    get activeRoute() {
-      return String(window.location.pathname);
-    },
+    activeRoute: String(document.location.pathname),
     isActiveRoute(path) {
       return this.activeRoute.startsWith(path);
     },
     navigateTo(path) {
+      this.activeRoute = path;
       htmx.ajax("GET", path, {
+        source: "#htmx-routing-attributes-element",
         select: "#page-content",
         target: "#page-content",
-        swap: "outerHTML settle:1s",
+        swap: "outerHTML transition:true",
+      });
+    },
+    init() {
+      window.addEventListener("popstate", () => {
+        this.activeRoute = String(document.location.pathname);
       });
     },
 

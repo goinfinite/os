@@ -46,7 +46,10 @@ templ SidebarHeader() {
 }
 
 templ SidebarMiddle() {
-	<ul class="flex flex-col gap-4 py-6" :class="{'items-center':isSidebarCollapsed, 'px-3':!isSidebarCollapsed}">
+	<ul
+		class="flex flex-col gap-4 py-6"
+		:class="{'items-center':isSidebarCollapsed, 'px-3':!isSidebarCollapsed}"
+	>
 		for _, sidebarItem := range SidebarItems {
 			<li>
 				<a
@@ -57,7 +60,7 @@ templ SidebarMiddle() {
 					<div class="group-hover:text-secondary-500 flex items-center justify-center rounded-md bg-neutral-50/5 p-2 transition-colors group-hover:bg-neutral-50/10">
 						<i
 							class={ "ph-duotone " + sidebarItem.Icon + " block text-2xl" }
-							:class={ "$store.main.isActiveRoute('" + sidebarItem.Link + "') && 'text-secondary-500'" }
+							:class={ "{'text-secondary-500' : $store.main.isActiveRoute('" + sidebarItem.Link + "')}" }
 						></i>
 					</div>
 					<span
@@ -69,6 +72,7 @@ templ SidebarMiddle() {
 				</a>
 			</li>
 		}
+		<li id="htmx-routing-attributes-element" class="hidden" hx-push-url="true"></li>
 	</ul>
 }
 
