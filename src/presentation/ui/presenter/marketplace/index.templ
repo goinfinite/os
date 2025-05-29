@@ -313,7 +313,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 			</template>
 		</div>
 		@componentForm.SubmitButton(
-			"install-marketplace-item-button", "Schedule installation",
+			"install-marketplace-item-button", "Schedule Installation",
 			"ph-queue", "closeScheduleSelectedMarketplaceItemInstallationModal()", false,
 		)
 	</form>
@@ -321,7 +321,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 
 templ ScheduleSelectedMarketplaceItemInstallationModal(vhostsHostnames []string) {
 	@componentStructural.RegularModal(
-		"Install marketplace item", "isScheduleSelectedMarketplaceItemInstallationModalOpen",
+		"Install Marketplace Item", "isScheduleSelectedMarketplaceItemInstallationModalOpen",
 		"closeScheduleSelectedMarketplaceItemInstallationModal()", "marketplaceItem.name",
 	) {
 		@ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames)

@@ -297,7 +297,7 @@ templ ScheduleMarketplaceItemInstallationModal(
 	marketplaceCatalogItems presenterMarketplace.CatalogItemsGroupedByType,
 ) {
 	@componentStructural.RegularModal(
-		"Install marketplace item", "isMarketplaceItemInstallationModalOpen",
+		"Install Marketplace Item", "isMarketplaceItemInstallationModalOpen",
 		"closeMarketplaceItemInstallationModal()", "",
 	) {
 		@ScheduleMarketplaceItemInstallationForm(
@@ -854,7 +854,7 @@ templ ServiceInstallationForm(installableServices InstallableServicesGroupedByTy
 		</div>
 		<div x-show="targetServiceType === 'custom'">
 			@CustomServiceForm(
-				"install-service-button", "Install immediately", "ph-arrow-line-down",
+				"install-service-button", "Install Immediately", "ph-arrow-line-down",
 				"installService()",
 			)
 		</div>
@@ -876,13 +876,13 @@ templ UpdateInstalledServiceForm() {
 	<form @submit.prevent="">
 		<div x-show="service.nature !== 'custom'">
 			@InstallableServiceForm(
-				"update-installed-service-button", "Update service", "ph-check-fat",
+				"update-installed-service-button", "Update Service", "ph-check-fat",
 				"updateService()", nil,
 			)
 		</div>
 		<div x-show="service.nature === 'custom'">
 			@CustomServiceForm(
-				"update-installed-service-button", "Update service", "ph-check-fat",
+				"update-installed-service-button", "Update Service", "ph-check-fat",
 				"updateService()",
 			)
 		</div>
@@ -891,7 +891,7 @@ templ UpdateInstalledServiceForm() {
 
 templ UpdateInstalledServiceModal() {
 	@componentStructural.RegularModal(
-		"Update service", "isUpdateInstalledServiceModalOpen",
+		"Update Service", "isUpdateInstalledServiceModalOpen",
 		"closeUpdateInstalledServiceModal()", "service.name",
 	) {
 		@UpdateInstalledServiceForm()
