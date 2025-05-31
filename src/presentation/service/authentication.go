@@ -9,6 +9,7 @@ import (
 	authInfra "github.com/goinfinite/os/src/infra/auth"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type AuthenticationService struct {
@@ -26,29 +27,20 @@ func NewAuthenticationService(
 	}
 }
 
-func (service *AuthenticationService) Login(input map[string]interface{}) ServiceOutput {
-	requiredParams := []string{"username", "password"}
-	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+func (service *AuthenticationService) Login(
+	parsedInput tkPresentation.RequestInputParsed,
+) ServiceOutput {
+	requiredParams := []string{"username", "password", "operatorIpAddress"}
+	err := serviceHelper.RequiredParamsInspector(parsedInput.KnownParams, requiredParams)
 	if err != nil {
 		return NewServiceOutput(UserError, err.Error())
 	}
 
-	username, err := valueObject.NewUsername(input["username"])
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
-	}
-
-	password, err := valueObject.NewPassword(input["password"])
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
-	}
-
-	operatorIpAddress, err := valueObject.NewIpAddress(input["operatorIpAddress"])
-	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
-	}
-
-	dto := dto.NewCreateSessionToken(username, password, operatorIpAddress)
+	dto := dto.NewCreateSessionToken(
+		parsedInput.KnownParams["username"].(valueObject.Username),
+		parsedInput.KnownParams["password"].(valueObject.Password),
+		parsedInput.KnownParams["operatorIpAddress"].(valueObject.IpAddress),
+	)
 
 	authQueryRepo := authInfra.NewAuthQueryRepo(service.persistentDbSvc)
 	authCmdRepo := authInfra.AuthCmdRepo{}

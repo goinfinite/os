@@ -4,6 +4,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/service"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -32,13 +33,10 @@ func NewAuthenticationController(
 // @Success      200 {object} entity.AccessToken
 // @Failure      401 {object} string
 // @Router       /v1/auth/login/ [post]
-func (controller *AuthenticationController) Login(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
-	}
-
+func (controller *AuthenticationController) Login(echoContext echo.Context) error {
 	return apiHelper.ServiceResponseWrapper(
-		c, controller.authenticationService.Login(requestInputData),
+		echoContext, controller.authenticationService.Login(
+			echoContext.Get("RequestInputParsed").(tkPresentation.RequestInputParsed),
+		),
 	)
 }
