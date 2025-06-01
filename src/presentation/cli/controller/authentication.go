@@ -4,7 +4,6 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/service"
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -30,29 +29,23 @@ func (controller *AuthenticationController) Login() *cobra.Command {
 		Use:   "login",
 		Short: "Login",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestInputParsed := cliHelper.RequestInputParser(map[string]any{
+			requestBody := map[string]interface{}{
 				"username":          usernameStr,
 				"password":          passwordStr,
 				"operatorIpAddress": ipAddressStr,
-			})
+			}
 
 			cliHelper.ServiceResponseWrapper(
-				controller.authenticationService.Login(requestInputParsed),
+				controller.authenticationService.Login(requestBody),
 			)
 		},
 	}
 
-	cmd.Flags().StringVarP(
-		&usernameStr, "username", "u", tkPresentation.UnsetParameterValueStr, "Username",
-	)
+	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
 	cmd.MarkFlagRequired("username")
-	cmd.Flags().StringVarP(
-		&passwordStr, "password", "p", tkPresentation.UnsetParameterValueStr, "Password",
-	)
+	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
 	cmd.MarkFlagRequired("password")
-	cmd.Flags().StringVarP(
-		&ipAddressStr, "ip-address", "i", tkPresentation.UnsetParameterValueStr, "IpAddress",
-	)
+	cmd.Flags().StringVarP(&ipAddressStr, "ip-address", "i", "", "IpAddress")
 	cmd.MarkFlagRequired("ip-address")
 	return cmd
 }
