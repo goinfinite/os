@@ -1,6 +1,6 @@
 # Project Specific Rules
 
-- Direct type assertion is performed on apiController and service layer. Do not question it.
+- Unit tests CANNOT be executed on your local machine. They MUST be executed using a container built from the Containerfile.test.
 
 # Infinite Standard Agent Guidelines
 
