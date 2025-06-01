@@ -3,13 +3,13 @@ package cliController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/spf13/cobra"
 )
 
 type ScheduledTaskController struct {
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
-	scheduledTaskService *service.ScheduledTaskService
+	scheduledTaskLiaison *liaison.ScheduledTaskLiaison
 }
 
 func NewScheduledTaskController(
@@ -17,7 +17,7 @@ func NewScheduledTaskController(
 ) *ScheduledTaskController {
 	return &ScheduledTaskController{
 		persistentDbSvc:      persistentDbSvc,
-		scheduledTaskService: service.NewScheduledTaskService(persistentDbSvc),
+		scheduledTaskLiaison: liaison.NewScheduledTaskLiaison(persistentDbSvc),
 	}
 }
 
@@ -85,8 +85,8 @@ func (controller *ScheduledTaskController) Read() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.scheduledTaskService.Read(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.scheduledTaskLiaison.Read(requestBody),
 			)
 		},
 	}
@@ -152,8 +152,8 @@ func (controller *ScheduledTaskController) Update() *cobra.Command {
 				requestBody["runAt"] = runAtInt64
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.scheduledTaskService.Update(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.scheduledTaskLiaison.Update(requestBody),
 			)
 		},
 	}

@@ -5,13 +5,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/labstack/echo/v4"
 )
 
 type AccountsPresenter struct {
-	accountService *service.AccountService
+	accountLiaison *liaison.AccountLiaison
 }
 
 func NewAccountsPresenter(
@@ -19,17 +19,17 @@ func NewAccountsPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *AccountsPresenter {
 	return &AccountsPresenter{
-		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
+		accountLiaison: liaison.NewAccountLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
 func (presenter *AccountsPresenter) Handler(c echo.Context) error {
-	responseOutput := presenter.accountService.Read(
+	responseOutput := presenter.accountLiaison.Read(
 		map[string]interface{}{
 			"shouldIncludeSecureAccessPublicKeys": true,
 		},
 	)
-	if responseOutput.Status != service.Success {
+	if responseOutput.Status != liaison.Success {
 		return nil
 	}
 

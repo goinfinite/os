@@ -7,7 +7,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	uiForm "github.com/goinfinite/ui/src/form"
@@ -30,20 +30,20 @@ func NewMappingsPresenter(
 }
 
 func (presenter *MappingsPresenter) readVirtualHostWithMappings() []dto.VirtualHostWithMappings {
-	virtualHostService := service.NewVirtualHostService(
+	virtualHostLiaison := liaison.NewVirtualHostLiaison(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
-	readVirtualHostsServiceOutput := virtualHostService.ReadWithMappings(map[string]interface{}{
+	readVirtualHostsLiaisonOutput := virtualHostLiaison.ReadWithMappings(map[string]interface{}{
 		"itemsPerPage": 1000,
 	})
-	if readVirtualHostsServiceOutput.Status != service.Success {
-		slog.Debug("ReadMappingsServiceOutputBadStatus")
+	if readVirtualHostsLiaisonOutput.Status != liaison.Success {
+		slog.Debug("ReadMappingsLiaisonOutputBadStatus")
 		return nil
 	}
 
-	readVirtualHostsResponse, assertOk := readVirtualHostsServiceOutput.Body.(dto.ReadVirtualHostsResponse)
+	readVirtualHostsResponse, assertOk := readVirtualHostsLiaisonOutput.Body.(dto.ReadVirtualHostsResponse)
 	if !assertOk {
-		slog.Debug("ReadMappingsServiceOutputBodyAssertionFailed")
+		slog.Debug("ReadMappingsLiaisonOutputBodyAssertionFailed")
 		return nil
 	}
 
@@ -62,13 +62,13 @@ func (presenter *MappingsPresenter) extractVirtualHostHostnames(
 }
 
 func (presenter *MappingsPresenter) readInstalledServiceNames() []string {
-	servicesService := service.NewServicesService(
+	servicesLiaison := liaison.NewServicesLiaison(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
-	installedServicesResponseOutput := servicesService.ReadInstalledItems(
+	installedServicesResponseOutput := servicesLiaison.ReadInstalledItems(
 		map[string]interface{}{"itemsPerPage": 1000},
 	)
-	if installedServicesResponseOutput.Status != service.Success {
+	if installedServicesResponseOutput.Status != liaison.Success {
 		slog.Debug("ReadInstalledItemsFailed", slog.Any("output", installedServicesResponseOutput))
 		return nil
 	}
@@ -92,21 +92,21 @@ func (presenter *MappingsPresenter) readInstalledServiceNames() []string {
 }
 
 func (presenter *MappingsPresenter) readSecRulesLabelValueOptions() []uiForm.SelectLabelValueOption {
-	virtualHostService := service.NewVirtualHostService(
+	virtualHostLiaison := liaison.NewVirtualHostLiaison(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
-	readSecRulesServiceOutput := virtualHostService.ReadMappingSecurityRules(map[string]interface{}{
+	readSecRulesLiaisonOutput := virtualHostLiaison.ReadMappingSecurityRules(map[string]interface{}{
 		"itemsPerPage": 1000,
 	})
 
-	if readSecRulesServiceOutput.Status != service.Success {
-		slog.Debug("ReadSecRulesServiceOutputBadStatus")
+	if readSecRulesLiaisonOutput.Status != liaison.Success {
+		slog.Debug("ReadSecRulesLiaisonOutputBadStatus")
 		return nil
 	}
 
-	readSecRulesResponse, assertOk := readSecRulesServiceOutput.Body.(dto.ReadMappingSecurityRulesResponse)
+	readSecRulesResponse, assertOk := readSecRulesLiaisonOutput.Body.(dto.ReadMappingSecurityRulesResponse)
 	if !assertOk {
-		slog.Debug("ReadSecRulesServiceOutputBodyAssertionFailed")
+		slog.Debug("ReadSecRulesLiaisonOutputBodyAssertionFailed")
 		return nil
 	}
 

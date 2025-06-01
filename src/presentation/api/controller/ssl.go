@@ -11,7 +11,7 @@ import (
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/labstack/echo/v4"
 )
@@ -19,7 +19,7 @@ import (
 type SslController struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
-	sslService      *service.SslService
+	sslLiaison      *liaison.SslLiaison
 }
 
 func NewSslController(
@@ -30,7 +30,7 @@ func NewSslController(
 	return &SslController{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
-		sslService: service.NewSslService(
+		sslLiaison: liaison.NewSslLiaison(
 			persistentDbSvc, transientDbSvc, trailDbSvc,
 		),
 	}
@@ -69,8 +69,8 @@ func (controller *SslController) Read(c echo.Context) error {
 		)
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.Read(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.sslLiaison.Read(requestInputData),
 	)
 }
 
@@ -144,8 +144,8 @@ func (controller *SslController) Create(c echo.Context) error {
 		requestInputData["chainCertificates"] = nil
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.Create(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.sslLiaison.Create(requestInputData),
 	)
 }
 
@@ -165,8 +165,8 @@ func (controller *SslController) CreatePubliclyTrusted(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.CreatePubliclyTrusted(requestInputData, true),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.sslLiaison.CreatePubliclyTrusted(requestInputData, true),
 	)
 }
 
@@ -186,8 +186,8 @@ func (controller *SslController) Delete(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.sslService.Delete(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.sslLiaison.Delete(requestInputData),
 	)
 }
 

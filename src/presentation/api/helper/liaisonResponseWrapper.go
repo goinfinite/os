@@ -3,7 +3,7 @@ package apiHelper
 import (
 	"net/http"
 
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
@@ -12,25 +12,25 @@ type newFormattedResponse struct {
 	Body   interface{} `json:"body"`
 }
 
-func ServiceResponseWrapper(
+func LiaisonResponseWrapper(
 	c echo.Context,
-	serviceOutput service.ServiceOutput,
+	liaisonOutput liaison.LiaisonOutput,
 ) error {
 	responseStatus := http.StatusOK
-	switch serviceOutput.Status {
-	case service.Created:
+	switch liaisonOutput.Status {
+	case liaison.Created:
 		responseStatus = http.StatusCreated
-	case service.MultiStatus:
+	case liaison.MultiStatus:
 		responseStatus = http.StatusMultiStatus
-	case service.UserError:
+	case liaison.UserError:
 		responseStatus = http.StatusBadRequest
-	case service.InfraError:
+	case liaison.InfraError:
 		responseStatus = http.StatusInternalServerError
 	}
 
 	formattedResponse := newFormattedResponse{
 		Status: responseStatus,
-		Body:   serviceOutput.Body,
+		Body:   liaisonOutput.Body,
 	}
 	return c.JSON(responseStatus, formattedResponse)
 }

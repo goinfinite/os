@@ -7,14 +7,14 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	layoutLogin "github.com/goinfinite/os/src/presentation/ui/layout/login"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
 type LoginPresenter struct {
-	accountService *service.AccountService
+	accountLiaison *liaison.AccountLiaison
 }
 
 func NewLoginPresenter(
@@ -22,12 +22,12 @@ func NewLoginPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *LoginPresenter {
 	return &LoginPresenter{
-		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
+		accountLiaison: liaison.NewAccountLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
 func (presenter *LoginPresenter) Handler(c echo.Context) error {
-	if presenterHelper.ShouldEnableInitialSetup(presenter.accountService) {
+	if presenterHelper.ShouldEnableInitialSetup(presenter.accountLiaison) {
 		return c.Redirect(http.StatusFound, "/setup/")
 	}
 

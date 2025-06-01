@@ -3,12 +3,12 @@ package apiController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
 type AuthenticationController struct {
-	authenticationService *service.AuthenticationService
+	authenticationLiaison *liaison.AuthenticationLiaison
 }
 
 func NewAuthenticationController(
@@ -16,7 +16,7 @@ func NewAuthenticationController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *AuthenticationController {
 	return &AuthenticationController{
-		authenticationService: service.NewAuthenticationService(
+		authenticationLiaison: liaison.NewAuthenticationLiaison(
 			persistentDbSvc, trailDbSvc,
 		),
 	}
@@ -38,7 +38,7 @@ func (controller *AuthenticationController) Login(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.authenticationService.Login(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.authenticationLiaison.Login(requestInputData),
 	)
 }

@@ -10,12 +10,12 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
 type RuntimeController struct {
-	runtimeService *service.RuntimeService
+	runtimeLiaison *liaison.RuntimeLiaison
 }
 
 func NewRuntimeController(
@@ -23,7 +23,7 @@ func NewRuntimeController(
 	trailDbService *internalDbInfra.TrailDatabaseService,
 ) *RuntimeController {
 	return &RuntimeController{
-		runtimeService: service.NewRuntimeService(persistentDbService, trailDbService),
+		runtimeLiaison: liaison.NewRuntimeLiaison(persistentDbService, trailDbService),
 	}
 }
 
@@ -43,8 +43,8 @@ func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.runtimeService.ReadPhpConfigs(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.runtimeLiaison.ReadPhpConfigs(requestInputData),
 	)
 }
 
@@ -170,7 +170,7 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 		requestInputData["settings"] = phpSettings
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.runtimeService.UpdatePhpConfigs(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.runtimeLiaison.UpdatePhpConfigs(requestInputData),
 	)
 }

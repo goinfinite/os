@@ -12,13 +12,13 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/labstack/echo/v4"
 )
 
 type ServicesController struct {
-	servicesService *service.ServicesService
+	servicesLiaison *liaison.ServicesLiaison
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
 
@@ -27,7 +27,7 @@ func NewServicesController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *ServicesController {
 	return &ServicesController{
-		servicesService: service.NewServicesService(persistentDbService, trailDbSvc),
+		servicesLiaison: liaison.NewServicesLiaison(persistentDbService, trailDbSvc),
 		persistentDbSvc: persistentDbService,
 	}
 }
@@ -56,8 +56,8 @@ func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.ReadInstalledItems(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.servicesLiaison.ReadInstalledItems(requestInputData),
 	)
 }
 
@@ -85,8 +85,8 @@ func (controller *ServicesController) ReadInstallablesItems(c echo.Context) erro
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.ReadInstallableItems(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.servicesLiaison.ReadInstallableItems(requestInputData),
 	)
 }
 
@@ -234,7 +234,7 @@ func (controller *ServicesController) parseRawPortBindings(
 
 // CreateInstallableService godoc
 // @Summary      CreateInstallableService
-// @Description  Install a new installable service.
+// @Description  Install a new installable liaison.
 // @Tags         services
 // @Accept       json
 // @Produce      json
@@ -268,14 +268,14 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 	}
 	requestInputData["portBindings"] = portBindings
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.CreateInstallable(requestInputData, true),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.servicesLiaison.CreateInstallable(requestInputData, true),
 	)
 }
 
 // CreateCustomService godoc
 // @Summary      CreateCustomService
-// @Description  Install a new custom service.
+// @Description  Install a new custom liaison.
 // @Tags         services
 // @Accept       json
 // @Produce      json
@@ -309,8 +309,8 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 	}
 	requestInputData["portBindings"] = portBindings
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.CreateCustom(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.servicesLiaison.CreateCustom(requestInputData),
 	)
 }
 
@@ -348,14 +348,14 @@ func (controller *ServicesController) Update(c echo.Context) error {
 		requestInputData["portBindings"] = rawPortBindings
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.Update(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.servicesLiaison.Update(requestInputData),
 	)
 }
 
 // DeleteService godoc
 // @Summary      DeleteService
-// @Description  Delete/Uninstall a service.
+// @Description  Delete/Uninstall a liaison.
 // @Tags         services
 // @Accept       json
 // @Produce      json
@@ -370,8 +370,8 @@ func (controller *ServicesController) Delete(c echo.Context) error {
 	}
 	requestInputData["name"] = requestInputData["svcName"]
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.servicesService.Delete(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.servicesLiaison.Delete(requestInputData),
 	)
 }
 
