@@ -1,7 +1,12 @@
 # Changelog
 
 ```log
-0.2.5 - 2025/06/27
+0.2.6 - 2025/06/02
+feat: implement clearable fields for cron and mappings
+fix(ui): missing capital letters on modals
+fix(api): rename accountId to operatorAccountId
+
+0.2.5 - 2025/05/27
 refactor(ui): sidebar
 refactor(ui): merge page and presenters
 refactor(ui): move state.js to individual embeds
