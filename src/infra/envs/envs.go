@@ -20,6 +20,8 @@ const (
 	MappingsSecurityRulesConfDir       string = MappingsConfDir + "/security"
 	PkiConfDir                         string = "/app/conf/pki"
 	PhpWebserverMainConfFilePath       string = "/usr/local/lsws/conf/httpd_config.conf"
+	PhpWebserverUsername               string = "nobody"
+	PhpWebserverGroupName              string = "nogroup"
 	AccessTokenCookieKey               string = "os-access-token"
 	UserDataBaseDirectory              string = "/home"
 	DefaultPrimaryVhost                string = "goinfinite.local"
