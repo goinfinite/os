@@ -1,8 +1,10 @@
 # Changelog
 
 ```log
-0.2.6 - 2025/06/02
+0.2.6 - 2025/06/XX
+feat: runtime php run
 feat: implement clearable fields for cron and mappings
+fix(api): add debug logs to ssl watchdog
 fix(ui): missing capital letters on modals
 fix(api): rename accountId to operatorAccountId
 
