@@ -6,6 +6,7 @@ import (
 	"slices"
 
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	componentMappings "github.com/goinfinite/os/src/presentation/ui/component/mappings"
@@ -81,6 +82,10 @@ func (presenter *MappingsPresenter) readInstalledServiceNames() []string {
 
 	servicesNames := []string{}
 	for _, serviceEntity := range installedServicesResponseDto.InstalledServices {
+		if serviceEntity.Type == valueObject.ServiceTypeSystem {
+			continue
+		}
+
 		if len(serviceEntity.PortBindings) == 0 {
 			continue
 		}
