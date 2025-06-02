@@ -6,7 +6,7 @@ require (
 	github.com/a-h/templ v0.3.887
 	github.com/alecthomas/chroma v0.10.0
 	github.com/glebarez/sqlite v1.11.0
-	github.com/goinfinite/tk v0.0.4
+	github.com/goinfinite/tk v0.0.5
 	github.com/goinfinite/ui v0.0.8
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
