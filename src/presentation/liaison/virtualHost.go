@@ -540,9 +540,14 @@ func (liaison *VirtualHostLiaison) UpdateMapping(untrustedInput map[string]any) 
 		shouldUpgradeInsecureRequestsPtr = &shouldUpgradeInsecureRequests
 	}
 
+	clearableFields := []string{}
 	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
-	if untrustedInput["mappingSecurityRuleId"] != nil && untrustedInput["mappingSecurityRuleId"] != "" {
-		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(untrustedInput["mappingSecurityRuleId"])
+	switch mappingSecurityRuleIdValue := untrustedInput["mappingSecurityRuleId"]; {
+	case mappingSecurityRuleIdValue == nil:
+	case mappingSecurityRuleIdValue == "" || mappingSecurityRuleIdValue == " ":
+		clearableFields = append(clearableFields, "mappingSecurityRuleId")
+	default:
+		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(mappingSecurityRuleIdValue)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -568,7 +573,8 @@ func (liaison *VirtualHostLiaison) UpdateMapping(untrustedInput map[string]any) 
 	updateDto := dto.NewUpdateMapping(
 		id, pathPtr, matchPatternPtr, targetTypePtr, targetValuePtr,
 		targetHttpResponseCodePtr, shouldUpgradeInsecureRequestsPtr,
-		mappingSecurityRuleIdPtr, operatorAccountId, operatorIpAddress,
+		mappingSecurityRuleIdPtr, clearableFields,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.UpdateMapping(
@@ -823,9 +829,15 @@ func (liaison *VirtualHostLiaison) UpdateMappingSecurityRule(
 		namePtr = &name
 	}
 
+	clearableFields := []string{}
+
 	var descriptionPtr *valueObject.MappingSecurityRuleDescription
-	if untrustedInput["description"] != nil {
-		description, err := valueObject.NewMappingSecurityRuleDescription(untrustedInput["description"])
+	switch descriptionValue := untrustedInput["description"]; {
+	case descriptionValue == nil:
+	case descriptionValue == "" || descriptionValue == " ":
+		clearableFields = append(clearableFields, "description")
+	default:
+		description, err := valueObject.NewMappingSecurityRuleDescription(descriptionValue)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -934,7 +946,7 @@ func (liaison *VirtualHostLiaison) UpdateMappingSecurityRule(
 		rpsSoftLimitPerIpPtr, rpsHardLimitPerIpPtr, responseCodeOnMaxRequestsPtr,
 		maxConnectionsPerIpPtr, bandwidthBpsLimitPerConnectionPtr,
 		bandwidthLimitOnlyAfterBytesPtr, responseCodeOnMaxConnectionsPtr,
-		operatorAccountId, operatorIpAddress,
+		clearableFields, operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.UpdateMappingSecurityRule(

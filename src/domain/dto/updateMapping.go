@@ -11,6 +11,7 @@ type UpdateMapping struct {
 	TargetHttpResponseCode        *valueObject.HttpResponseCode      `json:"targetHttpResponseCode"`
 	ShouldUpgradeInsecureRequests *bool                              `json:"shouldUpgradeInsecureRequests"`
 	MappingSecurityRuleId         *valueObject.MappingSecurityRuleId `json:"mappingSecurityRuleId"`
+	ClearableFields               []string                           `json:"-"`
 	OperatorAccountId             valueObject.AccountId              `json:"-"`
 	OperatorIpAddress             valueObject.IpAddress              `json:"-"`
 }
@@ -24,6 +25,7 @@ func NewUpdateMapping(
 	targetHttpResponseCode *valueObject.HttpResponseCode,
 	shouldUpgradeInsecureRequests *bool,
 	mappingSecurityRuleId *valueObject.MappingSecurityRuleId,
+	clearableFields []string,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) UpdateMapping {
@@ -36,6 +38,7 @@ func NewUpdateMapping(
 		TargetHttpResponseCode:        targetHttpResponseCode,
 		ShouldUpgradeInsecureRequests: shouldUpgradeInsecureRequests,
 		MappingSecurityRuleId:         mappingSecurityRuleId,
+		ClearableFields:               clearableFields,
 		OperatorAccountId:             operatorAccountId,
 		OperatorIpAddress:             operatorIpAddress,
 	}
