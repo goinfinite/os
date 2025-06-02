@@ -462,6 +462,24 @@ definitions:
           $ref: '#/definitions/entity.VirtualHost'
         type: array
     type: object
+  dto.RunPhpCommandRequest:
+    properties:
+      command:
+        type: string
+      hostname:
+        type: string
+      timeoutSecs:
+        type: integer
+    type: object
+  dto.RunPhpCommandResponse:
+    properties:
+      exitCode:
+        type: integer
+      stdErr:
+        type: string
+      stdOut:
+        type: string
+    type: object
   dto.UnixFileBranch:
     properties:
       branches:
@@ -2302,6 +2320,30 @@ paths:
       summary: UpdatePhpConfigs
       tags:
       - runtime
+  /v1/runtime/php/run/:
+    post:
+      consumes:
+      - application/json
+      description: Run a php command as the webserver user for a given hostname.
+      parameters:
+      - description: RunPhpCommandDto
+        in: body
+        name: runPhpCommandDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RunPhpCommandRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RunPhpCommandResponse'
+      security:
+      - Bearer: []
+      summary: RunPhpCommand
+      tags:
+      - runtime
   /v1/scheduled-task/:
     get:
       consumes:
@@ -2485,7 +2527,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete/Uninstall a service.
+      description: Delete/Uninstall a liaison.
       parameters:
       - description: ServiceName to delete
         in: path
@@ -2508,7 +2550,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Install a new custom service.
+      description: Install a new custom liaison.
       parameters:
       - description: name, type and startCmd is required.<br />If version is not provided,
           it will be 'lts'.<br />If portBindings is not provided, it wil be default
@@ -2588,7 +2630,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Install a new installable service.
+      description: Install a new installable liaison.
       parameters:
       - description: Only name is required.<br />If version is not provided, it will
           be 'lts'.<br />If portBindings is not provided, it wil be default service

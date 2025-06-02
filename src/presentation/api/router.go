@@ -144,6 +144,8 @@ func (router Router) runtimeRoutes() {
 
 	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadPhpConfigs)
 	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdatePhpConfigs)
+	runtimeGroup.POST("/php/:hostname/run/", runtimeController.RunPhpCommand)
+	runtimeGroup.POST("/php/run/", runtimeController.RunPhpCommand)
 }
 
 func (router *Router) scheduledTaskRoutes() {

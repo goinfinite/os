@@ -1432,6 +1432,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/runtime/php/run/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Run a php command as the webserver user for a given hostname.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "runtime"
+                ],
+                "summary": "RunPhpCommand",
+                "parameters": [
+                    {
+                        "description": "RunPhpCommandDto",
+                        "name": "runPhpCommandDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RunPhpCommandRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RunPhpCommandResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/runtime/php/{hostname}/": {
             "get": {
                 "security": [
@@ -3578,6 +3617,34 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/entity.VirtualHost"
                     }
+                }
+            }
+        },
+        "dto.RunPhpCommandRequest": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "timeoutSecs": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RunPhpCommandResponse": {
+            "type": "object",
+            "properties": {
+                "exitCode": {
+                    "type": "integer"
+                },
+                "stdErr": {
+                    "type": "string"
+                },
+                "stdOut": {
+                    "type": "string"
                 }
             }
         },

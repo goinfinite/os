@@ -48,22 +48,22 @@ func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
 	)
 }
 
-func (controller *RuntimeController) parsePhpModules(rawPhpModules interface{}) (
+func (controller *RuntimeController) parsePhpModules(rawPhpModules any) (
 	[]entity.PhpModule, error,
 ) {
 	modules := []entity.PhpModule{}
 
-	rawModulesSlice, assertOk := rawPhpModules.([]interface{})
+	rawModulesSlice, assertOk := rawPhpModules.([]any)
 	if !assertOk {
-		rawUniqueModule, assertOk := rawPhpModules.(map[string]interface{})
+		rawUniqueModule, assertOk := rawPhpModules.(map[string]any)
 		if !assertOk {
 			return modules, errors.New("InvalidPhpModulesStructure")
 		}
-		rawModulesSlice = []interface{}{rawUniqueModule}
+		rawModulesSlice = []any{rawUniqueModule}
 	}
 
 	for _, rawModule := range rawModulesSlice {
-		rawModuleMap, assertOk := rawModule.(map[string]interface{})
+		rawModuleMap, assertOk := rawModule.(map[string]any)
 		if !assertOk {
 			slog.Debug("PhpModuleIsNotAnInterface")
 			continue
@@ -87,22 +87,22 @@ func (controller *RuntimeController) parsePhpModules(rawPhpModules interface{}) 
 	return modules, nil
 }
 
-func (controller *RuntimeController) parsePhpSettings(rawPhpSettings interface{}) (
+func (controller *RuntimeController) parsePhpSettings(rawPhpSettings any) (
 	[]entity.PhpSetting, error,
 ) {
 	settings := []entity.PhpSetting{}
 
-	rawSettingsSlice, assertOk := rawPhpSettings.([]interface{})
+	rawSettingsSlice, assertOk := rawPhpSettings.([]any)
 	if !assertOk {
-		rawUniqueSetting, assertOk := rawPhpSettings.(map[string]interface{})
+		rawUniqueSetting, assertOk := rawPhpSettings.(map[string]any)
 		if !assertOk {
 			return settings, errors.New("InvalidPhpSettingsStructure")
 		}
-		rawSettingsSlice = []interface{}{rawUniqueSetting}
+		rawSettingsSlice = []any{rawUniqueSetting}
 	}
 
 	for _, rawSetting := range rawSettingsSlice {
-		rawSettingMap, assertOk := rawSetting.(map[string]interface{})
+		rawSettingMap, assertOk := rawSetting.(map[string]any)
 		if !assertOk {
 			slog.Debug("PhpSettingIsNotAnInterface")
 			continue
@@ -172,5 +172,26 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 
 	return apiHelper.LiaisonResponseWrapper(
 		c, controller.runtimeLiaison.UpdatePhpConfigs(requestInputData),
+	)
+}
+
+// RunPhpCommand godoc
+// @Summary      RunPhpCommand
+// @Description  Run a php command as the webserver user for a given hostname.
+// @Tags         runtime
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        runPhpCommandDto	body dto.RunPhpCommandRequest	true	"RunPhpCommandDto"
+// @Success      200 {object} dto.RunPhpCommandResponse
+// @Router       /v1/runtime/php/run/ [post]
+func (controller *RuntimeController) RunPhpCommand(echoContext echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(echoContext)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.LiaisonResponseWrapper(
+		echoContext, controller.runtimeLiaison.RunPhpCommand(requestInputData),
 	)
 }

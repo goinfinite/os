@@ -11,6 +11,7 @@ import (
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type RuntimeLiaison struct {
@@ -131,4 +132,60 @@ func (liaison *RuntimeLiaison) UpdatePhpConfigs(
 	}
 
 	return NewLiaisonOutput(Success, "PhpConfigsUpdated")
+}
+
+func (liaison *RuntimeLiaison) RunPhpCommand(
+	untrustedInput map[string]any,
+) LiaisonOutput {
+	requiredParams := []string{"hostname", "command"}
+	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	if err != nil {
+		return NewLiaisonOutput(UserError, err.Error())
+	}
+
+	hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+	if err != nil {
+		return NewLiaisonOutput(UserError, err.Error())
+	}
+
+	command, err := valueObject.NewUnixCommand(untrustedInput["command"])
+	if err != nil {
+		return NewLiaisonOutput(UserError, err.Error())
+	}
+
+	var timeoutSecsPtr *uint64
+	if untrustedInput["timeoutSecs"] != nil {
+		timeoutSecs, err := tkVoUtil.InterfaceToUint64(untrustedInput["timeoutSecs"])
+		if err != nil {
+			return NewLiaisonOutput(UserError, "TimeoutSecsMustBeUint64")
+		}
+		timeoutSecsPtr = &timeoutSecs
+	}
+
+	operatorAccountId := LocalOperatorAccountId
+	if untrustedInput["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		if err != nil {
+			return NewLiaisonOutput(UserError, err.Error())
+		}
+	}
+
+	operatorIpAddress := LocalOperatorIpAddress
+	if untrustedInput["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		if err != nil {
+			return NewLiaisonOutput(UserError, err.Error())
+		}
+	}
+
+	runRequest := dto.NewRunPhpCommandRequest(
+		hostname, command, timeoutSecsPtr, operatorAccountId, operatorIpAddress,
+	)
+
+	runResponse, err := useCase.RunPhpCommand(liaison.runtimeCmdRepo, runRequest)
+	if err != nil {
+		return NewLiaisonOutput(InfraError, err.Error())
+	}
+
+	return NewLiaisonOutput(Success, runResponse)
 }

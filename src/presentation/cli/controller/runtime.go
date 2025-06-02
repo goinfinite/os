@@ -202,3 +202,32 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 	cmd.MarkFlagRequired("value")
 	return cmd
 }
+
+func (controller *RuntimeController) RunPhpCommand() *cobra.Command {
+	var hostnameStr, commandStr string
+
+	cmd := &cobra.Command{
+		Use:   "run",
+		Short: "RunPhpCommand",
+		Run: func(cmd *cobra.Command, args []string) {
+			hostname, err := getHostname(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+			requestBody := map[string]interface{}{
+				"hostname": hostname.String(),
+				"command":  commandStr,
+			}
+
+			cliHelper.LiaisonResponseWrapper(
+				controller.runtimeLiaison.RunPhpCommand(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
+	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command")
+	cmd.MarkFlagRequired("command")
+	return cmd
+}

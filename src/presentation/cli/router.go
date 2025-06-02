@@ -147,6 +147,7 @@ func (router Router) runtimeRoutes() {
 	phpCmd.AddCommand(runtimeController.UpdatePhpConfig())
 	phpCmd.AddCommand(runtimeController.UpdatePhpSetting())
 	phpCmd.AddCommand(runtimeController.UpdatePhpModule())
+	phpCmd.AddCommand(runtimeController.RunPhpCommand())
 }
 
 func (router *Router) scheduledTaskRoutes() {
