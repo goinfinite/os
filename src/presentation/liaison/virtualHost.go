@@ -851,6 +851,9 @@ func (liaison *VirtualHostLiaison) UpdateMappingSecurityRule(
 		if !assertOk {
 			return NewLiaisonOutput(UserError, "InvalidAllowedIps")
 		}
+		if len(allowedIps) == 0 {
+			clearableFields = append(clearableFields, "allowedIps")
+		}
 	}
 
 	blockedIps := []tkValueObject.CidrBlock{}
@@ -859,6 +862,9 @@ func (liaison *VirtualHostLiaison) UpdateMappingSecurityRule(
 		blockedIps, assertOk = untrustedInput["blockedIps"].([]tkValueObject.CidrBlock)
 		if !assertOk {
 			return NewLiaisonOutput(UserError, "InvalidBlockedIps")
+		}
+		if len(blockedIps) == 0 {
+			clearableFields = append(clearableFields, "blockedIps")
 		}
 	}
 

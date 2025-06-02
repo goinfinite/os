@@ -787,6 +787,14 @@ func (repo *MappingCmdRepo) UpdateSecurityRule(
 		updateMap["response_code_on_max_connections"] = *updateDto.ResponseCodeOnMaxConnections
 	}
 
+	if slices.Contains(updateDto.ClearableFields, "allowedIps") {
+		updateMap["allowed_ips"] = []string{}
+	}
+
+	if slices.Contains(updateDto.ClearableFields, "blockedIps") {
+		updateMap["blocked_ips"] = []string{}
+	}
+
 	err := repo.persistentDbSvc.Handler.Model(&dbModel.MappingSecurityRule{}).
 		Where("id = ?", updateDto.Id.Uint64()).Updates(updateMap).Error
 	if err != nil {
