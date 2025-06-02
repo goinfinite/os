@@ -20,6 +20,7 @@ type RuntimeLiaison struct {
 	runtimeQueryRepo      runtimeInfra.RuntimeQueryRepo
 	runtimeCmdRepo        *runtimeInfra.RuntimeCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
+	phpServiceName        valueObject.ServiceName
 }
 
 func NewRuntimeLiaison(
@@ -34,14 +35,14 @@ func NewRuntimeLiaison(
 		runtimeQueryRepo:      runtimeInfra.RuntimeQueryRepo{},
 		runtimeCmdRepo:        runtimeInfra.NewRuntimeCmdRepo(persistentDbSvc),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
+		phpServiceName:        valueObject.ServiceName("php-webserver"),
 	}
 }
 
 func (liaison *RuntimeLiaison) ReadPhpConfigs(
 	untrustedInput map[string]any,
 ) LiaisonOutput {
-	serviceName, _ := valueObject.NewServiceName("php-webserver")
-	if !liaison.availabilityInspector.IsAvailable(serviceName) {
+	if !liaison.availabilityInspector.IsAvailable(liaison.phpServiceName) {
 		return NewLiaisonOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
@@ -61,8 +62,7 @@ func (liaison *RuntimeLiaison) ReadPhpConfigs(
 func (liaison *RuntimeLiaison) UpdatePhpConfigs(
 	untrustedInput map[string]any,
 ) LiaisonOutput {
-	serviceName, _ := valueObject.NewServiceName("php-webserver")
-	if !liaison.availabilityInspector.IsAvailable(serviceName) {
+	if !liaison.availabilityInspector.IsAvailable(liaison.phpServiceName) {
 		return NewLiaisonOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
@@ -137,6 +137,10 @@ func (liaison *RuntimeLiaison) UpdatePhpConfigs(
 func (liaison *RuntimeLiaison) RunPhpCommand(
 	untrustedInput map[string]any,
 ) LiaisonOutput {
+	if !liaison.availabilityInspector.IsAvailable(liaison.phpServiceName) {
+		return NewLiaisonOutput(InfraError, sharedHelper.ServiceUnavailableError)
+	}
+
 	requiredParams := []string{"hostname", "command"}
 	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
