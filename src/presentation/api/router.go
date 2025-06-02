@@ -4,6 +4,8 @@ import (
 	_ "embed"
 	"net/http"
 	"net/url"
+	"os"
+	"strconv"
 	"strings"
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -144,8 +146,21 @@ func (router Router) runtimeRoutes() {
 
 	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadPhpConfigs)
 	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdatePhpConfigs)
-	runtimeGroup.POST("/php/:hostname/run/", runtimeController.RunPhpCommand)
-	runtimeGroup.POST("/php/run/", runtimeController.RunPhpCommand)
+
+	rawEnableApiRuntimePhpRunCmdEnvVar := os.Getenv("ENABLE_API_RUNTIME_PHP_RUN_CMD")
+	if rawEnableApiRuntimePhpRunCmdEnvVar == "" {
+		return
+	}
+
+	shouldEnablePhpRunCmd, err := strconv.ParseBool(rawEnableApiRuntimePhpRunCmdEnvVar)
+	if err != nil {
+		return
+	}
+
+	if shouldEnablePhpRunCmd {
+		runtimeGroup.POST("/php/:hostname/run/", runtimeController.RunPhpCommand)
+		runtimeGroup.POST("/php/run/", runtimeController.RunPhpCommand)
+	}
 }
 
 func (router *Router) scheduledTaskRoutes() {

@@ -177,12 +177,12 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 
 // RunPhpCommand godoc
 // @Summary      RunPhpCommand
-// @Description  Run a php command as the webserver user for a given hostname.
+// @Description  Run a php command as the webserver user for a given hostname. <br />CAUTION: This endpoint allows for arbitrary code execution (ACE) and is therefore disabled by default. <br />To enable this endpoint, set the "ENABLE_API_RUNTIME_PHP_RUN_CMD" environment variable to "true" when starting the API/container.
 // @Tags         runtime
 // @Accept       json
 // @Produce      json
 // @Security     Bearer
-// @Param        runPhpCommandDto	body dto.RunPhpCommandRequest	true	"RunPhpCommandDto"
+// @Param        runPhpCmdDto	body dto.RunPhpCommandRequest	true	"Hostname and command are required. Timeout is optional."
 // @Success      200 {object} dto.RunPhpCommandResponse
 // @Router       /v1/runtime/php/run/ [post]
 func (controller *RuntimeController) RunPhpCommand(echoContext echo.Context) error {

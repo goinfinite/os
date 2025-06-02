@@ -2324,11 +2324,14 @@ paths:
     post:
       consumes:
       - application/json
-      description: Run a php command as the webserver user for a given hostname.
+      description: 'Run a php command as the webserver user for a given hostname.
+        <br />CAUTION: This endpoint allows for arbitrary code execution (ACE) and
+        is therefore disabled by default. <br />To enable this endpoint, set the "ENABLE_API_RUNTIME_PHP_RUN_CMD"
+        environment variable to "true" when starting the API/container.'
       parameters:
-      - description: RunPhpCommandDto
+      - description: Hostname and command are required. Timeout is optional.
         in: body
-        name: runPhpCommandDto
+        name: runPhpCmdDto
         required: true
         schema:
           $ref: '#/definitions/dto.RunPhpCommandRequest'
