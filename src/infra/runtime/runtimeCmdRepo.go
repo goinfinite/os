@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -26,6 +27,12 @@ func NewRuntimeCmdRepo(
 		persistentDbSvc:  persistentDbSvc,
 		runtimeQueryRepo: RuntimeQueryRepo{},
 	}
+}
+
+func (repo *RuntimeCmdRepo) RunPhpCommand(
+	runRequest dto.RunPhpCommandRequest,
+) (runResponse dto.RunPhpCommandResponse, err error) {
+	return runResponse, nil
 }
 
 func (repo *RuntimeCmdRepo) restartPhpWebserver() error {
