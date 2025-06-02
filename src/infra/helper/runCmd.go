@@ -4,9 +4,11 @@ import (
 	"bytes"
 	"encoding/json"
 	"os/exec"
+	"os/user"
 	"slices"
 	"strconv"
 	"strings"
+	"syscall"
 )
 
 const commandDeadlineExceededError string = "CommandDeadlineExceeded"
@@ -28,16 +30,40 @@ func (e *CmdError) Error() string {
 type RunCmdSettings struct {
 	Command               string
 	Args                  []string
+	Username              string
+	WorkingDirectory      string
 	ShouldRunWithSubShell bool
 	ExecutionTimeoutSecs  uint64
 }
 
+func sysCallCredentialsFactory(
+	username string,
+) (*syscall.Credential, error) {
+	userStruct, err := user.Lookup(username)
+	if err != nil {
+		return nil, err
+	}
+	userId, err := strconv.Atoi(userStruct.Uid)
+	if err != nil {
+		return nil, err
+	}
+	groupId, err := strconv.Atoi(userStruct.Gid)
+	if err != nil {
+		return nil, err
+	}
+
+	return &syscall.Credential{
+		Uid: uint32(userId),
+		Gid: uint32(groupId),
+	}, nil
+}
+
 func prepareCmdExecutor(
-	runConfigs RunCmdSettings,
+	runSettings RunCmdSettings,
 ) (*exec.Cmd, *bytes.Buffer, *bytes.Buffer) {
-	args := runConfigs.Args
-	command := runConfigs.Command
-	if runConfigs.ShouldRunWithSubShell {
+	args := runSettings.Args
+	command := runSettings.Command
+	if runSettings.ShouldRunWithSubShell {
 		args = []string{
 			"-c", "source /etc/profile; " + command + " " + strings.Join(args, " "),
 		}
@@ -45,17 +71,27 @@ func prepareCmdExecutor(
 	}
 
 	executionTimeoutSecs := uint64(1800)
-	if runConfigs.ExecutionTimeoutSecs > 0 && runConfigs.ExecutionTimeoutSecs <= executionTimeoutSecs {
-		executionTimeoutSecs = runConfigs.ExecutionTimeoutSecs
+	if runSettings.ExecutionTimeoutSecs > 0 && runSettings.ExecutionTimeoutSecs <= executionTimeoutSecs {
+		executionTimeoutSecs = runSettings.ExecutionTimeoutSecs
 	}
 
 	args = slices.Concat(
-		[]string{strconv.FormatUint(runConfigs.ExecutionTimeoutSecs, 10), command},
+		[]string{strconv.FormatUint(executionTimeoutSecs, 10), command},
 		args,
 	)
 	command = "timeout"
 
 	cmdExecutor := exec.Command(command, args...)
+	if runSettings.Username != "" && runSettings.Username != "root" {
+		sysCallCredentials, err := sysCallCredentialsFactory(runSettings.Username)
+		if err == nil {
+			cmdExecutor.SysProcAttr = &syscall.SysProcAttr{Credential: sysCallCredentials}
+		}
+	}
+
+	if runSettings.WorkingDirectory != "" {
+		cmdExecutor.Dir = runSettings.WorkingDirectory
+	}
 
 	var stdoutBytesBuffer, stderrBytesBuffer bytes.Buffer
 	cmdExecutor.Stdout = &stdoutBytesBuffer
@@ -66,8 +102,8 @@ func prepareCmdExecutor(
 	return cmdExecutor, &stdoutBytesBuffer, &stderrBytesBuffer
 }
 
-func RunCmd(runConfigs RunCmdSettings) (string, error) {
-	cmdExecutor, stdoutBytesBuffer, stderrBytesBuffer := prepareCmdExecutor(runConfigs)
+func RunCmd(runSettings RunCmdSettings) (string, error) {
+	cmdExecutor, stdoutBytesBuffer, stderrBytesBuffer := prepareCmdExecutor(runSettings)
 
 	err := cmdExecutor.Run()
 	stdoutStr := strings.TrimSpace(stdoutBytesBuffer.String())
