@@ -191,9 +191,15 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 		commandPtr = &command
 	}
 
+	clearableFields := []string{}
+
 	var commentPtr *valueObject.CronComment
-	if untrustedInput["comment"] != nil {
-		comment, err := valueObject.NewCronComment(untrustedInput["comment"])
+	switch commentValue := untrustedInput["comment"]; {
+	case commentValue == nil:
+	case commentValue == "" || commentValue == " ":
+		clearableFields = append(clearableFields, "comment")
+	default:
+		comment, err := valueObject.NewCronComment(commentValue)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -217,7 +223,8 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 	}
 
 	updateDto := dto.NewUpdateCron(
-		id, schedulePtr, commandPtr, commentPtr, operatorAccountId, operatorIpAddress,
+		id, schedulePtr, commandPtr, commentPtr, clearableFields,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	err = useCase.UpdateCron(
