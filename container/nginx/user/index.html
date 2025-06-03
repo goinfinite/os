@@ -5,8 +5,7 @@
   <title>Welcome to Infinite OS!</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link
-    href="https://fonts.googleapis.com/css?family=Lato:regular,italic,700italic,|Space+Grotesk:700,regular,italic,700italic,&display=swap"
+  <link href="https://fonts.googleapis.com/css?family=Lato:700,regular,italic,700italic,&display=swap"
     rel="stylesheet" />
   <style>
     html {
@@ -22,7 +21,7 @@
     }
 
     h1 {
-      font-family: 'Space Grotesk', Arial, sans-serif;
+      font-family: 'Times New Roman', 'Lucida Grande', Helvetica, Arial, sans-serif;
     }
   </style>
 </head>
@@ -31,6 +30,12 @@
   <h1>Welcome to Infinite OS!</h1>
   <p>If you see this page, Infinite OS was successfully deployed and is
     working.</p>
+
+  <p>
+    <strong>
+      To access the dashboard, visit <a id="dashboard-link" href="https://localhost:1618">https://localhost:1618</a>.
+    </strong>
+  </p>
 
   <p>
     For documentation and community support, please refer to the project's <a
@@ -42,5 +47,12 @@
 
   <p><em>Thank you for using Infinite OS.</em></p>
 </body>
+
+<script type="text/javascript">
+  const dashboardLinkUrl = `https://${window.location.hostname}:1618`;
+  const dashboardLinkElement = document.getElementById('dashboard-link');
+  dashboardLinkElement.href = dashboardLinkUrl;
+  dashboardLinkElement.textContent = dashboardLinkUrl;
+</script>
 
 </html>
