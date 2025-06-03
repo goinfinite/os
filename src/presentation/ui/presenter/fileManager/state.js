@@ -247,7 +247,7 @@ function fileManagerIndexAlpineState() {
           const supportedLanguages = {
             bash: "shell",
             css: "css",
-            html: "htmlmixed",
+            html: "html",
             js: "javascript",
             json: "javascript",
             php: "php",
@@ -264,6 +264,7 @@ function fileManagerIndexAlpineState() {
               "plaintext",
             theme: "ace/theme/dracula",
             autoScrollEditorIntoView: true,
+            tabSize: 2,
           });
           this.codeEditorInstance.navigateFileStart();
           this.codeEditorInstance.setValue(desiredFile.content);
