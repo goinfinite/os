@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"github.com/goinfinite/ui/src/display"
+	"github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 	"maps"
 	"slices"
@@ -415,11 +416,11 @@ templ CreateFileForm(
 				type="hidden"
 				:value="currentWorkingDirPath + '/' + file.name"
 			/>
-			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-				Type:                "text",
-				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath + '/'",
-				BindInputValuePath:  "file.name",
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:          "text",
+				Label:              "Name",
+				TwoWayStatePath:    "file.name",
+				AffixLeftStatePath: "currentWorkingDirPath + '/'",
 			})
 		</div>
 		@componentForm.SubmitButton(
@@ -641,11 +642,11 @@ templ RenameFileForm() {
 				type="hidden"
 				:value="currentWorkingDirPath + '/' + file.name"
 			/>
-			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-				Type:                "text",
-				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath + '/'",
-				BindInputValuePath:  "file.name",
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:          "text",
+				Label:              "Name",
+				TwoWayStatePath:    "file.name",
+				AffixLeftStatePath: "currentWorkingDirPath + '/'",
 			})
 		</div>
 		@componentForm.SubmitButton(
@@ -746,11 +747,11 @@ templ CompressFilesForm() {
 				type="hidden"
 				:value="currentWorkingDirPath + '/' + file.name + '.' + file.extension"
 			/>
-			@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-				Type:                "text",
-				Label:               "Name",
-				BindPrefixValuePath: "currentWorkingDirPath + '/'",
-				BindInputValuePath:  "file.name",
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:          "text",
+				Label:              "Name",
+				TwoWayStatePath:    "file.name",
+				AffixLeftStatePath: "currentWorkingDirPath + '/'",
 			})
 			@componentForm.SelectInput(
 				"compressionType", "File Extension", "file.extension", "",
