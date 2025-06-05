@@ -7,6 +7,8 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/display"
+	"github.com/goinfinite/ui/src/toolset"
 	"maps"
 	"slices"
 	"strings"
@@ -20,7 +22,7 @@ templ FileManagerIndex(
 	readFilesResponseDto dto.ReadFilesResponse,
 ) {
 	<!-- FileManagerIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + fileManagerIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&fileManagerIndexAlpineState)
 	<!-- FileManagerIndex HTML -->
 	<div x-data="fileManager">
 		@componentStructural.PageTitle("File Manager", "", "ph-files")
@@ -353,6 +355,7 @@ templ FilesExplorer(unixFilesList []entity.UnixFile) {
 				}
 				<tr
 					class="*:py-1 *:h-14 *:overflow-hidden cursor-pointer first:border-opacity-0 hover:bg-neutral-50/10"
+					:class={ "selectedFileNames.includes('" + fileEntity.Name.String() + "') ? 'bg-neutral-50/10' : ''" }
 					@click={ "handleSelectSourcePath('" + fileEntity.Name.String() + "')" }
 					@dblclick={ fileTableRowDoubleClick }
 				>
@@ -477,6 +480,7 @@ templ UploadFilesModal() {
 }
 
 templ UpdateFileContentForm() {
+	<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.42.0/src-min-noconflict/ace.js" integrity="sha256-xO63TgTRfMoS8OQcRBnZp5SO5FOdiz5j1LIZ6D+lgeg=" crossorigin="anonymous"></script>
 	<form
 		hx-put="/api/v1/files/"
 		hx-indicator="#loading-overlay"
@@ -535,13 +539,15 @@ templ UpdateFileContentForm() {
 }
 
 templ UpdateFileContentModal() {
-	@componentStructural.RegularModal(
-		"Update File Content", "isUpdateFileContentModalOpen",
-		"closeUpdateFileContentModal()", "",
-	) {
-		<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.42.0/src-min-noconflict/ace.js" integrity="sha256-xO63TgTRfMoS8OQcRBnZp5SO5FOdiz5j1LIZ6D+lgeg=" crossorigin="anonymous"></script>
-		@UpdateFileContentForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UpdateFileContentForm(),
+		TitleOneWayStatePath:     "'Update File Content ('+ file.name + ')'",
+		Size:                     uiDisplay.ModalSizeXl,
+		BackdropColor:            "primary-950/80",
+		BackgroundColor:          "primary-400",
+		IsVisibleTwoWayStatePath: "isUpdateFileContentModalOpen",
+		OnResizeFunc:             "codeEditorInstance.resize()",
+	})
 }
 
 templ MoveFilesForm(

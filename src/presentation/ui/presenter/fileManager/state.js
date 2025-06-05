@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(fileManagerIndexAlpineState);
-
-function fileManagerIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("fileManager", () => ({
     // PrimaryState
     currentWorkingDirPath: "",
@@ -236,7 +234,7 @@ function fileManagerIndexAlpineState() {
       this.file.mimeType = fileEntity.mimeType;
 
       const shouldDisplayToast = false;
-      Infinite.JsonAjax(
+      UiToolset.JsonAjax(
         "GET",
         "/api/v1/files/?sourcePath=" + fileEntity.path,
         {},
@@ -391,7 +389,7 @@ function fileManagerIndexAlpineState() {
         sourcePaths.push(fileEntity.path);
       }
 
-      Infinite.JsonAjax("PUT", "/api/v1/files/delete/", {
+      UiToolset.JsonAjax("PUT", "/api/v1/files/delete/", {
         sourcePaths: sourcePaths,
         hardDelete: shouldHardDelete,
       }).then(() => {
@@ -432,4 +430,4 @@ function fileManagerIndexAlpineState() {
       this.isCompressFilesModalOpen = false;
     },
   }));
-}
+});
