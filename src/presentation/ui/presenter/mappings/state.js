@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(mappingsIndexAlpineState);
-
-function mappingsIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("mappings", () => ({
     // PrimaryState
     virtualHost: {},
@@ -159,4 +157,4 @@ function mappingsIndexAlpineState() {
         .then(() => this.$dispatch("refresh:mappings-table"));
     },
   }));
-}
+});

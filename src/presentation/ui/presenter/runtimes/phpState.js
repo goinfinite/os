@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(phpIndexAlpineState);
-
-function phpIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("php", () => ({
     // PrimaryState
     phpConfigs: {},
@@ -15,7 +13,7 @@ function phpIndexAlpineState() {
       this.resetPrimaryStates();
     },
     updatePhpConfigs() {
-      Infinite.JsonAjax(
+      UiToolset.JsonAjax(
         "PUT",
         "/api/v1/runtime/php/" + this.vhostHostname + "/",
         {
@@ -47,4 +45,4 @@ function phpIndexAlpineState() {
         .then(() => this.$dispatch("refresh:runtimes-page-content"));
     },
   }));
-}
+});

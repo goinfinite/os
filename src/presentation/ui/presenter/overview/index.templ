@@ -10,6 +10,7 @@ import (
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
+	"github.com/goinfinite/ui/src/toolset"
 	"math"
 	"strconv"
 )
@@ -36,7 +37,7 @@ templ OverviewIndex(
 	servicesOverview ServicesOverview,
 ) {
 	<!-- OverviewIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + overviewIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&overviewIndexAlpineState)
 	<!-- OverviewIndex HTML -->
 	<div class="flex flex-col">
 		@componentStructural.PageTitle(

@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 const (
@@ -17,7 +18,7 @@ var sslsIndexAlpineState string
 
 templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 	<!-- SslsIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + sslsIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&sslsIndexAlpineState)
 	<!-- SslsIndex HTML -->
 	<div x-data="ssls">
 		@componentStructural.PageTitle(

@@ -6,6 +6,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/toolset"
 	"strconv"
 )
 
@@ -17,7 +18,7 @@ templ PhpRuntimeHorizontalTabContent(
 	vhostsHostnames []string,
 ) {
 	<!-- PhpRuntimeHorizontalTabContent JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + phpRuntimeHorizontalTabContentAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&phpRuntimeHorizontalTabContentAlpineState)
 	<!-- PhpRuntimeHorizontalTabContent HTML -->
 	<div class="bg-os-800 -mt-4 rounded-b-xl rounded-r-xl p-4" x-data="php">
 		<div class="bg-os-500 rounded-b-lg rounded-r-lg p-6">

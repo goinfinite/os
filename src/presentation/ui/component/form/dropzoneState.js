@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(dropzoneAlpineState);
-
-function dropzoneAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("dropzone", () => ({
     files: [],
     updateFileInput() {
@@ -29,4 +27,4 @@ function dropzoneAlpineState() {
       });
     },
   }));
-}
+});

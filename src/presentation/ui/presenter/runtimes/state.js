@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(runtimesIndexAlpineState);
-
-function runtimesIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("runtimes", () => ({
     // PrimaryState
     selectedVhostHostname: "",
@@ -37,4 +35,4 @@ function runtimesIndexAlpineState() {
       this.reloadRuntimePageContent(this.selectedVhostHostname, runtimeType);
     },
   }));
-}
+});

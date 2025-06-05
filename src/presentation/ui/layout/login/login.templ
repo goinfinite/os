@@ -6,6 +6,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
 	"github.com/goinfinite/ui/src/display"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 //go:embed state.js
@@ -16,7 +17,7 @@ templ Login() {
 	<html>
 		@layoutMain.HeadTag()
 		<!-- Login Layout JavaScript -->
-		@templ.Raw(`<script type="text/javascript">` + loginLayoutAlpineState + `</script>`)
+		@uiToolset.MinifierTemplateJs(&loginLayoutAlpineState)
 		<!-- Login Layout HTML -->
 		<body class="bg-primary-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50" un-cloak>
 			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})

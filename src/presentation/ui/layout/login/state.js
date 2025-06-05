@@ -1,12 +1,10 @@
-Infinite.RegisterAlpineState(loginAlpineState);
-
-function loginAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("login", () => ({
     username: "",
     password: "",
     createSessionToken() {
       const shouldDisplayToast = false;
-      Infinite.JsonAjax(
+      UiToolset.JsonAjax(
         "POST",
         "/api/v1/auth/login/",
         {
@@ -17,15 +15,18 @@ function loginAlpineState() {
       )
         .then((authResponse) => {
           Alpine.store("toast").displayToast("LoginSuccessful", "success");
+
+          UiToolset.ToggleLoadingOverlay(true);
           document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=${authResponse.tokenStr}; path=/`;
           window.location.href = "/overview/";
         })
-        .catch((error) =>
-          Alpine.store("toast").displayToast(error.message, "danger")
-        );
+        .catch((error) => {
+          UiToolset.ToggleLoadingOverlay(false);
+          Alpine.store("toast").displayToast(error.message, "danger");
+        });
     },
     init() {
       document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
     },
   }));
-}
+});

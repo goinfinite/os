@@ -1,11 +1,9 @@
-Infinite.RegisterAlpineState(passwordInputAlpineState);
-
-function passwordInputAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("passwordInput", () => ({
     // RandomPasswordGeneratorState
     isPasswordReadable: false,
     generateRandomPassword() {
-      const passwordContent = Infinite.CreateRandomPassword();
+      const passwordContent = UiToolset.CreateRandomPassword();
 
       this.displayPasswordStrengthCriteria = false;
       this.updatePasswordStrengthPercentage(passwordContent);
@@ -58,4 +56,4 @@ function passwordInputAlpineState() {
       this.passwordStrengthPercentage = passwordStrengthPercentage;
     },
   }));
-}
+});

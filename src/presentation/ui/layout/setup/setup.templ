@@ -6,6 +6,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
 	"github.com/goinfinite/ui/src/display"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 //go:embed state.js
@@ -16,7 +17,7 @@ templ Setup() {
 	<html>
 		@layoutMain.HeadTag()
 		<!-- Setup Layout JavaScript -->
-		@templ.Raw(`<script type="text/javascript">` + setupLayoutAlpineState + `</script>`)
+		@uiToolset.MinifierTemplateJs(&setupLayoutAlpineState)
 		<!-- Setup Layout HTML -->
 		<body
 			x-data="setup"

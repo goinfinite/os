@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(cronsIndexAlpineState);
-
-function cronsIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("crons", () => ({
     // PrimaryState
     cron: {},
@@ -116,4 +114,4 @@ function cronsIndexAlpineState() {
         });
     },
   }));
-}
+});
