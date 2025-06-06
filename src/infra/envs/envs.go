@@ -10,7 +10,7 @@ const (
 	TrailDatabaseFilePath              string = InfiniteOsMainDir + "/trail.db"
 	MarketplaceCatalogItemsDir         string = InfiniteOsMainDir + "/marketplace"
 	MarketplaceCatalogItemsRepoUrl     string = "https://github.com/goinfinite/os-marketplace"
-	MarketplaceCatalogItemsRepoBranch  string = "v1"
+	MarketplaceCatalogItemsRepoBranch  string = "v2"
 	InstallableServicesItemsDir        string = InfiniteOsMainDir + "/services"
 	InstallableServicesItemsRepoUrl    string = "https://github.com/goinfinite/os-services"
 	InstallableServicesItemsRepoBranch string = "v1"
