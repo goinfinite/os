@@ -2530,7 +2530,7 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Delete/Uninstall a liaison.
+      description: Delete/Uninstall a service.
       parameters:
       - description: ServiceName to delete
         in: path
@@ -2553,7 +2553,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Install a new custom liaison.
+      description: Install a new custom service.
       parameters:
       - description: name, type and startCmd is required.<br />If version is not provided,
           it will be 'lts'.<br />If portBindings is not provided, it wil be default
@@ -2633,7 +2633,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Install a new installable liaison.
+      description: Install a new installable service.
       parameters:
       - description: Only name is required.<br />If version is not provided, it will
           be 'lts'.<br />If portBindings is not provided, it wil be default service

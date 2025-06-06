@@ -1831,7 +1831,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Install a new custom liaison.",
+                "description": "Install a new custom service.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1952,7 +1952,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Install a new installable liaison.",
+                "description": "Install a new installable service.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1991,7 +1991,7 @@
                         "Bearer": []
                     }
                 ],
-                "description": "Delete/Uninstall a liaison.",
+                "description": "Delete/Uninstall a service.",
                 "consumes": [
                     "application/json"
                 ],

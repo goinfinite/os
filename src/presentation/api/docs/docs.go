@@ -1837,7 +1837,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Install a new custom liaison.",
+                "description": "Install a new custom service.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1958,7 +1958,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Install a new installable liaison.",
+                "description": "Install a new installable service.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1997,7 +1997,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Delete/Uninstall a liaison.",
+                "description": "Delete/Uninstall a service.",
                 "consumes": [
                     "application/json"
                 ],

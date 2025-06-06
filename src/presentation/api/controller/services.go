@@ -234,7 +234,7 @@ func (controller *ServicesController) parseRawPortBindings(
 
 // CreateInstallableService godoc
 // @Summary      CreateInstallableService
-// @Description  Install a new installable liaison.
+// @Description  Install a new installable service.
 // @Tags         services
 // @Accept       json
 // @Produce      json
@@ -275,7 +275,7 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 
 // CreateCustomService godoc
 // @Summary      CreateCustomService
-// @Description  Install a new custom liaison.
+// @Description  Install a new custom service.
 // @Tags         services
 // @Accept       json
 // @Produce      json
@@ -355,7 +355,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 
 // DeleteService godoc
 // @Summary      DeleteService
-// @Description  Delete/Uninstall a liaison.
+// @Description  Delete/Uninstall a service.
 // @Tags         services
 // @Accept       json
 // @Produce      json
