@@ -48,9 +48,27 @@ func (presenter *LoginPresenter) Handler(c echo.Context) error {
 		}
 	}
 
+	loginLayoutSettings := layoutLogin.LoginLayoutSettings{}
+
+	rawPrefilledUsername := c.QueryParam("prefilledUsername")
+	if rawPrefilledUsername != "" {
+		username, err := valueObject.NewUsername(rawPrefilledUsername)
+		if err == nil {
+			loginLayoutSettings.PrefilledUsername = username.String()
+		}
+	}
+
+	rawPrefilledPassword := c.QueryParam("prefilledPassword")
+	if rawPrefilledPassword != "" {
+		password, err := valueObject.NewPassword(rawPrefilledPassword)
+		if err == nil {
+			loginLayoutSettings.PrefilledPassword = password.String()
+		}
+	}
+
 	c.Response().Writer.WriteHeader(http.StatusOK)
 	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
 
-	return layoutLogin.Login().
+	return layoutLogin.Login(loginLayoutSettings).
 		Render(c.Request().Context(), c.Response().Writer)
 }

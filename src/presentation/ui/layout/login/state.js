@@ -27,6 +27,8 @@ UiToolset.RegisterAlpineState(() => {
     },
     init() {
       document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      this.username = document.getElementById("prefilledUsername")?.value;
+      this.password = document.getElementById("prefilledPassword")?.value;
     },
   }));
 });
