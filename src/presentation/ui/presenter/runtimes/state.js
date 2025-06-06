@@ -1,9 +1,8 @@
 UiToolset.RegisterAlpineState(() => {
   Alpine.data("runtimes", () => ({
     // PrimaryState
-    selectedVhostHostname: "",
-    selectedRuntimeType: "",
-    vhostHostname: selectedVhostHostname,
+    vhostHostname: "",
+    runtimeType: "",
     reloadRuntimePageContent(vhostHostname, runtimeType) {
       htmx.ajax(
         "GET",
@@ -20,19 +19,15 @@ UiToolset.RegisterAlpineState(() => {
       );
     },
     init() {
-      this.selectedVhostHostname = document.getElementById(
-        "selectedVhostHostname"
-      ).value;
-      this.selectedRuntimeType = document.getElementById(
-        "selectedRuntimeType"
-      ).value;
+      this.vhostHostname = document.getElementById("vhostHostname").value;
+      this.runtimeType = document.getElementById("runtimeType").value;
     },
 
-    updateSelectedVhostHostname(vhostHostname) {
-      this.reloadRuntimePageContent(vhostHostname, this.selectedRuntimeType);
+    updateVhostHostname(vhostHostname) {
+      this.reloadRuntimePageContent(vhostHostname, this.runtimeType);
     },
-    updateSelectedRuntimeType(runtimeType) {
-      this.reloadRuntimePageContent(this.selectedVhostHostname, runtimeType);
+    updateRuntimeType(runtimeType) {
+      this.reloadRuntimePageContent(this.vhostHostname, runtimeType);
     },
   }));
 });
