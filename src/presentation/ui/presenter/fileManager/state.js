@@ -197,6 +197,12 @@ UiToolset.RegisterAlpineState(() => {
     codeEditorInstance: null,
     codeEditorFontSize: 12,
     codeEditorMaxFileSize: 5242880,
+    codeEditorWindowSize: "xl",
+    isCodeEditorFullScreen: false,
+    resetCodeEditorWindowSize() {
+      this.codeEditorWindowSize = "xl";
+      this.isCodeEditorFullScreen = false;
+    },
     resizeCodeEditorFont(operation) {
       switch (operation) {
         case "decrease":
@@ -211,8 +217,10 @@ UiToolset.RegisterAlpineState(() => {
     },
     openUpdateFileContentModal() {
       this.resetPrimaryStates();
+      this.resetCodeEditorWindowSize();
       this.codeEditorInstance = null;
       this.codeEditorFontSize = 12;
+      this.isCodeEditorFullScreen = false;
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
@@ -283,6 +291,7 @@ UiToolset.RegisterAlpineState(() => {
 
       this.isUpdateFileContentModalOpen = false;
       this.codeEditorInstance.destroy();
+      this.resetCodeEditorWindowSize();
     },
 
     // ModalState
