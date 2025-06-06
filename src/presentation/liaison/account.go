@@ -69,7 +69,7 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 		}
 	}
 
-	paginationDto := useCase.MarketplaceDefaultPagination
+	paginationDto := useCase.AccountsDefaultPagination
 	if untrustedInput["pageNumber"] != nil {
 		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
