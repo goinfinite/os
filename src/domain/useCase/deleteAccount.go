@@ -21,15 +21,13 @@ func DeleteAccount(
 		return errors.New("AccountNotFound")
 	}
 
-	readResponseDto, err := accountQueryRepo.Read(
-		dto.ReadAccountsRequest{Pagination: AccountsDefaultPagination},
-	)
+	accountsCount, err := accountQueryRepo.Count(dto.ReadAccountsRequest{})
 	if err != nil {
-		slog.Error("ReadAccountsError", slog.String("err", err.Error()))
-		return errors.New("ReadAccountsInfraError")
+		slog.Error("CountAccountsError", slog.String("err", err.Error()))
+		return errors.New("CountAccountsInfraError")
 	}
 
-	if len(readResponseDto.Accounts) <= 1 {
+	if accountsCount <= 1 {
 		return errors.New("AtLeastOneAccountMustExist")
 	}
 
