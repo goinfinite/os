@@ -48,7 +48,7 @@ func (liaison *CronLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
 		commentPtr = &slug
 	}
 
-	paginationDto := useCase.MarketplaceDefaultPagination
+	paginationDto := useCase.CronsDefaultPagination
 	if untrustedInput["pageNumber"] != nil {
 		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
