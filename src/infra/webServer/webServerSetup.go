@@ -16,7 +16,6 @@ import (
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	"github.com/goinfinite/os/src/presentation/service"
 )
 
 type WebServerSetup struct {
@@ -138,7 +137,7 @@ func (ws *WebServerSetup) FirstSetup() {
 	updateServiceDto := dto.NewUpdateService(
 		nginxServiceName, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil, nil,
-		service.LocalOperatorAccountId, service.LocalOperatorIpAddress,
+		valueObject.AccountIdSystem, valueObject.IpAddressSystem,
 	)
 	err = servicesCmdRepo.Update(updateServiceDto)
 	if err != nil {

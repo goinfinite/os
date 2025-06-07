@@ -60,63 +60,6 @@ window.__unocss = {
   },
 };
 
-async function jsonAjax(method, url, payload, shouldDisplayToast = true) {
-  const loadingOverlayElement = document.getElementById("loading-overlay");
-  loadingOverlayElement.classList.add("htmx-request");
-
-  try {
-    const requestSettings = {
-      method: method,
-      headers: {
-        Accept: "application/json",
-        "Content-Type": "application/json",
-      },
-    };
-    if (Object.keys(payload).length > 0) {
-      requestSettings.body = JSON.stringify(payload);
-    }
-    const response = await fetch(url, requestSettings);
-    const parsedResponse = await response.json();
-
-    loadingOverlayElement.classList.remove("htmx-request");
-
-    if (!response.ok) {
-      throw new Error(parsedResponse.body);
-    }
-
-    if (shouldDisplayToast) {
-      Alpine.store("toast").displayToast(parsedResponse.body, "success");
-    }
-    return parsedResponse.body;
-  } catch (error) {
-    loadingOverlayElement.classList.remove("htmx-request");
-
-    if (shouldDisplayToast) {
-      Alpine.store("toast").displayToast(error.message, "danger");
-      return;
-    }
-    throw error;
-  }
-}
-
-function createRandomPassword() {
-  const passwordLength = 16;
-  const chars =
-    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_+";
-
-  let passwordContent = "";
-  let passwordIterationCount = 0;
-  while (passwordIterationCount < passwordLength) {
-    const randomIndex = Math.floor(Math.random() * chars.length);
-    const indexAfterRandomIndex = randomIndex + 1;
-    passwordContent += chars.substring(randomIndex, indexAfterRandomIndex);
-
-    passwordIterationCount++;
-  }
-
-  return passwordContent;
-}
-
 function createFilterQueryParams(filtersObject, paginationObject) {
   const queryParams = new URLSearchParams();
 
@@ -157,25 +100,10 @@ function downloadFile(nameWithExtension, content, mimeType = "text/plain") {
   document.body.removeChild(downloadFileElement);
 }
 
-function registerAlpineState(stateFunction) {
-  if (window.Alpine) {
-    stateFunction();
-    return;
-  }
-
-  document.addEventListener("alpine:init", stateFunction);
-}
-
 window.Infinite = {
   Envs: {
     AccessTokenCookieKey: "os-access-token",
   },
-  CreateRandomPassword: createRandomPassword,
   CreateFilterQueryParams: createFilterQueryParams,
   DownloadFile: downloadFile,
-  RegisterAlpineState: registerAlpineState,
 };
-
-document.addEventListener("alpine:init", () => {
-  window.Infinite.JsonAjax = jsonAjax;
-});

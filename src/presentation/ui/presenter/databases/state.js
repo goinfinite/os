@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(databasesIndexAlpineState);
-
-function databasesIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("databases", () => ({
     // PrimaryState
     database: {},
@@ -108,4 +106,4 @@ function databasesIndexAlpineState() {
         });
     },
   }));
-}
+});

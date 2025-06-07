@@ -3,6 +3,7 @@ package cronInfra
 import (
 	"errors"
 	"os"
+	"slices"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
@@ -113,6 +114,9 @@ func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
 	comment := desiredCron.Comment
 	if updateDto.Comment != nil {
 		comment = updateDto.Comment
+	}
+	if slices.Contains(updateDto.ClearableFields, "comment") {
+		comment = nil
 	}
 
 	desiredCronWithUpdatedValues := entity.NewCron(

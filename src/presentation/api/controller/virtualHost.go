@@ -3,7 +3,7 @@ package apiController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
@@ -11,7 +11,7 @@ import (
 )
 
 type VirtualHostController struct {
-	virtualHostService *service.VirtualHostService
+	virtualHostLiaison *liaison.VirtualHostLiaison
 }
 
 func NewVirtualHostController(
@@ -19,7 +19,7 @@ func NewVirtualHostController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *VirtualHostController {
 	return &VirtualHostController{
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
+		virtualHostLiaison: liaison.NewVirtualHostLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -50,8 +50,8 @@ func (controller *VirtualHostController) Read(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.Read(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.Read(requestInputData),
 	)
 }
 
@@ -71,8 +71,8 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.Create(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.Create(requestInputData),
 	)
 }
 
@@ -92,8 +92,8 @@ func (controller *VirtualHostController) Update(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.Update(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.Update(requestInputData),
 	)
 }
 
@@ -113,8 +113,8 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.Delete(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.Delete(requestInputData),
 	)
 }
 
@@ -145,8 +145,8 @@ func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error 
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.ReadWithMappings(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.ReadWithMappings(requestInputData),
 	)
 }
 
@@ -166,8 +166,8 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.CreateMapping(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.CreateMapping(requestInputData),
 	)
 }
 
@@ -187,8 +187,8 @@ func (controller *VirtualHostController) UpdateMapping(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.UpdateMapping(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.UpdateMapping(requestInputData),
 	)
 }
 
@@ -208,8 +208,8 @@ func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.DeleteMapping(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.DeleteMapping(requestInputData),
 	)
 }
 
@@ -239,8 +239,8 @@ func (controller *VirtualHostController) ReadMappingSecurityRules(c echo.Context
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.ReadMappingSecurityRules(
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.ReadMappingSecurityRules(
 			requestInputData,
 		),
 	)
@@ -274,8 +274,8 @@ func (controller *VirtualHostController) CreateMappingSecurityRule(c echo.Contex
 		)
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.CreateMappingSecurityRule(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.CreateMappingSecurityRule(requestInputData),
 	)
 }
 
@@ -307,8 +307,8 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule(c echo.Contex
 		)
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.UpdateMappingSecurityRule(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.UpdateMappingSecurityRule(requestInputData),
 	)
 }
 
@@ -328,7 +328,7 @@ func (controller *VirtualHostController) DeleteMappingSecurityRule(c echo.Contex
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.virtualHostService.DeleteMappingSecurityRule(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.virtualHostLiaison.DeleteMappingSecurityRule(requestInputData),
 	)
 }

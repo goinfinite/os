@@ -94,7 +94,7 @@ func Authentication(apiBasePath string) echo.MiddlewareFunc {
 				return authError("InvalidAccessToken")
 			}
 
-			c.Set("accountId", accountId.String())
+			c.Set("operatorAccountId", accountId.String())
 			return next(c)
 		}
 	}

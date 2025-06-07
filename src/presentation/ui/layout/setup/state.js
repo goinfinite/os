@@ -1,12 +1,10 @@
-Infinite.RegisterAlpineState(setupAlpineState);
-
-function setupAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("setup", () => ({
     username: "",
     password: "",
     setupInfiniteOsAndLogin() {
       const shouldDisplayToast = false;
-      Infinite.JsonAjax(
+      UiToolset.JsonAjax(
         "POST",
         "/api/v1/setup/",
         {
@@ -16,7 +14,7 @@ function setupAlpineState() {
         shouldDisplayToast
       )
         .then(() => {
-          Infinite.JsonAjax(
+          UiToolset.JsonAjax(
             "POST",
             "/api/v1/auth/login/",
             {
@@ -42,4 +40,4 @@ function setupAlpineState() {
         );
     },
   }));
-}
+});

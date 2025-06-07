@@ -1,7 +1,24 @@
 # Changelog
 
 ```log
-0.2.5 - 2025/06/27
+0.2.6 - 2025/06/06
+feat: runtime php run
+feat: implement clearable fields for cron and mappings
+feat: add dash link to default index
+feat: prevent only account deletion
+fix: add debug logs to ssl watchdog
+fix(api): rename accountId to operatorAccountId
+feat(ui): safe prefill user and pass on login via query params
+fix(ui): missing capital letters on modals
+fix(ui): use UiToolset instead of local utilities
+fix(ui): add loading until login finishes redirect
+fix(ui): add file.name to file manager update file content
+fix(ui): resize code editor when modal is resized
+fix(ui): keep file line in active state when selected
+fix(ui): code editor height when full screen
+fix(ui): php update settings missing vhost
+
+0.2.5 - 2025/05/27
 refactor(ui): sidebar
 refactor(ui): merge page and presenters
 refactor(ui): move state.js to individual embeds

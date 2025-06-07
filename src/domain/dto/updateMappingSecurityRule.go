@@ -18,6 +18,7 @@ type UpdateMappingSecurityRule struct {
 	BandwidthBpsLimitPerConnection *valueObject.Byte                           `json:"bandwidthBpsLimitPerConnection"`
 	BandwidthLimitOnlyAfterBytes   *valueObject.Byte                           `json:"bandwidthLimitOnlyAfterBytes"`
 	ResponseCodeOnMaxConnections   *uint                                       `json:"responseCodeOnMaxConnections"`
+	ClearableFields                []string                                    `json:"-"`
 	OperatorAccountId              valueObject.AccountId                       `json:"-"`
 	OperatorIpAddress              valueObject.IpAddress                       `json:"-"`
 }
@@ -30,6 +31,7 @@ func NewUpdateMappingSecurityRule(
 	rpsSoftLimitPerIp, rpsHardLimitPerIp, responseCodeOnMaxRequests, maxConnectionsPerIp *uint,
 	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *valueObject.Byte,
 	responseCodeOnMaxConnections *uint,
+	clearableFields []string,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) UpdateMappingSecurityRule {
@@ -46,6 +48,7 @@ func NewUpdateMappingSecurityRule(
 		BandwidthBpsLimitPerConnection: bandwidthBpsLimitPerConnection,
 		BandwidthLimitOnlyAfterBytes:   bandwidthLimitOnlyAfterBytes,
 		ResponseCodeOnMaxConnections:   responseCodeOnMaxConnections,
+		ClearableFields:                clearableFields,
 		OperatorAccountId:              operatorAccountId,
 		OperatorIpAddress:              operatorIpAddress,
 	}

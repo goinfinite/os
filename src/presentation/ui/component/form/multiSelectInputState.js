@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(multiSelectInputAlpineState);
-
-function multiSelectInputAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("multiSelectInput", () => ({
     getFormattedSelectedItems(bindSelectedItemsPath) {
       if (bindSelectedItemsPath.length == 0) {
@@ -26,4 +24,4 @@ function multiSelectInputAlpineState() {
       this.shouldExpandOptions = true;
     },
   }));
-}
+});

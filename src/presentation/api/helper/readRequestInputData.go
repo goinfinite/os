@@ -113,7 +113,7 @@ func ReadRequestInputData(c echo.Context) (map[string]interface{}, error) {
 		requestBody[paramName] = c.Param(paramName)
 	}
 
-	requestBody["operatorAccountId"] = c.Get("accountId")
+	requestBody["operatorAccountId"] = c.Get("operatorAccountId")
 	requestBody["operatorIpAddress"] = c.RealIP()
 
 	return requestBody, nil

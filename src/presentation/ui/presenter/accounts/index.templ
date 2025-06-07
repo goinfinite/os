@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/toolset"
 	"strconv"
 )
 
@@ -13,7 +14,7 @@ var accountsIndexAlpineState string
 
 templ AccountsIndex(accountsEntities []entity.Account) {
 	<!-- AccountsIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + accountsIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&accountsIndexAlpineState)
 	<!-- AccountsIndex HTML -->
 	<div x-data="accounts">
 		@componentStructural.PageTitle(

@@ -1,4 +1,4 @@
-# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/9) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/) [![/r/goinfinite](https://img.shields.io/badge/%2Fr%2Fgoinfinite-FF4500?logo=reddit&logoColor=ffffff)](https://www.reddit.com/r/goinfinite/) [![Discussions](https://img.shields.io/badge/discussions-751A3D?logo=github)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
+# [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/9) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/?prefilledUsername=demo&prefilledPassword=abc123) [![/r/goinfinite](https://img.shields.io/badge/%2Fr%2Fgoinfinite-FF4500?logo=reddit&logoColor=ffffff)](https://www.reddit.com/r/goinfinite/) [![Discussions](https://img.shields.io/badge/discussions-751A3D?logo=github)](https://github.com/orgs/goinfinite/discussions) [![Report Card](https://img.shields.io/badge/report-A%2B-brightgreen)](https://goreportcard.com/report/github.com/goinfinite/os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
 
 Infinite OS is the simplest way to deploy containerized applications. Full stop. Even if containers sound like rocket science to you, you'll be launching apps with just a few clicks. 🚀
 
@@ -35,7 +35,7 @@ Though if you fancy an even smoother experience, do check out our sibling projec
 
 ## Online Demo
 
-A read-only demo of the dashboard is available at [https://os.demo.goinfinite.net:1618/](https://os.demo.goinfinite.net:1618/). The default credentials are `demo` (user) and `abc123` (password). You can use this demo to explore the dashboard and see how it works. Please note that this is a read-only demo, so you won't be able to make any changes or deploy any applications.
+A read-only demo of the dashboard is available at [https://os.demo.goinfinite.net:1618/?prefilledUsername=demo&prefilledPassword=abc123](https://os.demo.goinfinite.net:1618/). The default credentials are `demo` (user) and `abc123` (password). You can use this demo to explore the dashboard and see how it works. Please note that this is a read-only demo, so you won't be able to make any changes or deploy any applications.
 
 ## Features
 

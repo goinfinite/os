@@ -3,12 +3,12 @@ package apiController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
 type AccountController struct {
-	accountService *service.AccountService
+	accountLiaison *liaison.AccountLiaison
 }
 
 func NewAccountController(
@@ -16,7 +16,7 @@ func NewAccountController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *AccountController {
 	return &AccountController{
-		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
+		accountLiaison: liaison.NewAccountLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -43,8 +43,8 @@ func (controller *AccountController) Read(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.Read(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.accountLiaison.Read(requestInputData),
 	)
 }
 
@@ -64,8 +64,8 @@ func (controller *AccountController) Create(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.Create(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.accountLiaison.Create(requestInputData),
 	)
 }
 
@@ -85,8 +85,8 @@ func (controller *AccountController) Update(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.Update(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.accountLiaison.Update(requestInputData),
 	)
 }
 
@@ -106,8 +106,8 @@ func (controller *AccountController) Delete(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.Delete(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.accountLiaison.Delete(requestInputData),
 	)
 }
 
@@ -127,8 +127,8 @@ func (controller *AccountController) CreateSecureAccessPublicKey(c echo.Context)
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.CreateSecureAccessPublicKey(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.accountLiaison.CreateSecureAccessPublicKey(requestInputData),
 	)
 }
 
@@ -148,7 +148,7 @@ func (controller *AccountController) DeleteSecureAccessPublicKey(c echo.Context)
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.accountService.DeleteSecureAccessPublicKey(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.accountLiaison.DeleteSecureAccessPublicKey(requestInputData),
 	)
 }

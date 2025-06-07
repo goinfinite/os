@@ -10,7 +10,7 @@ import (
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
@@ -62,7 +62,7 @@ func (controller *SetupController) Setup(c echo.Context) error {
 
 	isSuperAdmin := false
 
-	operatorIpAddress := service.LocalOperatorIpAddress
+	operatorIpAddress := liaison.LocalOperatorIpAddress
 	if requestBody["operatorIpAddress"] != nil {
 		operatorIpAddress, err = valueObject.NewIpAddress(
 			requestBody["operatorIpAddress"],
@@ -73,7 +73,7 @@ func (controller *SetupController) Setup(c echo.Context) error {
 	}
 
 	createDto := dto.NewCreateAccount(
-		username, password, isSuperAdmin, service.LocalOperatorAccountId,
+		username, password, isSuperAdmin, liaison.LocalOperatorAccountId,
 		operatorIpAddress,
 	)
 

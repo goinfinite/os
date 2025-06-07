@@ -5,13 +5,13 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
 type SslController struct {
-	sslService *service.SslService
+	sslLiaison *liaison.SslLiaison
 }
 
 func NewSslController(
@@ -20,7 +20,7 @@ func NewSslController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslController {
 	return &SslController{
-		sslService: service.NewSslService(persistentDbSvc, transientDbSvc, trailDbSvc),
+		sslLiaison: liaison.NewSslLiaison(persistentDbSvc, transientDbSvc, trailDbSvc),
 	}
 }
 
@@ -51,8 +51,8 @@ func (controller *SslController) Read() *cobra.Command {
 				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
 			)
 
-			cliHelper.ServiceResponseWrapper(
-				controller.sslService.Read(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.sslLiaison.Read(requestBody),
 			)
 		},
 	}
@@ -119,7 +119,7 @@ func (controller *SslController) Create() *cobra.Command {
 			}
 			requestBody["key"] = privateKeyContentStr
 
-			cliHelper.ServiceResponseWrapper(controller.sslService.Create(requestBody))
+			cliHelper.LiaisonResponseWrapper(controller.sslLiaison.Create(requestBody))
 		},
 	}
 
@@ -147,8 +147,8 @@ func (controller *SslController) CreatePubliclyTrusted() *cobra.Command {
 				"virtualHostHostname": hostnameStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.sslService.CreatePubliclyTrusted(requestBody, false),
+			cliHelper.LiaisonResponseWrapper(
+				controller.sslLiaison.CreatePubliclyTrusted(requestBody, false),
 			)
 		},
 	}
@@ -169,7 +169,7 @@ func (controller *SslController) Delete() *cobra.Command {
 				"id": sslPairIdStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(controller.sslService.Delete(requestBody))
+			cliHelper.LiaisonResponseWrapper(controller.sslLiaison.Delete(requestBody))
 		},
 	}
 

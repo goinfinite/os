@@ -24,6 +24,26 @@ func NewAccountQueryRepo(
 	}
 }
 
+func (repo *AccountQueryRepo) Count(
+	requestDto dto.ReadAccountsRequest,
+) (count uint64, err error) {
+	model := dbModel.Account{}
+	if requestDto.AccountId != nil {
+		model.ID = requestDto.AccountId.Uint64()
+	}
+	if requestDto.AccountUsername != nil {
+		model.Username = requestDto.AccountUsername.String()
+	}
+
+	var itemsTotal int64
+	err = repo.persistentDbSvc.Handler.Model(&model).Where(&model).Count(&itemsTotal).Error
+	if err != nil {
+		return count, errors.New("CountAccountsTotalError: " + err.Error())
+	}
+
+	return uint64(itemsTotal), nil
+}
+
 func (repo *AccountQueryRepo) Read(
 	requestDto dto.ReadAccountsRequest,
 ) (responseDto dto.ReadAccountsResponse, err error) {

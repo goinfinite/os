@@ -67,14 +67,16 @@ sudo chown $(whoami):$(whoami) /infinite
 
 ## Web UIs
 
-This project web UI is based on a combo [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/).
+This project web UI is based on a combo [Templ](https://templ.guide/) + [Alpine.js](https://alpinejs.dev/) + [HTMX](https://htmx.org/docs/) + [Tailwind CSS](https://tailwindcss.com/).
 
 To understand the entire conceptual and theoretical foundation behind using these technologies to create a new frontend architecture, [access this article](https://ntorga.com/full-stack-go-app-with-htmx-and-alpinejs/). However, to grasp the practical basis of how to apply this new architecture, [refer to the proof of concept](https://github.com/ntorga/clean-ddd-full-stack-go-poc) used to develop it.
+
+The UI uses [goinfinite/ui](https://github.com/goinfinite/ui) library to provide most of the common components and utilities.
 
 For the interface code to be read and rendered by Go, we need to convert all `.templ` files into `.go` files. To do this, run the following command at the root of the application:
 
 ```
-templ generate -path src/presentation/api
+templ generate -path src/presentation/ui
 ```
 
 It is important that this is done before using Air to create the binary; otherwise, the Web UI will not be embedded, and you will not be able to use it.

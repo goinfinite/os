@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(overviewIndexAlpineState);
-
-function overviewIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("marketplace", () => ({
     // PrimaryState
     marketplaceItem: {},
@@ -420,7 +418,7 @@ function overviewIndexAlpineState() {
 
       this.closeServiceInstallationModal();
 
-      Infinite.JsonAjax(
+      UiToolset.JsonAjax(
         "POST",
         "/api/v1/services/" + this.targetServiceType + "/",
         serviceInstallationAttributes
@@ -504,7 +502,7 @@ function overviewIndexAlpineState() {
 
       this.closeUpdateInstalledServiceModal();
 
-      Infinite.JsonAjax("PUT", "/api/v1/services/", serviceAttributesToUpdate)
+      UiToolset.JsonAjax("PUT", "/api/v1/services/", serviceAttributesToUpdate)
         .then(() => this.$dispatch("update:service"))
         .catch((error) =>
           Alpine.store("toast").displayToast(error.message, "danger")
@@ -529,4 +527,4 @@ function overviewIndexAlpineState() {
         .finally(() => this.closeUninstallServiceModal());
     },
   }));
-}
+});

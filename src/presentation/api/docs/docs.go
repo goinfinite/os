@@ -1432,6 +1432,45 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/runtime/php/run/": {
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Run a php command as the webserver user for a given hostname. \u003cbr /\u003eCAUTION: This endpoint allows for arbitrary code execution (ACE) and is therefore disabled by default. \u003cbr /\u003eTo enable this endpoint, set the \"ENABLE_API_RUNTIME_PHP_RUN_CMD\" environment variable to \"true\" when starting the API/container.\u003cbr /\u003eOnly super admin accounts can use this endpoint.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "runtime"
+                ],
+                "summary": "RunPhpCommand",
+                "parameters": [
+                    {
+                        "description": "Hostname and command are required. Timeout is optional.",
+                        "name": "runPhpCmdDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.RunPhpCommandRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.RunPhpCommandResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/runtime/php/{hostname}/": {
             "get": {
                 "security": [
@@ -3581,6 +3620,34 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.RunPhpCommandRequest": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "hostname": {
+                    "type": "string"
+                },
+                "timeoutSecs": {
+                    "type": "integer"
+                }
+            }
+        },
+        "dto.RunPhpCommandResponse": {
+            "type": "object",
+            "properties": {
+                "exitCode": {
+                    "type": "integer"
+                },
+                "stdErr": {
+                    "type": "string"
+                },
+                "stdOut": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.UnixFileBranch": {
             "type": "object",
             "properties": {
@@ -4913,7 +4980,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.5",
+	Version:          "0.2.6",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

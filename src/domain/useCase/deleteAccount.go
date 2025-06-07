@@ -14,12 +14,21 @@ func DeleteAccount(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteAccount,
 ) error {
-	readRequestDto := dto.ReadAccountsRequest{
-		AccountId: &deleteDto.AccountId,
-	}
-	_, err := accountQueryRepo.ReadFirst(readRequestDto)
+	_, err := accountQueryRepo.ReadFirst(
+		dto.ReadAccountsRequest{AccountId: &deleteDto.AccountId},
+	)
 	if err != nil {
 		return errors.New("AccountNotFound")
+	}
+
+	accountsCount, err := accountQueryRepo.Count(dto.ReadAccountsRequest{})
+	if err != nil {
+		slog.Error("CountAccountsError", slog.String("err", err.Error()))
+		return errors.New("CountAccountsInfraError")
+	}
+
+	if accountsCount <= 1 {
+		return errors.New("AtLeastOneAccountMustExist")
 	}
 
 	err = accountCmdRepo.Delete(deleteDto.AccountId)

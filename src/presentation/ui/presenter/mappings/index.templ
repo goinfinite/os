@@ -10,6 +10,7 @@ import (
 	"github.com/goinfinite/ui/src/control"
 	uiDisplay "github.com/goinfinite/ui/src/display"
 	uiForm "github.com/goinfinite/ui/src/form"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 const (
@@ -27,7 +28,7 @@ templ MappingsIndex(
 	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
 	<!-- MappingsIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + mappingsIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&mappingsIndexAlpineState)
 	<!-- MappingsIndex HTML -->
 	<div x-data="mappings" class="flex flex-col gap-2">
 		<div class="flex flex-row items-center justify-between">

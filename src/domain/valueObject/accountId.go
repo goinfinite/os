@@ -4,20 +4,21 @@ import (
 	"errors"
 	"strconv"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
+
+var AccountIdSystem = AccountId(0)
+var AccountIdNobody = AccountId(65534)
 
 type AccountId uint64
 
-var AccountIdSystem = AccountId(0)
-
-func NewAccountId(value interface{}) (accountId AccountId, err error) {
-	uintValue, err := voHelper.InterfaceToUint(value)
+func NewAccountId(rawValue any) (accountId AccountId, err error) {
+	uint64Value, err := tkVoUtil.InterfaceToUint64(rawValue)
 	if err != nil {
-		return accountId, errors.New("AccountIdMustBeUint")
+		return accountId, errors.New("AccountIdMustBeUint64")
 	}
 
-	return AccountId(uintValue), nil
+	return AccountId(uint64Value), nil
 }
 
 func (vo AccountId) Uint64() uint64 {

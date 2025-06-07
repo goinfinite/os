@@ -3,19 +3,19 @@ package apiController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
 type CronController struct {
-	cronService *service.CronService
+	cronLiaison *liaison.CronLiaison
 }
 
 func NewCronController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *CronController {
 	return &CronController{
-		cronService: service.NewCronService(trailDbSvc),
+		cronLiaison: liaison.NewCronLiaison(trailDbSvc),
 	}
 }
 
@@ -41,7 +41,7 @@ func (controller *CronController) Read(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(c, controller.cronService.Read(requestInputData))
+	return apiHelper.LiaisonResponseWrapper(c, controller.cronLiaison.Read(requestInputData))
 }
 
 // CreateCron    godoc
@@ -60,8 +60,8 @@ func (controller *CronController) Create(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Create(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.cronLiaison.Create(requestInputData),
 	)
 }
 
@@ -81,8 +81,8 @@ func (controller *CronController) Update(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Update(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.cronLiaison.Update(requestInputData),
 	)
 }
 
@@ -102,7 +102,7 @@ func (controller *CronController) Delete(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.cronService.Delete(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.cronLiaison.Delete(requestInputData),
 	)
 }

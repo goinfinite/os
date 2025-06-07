@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/ui/src/control"
 	"github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/form"
+	"github.com/goinfinite/ui/src/toolset"
 	"strconv"
 )
 
@@ -21,7 +22,7 @@ var mappingSecurityRulesIndexAlpineState string
 
 templ MappingSecurityRulesIndex(mappingSecurityRules []entity.MappingSecurityRule) {
 	<!-- MappingSecurityRulesIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + mappingSecurityRulesIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&mappingSecurityRulesIndexAlpineState)
 	<!-- MappingSecurityRulesIndex HTML -->
 	<div x-data="mappingSecurityRules">
 		@componentStructural.PageTitle(

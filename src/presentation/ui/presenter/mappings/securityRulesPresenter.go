@@ -6,13 +6,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/labstack/echo/v4"
 )
 
 type MappingSecurityRulesPresenter struct {
-	virtualHostService *service.VirtualHostService
+	virtualHostLiaison *liaison.VirtualHostLiaison
 }
 
 func NewMappingSecurityRulesPresenter(
@@ -20,7 +20,7 @@ func NewMappingSecurityRulesPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *MappingSecurityRulesPresenter {
 	return &MappingSecurityRulesPresenter{
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
+		virtualHostLiaison: liaison.NewVirtualHostLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -29,8 +29,8 @@ func (presenter *MappingSecurityRulesPresenter) Handler(c echo.Context) error {
 		"itemsPerPage": 1000,
 	}
 
-	secRulesServiceResponse := presenter.virtualHostService.ReadMappingSecurityRules(requestBody)
-	if secRulesServiceResponse.Status != service.Success {
+	secRulesServiceResponse := presenter.virtualHostLiaison.ReadMappingSecurityRules(requestBody)
+	if secRulesServiceResponse.Status != liaison.Success {
 		slog.Debug("SecRulesServiceBadOutput", slog.Any("output", secRulesServiceResponse))
 		return nil
 	}

@@ -1,7 +1,7 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion                  string = "0.2.5"
+	InfiniteOsVersion                  string = "0.2.6"
 	InfiniteOsMainDir                  string = "/infinite"
 	InfiniteOsBinary                   string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath              string = InfiniteOsMainDir + "/.env"
@@ -10,7 +10,7 @@ const (
 	TrailDatabaseFilePath              string = InfiniteOsMainDir + "/trail.db"
 	MarketplaceCatalogItemsDir         string = InfiniteOsMainDir + "/marketplace"
 	MarketplaceCatalogItemsRepoUrl     string = "https://github.com/goinfinite/os-marketplace"
-	MarketplaceCatalogItemsRepoBranch  string = "v1"
+	MarketplaceCatalogItemsRepoBranch  string = "v2"
 	InstallableServicesItemsDir        string = InfiniteOsMainDir + "/services"
 	InstallableServicesItemsRepoUrl    string = "https://github.com/goinfinite/os-services"
 	InstallableServicesItemsRepoBranch string = "v1"
@@ -20,6 +20,8 @@ const (
 	MappingsSecurityRulesConfDir       string = MappingsConfDir + "/security"
 	PkiConfDir                         string = "/app/conf/pki"
 	PhpWebserverMainConfFilePath       string = "/usr/local/lsws/conf/httpd_config.conf"
+	PhpWebserverUsername               string = "nobody"
+	PhpWebserverGroupName              string = "nogroup"
 	AccessTokenCookieKey               string = "os-access-token"
 	UserDataBaseDirectory              string = "/home"
 	DefaultPrimaryVhost                string = "goinfinite.local"

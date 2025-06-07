@@ -8,14 +8,14 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
 type MarketplacePresenter struct {
-	marketplaceService *service.MarketplaceService
+	marketplaceLiaison *liaison.MarketplaceLiaison
 	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
 	trailDbSvc         *internalDbInfra.TrailDatabaseService
 }
@@ -25,7 +25,7 @@ func NewMarketplacePresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *MarketplacePresenter {
 	return &MarketplacePresenter{
-		marketplaceService: service.NewMarketplaceService(persistentDbSvc, trailDbSvc),
+		marketplaceLiaison: liaison.NewMarketplaceLiaison(persistentDbSvc, trailDbSvc),
 		persistentDbSvc:    persistentDbSvc,
 		trailDbSvc:         trailDbSvc,
 	}
@@ -60,10 +60,10 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 ) {
 	installedItemsList := []entity.MarketplaceInstalledItem{}
 	if listType == "installed" || listType == "all" {
-		responseOutput := presenter.marketplaceService.ReadInstalledItems(
+		responseOutput := presenter.marketplaceLiaison.ReadInstalledItems(
 			map[string]interface{}{},
 		)
-		if responseOutput.Status != service.Success {
+		if responseOutput.Status != liaison.Success {
 			return overview, errors.New("FailedToReadInstalledItems")
 		}
 
@@ -76,10 +76,10 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 
 	catalogItemsList := []entity.MarketplaceCatalogItem{}
 	if listType == "catalog" || listType == "all" {
-		responseOutput := presenter.marketplaceService.ReadCatalog(
+		responseOutput := presenter.marketplaceLiaison.ReadCatalog(
 			map[string]interface{}{},
 		)
-		if responseOutput.Status != service.Success {
+		if responseOutput.Status != liaison.Success {
 			return overview, errors.New("FailedToReadCatalogItems")
 		}
 

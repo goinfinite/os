@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(accountsIndexAlpineState);
-
-function accountsIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("accounts", () => ({
     // PrimaryState
     account: {},
@@ -60,7 +58,7 @@ function accountsIndexAlpineState() {
     },
     updateApiKey() {
       const shouldDisplayToast = false;
-      Infinite.JsonAjax(
+      UiToolset.JsonAjax(
         "PUT",
         "/api/v1/account/",
         { id: this.account.id, shouldUpdateApiKey: true },
@@ -128,4 +126,4 @@ function accountsIndexAlpineState() {
         .finally(() => this.closeDeleteAccountModal());
     },
   }));
-}
+});

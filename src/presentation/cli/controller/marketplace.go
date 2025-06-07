@@ -7,13 +7,13 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/spf13/cobra"
 )
 
 type MarketplaceController struct {
 	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
-	marketplaceService *service.MarketplaceService
+	marketplaceLiaison *liaison.MarketplaceLiaison
 }
 
 func NewMarketplaceController(
@@ -22,7 +22,7 @@ func NewMarketplaceController(
 ) *MarketplaceController {
 	return &MarketplaceController{
 		persistentDbSvc:    persistentDbSvc,
-		marketplaceService: service.NewMarketplaceService(persistentDbSvc, trailDbSvc),
+		marketplaceLiaison: liaison.NewMarketplaceLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -75,8 +75,8 @@ func (controller *MarketplaceController) ReadCatalog() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.marketplaceService.ReadCatalog(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.marketplaceLiaison.ReadCatalog(requestBody),
 			)
 		},
 	}
@@ -176,8 +176,8 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 				requestBody["urlPath"] = urlPathStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.marketplaceService.InstallCatalogItem(requestBody, false),
+			cliHelper.LiaisonResponseWrapper(
+				controller.marketplaceLiaison.InstallCatalogItem(requestBody, false),
 			)
 		},
 	}
@@ -242,8 +242,8 @@ func (controller *MarketplaceController) ReadInstalledItems() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.marketplaceService.ReadInstalledItems(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.marketplaceLiaison.ReadInstalledItems(requestBody),
 			)
 		},
 	}
@@ -295,8 +295,8 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 				"shouldUninstallServices": shouldUninstallServicesStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.marketplaceService.DeleteInstalledItem(requestBody, false),
+			cliHelper.LiaisonResponseWrapper(
+				controller.marketplaceLiaison.DeleteInstalledItem(requestBody, false),
 			)
 		},
 	}

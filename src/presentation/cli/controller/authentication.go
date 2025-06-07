@@ -3,12 +3,12 @@ package cliController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/spf13/cobra"
 )
 
 type AuthenticationController struct {
-	authenticationService *service.AuthenticationService
+	authenticationLiaison *liaison.AuthenticationLiaison
 }
 
 func NewAuthenticationController(
@@ -16,7 +16,7 @@ func NewAuthenticationController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *AuthenticationController {
 	return &AuthenticationController{
-		authenticationService: service.NewAuthenticationService(
+		authenticationLiaison: liaison.NewAuthenticationLiaison(
 			persistentDbSvc, trailDbSvc,
 		),
 	}
@@ -35,8 +35,8 @@ func (controller *AuthenticationController) Login() *cobra.Command {
 				"operatorIpAddress": ipAddressStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.authenticationService.Login(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.authenticationLiaison.Login(requestBody),
 			)
 		},
 	}

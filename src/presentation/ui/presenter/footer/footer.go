@@ -7,7 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
 	"github.com/labstack/echo/v4"
 )
@@ -31,21 +31,21 @@ func NewFooterPresenter(
 }
 
 func (presenter *FooterPresenter) Handler(c echo.Context) error {
-	o11yService := service.NewO11yService(presenter.transientDbSvc)
+	o11yLiaison := liaison.NewO11yLiaison(presenter.transientDbSvc)
 
-	o11yServiceOutput := o11yService.ReadOverview()
-	if o11yServiceOutput.Status != service.Success {
+	o11yLiaisonOutput := o11yLiaison.ReadOverview()
+	if o11yLiaisonOutput.Status != liaison.Success {
 		slog.Debug("FooterPresenterReadOverviewFailure")
 		return nil
 	}
 
-	o11yOverviewEntity, assertOk := o11yServiceOutput.Body.(entity.O11yOverview)
+	o11yOverviewEntity, assertOk := o11yLiaisonOutput.Body.(entity.O11yOverview)
 	if !assertOk {
 		slog.Debug("FooterPresenterAssertOverviewFailure")
 		return nil
 	}
 
-	scheduledTaskService := service.NewScheduledTaskService(presenter.persistentDbSvc)
+	scheduledTaskLiaison := liaison.NewScheduledTaskLiaison(presenter.persistentDbSvc)
 
 	scheduledTaskReadRequestBody := map[string]interface{}{
 		"pageNumber":    0,
@@ -53,13 +53,13 @@ func (presenter *FooterPresenter) Handler(c echo.Context) error {
 		"sortBy":        "id",
 		"sortDirection": "desc",
 	}
-	scheduledTaskServiceOutput := scheduledTaskService.Read(scheduledTaskReadRequestBody)
-	if scheduledTaskServiceOutput.Status != service.Success {
+	scheduledTaskLiaisonOutput := scheduledTaskLiaison.Read(scheduledTaskReadRequestBody)
+	if scheduledTaskLiaisonOutput.Status != liaison.Success {
 		slog.Debug("FooterPresenterReadScheduledTaskFailure")
 		return nil
 	}
 
-	tasksResponseDto, assertOk := scheduledTaskServiceOutput.Body.(dto.ReadScheduledTasksResponse)
+	tasksResponseDto, assertOk := scheduledTaskLiaisonOutput.Body.(dto.ReadScheduledTasksResponse)
 	if !assertOk {
 		slog.Debug("FooterPresenterAssertScheduledTaskResponseFailure")
 		return nil

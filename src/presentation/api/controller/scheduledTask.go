@@ -12,12 +12,12 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
 type ScheduledTaskController struct {
-	scheduledTaskService *service.ScheduledTaskService
+	scheduledTaskLiaison *liaison.ScheduledTaskLiaison
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
 }
 
@@ -25,7 +25,7 @@ func NewScheduledTaskController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *ScheduledTaskController {
 	return &ScheduledTaskController{
-		scheduledTaskService: service.NewScheduledTaskService(persistentDbSvc),
+		scheduledTaskLiaison: liaison.NewScheduledTaskLiaison(persistentDbSvc),
 		persistentDbSvc:      persistentDbSvc,
 	}
 }
@@ -90,8 +90,8 @@ func (controller *ScheduledTaskController) Read(c echo.Context) error {
 		requestInputData["taskTags"] = taskTags
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.scheduledTaskService.Read(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.scheduledTaskLiaison.Read(requestInputData),
 	)
 }
 
@@ -111,8 +111,8 @@ func (controller *ScheduledTaskController) Update(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.scheduledTaskService.Update(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.scheduledTaskLiaison.Update(requestInputData),
 	)
 }
 

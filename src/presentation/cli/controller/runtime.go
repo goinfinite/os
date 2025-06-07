@@ -8,12 +8,12 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/spf13/cobra"
 )
 
 type RuntimeController struct {
-	runtimeService *service.RuntimeService
+	runtimeLiaison *liaison.RuntimeLiaison
 }
 
 func NewRuntimeController(
@@ -21,7 +21,7 @@ func NewRuntimeController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *RuntimeController {
 	return &RuntimeController{
-		runtimeService: service.NewRuntimeService(persistentDbService, trailDbSvc),
+		runtimeLiaison: liaison.NewRuntimeLiaison(persistentDbService, trailDbSvc),
 	}
 }
 
@@ -55,8 +55,8 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 				"hostname": hostname.String(),
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.runtimeService.ReadPhpConfigs(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.runtimeLiaison.ReadPhpConfigs(requestBody),
 			)
 		},
 	}
@@ -107,8 +107,8 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 				requestBody["settings"] = settings
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.runtimeService.UpdatePhpConfigs(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
 			)
 		},
 	}
@@ -148,8 +148,8 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 			}
 			requestBody["modules"] = []entity.PhpModule{module}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.runtimeService.UpdatePhpConfigs(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
 			)
 		},
 	}
@@ -187,8 +187,8 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 			}
 			requestBody["settings"] = []entity.PhpSetting{setting}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.runtimeService.UpdatePhpConfigs(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
 			)
 		},
 	}
@@ -200,5 +200,34 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 	cmd.MarkFlagRequired("name")
 	cmd.Flags().StringVarP(&settingValueStr, "value", "V", "", "PhpSettingValue")
 	cmd.MarkFlagRequired("value")
+	return cmd
+}
+
+func (controller *RuntimeController) RunPhpCommand() *cobra.Command {
+	var hostnameStr, commandStr string
+
+	cmd := &cobra.Command{
+		Use:   "run",
+		Short: "RunPhpCommand",
+		Run: func(cmd *cobra.Command, args []string) {
+			hostname, err := getHostname(hostnameStr)
+			if err != nil {
+				cliHelper.ResponseWrapper(false, err.Error())
+			}
+			requestBody := map[string]interface{}{
+				"hostname": hostname.String(),
+				"command":  commandStr,
+			}
+
+			cliHelper.LiaisonResponseWrapper(
+				controller.runtimeLiaison.RunPhpCommand(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
+	cmd.MarkFlagRequired("hostname")
+	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command")
+	cmd.MarkFlagRequired("command")
 	return cmd
 }

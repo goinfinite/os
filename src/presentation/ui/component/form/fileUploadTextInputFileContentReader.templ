@@ -1,9 +1,7 @@
 package componentForm
 
 script FileUploadTextInputFileContentReaderLocalState() {
-	Infinite.RegisterAlpineState(fileUploadTextInputFileContentReaderAlpineState);
-
-	function fileUploadTextInputFileContentReaderAlpineState() {
+	UiToolset.RegisterAlpineState(() => {
 		Alpine.data('fileUploadTextInputFileContentReader', () => ({
 			uploadedFileName: '',
 			get uploadedFileNameLabel() {
@@ -32,7 +30,7 @@ script FileUploadTextInputFileContentReaderLocalState() {
 				reader.readAsText(uploadedFile);
 			}
 		}));
-	}
+	});
 }
 
 templ FileUploadTextInputFileContentReader(

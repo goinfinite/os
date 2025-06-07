@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 //go:embed state.js
@@ -12,7 +13,7 @@ var cronsIndexAlpineState string
 
 templ CronsIndex(crons []entity.Cron) {
 	<!-- CronsIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + cronsIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&cronsIndexAlpineState)
 	<!-- CronsIndex HTML -->
 	<div x-data="crons">
 		@componentStructural.PageTitle(

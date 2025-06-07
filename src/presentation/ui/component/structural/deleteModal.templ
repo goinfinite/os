@@ -2,7 +2,7 @@ package componentStructural
 
 templ DeleteCriticalContent(elNameStatePath, elIdStatePath string) {
 	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
-		Are you sure you want to delete?
+		Are You sure You Want to Delete
 		if elNameStatePath != "" {
 			<strong
 				x-show={ elNameStatePath + " !== ''" }
@@ -13,8 +13,9 @@ templ DeleteCriticalContent(elNameStatePath, elIdStatePath string) {
 		if elIdStatePath != "" {
 			<strong x-show={ elIdStatePath + " !== ''" }>
 				#<span x-text={ elIdStatePath }></span>
-			</strong>?
+			</strong>
 		}
+		?
 	</h3>
 	<p>This process cannot be undone. This will permanently delete the element(s).</p>
 }

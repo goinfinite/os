@@ -45,6 +45,10 @@ func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
 	for _, vhostHostname := range vhostHostnames {
 		wwwVirtualHostHostname, err := valueObject.NewFqdn("www." + vhostHostname.String())
 		if err != nil {
+			slog.Debug(
+				"InvalidWwwVirtualHostHostname",
+				slog.String("fqdn", vhostHostname.String()),
+			)
 			continue
 		}
 
@@ -56,12 +60,28 @@ func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
 		vhostHostnameStr := vhostHostname.String()
 
 		hostnameRecords, err := infraHelper.DnsLookup(vhostHostnameStr, nil)
-		if err != nil || len(hostnameRecords) == 0 {
+		if err != nil {
+			slog.Debug(
+				"DnsLookupFailed",
+				slog.String("fqdn", vhostHostnameStr),
+				slog.String("error", err.Error()),
+			)
 			continue
 		}
 
-		for _, record := range hostnameRecords {
-			if record != serverPublicIpAddressStr {
+		if len(hostnameRecords) == 0 {
+			slog.Debug("NoDnsRecordsFound", slog.String("fqdn", vhostHostnameStr))
+			continue
+		}
+
+		for _, dnsRecord := range hostnameRecords {
+			if dnsRecord != serverPublicIpAddressStr {
+				slog.Debug(
+					"DnsRecordDoesNotMatchServerIpAddress",
+					slog.String("fqdn", vhostHostnameStr),
+					slog.String("dnsRecord", dnsRecord),
+					slog.String("serverPublicIpAddress", serverPublicIpAddressStr),
+				)
 				continue
 			}
 
@@ -306,6 +326,11 @@ func (repo *SslCmdRepo) Create(
 		return sslPairId, errors.New("SslPairNotFound: " + err.Error())
 	}
 
+	err = infraHelper.ReloadWebServer()
+	if err != nil {
+		return sslPairId, errors.New("ReloadWebServerError: " + err.Error())
+	}
+
 	return sslPairEntity.Id, nil
 }
 
@@ -357,7 +382,12 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 		return errors.New("PkiConfDirError: " + err.Error())
 	}
 
-	return infraHelper.CreateSelfSignedSsl(pkiConfDir, vhostHostname, aliasesHostnames)
+	err = infraHelper.CreateSelfSignedSsl(pkiConfDir, vhostHostname, aliasesHostnames)
+	if err != nil {
+		return errors.New("CreateSelfSignedSslError: " + err.Error())
+	}
+
+	return infraHelper.ReloadWebServer()
 }
 
 func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {

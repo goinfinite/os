@@ -1,4 +1,4 @@
-package service
+package liaison
 
 import (
 	"errors"
@@ -17,21 +17,21 @@ import (
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
+	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 )
 
-type MarketplaceService struct {
+type MarketplaceLiaison struct {
 	marketplaceQueryRepo  *marketplaceInfra.MarketplaceQueryRepo
 	marketplaceCmdRepo    *marketplaceInfra.MarketplaceCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
 }
 
-func NewMarketplaceService(
+func NewMarketplaceLiaison(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) *MarketplaceService {
-	return &MarketplaceService{
+) *MarketplaceLiaison {
+	return &MarketplaceLiaison{
 		marketplaceQueryRepo:  marketplaceInfra.NewMarketplaceQueryRepo(persistentDbSvc),
 		marketplaceCmdRepo:    marketplaceInfra.NewMarketplaceCmdRepo(persistentDbSvc),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
@@ -39,84 +39,84 @@ func NewMarketplaceService(
 	}
 }
 
-func (service *MarketplaceService) ReadCatalog(
-	input map[string]interface{},
-) ServiceOutput {
+func (liaison *MarketplaceLiaison) ReadCatalog(
+	untrustedInput map[string]any,
+) LiaisonOutput {
 	var idPtr *valueObject.MarketplaceItemId
-	if input["id"] != nil {
-		id, err := valueObject.NewMarketplaceItemId(input["id"])
+	if untrustedInput["id"] != nil {
+		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		idPtr = &id
 	}
 
 	var slugPtr *valueObject.MarketplaceItemSlug
-	if input["slug"] != nil {
-		slug, err := valueObject.NewMarketplaceItemSlug(input["slug"])
+	if untrustedInput["slug"] != nil {
+		slug, err := valueObject.NewMarketplaceItemSlug(untrustedInput["slug"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		slugPtr = &slug
 	}
 
 	var namePtr *valueObject.MarketplaceItemName
-	if input["name"] != nil {
-		name, err := valueObject.NewMarketplaceItemName(input["name"])
+	if untrustedInput["name"] != nil {
+		name, err := valueObject.NewMarketplaceItemName(untrustedInput["name"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		namePtr = &name
 	}
 
 	var typePtr *valueObject.MarketplaceItemType
-	if input["type"] != nil {
-		itemType, err := valueObject.NewMarketplaceItemType(input["type"])
+	if untrustedInput["type"] != nil {
+		itemType, err := valueObject.NewMarketplaceItemType(untrustedInput["type"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		typePtr = &itemType
 	}
 
 	paginationDto := useCase.MarketplaceDefaultPagination
-	if input["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+	if untrustedInput["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
-			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
 		}
 		paginationDto.PageNumber = pageNumber
 	}
 
-	if input["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+	if untrustedInput["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
 		if err != nil {
-			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
 		}
 		paginationDto.ItemsPerPage = itemsPerPage
 	}
 
-	if input["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+	if untrustedInput["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		paginationDto.SortBy = &sortBy
 	}
 
-	if input["sortDirection"] != nil {
+	if untrustedInput["sortDirection"] != nil {
 		sortDirection, err := valueObject.NewPaginationSortDirection(
-			input["sortDirection"],
+			untrustedInput["sortDirection"],
 		)
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		paginationDto.SortDirection = &sortDirection
 	}
 
-	if input["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+	if untrustedInput["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		paginationDto.LastSeenId = &lastSeenId
 	}
@@ -129,66 +129,63 @@ func (service *MarketplaceService) ReadCatalog(
 		MarketplaceCatalogItemType: typePtr,
 	}
 
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
-		service.persistentDbSvc,
-	)
-	itemsList, err := useCase.ReadMarketplaceCatalogItems(marketplaceQueryRepo, readDto)
+	itemsList, err := useCase.ReadMarketplaceCatalogItems(liaison.marketplaceQueryRepo, readDto)
 	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+		return NewLiaisonOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, itemsList)
+	return NewLiaisonOutput(Success, itemsList)
 }
 
-func (service *MarketplaceService) InstallCatalogItem(
-	input map[string]interface{},
+func (liaison *MarketplaceLiaison) InstallCatalogItem(
+	untrustedInput map[string]any,
 	shouldSchedule bool,
-) ServiceOutput {
+) LiaisonOutput {
 	hostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+		return NewLiaisonOutput(InfraError, err.Error())
 	}
 
-	if input["hostname"] != nil {
-		hostname, err = valueObject.NewFqdn(input["hostname"])
+	if untrustedInput["hostname"] != nil {
+		hostname, err = valueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
+			return NewLiaisonOutput(UserError, err.Error())
 		}
 	}
 
 	var idPtr *valueObject.MarketplaceItemId
-	if input["id"] != nil {
-		id, err := valueObject.NewMarketplaceItemId(input["id"])
+	if untrustedInput["id"] != nil {
+		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
+			return NewLiaisonOutput(UserError, err.Error())
 		}
 		idPtr = &id
 	}
 
 	var slugPtr *valueObject.MarketplaceItemSlug
-	if input["slug"] != nil {
-		slug, err := valueObject.NewMarketplaceItemSlug(input["slug"])
+	if untrustedInput["slug"] != nil {
+		slug, err := valueObject.NewMarketplaceItemSlug(untrustedInput["slug"])
 		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
+			return NewLiaisonOutput(UserError, err.Error())
 		}
 		slugPtr = &slug
 	}
 
 	var urlPathPtr *valueObject.UrlPath
-	if input["urlPath"] != nil {
-		urlPath, err := valueObject.NewUrlPath(input["urlPath"])
+	if untrustedInput["urlPath"] != nil {
+		urlPath, err := valueObject.NewUrlPath(untrustedInput["urlPath"])
 		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
+			return NewLiaisonOutput(UserError, err.Error())
 		}
 		urlPathPtr = &urlPath
 	}
 
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
-	if _, exists := input["dataFields"]; exists {
+	if _, exists := untrustedInput["dataFields"]; exists {
 		var assertOk bool
-		dataFields, assertOk = input["dataFields"].([]valueObject.MarketplaceInstallableItemDataField)
+		dataFields, assertOk = untrustedInput["dataFields"].([]valueObject.MarketplaceInstallableItemDataField)
 		if !assertOk {
-			return NewServiceOutput(UserError, "InvalidDataFields")
+			return NewLiaisonOutput(UserError, "InvalidDataFields")
 		}
 	}
 
@@ -217,7 +214,7 @@ func (service *MarketplaceService) InstallCatalogItem(
 
 		cliCmd += " " + strings.Join(installParams, " ")
 
-		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(service.persistentDbSvc)
+		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(liaison.persistentDbSvc)
 		taskName, _ := valueObject.NewScheduledTaskName("InstallMarketplaceCatalogItem")
 		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
@@ -230,25 +227,25 @@ func (service *MarketplaceService) InstallCatalogItem(
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
-			return NewServiceOutput(InfraError, err.Error())
+			return NewLiaisonOutput(InfraError, err.Error())
 		}
 
-		return NewServiceOutput(Created, "MarketplaceCatalogItemInstallationScheduled")
+		return NewLiaisonOutput(Created, "MarketplaceCatalogItemInstallationScheduled")
 	}
 
 	operatorAccountId := LocalOperatorAccountId
-	if input["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+	if untrustedInput["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
+			return NewLiaisonOutput(UserError, err.Error())
 		}
 	}
 
 	operatorIpAddress := LocalOperatorIpAddress
-	if input["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+	if untrustedInput["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
+			return NewLiaisonOutput(UserError, err.Error())
 		}
 	}
 
@@ -257,99 +254,99 @@ func (service *MarketplaceService) InstallCatalogItem(
 		operatorIpAddress,
 	)
 
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(service.persistentDbSvc)
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(liaison.persistentDbSvc)
 
 	err = useCase.InstallMarketplaceCatalogItem(
-		vhostQueryRepo, service.marketplaceQueryRepo, service.marketplaceCmdRepo,
-		service.activityRecordCmdRepo, installDto,
+		vhostQueryRepo, liaison.marketplaceQueryRepo, liaison.marketplaceCmdRepo,
+		liaison.activityRecordCmdRepo, installDto,
 	)
 	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+		return NewLiaisonOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Created, "MarketplaceCatalogItemInstalled")
+	return NewLiaisonOutput(Created, "MarketplaceCatalogItemInstalled")
 }
 
-func (service *MarketplaceService) ReadInstalledItems(
-	input map[string]interface{},
-) ServiceOutput {
+func (liaison *MarketplaceLiaison) ReadInstalledItems(
+	untrustedInput map[string]any,
+) LiaisonOutput {
 	var idPtr *valueObject.MarketplaceItemId
-	if input["id"] != nil {
-		id, err := valueObject.NewMarketplaceItemId(input["id"])
+	if untrustedInput["id"] != nil {
+		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		idPtr = &id
 	}
 
 	var hostnamePtr *valueObject.Fqdn
-	if input["hostname"] != nil {
-		hostname, err := valueObject.NewFqdn(input["hostname"])
+	if untrustedInput["hostname"] != nil {
+		hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		hostnamePtr = &hostname
 	}
 
 	var typePtr *valueObject.MarketplaceItemType
-	if input["type"] != nil {
-		itemType, err := valueObject.NewMarketplaceItemType(input["type"])
+	if untrustedInput["type"] != nil {
+		itemType, err := valueObject.NewMarketplaceItemType(untrustedInput["type"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		typePtr = &itemType
 	}
 
 	var installationUuidPtr *valueObject.MarketplaceInstalledItemUuid
-	if input["installationUuid"] != nil {
+	if untrustedInput["installationUuid"] != nil {
 		installationUuid, err := valueObject.NewMarketplaceInstalledItemUuid(
-			input["installationUuid"],
+			untrustedInput["installationUuid"],
 		)
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		installationUuidPtr = &installationUuid
 	}
 
 	paginationDto := useCase.MarketplaceDefaultPagination
-	if input["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(input["pageNumber"])
+	if untrustedInput["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
-			return NewServiceOutput(UserError, errors.New("InvalidPageNumber"))
+			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
 		}
 		paginationDto.PageNumber = pageNumber
 	}
 
-	if input["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(input["itemsPerPage"])
+	if untrustedInput["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
 		if err != nil {
-			return NewServiceOutput(UserError, errors.New("InvalidItemsPerPage"))
+			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
 		}
 		paginationDto.ItemsPerPage = itemsPerPage
 	}
 
-	if input["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(input["sortBy"])
+	if untrustedInput["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		paginationDto.SortBy = &sortBy
 	}
 
-	if input["sortDirection"] != nil {
+	if untrustedInput["sortDirection"] != nil {
 		sortDirection, err := valueObject.NewPaginationSortDirection(
-			input["sortDirection"],
+			untrustedInput["sortDirection"],
 		)
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		paginationDto.SortDirection = &sortDirection
 	}
 
-	if input["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(input["lastSeenId"])
+	if untrustedInput["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
 		if err != nil {
-			return NewServiceOutput(UserError, err)
+			return NewLiaisonOutput(UserError, err)
 		}
 		paginationDto.LastSeenId = &lastSeenId
 	}
@@ -362,39 +359,36 @@ func (service *MarketplaceService) ReadInstalledItems(
 		MarketplaceInstalledItemUuid:     installationUuidPtr,
 	}
 
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
-		service.persistentDbSvc,
-	)
 	itemsList, err := useCase.ReadMarketplaceInstalledItems(
-		marketplaceQueryRepo, readDto,
+		liaison.marketplaceQueryRepo, readDto,
 	)
 	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+		return NewLiaisonOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, itemsList)
+	return NewLiaisonOutput(Success, itemsList)
 }
 
-func (service *MarketplaceService) DeleteInstalledItem(
-	input map[string]interface{},
+func (liaison *MarketplaceLiaison) DeleteInstalledItem(
+	untrustedInput map[string]any,
 	shouldSchedule bool,
-) ServiceOutput {
+) LiaisonOutput {
 	requiredParams := []string{"installedId"}
 
-	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	installedId, err := valueObject.NewMarketplaceItemId(input["installedId"])
+	installedId, err := valueObject.NewMarketplaceItemId(untrustedInput["installedId"])
 	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+		return NewLiaisonOutput(UserError, err.Error())
 	}
 
 	shouldUninstallServices := true
-	if input["shouldUninstallServices"] != nil {
+	if untrustedInput["shouldUninstallServices"] != nil {
 		shouldUninstallServices, err = voHelper.InterfaceToBool(
-			input["shouldUninstallServices"],
+			untrustedInput["shouldUninstallServices"],
 		)
 		if err != nil {
 			shouldUninstallServices = false
@@ -402,18 +396,18 @@ func (service *MarketplaceService) DeleteInstalledItem(
 	}
 
 	operatorAccountId := LocalOperatorAccountId
-	if input["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(input["operatorAccountId"])
+	if untrustedInput["operatorAccountId"] != nil {
+		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
+			return NewLiaisonOutput(UserError, err.Error())
 		}
 	}
 
 	operatorIpAddress := LocalOperatorIpAddress
-	if input["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(input["operatorIpAddress"])
+	if untrustedInput["operatorIpAddress"] != nil {
+		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewServiceOutput(UserError, err.Error())
+			return NewLiaisonOutput(UserError, err.Error())
 		}
 	}
 
@@ -427,7 +421,7 @@ func (service *MarketplaceService) DeleteInstalledItem(
 		cliCmd += " " + strings.Join(installParams, " ")
 
 		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(
-			service.persistentDbSvc,
+			liaison.persistentDbSvc,
 		)
 		taskName, _ := valueObject.NewScheduledTaskName("DeleteMarketplaceCatalogItem")
 		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
@@ -441,29 +435,29 @@ func (service *MarketplaceService) DeleteInstalledItem(
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
-			return NewServiceOutput(InfraError, err.Error())
+			return NewLiaisonOutput(InfraError, err.Error())
 		}
 
-		return NewServiceOutput(Created, "MarketplaceCatalogItemDeletionScheduled")
+		return NewLiaisonOutput(Created, "MarketplaceCatalogItemDeletionScheduled")
 	}
 
 	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
 		installedId, shouldUninstallServices, operatorAccountId, operatorIpAddress,
 	)
 
-	mappingQueryRepo := vhostInfra.NewMappingQueryRepo(service.persistentDbSvc)
-	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(service.persistentDbSvc)
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(service.persistentDbSvc)
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(service.persistentDbSvc)
+	mappingQueryRepo := vhostInfra.NewMappingQueryRepo(liaison.persistentDbSvc)
+	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(liaison.persistentDbSvc)
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(liaison.persistentDbSvc)
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(liaison.persistentDbSvc)
 
 	err = useCase.DeleteMarketplaceInstalledItem(
-		service.marketplaceQueryRepo, service.marketplaceCmdRepo,
+		liaison.marketplaceQueryRepo, liaison.marketplaceCmdRepo,
 		mappingQueryRepo, mappingCmdRepo, servicesQueryRepo, servicesCmdRepo,
-		service.activityRecordCmdRepo, deleteMarketplaceInstalledItem,
+		liaison.activityRecordCmdRepo, deleteMarketplaceInstalledItem,
 	)
 	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+		return NewLiaisonOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, "MarketplaceInstalledItemDeleted")
+	return NewLiaisonOutput(Success, "MarketplaceInstalledItemDeleted")
 }

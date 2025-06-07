@@ -1,4 +1,4 @@
-package service
+package liaison
 
 import (
 	"github.com/goinfinite/os/src/domain/dto"
@@ -8,56 +8,58 @@ import (
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	authInfra "github.com/goinfinite/os/src/infra/auth"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	serviceHelper "github.com/goinfinite/os/src/presentation/service/helper"
+	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 )
 
-type AuthenticationService struct {
+type AuthenticationLiaison struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
-func NewAuthenticationService(
+func NewAuthenticationLiaison(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
-) *AuthenticationService {
-	return &AuthenticationService{
+) *AuthenticationLiaison {
+	return &AuthenticationLiaison{
 		persistentDbSvc: persistentDbSvc,
 		trailDbSvc:      trailDbSvc,
 	}
 }
 
-func (service *AuthenticationService) Login(input map[string]interface{}) ServiceOutput {
-	requiredParams := []string{"username", "password"}
-	err := serviceHelper.RequiredParamsInspector(input, requiredParams)
+func (liaison *AuthenticationLiaison) Login(
+	untrustedInput map[string]any,
+) LiaisonOutput {
+	requiredParams := []string{"username", "password", "operatorIpAddress"}
+	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	username, err := valueObject.NewUsername(input["username"])
+	username, err := valueObject.NewUsername(untrustedInput["username"])
 	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	password, err := valueObject.NewPassword(input["password"])
+	password, err := valueObject.NewPassword(untrustedInput["password"])
 	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(input["operatorIpAddress"])
+	operatorIpAddress, err := valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 	if err != nil {
-		return NewServiceOutput(UserError, err.Error())
+		return NewLiaisonOutput(UserError, err.Error())
 	}
 
 	dto := dto.NewCreateSessionToken(username, password, operatorIpAddress)
 
-	authQueryRepo := authInfra.NewAuthQueryRepo(service.persistentDbSvc)
+	authQueryRepo := authInfra.NewAuthQueryRepo(liaison.persistentDbSvc)
 	authCmdRepo := authInfra.AuthCmdRepo{}
-	accountQueryRepo := accountInfra.NewAccountQueryRepo(service.persistentDbSvc)
+	accountQueryRepo := accountInfra.NewAccountQueryRepo(liaison.persistentDbSvc)
 	activityRecordQueryRepo := activityRecordInfra.NewActivityRecordQueryRepo(
-		service.trailDbSvc,
+		liaison.trailDbSvc,
 	)
 	activityRecordCmdRepo := activityRecordInfra.NewActivityRecordCmdRepo(
-		service.trailDbSvc,
+		liaison.trailDbSvc,
 	)
 
 	accessToken, err := useCase.CreateSessionToken(
@@ -65,8 +67,8 @@ func (service *AuthenticationService) Login(input map[string]interface{}) Servic
 		activityRecordCmdRepo, dto,
 	)
 	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+		return NewLiaisonOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, accessToken)
+	return NewLiaisonOutput(Success, accessToken)
 }

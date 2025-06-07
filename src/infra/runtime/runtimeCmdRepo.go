@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -26,6 +27,68 @@ func NewRuntimeCmdRepo(
 		persistentDbSvc:  persistentDbSvc,
 		runtimeQueryRepo: RuntimeQueryRepo{},
 	}
+}
+
+func (repo *RuntimeCmdRepo) RunPhpCommand(
+	runRequest dto.RunPhpCommandRequest,
+) (runResponse dto.RunPhpCommandResponse, err error) {
+	phpVersionEntity, err := repo.runtimeQueryRepo.ReadPhpVersion(runRequest.Hostname)
+	if err != nil {
+		return runResponse, err
+	}
+	phpVersionWithoutDots := phpVersionEntity.Value.GetWithoutDots()
+	if phpVersionWithoutDots == "" {
+		return runResponse, errors.New("PhpVersionNotFound")
+	}
+
+	phpCli := "/usr/local/lsws/lsphp" + phpVersionWithoutDots + "/bin/php"
+	if !infraHelper.FileExists(phpCli) {
+		return runResponse, errors.New("PhpCliNotFound")
+	}
+
+	timeoutSecs := uint64(600)
+	if runRequest.TimeoutSecs != nil {
+		timeoutSecs = *runRequest.TimeoutSecs
+	}
+	workingDir := infraEnvs.PrimaryPublicDir
+	if !infraHelper.IsPrimaryVirtualHost(runRequest.Hostname) {
+		workingDir += "/" + runRequest.Hostname.String()
+	}
+	if !infraHelper.FileExists(workingDir) {
+		workingDir = infraEnvs.PrimaryPublicDir
+	}
+
+	cmdOutput, cmdErr := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		Command:               phpCli,
+		Args:                  []string{runRequest.Command.String()},
+		Username:              infraEnvs.PhpWebserverUsername,
+		WorkingDirectory:      workingDir,
+		ShouldRunWithSubShell: true,
+		ExecutionTimeoutSecs:  timeoutSecs,
+	})
+	stdOutput, err := valueObject.NewUnixCommandOutput(cmdOutput)
+	if err != nil {
+		return runResponse, err
+	}
+
+	if errorMessage, assertOk := cmdErr.(*infraHelper.CmdError); assertOk {
+		stdError, err := valueObject.NewUnixCommandOutput(errorMessage.StdErr)
+		if err != nil {
+			return runResponse, err
+		}
+
+		runResponse.StdOutput = &stdOutput
+		runResponse.StdError = &stdError
+		runResponse.ExitCode = &errorMessage.ExitCode
+		return runResponse, nil
+	}
+
+	successExitCode := 0
+	return dto.RunPhpCommandResponse{
+		StdOutput: &stdOutput,
+		StdError:  nil,
+		ExitCode:  &successExitCode,
+	}, nil
 }
 
 func (repo *RuntimeCmdRepo) restartPhpWebserver() error {

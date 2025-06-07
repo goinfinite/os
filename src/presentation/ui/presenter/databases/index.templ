@@ -8,6 +8,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"github.com/goinfinite/ui/src/display"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 //go:embed state.js
@@ -21,7 +22,7 @@ type DatabaseOverview struct {
 
 templ DatabasesIndex(selectedDbOverview DatabaseOverview) {
 	<!-- DatabasesIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + databasesIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&databasesIndexAlpineState)
 	<!-- DatabasesIndex HTML -->
 	<div class="flex flex-col" x-data="databases">
 		@componentStructural.PageTitle(

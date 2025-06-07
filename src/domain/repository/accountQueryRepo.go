@@ -6,6 +6,7 @@ import (
 )
 
 type AccountQueryRepo interface {
+	Count(dto.ReadAccountsRequest) (uint64, error)
 	Read(dto.ReadAccountsRequest) (dto.ReadAccountsResponse, error)
 	ReadFirst(dto.ReadAccountsRequest) (entity.Account, error)
 	ReadSecureAccessPublicKeys(

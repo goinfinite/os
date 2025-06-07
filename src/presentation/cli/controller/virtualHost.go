@@ -3,14 +3,14 @@ package cliController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
 type VirtualHostController struct {
-	virtualHostService *service.VirtualHostService
+	virtualHostLiaison *liaison.VirtualHostLiaison
 }
 
 func NewVirtualHostController(
@@ -18,7 +18,7 @@ func NewVirtualHostController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *VirtualHostController {
 	return &VirtualHostController{
-		virtualHostService: service.NewVirtualHostService(persistentDbSvc, trailDbSvc),
+		virtualHostLiaison: liaison.NewVirtualHostLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -55,8 +55,8 @@ func (controller *VirtualHostController) Read() *cobra.Command {
 				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
 			)
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.Read(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.Read(requestBody),
 			)
 		},
 	}
@@ -106,8 +106,8 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 				requestBody["parentHostname"] = parentHostnameStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.Create(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.Create(requestBody),
 			)
 		},
 	}
@@ -136,8 +136,8 @@ func (controller *VirtualHostController) Update() *cobra.Command {
 				"isWildcard": isWildcardBoolStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.Update(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.Update(requestBody),
 			)
 		},
 	}
@@ -161,8 +161,8 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 				"hostname": hostnameStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.Delete(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.Delete(requestBody),
 			)
 		},
 	}
@@ -204,8 +204,8 @@ func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
 				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
 			)
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.Read(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.Read(requestBody),
 			)
 		},
 	}
@@ -266,8 +266,8 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 				requestBody["mappingSecurityRuleId"] = mappingSecurityRuleIdUint
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.CreateMapping(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.CreateMapping(requestBody),
 			)
 		},
 	}
@@ -343,8 +343,8 @@ func (controller *VirtualHostController) UpdateMapping() *cobra.Command {
 				requestBody["mappingSecurityRuleId"] = mappingSecurityRuleIdUint
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.UpdateMapping(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.UpdateMapping(requestBody),
 			)
 		},
 	}
@@ -385,8 +385,8 @@ func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 				"id": mappingIdUint,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.DeleteMapping(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.DeleteMapping(requestBody),
 			)
 		},
 	}
@@ -434,8 +434,8 @@ func (controller *VirtualHostController) ReadMappingSecurityRules() *cobra.Comma
 				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
 			)
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.ReadMappingSecurityRules(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.ReadMappingSecurityRules(requestBody),
 			)
 		},
 	}
@@ -528,8 +528,8 @@ func (controller *VirtualHostController) CreateMappingSecurityRule() *cobra.Comm
 				requestBody["responseCodeOnMaxConnections"] = responseCodeOnMaxConnectionsUint
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.CreateMappingSecurityRule(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.CreateMappingSecurityRule(requestBody),
 			)
 		},
 	}
@@ -640,8 +640,8 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule() *cobra.Comm
 				requestBody["responseCodeOnMaxConnections"] = responseCodeOnMaxConnectionsUint
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.UpdateMappingSecurityRule(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.UpdateMappingSecurityRule(requestBody),
 			)
 		},
 	}
@@ -699,8 +699,8 @@ func (controller *VirtualHostController) DeleteMappingSecurityRule() *cobra.Comm
 				"id": ruleIdUint,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.virtualHostService.DeleteMappingSecurityRule(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.virtualHostLiaison.DeleteMappingSecurityRule(requestBody),
 			)
 		},
 	}

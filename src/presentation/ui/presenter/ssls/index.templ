@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 const (
@@ -17,7 +18,7 @@ var sslsIndexAlpineState string
 
 templ SslsIndex(sslPairs []entity.SslPair, vhostsHostnames []string) {
 	<!-- SslsIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + sslsIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&sslsIndexAlpineState)
 	<!-- SslsIndex HTML -->
 	<div x-data="ssls">
 		@componentStructural.PageTitle(
@@ -246,7 +247,7 @@ templ ViewPemFilesModal() {
 templ SwapToSelfSignedCriticalWarningContent() {
 	<!-- SwapToSelfSignedCriticalWarningContent -->
 	<h3 class="text-pretty mb-3 text-xl font-bold capitalize leading-relaxed">
-		Are you sure you want to replace the current SSL certificate with a self-signed SSL certificate?
+		Are You Sure You Want to Replace the Current SSL Certificate With a Self-Signed SSL Certificate?
 	</h3>
 	<p>This process cannot be undone. The system will replace the current certificate with a self-signed SSL until a new publicly trusted SSL certificate can be issued.</p>
 }

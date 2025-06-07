@@ -3,12 +3,12 @@ package cliController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/spf13/cobra"
 )
 
 type AccountController struct {
-	accountService *service.AccountService
+	accountLiaison *liaison.AccountLiaison
 }
 
 func NewAccountController(
@@ -16,7 +16,7 @@ func NewAccountController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *AccountController {
 	return &AccountController{
-		accountService: service.NewAccountService(persistentDbSvc, trailDbSvc),
+		accountLiaison: liaison.NewAccountLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -63,8 +63,8 @@ func (controller *AccountController) Read() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.accountService.Read(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.accountLiaison.Read(requestBody),
 			)
 		},
 	}
@@ -112,8 +112,8 @@ func (controller *AccountController) Create() *cobra.Command {
 				"isSuperAdmin": isSuperAdminStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.accountService.Create(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.accountLiaison.Create(requestBody),
 			)
 		},
 	}
@@ -156,8 +156,8 @@ func (controller *AccountController) Update() *cobra.Command {
 				requestBody["isSuperAdmin"] = isSuperAdminStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.accountService.Update(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.accountLiaison.Update(requestBody),
 			)
 		},
 	}
@@ -183,8 +183,8 @@ func (controller *AccountController) Delete() *cobra.Command {
 				"accountId": accountIdUint64,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.accountService.Delete(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.accountLiaison.Delete(requestBody),
 			)
 		},
 	}
@@ -211,8 +211,8 @@ func (controller *AccountController) CreateSecureAccessPublicKey() *cobra.Comman
 				requestBody["name"] = keyNameStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.accountService.CreateSecureAccessPublicKey(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.accountLiaison.CreateSecureAccessPublicKey(requestBody),
 			)
 		},
 	}
@@ -242,8 +242,8 @@ func (controller *AccountController) DeleteSecureAccessPublicKey() *cobra.Comman
 				"id":        keyIdUint16,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.accountService.DeleteSecureAccessPublicKey(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.accountLiaison.DeleteSecureAccessPublicKey(requestBody),
 			)
 		},
 	}

@@ -1,4 +1,4 @@
-package serviceHelper
+package liaisonHelper
 
 import (
 	"errors"
@@ -9,45 +9,45 @@ import (
 )
 
 func PaginationParser(
-	userInput map[string]interface{},
+	untrustedInput map[string]any,
 	defaultPagination dto.Pagination,
 ) (requestPagination dto.Pagination, err error) {
 	requestPagination = defaultPagination
 
-	if userInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(userInput["pageNumber"])
+	if untrustedInput["pageNumber"] != nil {
+		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
 			return requestPagination, errors.New("InvalidPageNumber")
 		}
 		requestPagination.PageNumber = pageNumber
 	}
 
-	if userInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(userInput["itemsPerPage"])
+	if untrustedInput["itemsPerPage"] != nil {
+		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
 		if err != nil {
 			return requestPagination, errors.New("InvalidItemsPerPage")
 		}
 		requestPagination.ItemsPerPage = itemsPerPage
 	}
 
-	if userInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(userInput["sortBy"])
+	if untrustedInput["sortBy"] != nil {
+		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
 		if err != nil {
 			return requestPagination, err
 		}
 		requestPagination.SortBy = &sortBy
 	}
 
-	if userInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(userInput["sortDirection"])
+	if untrustedInput["sortDirection"] != nil {
+		sortDirection, err := valueObject.NewPaginationSortDirection(untrustedInput["sortDirection"])
 		if err != nil {
 			return requestPagination, err
 		}
 		requestPagination.SortDirection = &sortDirection
 	}
 
-	if userInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(userInput["lastSeenId"])
+	if untrustedInput["lastSeenId"] != nil {
+		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
 		if err != nil {
 			return requestPagination, err
 		}

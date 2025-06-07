@@ -7,6 +7,7 @@ type UpdateCron struct {
 	Schedule          *valueObject.CronSchedule `json:"schedule"`
 	Command           *valueObject.UnixCommand  `json:"command"`
 	Comment           *valueObject.CronComment  `json:"comment"`
+	ClearableFields   []string                  `json:"-"`
 	OperatorAccountId valueObject.AccountId     `json:"-"`
 	OperatorIpAddress valueObject.IpAddress     `json:"-"`
 }
@@ -16,6 +17,7 @@ func NewUpdateCron(
 	schedule *valueObject.CronSchedule,
 	command *valueObject.UnixCommand,
 	comment *valueObject.CronComment,
+	clearableFields []string,
 	operatorAccountId valueObject.AccountId,
 	operatorIpAddress valueObject.IpAddress,
 ) UpdateCron {
@@ -24,6 +26,7 @@ func NewUpdateCron(
 		Schedule:          schedule,
 		Command:           command,
 		Comment:           comment,
+		ClearableFields:   clearableFields,
 		OperatorAccountId: operatorAccountId,
 		OperatorIpAddress: operatorIpAddress,
 	}

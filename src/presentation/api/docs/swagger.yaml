@@ -462,6 +462,24 @@ definitions:
           $ref: '#/definitions/entity.VirtualHost'
         type: array
     type: object
+  dto.RunPhpCommandRequest:
+    properties:
+      command:
+        type: string
+      hostname:
+        type: string
+      timeoutSecs:
+        type: integer
+    type: object
+  dto.RunPhpCommandResponse:
+    properties:
+      exitCode:
+        type: integer
+      stdErr:
+        type: string
+      stdOut:
+        type: string
+    type: object
   dto.UnixFileBranch:
     properties:
       branches:
@@ -1353,7 +1371,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.2.5
+  version: 0.2.6
 paths:
   /v1/account/:
     get:
@@ -2300,6 +2318,34 @@ paths:
       security:
       - Bearer: []
       summary: UpdatePhpConfigs
+      tags:
+      - runtime
+  /v1/runtime/php/run/:
+    post:
+      consumes:
+      - application/json
+      description: 'Run a php command as the webserver user for a given hostname.
+        <br />CAUTION: This endpoint allows for arbitrary code execution (ACE) and
+        is therefore disabled by default. <br />To enable this endpoint, set the "ENABLE_API_RUNTIME_PHP_RUN_CMD"
+        environment variable to "true" when starting the API/container.<br />Only
+        super admin accounts can use this endpoint.'
+      parameters:
+      - description: Hostname and command are required. Timeout is optional.
+        in: body
+        name: runPhpCmdDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.RunPhpCommandRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.RunPhpCommandResponse'
+      security:
+      - Bearer: []
+      summary: RunPhpCommand
       tags:
       - runtime
   /v1/scheduled-task/:

@@ -1,6 +1,9 @@
 package componentForm
 
-import _ "embed"
+import (
+	_ "embed"
+	"github.com/goinfinite/ui/src/toolset"
+)
 
 templ SelectInput(
 	id, label, bindModelPath, onSelect string,
@@ -134,7 +137,7 @@ templ MultiSelectInput(
 	options []string,
 ) {
 	<!-- MultiSelectInput JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + multiSelectInputAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&multiSelectInputAlpineState)
 	<!-- MultiSelectInput HTML -->
 	<div
 		class="relative w-full"
