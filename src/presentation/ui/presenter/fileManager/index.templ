@@ -488,7 +488,8 @@ templ UpdateFileContentForm() {
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		class="flex flex-col gap-2"
-		@submit="file.content = codeEditorInstance.getValue(); closeUpdateFileContentModal(); setTimeout(() => reloadFileManagerContent(), 250)"
+		@submit="file.content = codeEditorInstance.getValue(); closeUpdateFileContentModal()"
+		@htmx:after-request="$event.detail.successful && reloadFileManagerContent()"
 	>
 		<div class="bg-primary-800 grid grid-cols-2 rounded-md p-4">
 			<div class="flex items-center justify-start space-x-4">
@@ -574,7 +575,7 @@ templ UpdateFileContentForm() {
 			</div>
 		</div>
 		<input name="sourcePath" type="hidden" :value="file.path"/>
-		<input name="encodedContent" type="hidden" :value="btoa(file.content)"/>
+		<input name="encodedContent" type="hidden" :value="btoa(unescape(encodeURIComponent(file.content)))"/>
 		<div id="code-editor" class="relative min-h-[24rem] w-full" :style="isCodeEditorFullScreen && { height: 'calc(100vh - 15rem)' }"></div>
 		@uiControl.Button(uiControl.ButtonSettings{
 			Label:                "save changes",
@@ -617,7 +618,7 @@ templ MoveFilesForm(
 				"text", "", "Destination Path",
 				"currentWorkingDirPath + '/' + file.name", "",
 			)
-			<div id="" class="bg-primary-500 h-[15rem] space-y-2 overflow-y-auto p-2">
+			<div class="bg-primary-500 h-[15rem] space-y-2 overflow-y-auto p-2">
 				@DirectoriesTree(workingDirPath, unixFileTree)
 			</div>
 		</div>
@@ -656,7 +657,7 @@ templ CopyFilesForm(
 				"text", "", "Destination Path",
 				"currentWorkingDirPath + '/' + file.name", "",
 			)
-			<div id="" class="bg-primary-500 h-[15rem] space-y-2 overflow-y-auto p-2">
+			<div class="bg-primary-500 h-[15rem] space-y-2 overflow-y-auto p-2">
 				@DirectoriesTree(workingDirPath, unixFileTree)
 			</div>
 		</div>
