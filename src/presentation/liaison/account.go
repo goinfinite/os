@@ -36,13 +36,13 @@ func NewAccountLiaison(
 }
 
 func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
-	if untrustedInput["id"] != nil {
+	if untrustedInput["id"] != nil && untrustedInput["accountId"] == nil {
 		untrustedInput["accountId"] = untrustedInput["id"]
 	}
 
 	var idPtr *valueObject.AccountId
-	if untrustedInput["id"] != nil {
-		id, err := valueObject.NewAccountId(untrustedInput["id"])
+	if untrustedInput["accountId"] != nil {
+		id, err := valueObject.NewAccountId(untrustedInput["accountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -50,7 +50,7 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 	}
 
 	var usernamePtr *valueObject.Username
-	if untrustedInput["name"] != nil {
+	if untrustedInput["username"] != nil {
 		username, err := valueObject.NewUsername(untrustedInput["username"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
@@ -270,6 +270,10 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 }
 
 func (liaison *AccountLiaison) Delete(untrustedInput map[string]any) LiaisonOutput {
+	if untrustedInput["id"] != nil && untrustedInput["accountId"] == nil {
+		untrustedInput["accountId"] = untrustedInput["id"]
+	}
+
 	requiredParams := []string{"accountId"}
 	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
@@ -411,5 +415,5 @@ func (liaison *AccountLiaison) DeleteSecureAccessPublicKey(
 		return NewLiaisonOutput(InfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Created, "SecureAccessPublicKeyDeleted")
+	return NewLiaisonOutput(Success, "SecureAccessPublicKeyDeleted")
 }
