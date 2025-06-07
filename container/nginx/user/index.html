@@ -5,7 +5,7 @@
   <title>Welcome to Infinite OS!</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css?family=Lato:700,regular,italic,700italic,&display=swap"
+  <link href="https://fonts.googleapis.com/css?family=Lato:700,regular,italic,700italic&display=swap"
     rel="stylesheet" />
   <style>
     html {
@@ -51,8 +51,10 @@
 <script type="text/javascript">
   const dashboardLinkUrl = `https://${window.location.hostname}:1618`;
   const dashboardLinkElement = document.getElementById('dashboard-link');
-  dashboardLinkElement.href = dashboardLinkUrl;
-  dashboardLinkElement.textContent = dashboardLinkUrl;
+  if (dashboardLinkElement) {
+    dashboardLinkElement.href = dashboardLinkUrl;
+    dashboardLinkElement.textContent = dashboardLinkUrl;
+  }
 </script>
 
 </html>
