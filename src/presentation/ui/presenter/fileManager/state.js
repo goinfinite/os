@@ -362,7 +362,7 @@ UiToolset.RegisterAlpineState(() => {
             r: "r",
             rb: "ruby",
             rust: "rust",
-            saas: "sass",
+            sass: "sass",
             scala: "scala",
             scheme: "scheme",
             scss: "scss",
