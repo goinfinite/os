@@ -33,7 +33,7 @@ UiToolset.RegisterAlpineState(() => {
         passwordStrengthPercentage += 20;
       }
 
-      if (/[1-9]/.test(password)) {
+      if (/[0-9]/.test(password)) {
         this.passwordStrengthCriteria.hasNumbers = true;
         passwordStrengthPercentage += 20;
       }
