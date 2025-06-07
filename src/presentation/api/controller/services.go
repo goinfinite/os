@@ -304,7 +304,7 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 			requestInputData["portBindings"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 	}
 	requestInputData["portBindings"] = portBindings
@@ -343,7 +343,7 @@ func (controller *ServicesController) Update(c echo.Context) error {
 			requestInputData["portBindings"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
 		}
 		requestInputData["portBindings"] = rawPortBindings
 	}
