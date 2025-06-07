@@ -129,10 +129,7 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 		MarketplaceCatalogItemType: typePtr,
 	}
 
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
-		liaison.persistentDbSvc,
-	)
-	itemsList, err := useCase.ReadMarketplaceCatalogItems(marketplaceQueryRepo, readDto)
+	itemsList, err := useCase.ReadMarketplaceCatalogItems(liaison.marketplaceQueryRepo, readDto)
 	if err != nil {
 		return NewLiaisonOutput(InfraError, err.Error())
 	}
@@ -362,11 +359,8 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 		MarketplaceInstalledItemUuid:     installationUuidPtr,
 	}
 
-	marketplaceQueryRepo := marketplaceInfra.NewMarketplaceQueryRepo(
-		liaison.persistentDbSvc,
-	)
 	itemsList, err := useCase.ReadMarketplaceInstalledItems(
-		marketplaceQueryRepo, readDto,
+		liaison.marketplaceQueryRepo, readDto,
 	)
 	if err != nil {
 		return NewLiaisonOutput(InfraError, err.Error())
