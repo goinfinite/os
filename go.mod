@@ -3,11 +3,11 @@ module github.com/goinfinite/os
 go 1.24.3
 
 require (
-	github.com/a-h/templ v0.3.894
+	github.com/a-h/templ v0.3.898
 	github.com/alecthomas/chroma v0.10.0
 	github.com/glebarez/sqlite v1.11.0
 	github.com/goinfinite/tk v0.0.5
-	github.com/goinfinite/ui v0.1.3
+	github.com/goinfinite/ui v0.1.5
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/iancoleman/strcase v0.3.0
@@ -60,10 +60,10 @@ require (
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
-	golang.org/x/exp v0.0.0-20250531010427-b6e5de432a8b // indirect
+	golang.org/x/exp v0.0.0-20250606033433-dcc06ee1d476 // indirect
 	golang.org/x/sys v0.33.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
-	golang.org/x/tools v0.33.0 // indirect
+	golang.org/x/tools v0.34.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.65.10 // indirect
