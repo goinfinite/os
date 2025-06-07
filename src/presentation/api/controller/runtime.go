@@ -177,7 +177,7 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 
 // RunPhpCommand godoc
 // @Summary      RunPhpCommand
-// @Description  Run a php command as the webserver user for a given hostname. <br />CAUTION: This endpoint allows for arbitrary code execution (ACE) and is therefore disabled by default. <br />To enable this endpoint, set the "ENABLE_API_RUNTIME_PHP_RUN_CMD" environment variable to "true" when starting the API/container.
+// @Description  Run a php command as the webserver user for a given hostname. <br />CAUTION: This endpoint allows for arbitrary code execution (ACE) and is therefore disabled by default. <br />To enable this endpoint, set the "ENABLE_API_RUNTIME_PHP_RUN_CMD" environment variable to "true" when starting the API/container.<br />Only super admin accounts can use this endpoint.
 // @Tags         runtime
 // @Accept       json
 // @Produce      json

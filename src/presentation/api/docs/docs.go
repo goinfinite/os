@@ -1439,7 +1439,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Run a php command as the webserver user for a given hostname. \u003cbr /\u003eCAUTION: This endpoint allows for arbitrary code execution (ACE) and is therefore disabled by default. \u003cbr /\u003eTo enable this endpoint, set the \"ENABLE_API_RUNTIME_PHP_RUN_CMD\" environment variable to \"true\" when starting the API/container.",
+                "description": "Run a php command as the webserver user for a given hostname. \u003cbr /\u003eCAUTION: This endpoint allows for arbitrary code execution (ACE) and is therefore disabled by default. \u003cbr /\u003eTo enable this endpoint, set the \"ENABLE_API_RUNTIME_PHP_RUN_CMD\" environment variable to \"true\" when starting the API/container.\u003cbr /\u003eOnly super admin accounts can use this endpoint.",
                 "consumes": [
                     "application/json"
                 ],

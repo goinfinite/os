@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
@@ -186,7 +187,11 @@ func (liaison *RuntimeLiaison) RunPhpCommand(
 		hostname, command, timeoutSecsPtr, operatorAccountId, operatorIpAddress,
 	)
 
-	runResponse, err := useCase.RunPhpCommand(liaison.runtimeCmdRepo, runRequest)
+	accountQueryRepo := accountInfra.NewAccountQueryRepo(liaison.persistentDbSvc)
+
+	runResponse, err := useCase.RunPhpCommand(
+		accountQueryRepo, liaison.runtimeCmdRepo, runRequest,
+	)
 	if err != nil {
 		return NewLiaisonOutput(InfraError, err.Error())
 	}

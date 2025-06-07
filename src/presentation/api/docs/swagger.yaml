@@ -2327,7 +2327,8 @@ paths:
       description: 'Run a php command as the webserver user for a given hostname.
         <br />CAUTION: This endpoint allows for arbitrary code execution (ACE) and
         is therefore disabled by default. <br />To enable this endpoint, set the "ENABLE_API_RUNTIME_PHP_RUN_CMD"
-        environment variable to "true" when starting the API/container.'
+        environment variable to "true" when starting the API/container.<br />Only
+        super admin accounts can use this endpoint.'
       parameters:
       - description: Hostname and command are required. Timeout is optional.
         in: body
