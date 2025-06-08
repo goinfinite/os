@@ -4,14 +4,14 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
 type DatabaseController struct {
 	persistentDbService *internalDbInfra.PersistentDatabaseService
-	dbService           *service.DatabaseService
+	databaseLiaison     *liaison.DatabaseLiaison
 }
 
 func NewDatabaseController(
@@ -20,7 +20,7 @@ func NewDatabaseController(
 ) *DatabaseController {
 	return &DatabaseController{
 		persistentDbService: persistentDbService,
-		dbService: service.NewDatabaseService(
+		databaseLiaison: liaison.NewDatabaseLiaison(
 			persistentDbService, trailDbSvc,
 		),
 	}
@@ -55,8 +55,8 @@ func (controller *DatabaseController) Read() *cobra.Command {
 				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
 			)
 
-			cliHelper.ServiceResponseWrapper(
-				controller.dbService.Read(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.databaseLiaison.Read(requestBody),
 			)
 		},
 	}
@@ -95,8 +95,8 @@ func (controller *DatabaseController) Create() *cobra.Command {
 				"dbName": dbNameStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.dbService.Create(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.databaseLiaison.Create(requestBody),
 			)
 		},
 	}
@@ -120,8 +120,8 @@ func (controller *DatabaseController) Delete() *cobra.Command {
 				"dbName": dbNameStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.dbService.Delete(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.databaseLiaison.Delete(requestBody),
 			)
 		},
 	}
@@ -154,8 +154,8 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 				)
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.dbService.CreateUser(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.databaseLiaison.CreateUser(requestBody),
 			)
 		},
 	}
@@ -189,8 +189,8 @@ func (controller *DatabaseController) DeleteUser() *cobra.Command {
 				"dbUser": dbUsernameStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.dbService.DeleteUser(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.databaseLiaison.DeleteUser(requestBody),
 			)
 		},
 	}

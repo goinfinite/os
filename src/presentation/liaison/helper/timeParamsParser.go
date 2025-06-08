@@ -1,4 +1,4 @@
-package serviceHelper
+package liaisonHelper
 
 import (
 	"log/slog"
@@ -8,16 +8,16 @@ import (
 
 func TimeParamsParser(
 	timeParamNames []string,
-	userInput map[string]interface{},
+	untrustedInput map[string]any,
 ) map[string]*valueObject.UnixTime {
 	timeParamPtrs := map[string]*valueObject.UnixTime{}
 
 	for _, timeParamName := range timeParamNames {
-		if userInput[timeParamName] == nil {
+		if untrustedInput[timeParamName] == nil {
 			continue
 		}
 
-		timeParam, err := valueObject.NewUnixTime(userInput[timeParamName])
+		timeParam, err := valueObject.NewUnixTime(untrustedInput[timeParamName])
 		if err != nil {
 			slog.Debug("InvalidTimeParam", slog.String("timeParamName", timeParamName))
 			timeParamPtrs[timeParamName] = nil

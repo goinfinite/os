@@ -8,14 +8,14 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	"github.com/labstack/echo/v4"
 )
 
 type RuntimesPresenter struct {
-	runtimeService  *service.RuntimeService
+	runtimeLiaison  *liaison.RuntimeLiaison
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
@@ -25,7 +25,7 @@ func NewRuntimesPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *RuntimesPresenter {
 	return &RuntimesPresenter{
-		runtimeService:  service.NewRuntimeService(persistentDbSvc, trailDbSvc),
+		runtimeLiaison:  liaison.NewRuntimeLiaison(persistentDbSvc, trailDbSvc),
 		persistentDbSvc: persistentDbSvc,
 		trailDbSvc:      trailDbSvc,
 	}
@@ -41,11 +41,11 @@ func (presenter *RuntimesPresenter) runtimeOverviewFactory(
 	var phpConfigsPtr *entity.PhpConfigs
 	if runtimeType.String() == "php" {
 		requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
-		responseOutput := presenter.runtimeService.ReadPhpConfigs(requestBody)
+		responseOutput := presenter.runtimeLiaison.ReadPhpConfigs(requestBody)
 
 		isInstalled = true
 		isVirtualHostUsingRuntime = true
-		if responseOutput.Status != service.Success {
+		if responseOutput.Status != liaison.Success {
 			isVirtualHostUsingRuntime = false
 			responseOutputBodyStr, assertOk := responseOutput.Body.(string)
 			if assertOk {

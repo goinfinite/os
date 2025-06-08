@@ -3,6 +3,7 @@ package vhostInfra
 import (
 	"errors"
 	"os"
+	"slices"
 	"strings"
 	"text/template"
 
@@ -495,6 +496,9 @@ func (repo *MappingCmdRepo) Update(updateDto dto.UpdateMapping) error {
 	if updateDto.MappingSecurityRuleId != nil {
 		updateMap["mapping_security_rule_id"] = updateDto.MappingSecurityRuleId.Uint64()
 	}
+	if slices.Contains(updateDto.ClearableFields, "mappingSecurityRuleId") {
+		updateMap["mapping_security_rule_id"] = nil
+	}
 
 	err = repo.persistentDbSvc.Handler.
 		Model(&dbModel.Mapping{}).
@@ -751,6 +755,9 @@ func (repo *MappingCmdRepo) UpdateSecurityRule(
 	if updateDto.Description != nil {
 		updateMap["description"] = updateDto.Description.String()
 	}
+	if slices.Contains(updateDto.ClearableFields, "description") {
+		updateMap["description"] = nil
+	}
 
 	if updateDto.RpsSoftLimitPerIp != nil {
 		updateMap["rps_soft_limit_per_ip"] = *updateDto.RpsSoftLimitPerIp
@@ -778,6 +785,14 @@ func (repo *MappingCmdRepo) UpdateSecurityRule(
 
 	if updateDto.ResponseCodeOnMaxConnections != nil {
 		updateMap["response_code_on_max_connections"] = *updateDto.ResponseCodeOnMaxConnections
+	}
+
+	if slices.Contains(updateDto.ClearableFields, "allowedIps") {
+		updateMap["allowed_ips"] = []string{}
+	}
+
+	if slices.Contains(updateDto.ClearableFields, "blockedIps") {
+		updateMap["blocked_ips"] = []string{}
 	}
 
 	err := repo.persistentDbSvc.Handler.Model(&dbModel.MappingSecurityRule{}).

@@ -12,7 +12,7 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
@@ -24,7 +24,7 @@ type OverviewPresenter struct {
 	transientDbSvc       *internalDbInfra.TransientDatabaseService
 	trailDbSvc           *internalDbInfra.TrailDatabaseService
 	marketplacePresenter *presenterMarketplace.MarketplacePresenter
-	servicesService      *service.ServicesService
+	servicesLiaison      *liaison.ServicesLiaison
 }
 
 func NewOverviewPresenter(
@@ -37,7 +37,7 @@ func NewOverviewPresenter(
 		transientDbSvc:       transientDbSvc,
 		trailDbSvc:           trailDbSvc,
 		marketplacePresenter: presenterMarketplace.NewMarketplacePresenter(persistentDbSvc, trailDbSvc),
-		servicesService:      service.NewServicesService(persistentDbSvc, trailDbSvc),
+		servicesLiaison:      liaison.NewServicesLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -116,10 +116,10 @@ func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 		readInstalledServicesRequestBody["status"] = statusQueryParam
 	}
 
-	installedItemsResponseOutput := presenter.servicesService.ReadInstalledItems(
+	installedItemsResponseOutput := presenter.servicesLiaison.ReadInstalledItems(
 		readInstalledServicesRequestBody,
 	)
-	if installedItemsResponseOutput.Status != service.Success {
+	if installedItemsResponseOutput.Status != liaison.Success {
 		return responseDto, errors.New("FailedToReadInstalledServices")
 	}
 
@@ -139,10 +139,10 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 		return overview, err
 	}
 
-	installableItemsResponseOutput := presenter.servicesService.ReadInstallableItems(
+	installableItemsResponseOutput := presenter.servicesLiaison.ReadInstallableItems(
 		map[string]interface{}{},
 	)
-	if installableItemsResponseOutput.Status != service.Success {
+	if installableItemsResponseOutput.Status != liaison.Success {
 		return overview, errors.New("FailedToReadInstallableServices")
 	}
 

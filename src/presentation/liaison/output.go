@@ -1,4 +1,4 @@
-package service
+package liaison
 
 type StatusEnum string
 
@@ -11,13 +11,13 @@ const (
 	InfraError   StatusEnum = "infraError"
 )
 
-type ServiceOutput struct {
-	Status StatusEnum  `json:"status"`
-	Body   interface{} `json:"body"`
+type LiaisonOutput struct {
+	Status StatusEnum `json:"status"`
+	Body   any        `json:"body"`
 }
 
-func NewServiceOutput(status StatusEnum, body interface{}) ServiceOutput {
-	return ServiceOutput{
+func NewLiaisonOutput(status StatusEnum, body any) LiaisonOutput {
+	return LiaisonOutput{
 		Status: status,
 		Body:   body,
 	}

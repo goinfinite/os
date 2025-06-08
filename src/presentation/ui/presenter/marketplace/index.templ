@@ -7,6 +7,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 type CatalogItemsGroupedByType struct {
@@ -29,7 +30,7 @@ templ MarketplaceIndex(
 	marketplaceOverview MarketplaceOverview,
 ) {
 	<!-- Marketplace Page JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + marketplaceIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&marketplaceIndexAlpineState)
 	<!-- Marketplace Page HTML -->
 	<div class="flex flex-col" x-data="marketplace">
 		@componentStructural.PageTitle(
@@ -313,7 +314,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 			</template>
 		</div>
 		@componentForm.SubmitButton(
-			"install-marketplace-item-button", "Schedule installation",
+			"install-marketplace-item-button", "Schedule Installation",
 			"ph-queue", "closeScheduleSelectedMarketplaceItemInstallationModal()", false,
 		)
 	</form>
@@ -321,7 +322,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 
 templ ScheduleSelectedMarketplaceItemInstallationModal(vhostsHostnames []string) {
 	@componentStructural.RegularModal(
-		"Install marketplace item", "isScheduleSelectedMarketplaceItemInstallationModalOpen",
+		"Install Marketplace Item", "isScheduleSelectedMarketplaceItemInstallationModalOpen",
 		"closeScheduleSelectedMarketplaceItemInstallationModal()", "marketplaceItem.name",
 	) {
 		@ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames)

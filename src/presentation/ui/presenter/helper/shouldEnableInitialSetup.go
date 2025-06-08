@@ -2,12 +2,12 @@ package uiPresenterHelper
 
 import (
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 )
 
-func ShouldEnableInitialSetup(accountService *service.AccountService) bool {
-	accountsServiceResponse := accountService.Read(map[string]interface{}{})
-	if accountsServiceResponse.Status != service.Success {
+func ShouldEnableInitialSetup(accountLiaison *liaison.AccountLiaison) bool {
+	accountsServiceResponse := accountLiaison.Read(map[string]interface{}{})
+	if accountsServiceResponse.Status != liaison.Success {
 		return false
 	}
 

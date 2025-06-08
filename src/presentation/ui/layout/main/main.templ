@@ -7,6 +7,7 @@ import (
 	layoutSidebar "github.com/goinfinite/os/src/presentation/ui/layout/sidebar"
 	"github.com/goinfinite/ui/src/display"
 	uiImport "github.com/goinfinite/ui/src/import"
+	"github.com/goinfinite/ui/src/toolset"
 	"os"
 )
 
@@ -37,7 +38,7 @@ templ Main(componentSettings MainLayoutSettings) {
 	<html>
 		@HeadTag()
 		<!-- MainLayout JavaScript -->
-		@templ.Raw(`<script type="text/javascript">` + mainLayoutAlpineState + `</script>`)
+		@uiToolset.MinifierTemplateJs(&mainLayoutAlpineState)
 		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 			@templ.JSFuncCall("devWsHotReload")
 		}

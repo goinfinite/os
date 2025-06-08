@@ -10,12 +10,12 @@ import (
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
 type RuntimeController struct {
-	runtimeService *service.RuntimeService
+	runtimeLiaison *liaison.RuntimeLiaison
 }
 
 func NewRuntimeController(
@@ -23,7 +23,7 @@ func NewRuntimeController(
 	trailDbService *internalDbInfra.TrailDatabaseService,
 ) *RuntimeController {
 	return &RuntimeController{
-		runtimeService: service.NewRuntimeService(persistentDbService, trailDbService),
+		runtimeLiaison: liaison.NewRuntimeLiaison(persistentDbService, trailDbService),
 	}
 }
 
@@ -43,27 +43,27 @@ func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.runtimeService.ReadPhpConfigs(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.runtimeLiaison.ReadPhpConfigs(requestInputData),
 	)
 }
 
-func (controller *RuntimeController) parsePhpModules(rawPhpModules interface{}) (
+func (controller *RuntimeController) parsePhpModules(rawPhpModules any) (
 	[]entity.PhpModule, error,
 ) {
 	modules := []entity.PhpModule{}
 
-	rawModulesSlice, assertOk := rawPhpModules.([]interface{})
+	rawModulesSlice, assertOk := rawPhpModules.([]any)
 	if !assertOk {
-		rawUniqueModule, assertOk := rawPhpModules.(map[string]interface{})
+		rawUniqueModule, assertOk := rawPhpModules.(map[string]any)
 		if !assertOk {
 			return modules, errors.New("InvalidPhpModulesStructure")
 		}
-		rawModulesSlice = []interface{}{rawUniqueModule}
+		rawModulesSlice = []any{rawUniqueModule}
 	}
 
 	for _, rawModule := range rawModulesSlice {
-		rawModuleMap, assertOk := rawModule.(map[string]interface{})
+		rawModuleMap, assertOk := rawModule.(map[string]any)
 		if !assertOk {
 			slog.Debug("PhpModuleIsNotAnInterface")
 			continue
@@ -87,22 +87,22 @@ func (controller *RuntimeController) parsePhpModules(rawPhpModules interface{}) 
 	return modules, nil
 }
 
-func (controller *RuntimeController) parsePhpSettings(rawPhpSettings interface{}) (
+func (controller *RuntimeController) parsePhpSettings(rawPhpSettings any) (
 	[]entity.PhpSetting, error,
 ) {
 	settings := []entity.PhpSetting{}
 
-	rawSettingsSlice, assertOk := rawPhpSettings.([]interface{})
+	rawSettingsSlice, assertOk := rawPhpSettings.([]any)
 	if !assertOk {
-		rawUniqueSetting, assertOk := rawPhpSettings.(map[string]interface{})
+		rawUniqueSetting, assertOk := rawPhpSettings.(map[string]any)
 		if !assertOk {
 			return settings, errors.New("InvalidPhpSettingsStructure")
 		}
-		rawSettingsSlice = []interface{}{rawUniqueSetting}
+		rawSettingsSlice = []any{rawUniqueSetting}
 	}
 
 	for _, rawSetting := range rawSettingsSlice {
-		rawSettingMap, assertOk := rawSetting.(map[string]interface{})
+		rawSettingMap, assertOk := rawSetting.(map[string]any)
 		if !assertOk {
 			slog.Debug("PhpSettingIsNotAnInterface")
 			continue
@@ -170,7 +170,28 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 		requestInputData["settings"] = phpSettings
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.runtimeService.UpdatePhpConfigs(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.runtimeLiaison.UpdatePhpConfigs(requestInputData),
+	)
+}
+
+// RunPhpCommand godoc
+// @Summary      RunPhpCommand
+// @Description  Run a php command as the webserver user for a given hostname. <br />CAUTION: This endpoint allows for arbitrary code execution (ACE) and is therefore disabled by default. <br />To enable this endpoint, set the "ENABLE_API_RUNTIME_PHP_RUN_CMD" environment variable to "true" when starting the API/container.<br />Only super admin accounts can use this endpoint.
+// @Tags         runtime
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        runPhpCmdDto	body dto.RunPhpCommandRequest	true	"Hostname and command are required. Timeout is optional."
+// @Success      200 {object} dto.RunPhpCommandResponse
+// @Router       /v1/runtime/php/run/ [post]
+func (controller *RuntimeController) RunPhpCommand(echoContext echo.Context) error {
+	requestInputData, err := apiHelper.ReadRequestInputData(echoContext)
+	if err != nil {
+		return err
+	}
+
+	return apiHelper.LiaisonResponseWrapper(
+		echoContext, controller.runtimeLiaison.RunPhpCommand(requestInputData),
 	)
 }

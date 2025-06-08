@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(mappingSecurityRulesIndexAlpineState);
-
-function mappingSecurityRulesIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("mappingSecurityRules", () => ({
     // PrimaryState
     mappingSecurityRule: {},
@@ -73,4 +71,4 @@ function mappingSecurityRulesIndexAlpineState() {
         .then(() => this.$dispatch("refresh:mapping-security-rules-table"));
     },
   }));
-}
+});

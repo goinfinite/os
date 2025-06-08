@@ -3,53 +3,79 @@ package uiLayout
 import (
 	_ "embed"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	layoutMain "github.com/goinfinite/os/src/presentation/ui/layout/main"
+	"github.com/goinfinite/ui/src/control"
 	"github.com/goinfinite/ui/src/display"
+	"github.com/goinfinite/ui/src/form"
+	"github.com/goinfinite/ui/src/toolset"
 )
+
+type LoginLayoutSettings struct {
+	PrefilledUsername string
+	PrefilledPassword string
+}
 
 //go:embed state.js
 var loginLayoutAlpineState string
 
-templ Login() {
+templ Login(componentSettings LoginLayoutSettings) {
 	<!DOCTYPE html>
 	<html>
 		@layoutMain.HeadTag()
 		<!-- Login Layout JavaScript -->
-		@templ.Raw(`<script type="text/javascript">` + loginLayoutAlpineState + `</script>`)
+		@uiToolset.MinifierTemplateJs(&loginLayoutAlpineState)
 		<!-- Login Layout HTML -->
 		<body class="bg-primary-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50" un-cloak>
 			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
-			<div>
-				<a href="https://goinfinite.net/os/" target="_blank" class="mb-4 flex w-[120px] gap-2 hover:opacity-90">
+			<div class="flex flex-col gap-4">
+				<a href="https://goinfinite.net/os/" target="_blank" class="flex w-[120px] gap-2 hover:opacity-90">
 					<img src="/assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
 					<p class="text-[8px] text-neutral-500">v{ infraEnvs.InfiniteOsVersion }</p>
 				</a>
+				if componentSettings.PrefilledPassword != "" {
+					@uiDisplay.Alert(uiDisplay.AlertSettings{
+						Variation:   uiDisplay.AlertVariationWarning,
+						Title:       "Prefilled Password Being Used",
+						Description: "For security reasons, please change your password after logging in.",
+						Size:        uiDisplay.AlertSizeSm,
+						IsCloseable: false,
+					})
+				}
 				<form
 					x-data="login"
-					onsubmit="event.preventDefault()"
-					class="bg-os-400 min-w-110 flex flex-col items-center justify-center gap-4 rounded-lg p-8 drop-shadow-md"
+					class="bg-primary-300/50 min-w-110 flex flex-col items-center justify-center gap-4 rounded p-8 drop-shadow-md"
+					@submit="event.preventDefault(); createSessionToken()"
 				>
-					<div class="mb-1 w-full">
+					<div class="flex w-full flex-col gap-1">
 						<h1 class="text-2xl">Hello Again!</h1>
-						<p class="mt-1 text-sm">Please enter your credentials to continue.</p>
+						<p class="text-sm">Please enter your credentials to continue.</p>
 					</div>
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "text",
-						Id:                 "username",
-						Label:              "Username",
-						BindModelValuePath: "username",
+					if componentSettings.PrefilledUsername != "" {
+						<input type="hidden" id="prefilledUsername" value={ componentSettings.PrefilledUsername }/>
+					}
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:       "text",
+						InputName:       "username",
+						Label:           "Username",
+						TwoWayStatePath: "username",
 					})
-					@componentForm.PasswordInput(componentForm.PasswordInputDto{
-						Id:                                "password",
-						Label:                             "Password",
-						BindModelPath:                     "password",
-						ShouldIncludeGenRandomPassBtn:     false,
-						ShouldIncludePassStrengthCriteria: false,
+					if componentSettings.PrefilledPassword != "" {
+						<input type="hidden" id="prefilledPassword" value={ componentSettings.PrefilledPassword }/>
+					}
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:       "password",
+						InputName:       "password",
+						Label:           "Password",
+						TwoWayStatePath: "password",
 					})
-					@componentForm.SubmitButton(
-						"login-btn", "Login", "ph-sign-in", "createSessionToken()", false,
-					)
+					@uiControl.Button(uiControl.ButtonSettings{
+						Label:                "login",
+						IconLeft:             "ph-sign-in",
+						BackgroundColor:      "secondary-500",
+						BackgroundColorHover: "secondary-200",
+						IsSubmit:             true,
+						IsFullWidth:          true,
+					})
 				</form>
 			</div>
 			@uiDisplay.Toast(uiDisplay.ToastSettings{})

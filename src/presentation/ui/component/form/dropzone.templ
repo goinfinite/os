@@ -1,6 +1,9 @@
 package componentForm
 
-import _ "embed"
+import (
+	_ "embed"
+	"github.com/goinfinite/ui/src/toolset"
+)
 
 //go:embed dropzoneState.js
 var dropzoneAlpineState string
@@ -14,7 +17,7 @@ type DropzoneInputDto struct {
 
 templ Dropzone(inputDto DropzoneInputDto) {
 	<!-- Dropzone JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + dropzoneAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&dropzoneAlpineState)
 	<!-- Dropzone HTML -->
 	<div
 		x-data="dropzone"

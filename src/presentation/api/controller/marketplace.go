@@ -10,12 +10,12 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	marketplaceInfra "github.com/goinfinite/os/src/infra/marketplace"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 )
 
 type MarketplaceController struct {
-	marketplaceService *service.MarketplaceService
+	marketplaceLiaison *liaison.MarketplaceLiaison
 	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
 }
 
@@ -24,7 +24,7 @@ func NewMarketplaceController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *MarketplaceController {
 	return &MarketplaceController{
-		marketplaceService: service.NewMarketplaceService(persistentDbSvc, trailDbSvc),
+		marketplaceLiaison: liaison.NewMarketplaceLiaison(persistentDbSvc, trailDbSvc),
 		persistentDbSvc:    persistentDbSvc,
 	}
 }
@@ -53,8 +53,8 @@ func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.ReadCatalog(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.marketplaceLiaison.ReadCatalog(requestInputData),
 	)
 }
 
@@ -168,8 +168,8 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 		)
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.InstallCatalogItem(requestInputData, true),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.marketplaceLiaison.InstallCatalogItem(requestInputData, true),
 	)
 }
 
@@ -197,8 +197,8 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.ReadInstalledItems(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.marketplaceLiaison.ReadInstalledItems(requestInputData),
 	)
 }
 
@@ -219,8 +219,8 @@ func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) err
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.marketplaceService.DeleteInstalledItem(requestInputData, true),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.marketplaceLiaison.DeleteInstalledItem(requestInputData, true),
 	)
 }
 

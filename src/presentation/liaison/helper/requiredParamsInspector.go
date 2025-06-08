@@ -1,4 +1,4 @@
-package serviceHelper
+package liaisonHelper
 
 import (
 	"errors"
@@ -6,12 +6,12 @@ import (
 )
 
 func RequiredParamsInspector(
-	input map[string]interface{},
+	untrustedInput map[string]any,
 	requiredParams []string,
 ) error {
 	missingParams := []string{}
 	for _, param := range requiredParams {
-		if _, exists := input[param]; !exists {
+		if _, exists := untrustedInput[param]; !exists {
 			missingParams = append(missingParams, param)
 		}
 	}

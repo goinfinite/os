@@ -6,7 +6,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 )
 
 func ReadVirtualHostHostnames(
@@ -14,17 +14,17 @@ func ReadVirtualHostHostnames(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) ([]string, error) {
 	vhostHostnames := []string{}
-	virtualHostService := service.NewVirtualHostService(persistentDbSvc, trailDbSvc)
+	virtualHostLiaison := liaison.NewVirtualHostLiaison(persistentDbSvc, trailDbSvc)
 
-	vhostResponseServiceOutput := virtualHostService.Read(map[string]interface{}{
+	vhostResponseLiaisonOutput := virtualHostLiaison.Read(map[string]interface{}{
 		"itemsPerPage": 1000,
 		"withMappings": false,
 	})
-	if vhostResponseServiceOutput.Status != service.Success {
-		return vhostHostnames, errors.New("ReadVirtualHostServiceBadResponse")
+	if vhostResponseLiaisonOutput.Status != liaison.Success {
+		return vhostHostnames, errors.New("ReadVirtualHostLiaisonBadResponse")
 	}
 
-	vhostReadResponse, assertOk := vhostResponseServiceOutput.Body.(dto.ReadVirtualHostsResponse)
+	vhostReadResponse, assertOk := vhostResponseLiaisonOutput.Body.(dto.ReadVirtualHostsResponse)
 	if !assertOk {
 		return vhostHostnames, errors.New("AssertReadVirtualHostsResponseFailed")
 	}

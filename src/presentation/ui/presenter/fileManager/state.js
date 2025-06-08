@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(fileManagerIndexAlpineState);
-
-function fileManagerIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("fileManager", () => ({
     // PrimaryState
     currentWorkingDirPath: "",
@@ -78,16 +76,72 @@ function fileManagerIndexAlpineState() {
       "application/javascript",
       "application/json",
       "application/pgp-keys",
+      "application/x-httpd-php",
+      "application/x-c",
+      "application/x-c++",
+      "application/x-csrc",
+      "application/x-dart",
+      "application/x-go",
+      "application/x-groovy",
+      "application/x-haskell",
+      "application/x-java",
+      "application/x-javascript",
+      "application/x-lua",
+      "application/x-makefile",
+      "application/x-pascal",
+      "application/x-perl",
+      "application/x-php",
+      "application/x-python",
+      "application/x-r",
+      "application/x-ruby",
+      "application/x-sass",
+      "application/x-scala",
+      "application/x-scss",
+      "application/x-shellscript",
+      "application/x-sql",
+      "application/x-tcl",
+      "application/x-tex",
+      "application/x-vbscript",
+      "application/x-vcard",
+      "application/x-yaml",
       "application/x-x509-ca-cert",
       "application/xhtml+xml",
       "application/xml",
       "generic",
       "image/svg+xml",
+      "message/http",
       "text/css",
       "text/csv",
       "text/html",
       "text/javascript",
       "text/plain",
+      "text/x-c",
+      "text/x-c++",
+      "text/x-csrc",
+      "text/x-dart",
+      "text/x-go",
+      "text/x-groovy",
+      "text/x-haskell",
+      "text/x-java",
+      "text/x-javascript",
+      "text/x-lua",
+      "text/x-makefile",
+      "text/x-pascal",
+      "text/x-perl",
+      "text/x-php",
+      "text/x-python",
+      "text/x-r",
+      "text/x-ruby",
+      "text/x-sass",
+      "text/x-scala",
+      "text/x-scss",
+      "text/x-shellscript",
+      "text/x-sql",
+      "text/x-tcl",
+      "text/x-tex",
+      "text/x-vbscript",
+      "text/x-vcard",
+      "text/x-yaml",
     ],
     get shouldUpdateFileContentButtonBeDeactivate() {
       if (this.selectedFileNames.length !== 1) {
@@ -199,6 +253,12 @@ function fileManagerIndexAlpineState() {
     codeEditorInstance: null,
     codeEditorFontSize: 12,
     codeEditorMaxFileSize: 5242880,
+    codeEditorWindowSize: "xl",
+    isCodeEditorFullScreen: false,
+    resetCodeEditorWindowSize() {
+      this.codeEditorWindowSize = "xl";
+      this.isCodeEditorFullScreen = false;
+    },
     resizeCodeEditorFont(operation) {
       switch (operation) {
         case "decrease":
@@ -213,8 +273,10 @@ function fileManagerIndexAlpineState() {
     },
     openUpdateFileContentModal() {
       this.resetPrimaryStates();
+      this.resetCodeEditorWindowSize();
       this.codeEditorInstance = null;
       this.codeEditorFontSize = 12;
+      this.isCodeEditorFullScreen = false;
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
@@ -236,7 +298,7 @@ function fileManagerIndexAlpineState() {
       this.file.mimeType = fileEntity.mimeType;
 
       const shouldDisplayToast = false;
-      Infinite.JsonAjax(
+      UiToolset.JsonAjax(
         "GET",
         "/api/v1/files/?sourcePath=" + fileEntity.path,
         {},
@@ -245,25 +307,98 @@ function fileManagerIndexAlpineState() {
         .then((readFilesResponseDto) => {
           const desiredFile = readFilesResponseDto.files[0];
           const supportedLanguages = {
-            bash: "shell",
+            ".gitignore": "text",
+            ".htpasswd": "apache_conf",
+            ".htaccess": "apache_conf",
+            ".env": "text",
+            astro: "astro",
+            bat: "batchfile",
+            bash: "sh",
+            c: "c_cpp",
+            cfg: "apache_conf",
+            cmake: "cmake",
+            crt: "text",
+            cs: "csharp",
             css: "css",
-            html: "htmlmixed",
+            csv: "csv",
+            cpp: "c_cpp",
+            dart: "dart",
+            django: "django",
+            dockerfile: "dockerfile",
+            ejs: "ejs",
+            elixir: "elixir",
+            fs: "fsharp",
+            gcode: "gcode",
+            go: "golang",
+            graphql: "graphqlschema",
+            groovy: "groovy",
+            haml: "haml",
+            handlebars: "handlebars",
+            hs: "haskell",
+            haskell: "haskell",
+            html: "html",
+            "html.elixir": "html_elixir",
+            "html.ruby": "html_ruby",
+            ini: "ini",
+            java: "java",
             js: "javascript",
-            json: "javascript",
+            json: "json",
+            jsx: "jsx",
+            julia: "julia",
+            key: "text",
+            latex: "latex",
+            less: "less",
+            lisp: "lisp",
+            livescript: "livescript",
+            lua: "lua",
+            lucene: "lucene",
+            makefile: "makefile",
+            md: "markdown",
+            ocaml: "ocaml",
+            pascal: "pascal",
+            pl: "perl",
             php: "php",
-            sh: "shell",
+            py: "python",
+            r: "r",
+            rb: "ruby",
+            rust: "rust",
+            sass: "sass",
+            scala: "scala",
+            scheme: "scheme",
+            scss: "scss",
+            sh: "sh",
+            slim: "slim",
+            smarty: "smarty",
+            sql: "sql",
+            sqlserver: "sqlserver",
+            svg: "svg",
+            swift: "swift",
+            tf: "terraform",
+            toml: "toml",
             ts: "typescript",
-            yml: "yaml",
+            tsx: "tsx",
+            twig: "twig",
+            txt: "text",
+            vb: "vbscript",
+            vbscript: "vbscript",
+            vue: "vue",
+            xml: "xml",
             yaml: "yaml",
+            yml: "yaml",
+            zig: "zig",
           };
+          let codeEditorMode = "ace/mode/plain_text";
+          if (fileEntity.extension in supportedLanguages) {
+            codeEditorMode =
+              "ace/mode/" + supportedLanguages[fileEntity.extension];
+          }
 
           this.codeEditorInstance = ace.edit("code-editor");
           this.codeEditorInstance.setOptions({
-            mode:
-              "ace/mode/" + supportedLanguages[fileEntity.extension] ??
-              "plaintext",
+            mode: codeEditorMode,
             theme: "ace/theme/dracula",
             autoScrollEditorIntoView: true,
+            tabSize: 2,
           });
           this.codeEditorInstance.navigateFileStart();
           this.codeEditorInstance.setValue(desiredFile.content);
@@ -284,6 +419,7 @@ function fileManagerIndexAlpineState() {
 
       this.isUpdateFileContentModalOpen = false;
       this.codeEditorInstance.destroy();
+      this.resetCodeEditorWindowSize();
     },
 
     // ModalState
@@ -390,7 +526,7 @@ function fileManagerIndexAlpineState() {
         sourcePaths.push(fileEntity.path);
       }
 
-      Infinite.JsonAjax("PUT", "/api/v1/files/delete/", {
+      UiToolset.JsonAjax("PUT", "/api/v1/files/delete/", {
         sourcePaths: sourcePaths,
         hardDelete: shouldHardDelete,
       }).then(() => {
@@ -431,4 +567,4 @@ function fileManagerIndexAlpineState() {
       this.isCompressFilesModalOpen = false;
     },
   }));
-}
+});

@@ -4,13 +4,13 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/spf13/cobra"
 )
 
 type ServicesController struct {
-	servicesService *service.ServicesService
+	servicesLiaison *liaison.ServicesLiaison
 }
 
 func NewServicesController(
@@ -18,7 +18,7 @@ func NewServicesController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *ServicesController {
 	return &ServicesController{
-		servicesService: service.NewServicesService(persistentDbSvc, trailDbSvc),
+		servicesLiaison: liaison.NewServicesLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -69,8 +69,8 @@ func (controller *ServicesController) ReadInstalledItems() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.servicesService.ReadInstalledItems(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.servicesLiaison.ReadInstalledItems(requestBody),
 			)
 		},
 	}
@@ -154,8 +154,8 @@ func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.servicesService.ReadInstallableItems(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.servicesLiaison.ReadInstallableItems(requestBody),
 			)
 		},
 	}
@@ -244,8 +244,8 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 				requestBody["mappingPath"] = mappingPath
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.servicesService.CreateInstallable(requestBody, false),
+			cliHelper.LiaisonResponseWrapper(
+				controller.servicesLiaison.CreateInstallable(requestBody, false),
 			)
 		},
 	}
@@ -341,8 +341,8 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				requestBody["mappingPath"] = mappingPath
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.servicesService.CreateCustom(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.servicesLiaison.CreateCustom(requestBody),
 			)
 		},
 	}
@@ -428,8 +428,8 @@ func (controller *ServicesController) Update() *cobra.Command {
 				requestBody["portBindings"] = portBindingsSlice
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.servicesService.Update(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.servicesLiaison.Update(requestBody),
 			)
 		},
 	}
@@ -459,8 +459,8 @@ func (controller *ServicesController) Delete() *cobra.Command {
 				"name": nameStr,
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.servicesService.Delete(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.servicesLiaison.Delete(requestBody),
 			)
 		},
 	}

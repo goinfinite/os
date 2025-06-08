@@ -3,19 +3,19 @@ package cliController
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/spf13/cobra"
 )
 
 type CronController struct {
-	cronService *service.CronService
+	cronLiaison *liaison.CronLiaison
 }
 
 func NewCronController(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *CronController {
 	return &CronController{
-		cronService: service.NewCronService(trailDbSvc),
+		cronLiaison: liaison.NewCronLiaison(trailDbSvc),
 	}
 }
 
@@ -60,7 +60,7 @@ func (controller *CronController) Read() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.ServiceResponseWrapper(controller.cronService.Read(requestBody))
+			cliHelper.LiaisonResponseWrapper(controller.cronLiaison.Read(requestBody))
 		},
 	}
 
@@ -103,8 +103,8 @@ func (controller *CronController) Create() *cobra.Command {
 				requestBody["comment"] = commentStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.cronService.Create(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.cronLiaison.Create(requestBody),
 			)
 		},
 	}
@@ -140,8 +140,8 @@ func (controller *CronController) Update() *cobra.Command {
 				requestBody["comment"] = commentStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.cronService.Update(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.cronLiaison.Update(requestBody),
 			)
 		},
 	}
@@ -171,8 +171,8 @@ func (controller *CronController) Delete() *cobra.Command {
 				requestBody["comment"] = commentStr
 			}
 
-			cliHelper.ServiceResponseWrapper(
-				controller.cronService.Delete(requestBody),
+			cliHelper.LiaisonResponseWrapper(
+				controller.cronLiaison.Delete(requestBody),
 			)
 		},
 	}

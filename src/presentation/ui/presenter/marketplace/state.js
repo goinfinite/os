@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(marketplaceIndexAlpineState);
-
-function marketplaceIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("marketplace", () => ({
     // PrimaryState
     marketplaceItem: {},
@@ -106,4 +104,4 @@ function marketplaceIndexAlpineState() {
         });
     },
   }));
-}
+});

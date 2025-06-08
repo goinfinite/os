@@ -8,13 +8,13 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/labstack/echo/v4"
 )
 
 type DatabasesPresenter struct {
-	databaseService *service.DatabaseService
+	databaseLiaison *liaison.DatabaseLiaison
 }
 
 func NewDatabasesPresenter(
@@ -22,7 +22,7 @@ func NewDatabasesPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *DatabasesPresenter {
 	return &DatabasesPresenter{
-		databaseService: service.NewDatabaseService(persistentDbSvc, trailDbSvc),
+		databaseLiaison: liaison.NewDatabaseLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -44,8 +44,8 @@ func (presenter *DatabasesPresenter) databaseOverviewFactory(
 		"dbType":       databaseType.String(),
 		"itemsPerPage": 1000,
 	}
-	responseOutput := presenter.databaseService.Read(requestBody)
-	if responseOutput.Status != service.Success {
+	responseOutput := presenter.databaseLiaison.Read(requestBody)
+	if responseOutput.Status != liaison.Success {
 		return databaseOverview, err
 	}
 

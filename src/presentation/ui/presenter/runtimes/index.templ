@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/toolset"
 )
 
 //go:embed state.js
@@ -23,10 +24,10 @@ templ RuntimesIndex(
 	vhostsHostnames []string,
 ) {
 	<!-- RuntimesIndex JavaScript -->
-	@templ.Raw(`<script type="text/javascript">` + runtimesIndexAlpineState + `</script>`)
+	@uiToolset.MinifierTemplateJs(&runtimesIndexAlpineState)
 	<!-- RuntimesIndex HTML -->
-	<data id="selectedVhostHostname" class="hidden" value={ runtimeOverview.VirtualHostHostname.String() }></data>
-	<data id="selectedRuntimeType" class="hidden" value={ runtimeOverview.Type.String() }></data>
+	<data id="vhostHostname" class="hidden" value={ runtimeOverview.VirtualHostHostname.String() }></data>
+	<data id="runtimeType" class="hidden" value={ runtimeOverview.Type.String() }></data>
 	<div class="flex flex-col" x-data="runtimes">
 		@componentStructural.PageTitle(
 			"Runtimes",
@@ -56,7 +57,7 @@ templ RuntimesTabs(
 	@componentStructural.HorizontalTabHeader(
 		[]componentStructural.TabHeaderItem{
 			{Label: "PHP", Value: "php"},
-		}, runtimeOverview.Type.String(), "updateSelectedRuntimeType",
+		}, runtimeOverview.Type.String(), "updateRuntimeType",
 	)
 	if runtimeOverview.Type.String() == "php" {
 		@PhpRuntimeHorizontalTabContent(runtimeOverview, vhostsHostnames)

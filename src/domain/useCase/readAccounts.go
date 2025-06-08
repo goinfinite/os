@@ -8,6 +8,11 @@ import (
 	"github.com/goinfinite/os/src/domain/repository"
 )
 
+var AccountsDefaultPagination dto.Pagination = dto.Pagination{
+	PageNumber:   0,
+	ItemsPerPage: 10,
+}
+
 func ReadAccounts(
 	accountQueryRepo repository.AccountQueryRepo,
 	requestDto dto.ReadAccountsRequest,

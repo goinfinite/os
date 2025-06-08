@@ -1,6 +1,4 @@
-Infinite.RegisterAlpineState(sslsIndexAlpineState);
-
-function sslsIndexAlpineState() {
+UiToolset.RegisterAlpineState(() => {
   Alpine.data("ssls", () => ({
     // PrimaryState
     sslPair: {},
@@ -97,4 +95,4 @@ function sslsIndexAlpineState() {
         .finally(() => this.$store.main.refreshScheduledTasksPopover());
     },
   }));
-}
+});

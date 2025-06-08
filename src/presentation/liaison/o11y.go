@@ -1,4 +1,4 @@
-package service
+package liaison
 
 import (
 	"github.com/goinfinite/os/src/domain/useCase"
@@ -6,25 +6,25 @@ import (
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 )
 
-type O11yService struct {
+type O11yLiaison struct {
 	transientDbSvc *internalDbInfra.TransientDatabaseService
 }
 
-func NewO11yService(
+func NewO11yLiaison(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
-) *O11yService {
-	return &O11yService{
+) *O11yLiaison {
+	return &O11yLiaison{
 		transientDbSvc: transientDbSvc,
 	}
 }
 
-func (service *O11yService) ReadOverview() ServiceOutput {
-	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(service.transientDbSvc)
+func (liaison *O11yLiaison) ReadOverview() LiaisonOutput {
+	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(liaison.transientDbSvc)
 
 	o11yOverview, err := useCase.ReadO11yOverview(o11yQueryRepo, true)
 	if err != nil {
-		return NewServiceOutput(InfraError, err.Error())
+		return NewLiaisonOutput(InfraError, err.Error())
 	}
 
-	return NewServiceOutput(Success, o11yOverview)
+	return NewLiaisonOutput(Success, o11yOverview)
 }

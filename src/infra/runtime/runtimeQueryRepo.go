@@ -22,12 +22,12 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	primaryVhostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
 	vhostPhpConfFilePathStr := "/app/conf/php-webserver/" + hostname.String() + ".conf"
 
-	primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVirtualHostHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return vhostPhpConfFilePath, errors.New("PrimaryVhostNotFound: " + err.Error())
 	}
 
-	if hostname.String() == primaryVhost.String() {
+	if hostname == primaryVirtualHostHostname {
 		vhostPhpConfFilePathStr = primaryVhostPhpConfFilePathStr
 	}
 

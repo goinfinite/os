@@ -4,7 +4,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/service"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	"github.com/labstack/echo/v4"
 
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
@@ -12,7 +12,7 @@ import (
 
 type DatabaseController struct {
 	persistentDbService *internalDbInfra.PersistentDatabaseService
-	dbService           *service.DatabaseService
+	databaseLiaison     *liaison.DatabaseLiaison
 }
 
 func NewDatabaseController(
@@ -21,7 +21,7 @@ func NewDatabaseController(
 ) *DatabaseController {
 	return &DatabaseController{
 		persistentDbService: persistentDbService,
-		dbService: service.NewDatabaseService(
+		databaseLiaison: liaison.NewDatabaseLiaison(
 			persistentDbService, trailDbSvc,
 		),
 	}
@@ -50,8 +50,8 @@ func (controller *DatabaseController) Read(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.Read(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.databaseLiaison.Read(requestInputData),
 	)
 }
 
@@ -72,8 +72,8 @@ func (controller *DatabaseController) Create(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.Create(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.databaseLiaison.Create(requestInputData),
 	)
 }
 
@@ -94,8 +94,8 @@ func (controller *DatabaseController) Delete(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.Delete(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.databaseLiaison.Delete(requestInputData),
 	)
 }
 
@@ -127,8 +127,8 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 		)
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.CreateUser(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.databaseLiaison.CreateUser(requestInputData),
 	)
 }
 
@@ -150,7 +150,7 @@ func (controller *DatabaseController) DeleteUser(c echo.Context) error {
 		return err
 	}
 
-	return apiHelper.ServiceResponseWrapper(
-		c, controller.dbService.DeleteUser(requestInputData),
+	return apiHelper.LiaisonResponseWrapper(
+		c, controller.databaseLiaison.DeleteUser(requestInputData),
 	)
 }
