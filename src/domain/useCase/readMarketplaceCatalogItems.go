@@ -6,11 +6,15 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
+
+var MarketplaceDefaultSortBy valueObject.PaginationSortBy = valueObject.PaginationSortBy("id")
 
 var MarketplaceDefaultPagination dto.Pagination = dto.Pagination{
 	PageNumber:   0,
-	ItemsPerPage: 10,
+	ItemsPerPage: 50,
+	SortBy:       &MarketplaceDefaultSortBy,
 }
 
 func ReadMarketplaceCatalogItems(
