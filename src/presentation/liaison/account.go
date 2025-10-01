@@ -188,6 +188,10 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 		untrustedInput["accountId"] = untrustedInput["id"]
 	}
 
+	if untrustedInput["username"] != nil {
+		untrustedInput["accountUsername"] = untrustedInput["username"]
+	}
+
 	var err error
 	var accountIdPtr *valueObject.AccountId
 	if untrustedInput["accountId"] != nil {
