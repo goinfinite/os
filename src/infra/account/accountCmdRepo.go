@@ -242,10 +242,10 @@ func (repo *AccountCmdRepo) updatePassword(
 }
 
 func (repo *AccountCmdRepo) Update(updateDto dto.UpdateAccount) error {
-	readFirstAccountRequestDto := dto.ReadAccountsRequest{
-		AccountId: &updateDto.AccountId,
-	}
-	accountEntity, err := repo.accountQueryRepo.ReadFirst(readFirstAccountRequestDto)
+	accountEntity, err := repo.accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
+		AccountId:       updateDto.AccountId,
+		AccountUsername: updateDto.AccountUsername,
+	})
 	if err != nil {
 		return err
 	}

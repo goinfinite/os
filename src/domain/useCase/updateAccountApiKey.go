@@ -15,25 +15,25 @@ func UpdateAccountApiKey(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateAccount,
 ) (newKey valueObject.AccessTokenStr, err error) {
-	readRequestDto := dto.ReadAccountsRequest{
-		AccountId: &updateDto.AccountId,
-	}
-	_, err = accountQueryRepo.ReadFirst(readRequestDto)
+	accountEntity, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
+		AccountId:       updateDto.AccountId,
+		AccountUsername: updateDto.AccountUsername,
+	})
 	if err != nil {
 		return newKey, errors.New("AccountNotFound")
 	}
 
-	newKey, err = accountCmdRepo.UpdateApiKey(updateDto.AccountId)
+	newKey, err = accountCmdRepo.UpdateApiKey(accountEntity.Id)
 	if err != nil {
 		slog.Error(
 			"UpdateAccountApiKeyError",
-			slog.String("accountId", updateDto.AccountId.String()),
+			slog.String("accountId", accountEntity.Id.String()),
 			slog.String("err", err.Error()),
 		)
 		return newKey, errors.New("UpdateAccountApiKeyInfraError")
 	}
 
-	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateAccount(updateDto)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateAccount(accountEntity.Id, updateDto)
 
 	return newKey, nil
 }

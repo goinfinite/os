@@ -497,6 +497,8 @@ definitions:
     properties:
       accountId:
         type: integer
+      accountUsername:
+        type: string
       isSuperAdmin:
         type: boolean
       password:

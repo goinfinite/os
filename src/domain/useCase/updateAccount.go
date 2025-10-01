@@ -14,10 +14,10 @@ func UpdateAccount(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateAccount,
 ) error {
-	readRequestDto := dto.ReadAccountsRequest{
-		AccountId: &updateDto.AccountId,
-	}
-	_, err := accountQueryRepo.ReadFirst(readRequestDto)
+	accountEntity, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
+		AccountId:       updateDto.AccountId,
+		AccountUsername: updateDto.AccountUsername,
+	})
 	if err != nil {
 		return errors.New("AccountNotFound")
 	}
@@ -26,13 +26,14 @@ func UpdateAccount(
 	if err != nil {
 		slog.Error(
 			"UpdateAccount",
-			slog.String("accountId", updateDto.AccountId.String()),
+			slog.String("accountId", accountEntity.Id.String()),
 			slog.String("err", err.Error()),
 		)
 		return errors.New("UpdateAccountInfraError")
 	}
 
-	NewCreateSecurityActivityRecord(activityRecordCmdRepo).UpdateAccount(updateDto)
+	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
+		UpdateAccount(accountEntity.Id, updateDto)
 
 	return nil
 }

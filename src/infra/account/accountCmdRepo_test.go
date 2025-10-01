@@ -88,7 +88,7 @@ func TestAccountCmdRepo(t *testing.T) {
 
 		newPassword, _ := valueObject.NewPassword("newPassword")
 		updateDto := dto.NewUpdateAccount(
-			accountId, &newPassword, nil, nil, accountId,
+			&accountId, nil, &newPassword, nil, nil, accountId,
 			valueObject.IpAddressSystem,
 		)
 		err := accountCmdRepo.Update(updateDto)

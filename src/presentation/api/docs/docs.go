@@ -3674,6 +3674,9 @@ const docTemplate = `{
                 "accountId": {
                     "type": "integer"
                 },
+                "accountUsername": {
+                    "type": "string"
+                },
                 "isSuperAdmin": {
                     "type": "boolean"
                 },
