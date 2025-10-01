@@ -1,6 +1,10 @@
 # Changelog
 
 ```log
+0.2.7 - 2025/10/XX
+feat: allow account update via username
+fix: autologin layout adjustments
+
 0.2.6 - 2025/06/06
 feat: runtime php run
 feat: implement clearable fields for cron and mappings
