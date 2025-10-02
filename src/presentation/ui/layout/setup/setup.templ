@@ -9,25 +9,30 @@ import (
 	"github.com/goinfinite/ui/src/toolset"
 )
 
+type SetupLayoutSettings struct {
+	BaseHref string
+}
+
 //go:embed state.js
 var setupLayoutAlpineState string
 
-templ Setup() {
+templ Setup(componentSettings SetupLayoutSettings) {
 	<!DOCTYPE html>
 	<html>
-		@layoutMain.HeadTag()
+		@layoutMain.HeadTag(componentSettings.BaseHref)
 		<!-- Setup Layout JavaScript -->
 		@uiToolset.MinifierTemplateJs(&setupLayoutAlpineState)
 		<!-- Setup Layout HTML -->
 		<body
 			x-data="setup"
-			class="bg-primary-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50"
+			class="h-vh flex flex-col items-center justify-center text-neutral-50 bg-fixed bg-center bg-cover bg-no-repeat"
+			style="background-image: linear-gradient(-45deg, rgba(7, 27, 39, .75), rgba(7, 27, 39, .25)), url('assets/bg-infinite-relief.webp');"
 			un-cloak
 		>
 			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
 			<div>
 				<a href="https://goinfinite.net/os/" target="_blank" class="mb-4 flex w-[120px] gap-2 hover:opacity-90">
-					<img src="/assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
+					<img src="assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
 					<p class="text-[8px] text-neutral-500">v{ infraEnvs.InfiniteOsVersion }</p>
 				</a>
 				<form
