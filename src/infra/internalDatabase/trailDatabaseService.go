@@ -15,7 +15,10 @@ type TrailDatabaseService struct {
 
 func NewTrailDatabaseService() (*TrailDatabaseService, error) {
 	ormSvc, err := gorm.Open(
-		sqlite.Open(infraEnvs.TrailDatabaseFilePath),
+		sqlite.Open("file:"+
+			infraEnvs.TrailDatabaseFilePath+
+			infraEnvs.PersistentDatabaseConnectionParams,
+		),
 		&gorm.Config{},
 	)
 	if err != nil {

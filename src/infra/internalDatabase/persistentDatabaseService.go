@@ -16,7 +16,10 @@ type PersistentDatabaseService struct {
 
 func NewPersistentDatabaseService() (*PersistentDatabaseService, error) {
 	ormSvc, err := gorm.Open(
-		sqlite.Open(infraEnvs.PersistentDatabaseFilePath),
+		sqlite.Open("file:"+
+			infraEnvs.PersistentDatabaseFilePath+
+			infraEnvs.PersistentDatabaseConnectionParams,
+		),
 		&gorm.Config{},
 	)
 	if err != nil {
