@@ -1,4 +1,4 @@
-package apiMiddleware
+package presentationMiddleware
 
 import (
 	"fmt"
