@@ -9,12 +9,8 @@ import (
 	"github.com/labstack/echo/v4/middleware"
 )
 
-const (
-	ApiBasePath string = "/api"
-)
-
 // @title			OsApi
-// @version			0.2.6
+// @version			0.2.7
 // @description		Infinite OS API
 // @termsOfService	https://goinfinite.net/tos/
 
@@ -33,27 +29,27 @@ const (
 // @host		localhost:1618
 // @BasePath	/api
 func ApiInit(
-	e *echo.Echo,
+	echoInstance *echo.Echo,
+	apiBasePath string,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
-	baseRoute := e.Group(ApiBasePath)
+	baseRoute := echoInstance.Group(apiBasePath)
 
-	e.Pre(apiMiddleware.AddTrailingSlash(ApiBasePath))
+	echoInstance.Pre(apiMiddleware.AddTrailingSlash(apiBasePath))
 
 	requestTimeout := 180 * time.Second
-	e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+	echoInstance.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
 		Timeout: requestTimeout,
 	}))
 
-	e.Use(apiMiddleware.PanicHandler)
-	e.Use(apiMiddleware.SetDefaultHeaders(ApiBasePath))
-	e.Use(apiMiddleware.ReadOnlyMode(ApiBasePath))
-	e.Use(apiMiddleware.SetDatabaseServices(
+	echoInstance.Use(apiMiddleware.SetDefaultHeaders(apiBasePath))
+	echoInstance.Use(apiMiddleware.ReadOnlyMode(apiBasePath))
+	echoInstance.Use(apiMiddleware.SetDatabaseServices(
 		persistentDbSvc, transientDbSvc, trailDbSvc,
 	))
-	e.Use(apiMiddleware.Authentication(ApiBasePath))
+	echoInstance.Use(apiMiddleware.Authentication(apiBasePath, persistentDbSvc))
 
 	router := NewRouter(baseRoute, transientDbSvc, persistentDbSvc, trailDbSvc)
 	router.RegisterRoutes()
