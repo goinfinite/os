@@ -35,7 +35,7 @@ UiToolset.RegisterAlpineState(() => {
       this.selectedMarketplaceCatalogVerticalTab = tabName;
     },
     reloadMarketplacePageContent(listType) {
-      htmx.ajax("GET", "/marketplace/?listType=" + listType, {
+      htmx.ajax("GET", document.baseURI + "marketplace/?listType=" + listType, {
         select: "#marketplace-page-content",
         target: "#marketplace-page-content",
         indicator: "#loading-overlay",
@@ -92,7 +92,10 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/marketplace/installed/" + this.marketplaceItem.id + "/",
+          Infinite.OsApiBasePath +
+            "/v1/marketplace/installed/" +
+            this.marketplaceItem.id +
+            "/",
           { swap: "none" }
         )
         .then(() => {

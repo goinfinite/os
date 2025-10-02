@@ -31,7 +31,7 @@ UiToolset.RegisterAlpineState(() => {
 
       htmx.ajax(
         "GET",
-        "/file-manager/?workingDirPath=" + this.desiredWorkingDirPath,
+        document.baseURI + "file-manager/?workingDirPath=" + this.desiredWorkingDirPath,
         {
           select: "#file-manager-content",
           target: "#file-manager-content",

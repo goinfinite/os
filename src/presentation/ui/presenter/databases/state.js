@@ -20,7 +20,7 @@ UiToolset.RegisterAlpineState(() => {
 
     // AuxiliaryState
     changeSelectedDatabaseType(databaseType) {
-      htmx.ajax("GET", "/databases/?dbType=" + databaseType, {
+      htmx.ajax("GET", document.baseURI + "databases/?dbType=" + databaseType, {
         select: "#databases-page-content",
         target: "#databases-page-content",
         swap: "outerHTML transition:true",
@@ -61,7 +61,12 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/database/" + databaseType + "/" + this.database.name + "/",
+          Infinite.OsApiBasePath +
+            "/v1/database/" +
+            databaseType +
+            "/" +
+            this.database.name +
+            "/",
           { swap: "none" }
         )
         .finally(() => {
@@ -92,7 +97,8 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/database/" +
+          Infinite.OsApiBasePath +
+            "/v1/database/" +
             databaseType +
             "/" +
             this.database.name +

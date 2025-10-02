@@ -82,7 +82,10 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/marketplace/installed/" + this.marketplaceItem.id + "/",
+          Infinite.OsApiBasePath +
+            "/v1/marketplace/installed/" +
+            this.marketplaceItem.id +
+            "/",
           { swap: "none" }
         )
         .then(() => this.$store.main.refreshScheduledTasksPopover());
@@ -94,13 +97,16 @@ UiToolset.RegisterAlpineState(() => {
     // AuxiliaryState
     refreshIntervalSecs: 20,
     async updateResourceUsageCharts(chartInstance) {
-      const o11yCurrentUsageResource = await fetch(Infinite.OsApiBasePath + "/v1/o11y/overview/", {
-        method: "GET",
-        headers: {
-          Accept: "application/json",
-          "Content-Type": "application/json",
-        },
-      })
+      const o11yCurrentUsageResource = await fetch(
+        Infinite.OsApiBasePath + "/v1/o11y/overview/",
+        {
+          method: "GET",
+          headers: {
+            Accept: "application/json",
+            "Content-Type": "application/json",
+          },
+        }
+      )
         .then((apiResponse) => {
           if (!apiResponse.ok) {
             throw new Error("BadHttpResponseCode: " + apiResponse.status);
@@ -340,12 +346,16 @@ UiToolset.RegisterAlpineState(() => {
         this.installedServicesPagination
       );
 
-      htmx.ajax("GET", "/overview/?" + filterQueryParams.toString(), {
-        select: "#installed-services-table",
-        target: "#installed-services-table",
-        indicator: "#loading-overlay",
-        swap: "outerHTML transition:true",
-      });
+      htmx.ajax(
+        "GET",
+        document.baseURI + "overview/?" + filterQueryParams.toString(),
+        {
+          select: "#installed-services-table",
+          target: "#installed-services-table",
+          indicator: "#loading-overlay",
+          swap: "outerHTML transition:true",
+        }
+      );
     },
     targetServiceType: "installables",
     selectedInstallableServiceType: "runtime",
@@ -502,7 +512,11 @@ UiToolset.RegisterAlpineState(() => {
 
       this.closeUpdateInstalledServiceModal();
 
-      UiToolset.JsonAjax("PUT", Infinite.OsApiBasePath + "/v1/services/", serviceAttributesToUpdate)
+      UiToolset.JsonAjax(
+        "PUT",
+        Infinite.OsApiBasePath + "/v1/services/",
+        serviceAttributesToUpdate
+      )
         .then(() => this.$dispatch("update:service"))
         .catch((error) =>
           Alpine.store("toast").displayToast(error.message, "danger")
@@ -520,9 +534,13 @@ UiToolset.RegisterAlpineState(() => {
     },
     uninstallService() {
       htmx
-        .ajax("DELETE", Infinite.OsApiBasePath + "/v1/services/" + this.service.name + "/", {
-          swap: "none",
-        })
+        .ajax(
+          "DELETE",
+          Infinite.OsApiBasePath + "/v1/services/" + this.service.name + "/",
+          {
+            swap: "none",
+          }
+        )
         .then(() => this.$dispatch("delete:service"))
         .finally(() => this.closeUninstallServiceModal());
     },
