@@ -8,7 +8,10 @@ function devWsHotReload() {
     }, 2000);
   };
 }
-
+// "UiToolset.RegisterAlpineState" is not used here on purpose:
+// 1. Registration is done at the "alpine:initializing" event instead of "init".
+// 2. $store is globally accessible, so it doesn't require registration on page reload.
+// 3. The mainLayout is not reloaded during page transitions.
 document.addEventListener("alpine:initializing", () => {
   Alpine.store("main", {
     // RoutingState
@@ -18,7 +21,13 @@ document.addEventListener("alpine:initializing", () => {
     },
     navigateTo(path) {
       this.activeRoute = path;
-      htmx.ajax("GET", path, {
+
+      let baseUri = document.baseURI;
+      if (baseUri.endsWith("/")) {
+        baseUri = baseUri.slice(0, -1);
+      }
+      const newPath = baseUri + path;
+      htmx.ajax("GET", newPath, {
         source: "#htmx-routing-attributes-element",
         select: "#page-content",
         target: "#page-content",
@@ -38,7 +47,7 @@ document.addEventListener("alpine:initializing", () => {
     // FooterState
     refreshFooter() {
       htmx
-        .ajax("GET", "/fragment/footer", {
+        .ajax("GET", document.baseURI + "fragment/footer", {
           select: "#footer",
           target: "#footer",
           swap: "outerHTML transition:true",
