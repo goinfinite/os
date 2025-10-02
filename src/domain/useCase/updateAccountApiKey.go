@@ -15,6 +15,10 @@ func UpdateAccountApiKey(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateAccount,
 ) (newKey valueObject.AccessTokenStr, err error) {
+	if updateDto.AccountId == nil && updateDto.AccountUsername == nil {
+		return newKey, errors.New("AccountIdOrUsernameRequired")
+	}
+
 	accountEntity, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
 		AccountId:       updateDto.AccountId,
 		AccountUsername: updateDto.AccountUsername,

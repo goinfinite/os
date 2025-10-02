@@ -14,6 +14,10 @@ func UpdateAccount(
 	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateAccount,
 ) error {
+	if updateDto.AccountId == nil && updateDto.AccountUsername == nil {
+		return errors.New("AccountIdOrUsernameRequired")
+	}
+
 	accountEntity, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
 		AccountId:       updateDto.AccountId,
 		AccountUsername: updateDto.AccountUsername,

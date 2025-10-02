@@ -46,10 +46,6 @@ func (repo *AccountQueryRepo) Count(
 func (repo *AccountQueryRepo) Read(
 	requestDto dto.ReadAccountsRequest,
 ) (responseDto dto.ReadAccountsResponse, err error) {
-	if requestDto.AccountId == nil && requestDto.AccountUsername == nil {
-		return responseDto, errors.New("AccountIdOrUsernameRequired")
-	}
-
 	accountModel := dbModel.Account{}
 	if requestDto.AccountId != nil {
 		accountModel.ID = requestDto.AccountId.Uint64()
