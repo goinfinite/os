@@ -202,7 +202,9 @@ UiToolset.RegisterAlpineState(() => {
       );
 
       window.open(
-        Infinite.OsApiBasePath + "/v1/files/download/?sourcePath=" + fileEntity.path,
+        Infinite.OsApiBasePath +
+          "/v1/files/download/?sourcePath=" +
+          fileEntity.path,
         "_blank"
       );
     },
@@ -224,7 +226,11 @@ UiToolset.RegisterAlpineState(() => {
       }
 
       const fileName = this.selectedFileNames[0];
-      return !(fileName.includes(".zip") || fileName.includes(".tgz"));
+      return !(
+        fileName.includes(".zip") ||
+        fileName.includes(".tgz") ||
+        fileName.includes(".tar.gz")
+      );
     },
     decompressFile() {
       const fileName = this.selectedFileNames[0];
