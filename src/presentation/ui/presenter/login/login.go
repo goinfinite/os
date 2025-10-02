@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	"log/slog"
 	"net/http"
 
 	"github.com/goinfinite/os/src/domain/useCase"
@@ -26,31 +27,47 @@ func NewLoginPresenter(
 	}
 }
 
-func (presenter *LoginPresenter) Handler(c echo.Context) error {
-	if presenterHelper.ShouldEnableInitialSetup(presenter.accountLiaison) {
-		return c.Redirect(http.StatusFound, "/setup/")
+func (presenter *LoginPresenter) Handler(echoContext echo.Context) error {
+	uiBasePath, assertOk := echoContext.Get("uiBasePath").(string)
+	if !assertOk {
+		slog.Error("AssertUiBasePathFailed")
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
-	rawAccessToken := c.QueryParam("accessToken")
+	if presenterHelper.ShouldEnableInitialSetup(presenter.accountLiaison) {
+		return echoContext.Redirect(http.StatusFound, uiBasePath+"/setup/")
+	}
+
+	rawAccessToken := echoContext.QueryParam("accessToken")
 	if rawAccessToken != "" {
 		accessToken, err := valueObject.NewAccessTokenStr(rawAccessToken)
 		if err == nil {
 			sessionCookieExpiresIn := valueObject.NewUnixTimeAfterNow(
 				useCase.SessionTokenExpiresIn,
 			)
-			c.SetCookie(&http.Cookie{
-				Name:    infraEnvs.AccessTokenCookieKey,
-				Value:   accessToken.String(),
-				Path:    "/",
-				Expires: sessionCookieExpiresIn.ReadAsGoTime(),
+			echoContext.SetCookie(&http.Cookie{
+				Name:     infraEnvs.AccessTokenCookieKey,
+				Value:    accessToken.String(),
+				Path:     "/",
+				Expires:  sessionCookieExpiresIn.ReadAsGoTime(),
+				MaxAge:   int(useCase.SessionTokenExpiresIn.Seconds()),
+				HttpOnly: false,
+				Secure:   true,
+				SameSite: http.SameSiteLaxMode,
 			})
-			return c.Redirect(http.StatusFound, "/overview/")
+			return echoContext.Redirect(http.StatusFound, uiBasePath+"/overview/")
 		}
 	}
 
-	loginLayoutSettings := layoutLogin.LoginLayoutSettings{}
+	baseHref, assertOk := echoContext.Get("baseHref").(string)
+	if !assertOk {
+		slog.Error("AssertBaseHrefFailed")
+		return echoContext.NoContent(http.StatusInternalServerError)
+	}
 
-	rawPrefilledUsername := c.QueryParam("prefilledUsername")
+	loginLayoutSettings := layoutLogin.LoginLayoutSettings{BaseHref: baseHref}
+
+	rawPrefilledUsername := echoContext.QueryParam("prefilledUsername")
 	if rawPrefilledUsername != "" {
 		username, err := valueObject.NewUsername(rawPrefilledUsername)
 		if err == nil {
@@ -58,7 +75,7 @@ func (presenter *LoginPresenter) Handler(c echo.Context) error {
 		}
 	}
 
-	rawPrefilledPassword := c.QueryParam("prefilledPassword")
+	rawPrefilledPassword := echoContext.QueryParam("prefilledPassword")
 	if rawPrefilledPassword != "" {
 		password, err := valueObject.NewPassword(rawPrefilledPassword)
 		if err == nil {
@@ -66,9 +83,9 @@ func (presenter *LoginPresenter) Handler(c echo.Context) error {
 		}
 	}
 
-	c.Response().Writer.WriteHeader(http.StatusOK)
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
+	echoContext.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
+	echoContext.Response().Writer.WriteHeader(http.StatusOK)
 
 	return layoutLogin.Login(loginLayoutSettings).
-		Render(c.Request().Context(), c.Response().Writer)
+		Render(echoContext.Request().Context(), echoContext.Response().Writer)
 }

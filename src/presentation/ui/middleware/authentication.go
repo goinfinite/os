@@ -1,6 +1,7 @@
 package uiMiddleware
 
 import (
+	"log/slog"
 	"net/http"
 	"os"
 	"regexp"
@@ -15,7 +16,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func getAccountIdFromAccessToken(
+func extractAccountIdFromAccessToken(
 	authQueryRepo repository.AuthQueryRepo,
 	accessTokenStr valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
@@ -40,32 +41,45 @@ func getAccountIdFromAccessToken(
 	return accessTokenDetails.AccountId, nil
 }
 
-func shouldSkipUiAuthentication(req *http.Request) bool {
-	urlSkipRegex := regexp.MustCompile(`^/(api|\_|login|assets|setup)/`)
-	return urlSkipRegex.MatchString(req.URL.Path)
+func shouldSkipUiAuthentication(
+	uiBasePath, apiBasePath string,
+	httpRequest *http.Request,
+) bool {
+	urlSkipRegex := regexp.MustCompile(
+		"^(" + apiBasePath + "|" + uiBasePath + "/(login|assets|setup))/",
+	)
+	return urlSkipRegex.MatchString(httpRequest.URL.Path)
 }
 
 func Authentication(
+	uiBasePath string,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			if shouldSkipUiAuthentication(c.Request()) {
-				return next(c)
+	return func(subsequentHandler echo.HandlerFunc) echo.HandlerFunc {
+		return func(echoContext echo.Context) error {
+			apiBasePath, assertOk := echoContext.Get("apiBasePath").(string)
+			if !assertOk {
+				slog.Error("AssertApiBasePathFailed")
+				return echoContext.NoContent(http.StatusInternalServerError)
+			}
+
+			if shouldSkipUiAuthentication(uiBasePath, apiBasePath, echoContext.Request()) {
+				return subsequentHandler(echoContext)
 			}
 
 			rawAccessToken := ""
-			accessTokenCookie, err := c.Cookie(infraEnvs.AccessTokenCookieKey)
+			accessTokenCookie, err := echoContext.Cookie(infraEnvs.AccessTokenCookieKey)
 			if err == nil {
 				rawAccessToken = accessTokenCookie.Value
 			}
 
-			loginPath := "/login/"
+			loginPath := uiBasePath + "/login/"
 
 			if rawAccessToken == "" {
-				rawAccessToken = c.Request().Header.Get("Authorization")
+				rawAccessToken = echoContext.Request().Header.Get("Authorization")
 				if rawAccessToken == "" {
-					return c.Redirect(http.StatusTemporaryRedirect, loginPath)
+					slog.Debug("MissingAuthorizationHeader")
+					return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)
 				}
 				tokenWithoutPrefix := rawAccessToken[7:]
 				rawAccessToken = tokenWithoutPrefix
@@ -73,22 +87,25 @@ func Authentication(
 
 			accessTokenStr, err := valueObject.NewAccessTokenStr(rawAccessToken)
 			if err != nil {
-				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
+				slog.Debug("InvalidAccessToken", slog.String("rawAccessToken", rawAccessToken))
+				return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
 
-			userIpAddress, err := valueObject.NewIpAddress(c.RealIP())
+			userIpAddress, err := valueObject.NewIpAddress(echoContext.RealIP())
 			if err != nil {
-				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
+				slog.Debug("InvalidUserIpAddress", slog.String("ipAddress", echoContext.RealIP()))
+				return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
 
 			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
-			_, err = getAccountIdFromAccessToken(
+			_, err = extractAccountIdFromAccessToken(
 				authQueryRepo, accessTokenStr, userIpAddress,
 			)
 			if err != nil {
-				return c.Redirect(http.StatusTemporaryRedirect, loginPath)
+				slog.Debug("InvalidAccessTokenDetails", slog.String("err", err.Error()))
+				return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
-			return next(c)
+			return subsequentHandler(echoContext)
 		}
 	}
 }

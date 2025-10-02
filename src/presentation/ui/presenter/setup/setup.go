@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	"log/slog"
 	"net/http"
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -23,14 +24,28 @@ func NewSetupPresenter(
 	}
 }
 
-func (presenter *SetupPresenter) Handler(c echo.Context) error {
-	if !presenterHelper.ShouldEnableInitialSetup(presenter.accountLiaison) {
-		return c.Redirect(http.StatusFound, "/login/")
+func (presenter *SetupPresenter) Handler(echoContext echo.Context) error {
+	uiBasePath, assertOk := echoContext.Get("uiBasePath").(string)
+	if !assertOk {
+		slog.Error("AssertUiBasePathFailed")
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
-	c.Response().Writer.WriteHeader(http.StatusOK)
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
+	if !presenterHelper.ShouldEnableInitialSetup(presenter.accountLiaison) {
+		return echoContext.Redirect(http.StatusFound, uiBasePath+"/login/")
+	}
 
-	return layoutSetup.Setup().
-		Render(c.Request().Context(), c.Response().Writer)
+	baseHref, assertOk := echoContext.Get("baseHref").(string)
+	if !assertOk {
+		slog.Error("AssertBaseHrefFailed")
+		return echoContext.NoContent(http.StatusInternalServerError)
+	}
+
+	setupLayoutSettings := layoutSetup.SetupLayoutSettings{BaseHref: baseHref}
+
+	echoContext.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
+	echoContext.Response().Writer.WriteHeader(http.StatusOK)
+
+	return layoutSetup.Setup(setupLayoutSettings).
+		Render(echoContext.Request().Context(), echoContext.Response().Writer)
 }
