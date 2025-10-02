@@ -14,7 +14,7 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func getAccountIdFromAccessToken(
+func extractAccountIdFromAccessToken(
 	authQueryRepo repository.AuthQueryRepo,
 	accessTokenStr valueObject.AccessTokenStr,
 	ipAddress valueObject.IpAddress,
@@ -30,10 +30,7 @@ func getAccountIdFromAccessToken(
 	}
 
 	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
-		authQueryRepo,
-		accessTokenStr,
-		trustedIps,
-		ipAddress,
+		authQueryRepo, accessTokenStr, trustedIps, ipAddress,
 	)
 	if err != nil {
 		return valueObject.AccountId(0), err
@@ -49,22 +46,25 @@ func authError(message string) *echo.HTTPError {
 	})
 }
 
-func Authentication(apiBasePath string) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			shouldSkip := IsSkippableApiCall(c.Request(), apiBasePath)
+func Authentication(
+	apiBasePath string,
+	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
+) echo.MiddlewareFunc {
+	return func(subsequentHandler echo.HandlerFunc) echo.HandlerFunc {
+		return func(echoContext echo.Context) error {
+			shouldSkip := IsSkippableApiCall(echoContext.Request(), apiBasePath)
 			if shouldSkip {
-				return next(c)
+				return subsequentHandler(echoContext)
 			}
 
 			rawAccessToken := ""
-			accessTokenCookie, err := c.Cookie(infraEnvs.AccessTokenCookieKey)
+			accessTokenCookie, err := echoContext.Cookie(infraEnvs.AccessTokenCookieKey)
 			if err == nil {
 				rawAccessToken = accessTokenCookie.Value
 			}
 
 			if rawAccessToken == "" {
-				rawAccessToken = c.Request().Header.Get("Authorization")
+				rawAccessToken = echoContext.Request().Header.Get("Authorization")
 				if rawAccessToken == "" {
 					return authError("MissingAccessToken")
 				}
@@ -77,25 +77,21 @@ func Authentication(apiBasePath string) echo.MiddlewareFunc {
 				return authError("InvalidAccessToken")
 			}
 
-			userIpAddress, err := valueObject.NewIpAddress(c.RealIP())
+			userIpAddress, err := valueObject.NewIpAddress(echoContext.RealIP())
 			if err != nil {
 				return authError("InvalidIpAddress")
 			}
-
-			persistentDbSvc := c.Get(
-				"persistentDbSvc",
-			).(*internalDbInfra.PersistentDatabaseService)
 			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
 
-			accountId, err := getAccountIdFromAccessToken(
+			accountId, err := extractAccountIdFromAccessToken(
 				authQueryRepo, accessTokenStr, userIpAddress,
 			)
 			if err != nil {
 				return authError("InvalidAccessToken")
 			}
 
-			c.Set("operatorAccountId", accountId.String())
-			return next(c)
+			echoContext.Set("operatorAccountId", accountId.String())
+			return subsequentHandler(echoContext)
 		}
 	}
 }

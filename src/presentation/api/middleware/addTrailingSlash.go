@@ -10,8 +10,8 @@ import (
 func AddTrailingSlash(apiBasePath string) echo.MiddlewareFunc {
 	return middleware.AddTrailingSlashWithConfig(middleware.TrailingSlashConfig{
 		RedirectCode: http.StatusTemporaryRedirect,
-		Skipper: func(c echo.Context) bool {
-			return IsSkippableApiCall(c.Request(), apiBasePath)
+		Skipper: func(echoContext echo.Context) bool {
+			return IsSkippableApiCall(echoContext.Request(), apiBasePath)
 		},
 	})
 }

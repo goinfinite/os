@@ -8,40 +8,39 @@ import (
 )
 
 func SetDefaultHeaders(apiBasePath string) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
-			req := c.Request()
+	return func(subsequentHandler echo.HandlerFunc) echo.HandlerFunc {
+		return func(echoContext echo.Context) error {
+			httpRequest := echoContext.Request()
 
-			c.Response().Header().Set(
+			echoContext.Response().Header().Set(
 				"Cache-Control", "no-store, no-cache, must-revalidate",
 			)
-			c.Response().Header().Set("Access-Control-Allow-Origin", "*")
-			c.Response().Header().Set(
+			echoContext.Response().Header().Set("Access-Control-Allow-Origin", "*")
+			echoContext.Response().Header().Set(
 				"Access-Control-Allow-Headers",
 				"X-Requested-With, Content-Type, Accept, Origin, Authorization",
 			)
-			c.Response().Header().Set(
+			echoContext.Response().Header().Set(
 				"Access-Control-Allow-Methods", "GET, POST, HEAD, OPTIONS, DELETE, PUT",
 			)
 
-			if req.Method == "OPTIONS" {
-				return c.NoContent(http.StatusOK)
+			if httpRequest.Method == "OPTIONS" {
+				return echoContext.NoContent(http.StatusOK)
 			}
 
-			urlPath := req.URL.Path
+			urlPath := httpRequest.URL.Path
 			isNotApi := !strings.HasPrefix(urlPath, apiBasePath)
-
 			if isNotApi {
-				return next(c)
+				return subsequentHandler(echoContext)
 			}
 
-			if req.Header.Get("Content-Type") == "" {
-				req.Header.Set("Content-Type", "application/json")
+			if httpRequest.Header.Get("Content-Type") == "" {
+				httpRequest.Header.Set("Content-Type", "application/json")
 			}
 
-			c.Response().Header().Set("Content-Type", "application/json")
+			echoContext.Response().Header().Set("Content-Type", "application/json")
 
-			return next(c)
+			return subsequentHandler(echoContext)
 		}
 	}
 }

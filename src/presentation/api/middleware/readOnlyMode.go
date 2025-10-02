@@ -19,43 +19,43 @@ func IsSkippableApiCall(req *http.Request, apiBasePath string) bool {
 	}
 
 	urlSkipRegex := regexp.MustCompile(
-		`^` + apiBasePath + `(/v\d{1,2}/(auth|health|setup)|/swagger)`,
+		`^` + apiBasePath + `/(/v\d{1,2}/(auth|health|setup)|/swagger)`,
 	)
 	return urlSkipRegex.MatchString(urlPath)
 }
 
 func ReadOnlyMode(apiBasePath string) echo.MiddlewareFunc {
-	return func(next echo.HandlerFunc) echo.HandlerFunc {
-		return func(c echo.Context) error {
+	return func(subsequentHandler echo.HandlerFunc) echo.HandlerFunc {
+		return func(echoContext echo.Context) error {
 			rawReadOnlyModeEnvVar := os.Getenv("READ_ONLY_MODE")
 			if rawReadOnlyModeEnvVar == "" {
-				return next(c)
+				return subsequentHandler(echoContext)
 			}
 
 			isReadOnlyModeEnabled, err := strconv.ParseBool(rawReadOnlyModeEnvVar)
 			if err != nil {
-				return next(c)
+				return subsequentHandler(echoContext)
 			}
 
 			if !isReadOnlyModeEnabled {
-				return next(c)
+				return subsequentHandler(echoContext)
 			}
 
-			shouldSkip := IsSkippableApiCall(c.Request(), apiBasePath)
+			shouldSkip := IsSkippableApiCall(echoContext.Request(), apiBasePath)
 			if shouldSkip {
-				return next(c)
+				return subsequentHandler(echoContext)
 			}
 
-			reqMethod := c.Request().Method
+			reqMethod := echoContext.Request().Method
 			allowedMethods := []string{"GET", "HEAD", "OPTIONS"}
 			if !slices.Contains(allowedMethods, reqMethod) {
-				return c.JSON(423, map[string]interface{}{
-					"status": 423,
+				return echoContext.JSON(http.StatusLocked, map[string]interface{}{
+					"status": http.StatusLocked,
 					"body":   "ReadOnlyModeEnabled",
 				})
 			}
 
-			return next(c)
+			return subsequentHandler(echoContext)
 		}
 	}
 }
