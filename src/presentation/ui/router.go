@@ -10,7 +10,6 @@ import (
 
 	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/api"
 	presenterAccounts "github.com/goinfinite/os/src/presentation/ui/presenter/accounts"
 	presenterCrons "github.com/goinfinite/os/src/presentation/ui/presenter/crons"
 	presenterDatabases "github.com/goinfinite/os/src/presentation/ui/presenter/databases"
@@ -224,13 +223,27 @@ func (router *Router) RegisterRoutes() {
 
 	router.fragmentRoutes()
 
-	router.baseRoute.RouteNotFound("/*", func(c echo.Context) error {
-		urlPath := c.Request().URL.Path
-		isApi := strings.HasPrefix(urlPath, api.ApiBasePath)
-		if isApi {
-			return c.NoContent(http.StatusNotFound)
+	router.baseRoute.RouteNotFound("/*", func(echoContext echo.Context) error {
+		apiBasePath, assertOk := echoContext.Get("apiBasePath").(string)
+		if !assertOk {
+			slog.Error("AssertApiBasePathFailed")
+			return echoContext.NoContent(http.StatusInternalServerError)
 		}
 
-		return c.Redirect(http.StatusTemporaryRedirect, "/overview/")
+		urlPath := echoContext.Request().URL.Path
+		isApi := strings.HasPrefix(urlPath, apiBasePath)
+		if isApi {
+			return echoContext.NoContent(http.StatusNotFound)
+		}
+
+		slog.Debug("RouteNotFound", slog.String("urlPath", urlPath))
+
+		uiBasePath, assertOk := echoContext.Get("uiBasePath").(string)
+		if !assertOk {
+			slog.Error("AssertUiBasePathFailed")
+			return echoContext.NoContent(http.StatusInternalServerError)
+		}
+
+		return echoContext.Redirect(http.StatusTemporaryRedirect, uiBasePath+"/overview/")
 	})
 }
