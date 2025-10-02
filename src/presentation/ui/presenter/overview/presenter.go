@@ -160,39 +160,39 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 	}, nil
 }
 
-func (presenter *OverviewPresenter) Handler(c echo.Context) error {
+func (presenter *OverviewPresenter) Handler(echoContext echo.Context) error {
 	vhostsHostnames, err := presenterHelper.ReadVirtualHostHostnames(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
 	if err != nil {
 		slog.Error("ReadVirtualHostsHostnames", slog.String("err", err.Error()))
-		return nil
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
 	marketplaceOverview, err := presenter.marketplacePresenter.MarketplaceOverviewFactory("all")
 	if err != nil {
-		slog.Error(err.Error())
-		return nil
+		slog.Error("MarketplaceOverviewFactoryError", slog.String("err", err.Error()))
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(presenter.transientDbSvc)
 	o11yOverview, err := useCase.ReadO11yOverview(o11yQueryRepo, false)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil
+		slog.Error("ReadO11yOverviewError", slog.String("err", err.Error()))
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
-	servicesOverview, err := presenter.servicesOverviewFactory(c)
+	servicesOverview, err := presenter.servicesOverviewFactory(echoContext)
 	if err != nil {
-		slog.Error(err.Error())
-		return nil
+		slog.Error("ServicesOverviewFactoryError", slog.String("err", err.Error()))
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
 	pageContent := OverviewIndex(
 		vhostsHostnames, marketplaceOverview, o11yOverview, servicesOverview,
 	)
 	return uiLayout.Renderer(uiLayout.LayoutRendererSettings{
-		EchoContext:  c,
+		EchoContext:  echoContext,
 		PageContent:  pageContent,
 		ResponseCode: http.StatusOK,
 	})
