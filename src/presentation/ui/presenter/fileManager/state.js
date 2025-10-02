@@ -200,11 +200,9 @@ UiToolset.RegisterAlpineState(() => {
       const fileEntity = JSON.parse(
         document.getElementById("fileEntity_" + fileName).textContent
       );
-      const currentUrl = window.location.href;
-      const osBaseUrl = currentUrl.replace("/file-manager/", "");
 
       window.open(
-        osBaseUrl + Infinite.OsApiBasePath + "/v1/files/download/?sourcePath=" + fileEntity.path,
+        Infinite.OsApiBasePath + "/v1/files/download/?sourcePath=" + fileEntity.path,
         "_blank"
       );
     },

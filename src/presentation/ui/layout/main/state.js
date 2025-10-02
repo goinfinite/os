@@ -27,7 +27,7 @@ document.addEventListener("alpine:initializing", () => {
     },
     clearUserSession() {
       document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-      window.location.href = "/login/";
+      window.location.href = document.baseURI + "login/";
     },
     init() {
       window.addEventListener("popstate", () => {
