@@ -35,7 +35,11 @@ document.addEventListener("alpine:initializing", () => {
       });
     },
     clearUserSession() {
-      document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+      const baseUrl = new URL(document.baseURI);
+      document.cookie =
+        `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=` +
+        baseUrl.pathname +
+        ";";
       window.location.href = document.baseURI + "login/";
     },
     init() {
