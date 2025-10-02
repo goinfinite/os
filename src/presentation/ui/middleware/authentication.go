@@ -75,6 +75,15 @@ func Authentication(
 
 			loginPath := uiBasePath + "/login/"
 
+			baseHref, assertOk := echoContext.Get("baseHref").(string)
+			if !assertOk {
+				return echoContext.NoContent(http.StatusInternalServerError)
+			}
+			if len(baseHref) > 0 {
+				baseHrefNoTrailing := strings.TrimSuffix(baseHref, "/")
+				loginPath = baseHrefNoTrailing + loginPath
+			}
+
 			if rawAccessToken == "" {
 				rawAccessToken = echoContext.Request().Header.Get("Authorization")
 				if rawAccessToken == "" {

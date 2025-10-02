@@ -3,6 +3,7 @@ package uiPresenter
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -34,6 +35,16 @@ func (presenter *LoginPresenter) Handler(echoContext echo.Context) error {
 		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
+	baseHref, assertOk := echoContext.Get("baseHref").(string)
+	if !assertOk {
+		slog.Error("AssertBaseHrefFailed")
+		return echoContext.NoContent(http.StatusInternalServerError)
+	}
+	if len(baseHref) > 0 {
+		baseHrefNoTrailing := strings.TrimSuffix(baseHref, "/")
+		uiBasePath = baseHrefNoTrailing + uiBasePath
+	}
+
 	if presenterHelper.ShouldEnableInitialSetup(presenter.accountLiaison) {
 		return echoContext.Redirect(http.StatusFound, uiBasePath+"/setup/")
 	}
@@ -48,7 +59,7 @@ func (presenter *LoginPresenter) Handler(echoContext echo.Context) error {
 			echoContext.SetCookie(&http.Cookie{
 				Name:     infraEnvs.AccessTokenCookieKey,
 				Value:    accessToken.String(),
-				Path:     "/",
+				Path:     uiBasePath,
 				Expires:  sessionCookieExpiresIn.ReadAsGoTime(),
 				MaxAge:   int(useCase.SessionTokenExpiresIn.Seconds()),
 				HttpOnly: false,
@@ -57,12 +68,7 @@ func (presenter *LoginPresenter) Handler(echoContext echo.Context) error {
 			})
 			return echoContext.Redirect(http.StatusFound, uiBasePath+"/overview/")
 		}
-	}
-
-	baseHref, assertOk := echoContext.Get("baseHref").(string)
-	if !assertOk {
-		slog.Error("AssertBaseHrefFailed")
-		return echoContext.NoContent(http.StatusInternalServerError)
+		slog.Debug("InvalidAccessTokenDetails", slog.String("rawAccessToken", rawAccessToken))
 	}
 
 	loginLayoutSettings := layoutLogin.LoginLayoutSettings{BaseHref: baseHref}

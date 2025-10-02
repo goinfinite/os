@@ -3,6 +3,7 @@ package uiPresenter
 import (
 	"log/slog"
 	"net/http"
+	"strings"
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
@@ -31,14 +32,18 @@ func (presenter *SetupPresenter) Handler(echoContext echo.Context) error {
 		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
-	if !presenterHelper.ShouldEnableInitialSetup(presenter.accountLiaison) {
-		return echoContext.Redirect(http.StatusFound, uiBasePath+"/login/")
-	}
-
 	baseHref, assertOk := echoContext.Get("baseHref").(string)
 	if !assertOk {
 		slog.Error("AssertBaseHrefFailed")
 		return echoContext.NoContent(http.StatusInternalServerError)
+	}
+	if len(baseHref) > 0 {
+		baseHrefNoTrailing := strings.TrimSuffix(baseHref, "/")
+		uiBasePath = baseHrefNoTrailing + uiBasePath
+	}
+
+	if !presenterHelper.ShouldEnableInitialSetup(presenter.accountLiaison) {
+		return echoContext.Redirect(http.StatusFound, uiBasePath+"/login/")
 	}
 
 	setupLayoutSettings := layoutSetup.SetupLayoutSettings{BaseHref: baseHref}

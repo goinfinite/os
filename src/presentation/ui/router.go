@@ -244,6 +244,16 @@ func (router *Router) RegisterRoutes() {
 			return echoContext.NoContent(http.StatusInternalServerError)
 		}
 
+		baseHref, assertOk := echoContext.Get("baseHref").(string)
+		if !assertOk {
+			slog.Error("AssertBaseHrefFailed")
+			return echoContext.NoContent(http.StatusInternalServerError)
+		}
+		if len(baseHref) > 0 {
+			baseHrefNoTrailing := strings.TrimSuffix(baseHref, "/")
+			uiBasePath = baseHrefNoTrailing + uiBasePath
+		}
+
 		return echoContext.Redirect(http.StatusTemporaryRedirect, uiBasePath+"/overview/")
 	})
 }
