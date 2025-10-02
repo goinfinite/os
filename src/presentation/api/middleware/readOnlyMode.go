@@ -19,7 +19,7 @@ func IsSkippableApiCall(req *http.Request, apiBasePath string) bool {
 	}
 
 	urlSkipRegex := regexp.MustCompile(
-		`^` + apiBasePath + `/(/v\d{1,2}/(auth|health|setup)|/swagger)`,
+		`^` + apiBasePath + `/(v\d{1,2}/(auth|health|setup)|/swagger)/?`,
 	)
 	return urlSkipRegex.MatchString(urlPath)
 }
