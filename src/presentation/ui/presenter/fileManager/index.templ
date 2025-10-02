@@ -406,7 +406,7 @@ templ CreateFileForm(
 	closeFunction string,
 ) {
 	<form
-		hx-post="/api/v1/files/"
+		hx-post="api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -451,7 +451,7 @@ templ CreateDirectoryModal() {
 
 templ UploadFilesForm() {
 	<form
-		hx-post="/api/v1/files/upload/"
+		hx-post="api/v1/files/upload/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		enctype="multipart/form-data"
@@ -484,7 +484,7 @@ templ UploadFilesModal() {
 templ UpdateFileContentForm() {
 	<script src="https://cdn.jsdelivr.net/npm/ace-builds@1.42.0/src-min-noconflict/ace.js" integrity="sha256-xO63TgTRfMoS8OQcRBnZp5SO5FOdiz5j1LIZ6D+lgeg=" crossorigin="anonymous"></script>
 	<form
-		hx-put="/api/v1/files/"
+		hx-put="api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		class="flex flex-col gap-2"
@@ -607,7 +607,7 @@ templ MoveFilesForm(
 	unixFileTree *dto.UnixFileBranch,
 ) {
 	<form
-		hx-put="/api/v1/files/"
+		hx-put="api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -646,7 +646,7 @@ templ CopyFilesForm(
 	unixFileTree *dto.UnixFileBranch,
 ) {
 	<form
-		hx-post="/api/v1/files/copy/"
+		hx-post="api/v1/files/copy/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -682,7 +682,7 @@ templ CopyFilesModal(
 
 templ RenameFileForm() {
 	<form
-		hx-put="/api/v1/files/"
+		hx-put="api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -731,7 +731,7 @@ templ MoveFilesToTrashModal() {
 
 templ UpdateFilePermissionsForm() {
 	<form
-		hx-put="/api/v1/files/"
+		hx-put="api/v1/files/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -781,7 +781,7 @@ templ UpdateFilePermissionsModal() {
 
 templ CompressFilesForm() {
 	<form
-		hx-post="/api/v1/files/compress/"
+		hx-post="api/v1/files/compress/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>

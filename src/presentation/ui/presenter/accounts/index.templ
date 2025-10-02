@@ -24,7 +24,7 @@ templ AccountsIndex(accountsEntities []entity.Account) {
 		)
 		<div
 			id="accounts-page-content"
-			hx-get="/accounts/"
+			hx-get="accounts/"
 			hx-trigger="submit from:form delay:500ms, refresh:accounts-page-content from:window delay:250ms, delete:account from:window delay:250ms, delete:secure-access-public-key from:window delay:250ms"
 			hx-select="#accounts-page-content"
 			hx-target="#accounts-page-content"
@@ -126,7 +126,7 @@ templ AccountsTable(accountsEntities []entity.Account) {
 templ CreateAccountForm() {
 	<!-- CreateAccountForm -->
 	<form
-		hx-post="/api/v1/account/"
+		hx-post="api/v1/account/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@htmx:after-request="$dispatch('refresh:accounts-page-content')"
@@ -173,7 +173,7 @@ templ CreateAccountModal() {
 templ UpdateAccountForm() {
 	<!-- UpdateAccountForm -->
 	<form
-		hx-put="/api/v1/account/"
+		hx-put="api/v1/account/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -294,7 +294,7 @@ templ SecureAccessPublicKeysModal() {
 templ CreateSecureAccessPublicKeyForm() {
 	<!-- CreateSecureAccessPublicKeyForm -->
 	<form
-		hx-post="/api/v1/account/secure-access-public-key"
+		hx-post="api/v1/account/secure-access-public-key"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>

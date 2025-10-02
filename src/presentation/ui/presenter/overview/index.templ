@@ -148,7 +148,7 @@ templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalo
 				class="max-w-18 m-auto rounded-md transition-all duration-300 group-hover:sepia"
 				:class={ "{'sepia': selectedMarketplaceItemId === " + catalogItemEntity.Id.String() + "}" }
 				x-intersect.once={ "$el.src = '" + catalogItemEntity.AvatarUrl.String() + "'" }
-				src="/assets/placeholder-100x100.svg"
+				src="assets/placeholder-100x100.svg"
 				x-transition
 			/>
 			<div class="text-wrap mt-1 break-words text-center text-xs">
@@ -191,7 +191,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 	<!-- ScheduleMarketplaceItemInstallationForm -->
 	<form
 		id="schedule-marketplace-item-installation-form"
-		hx-post="/api/v1/marketplace/catalog/"
+		hx-post="api/v1/marketplace/catalog/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="$store.main.refreshScheduledTasksPopover()"
@@ -402,7 +402,7 @@ templ InstalledServicesItemsTable(
 		</div>
 		<div
 			id="installed-services-table"
-			hx-get="/overview/"
+			hx-get="overview/"
 			hx-trigger="install:custom-service from:window delay:250ms, update:service from:window delay:250ms, delete:service from:window delay:250ms"
 			hx-select="#installed-services-table"
 			hx-target="#installed-services-table"
@@ -440,7 +440,7 @@ templ InstalledServicesItemsTable(
 										if installedServiceEntity.AvatarUrl != nil {
 											src={ installedServiceEntity.AvatarUrl.String() }
 										} else {
-											src="/assets/default-avatar.jpg"
+											src="assets/default-avatar.jpg"
 										}
 									/>
 									{ installedServiceEntity.Name.String() }
@@ -576,7 +576,7 @@ templ InstallableServiceItemsCarousel(installableServiceEntity entity.Installabl
 				class="max-w-18 m-auto rounded-md transition-all duration-300 group-hover:sepia"
 				:class={ "{'sepia': selectedInstallableServiceName === '" + installableServiceEntity.Name.String() + "'}" }
 				x-intersect.once={ "$el.src = '" + installableServiceEntity.AvatarUrl.String() + "'" }
-				src="/assets/placeholder-100x100.svg"
+				src="assets/placeholder-100x100.svg"
 				x-transition
 			/>
 			<div class="text-wrap mt-1 break-words text-center text-xs">

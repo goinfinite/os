@@ -93,7 +93,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 	<!-- MappingsFormTable -->
 	<div
 		id={ MappingsRecordsDisplayId }
-		hx-get="/mappings/"
+		hx-get="mappings/"
 		hx-trigger={ MappingsRecordsDisplayRefreshEventName + " from:window" }
 		hx-select={ "#" + MappingsRecordsDisplayId }
 		hx-target={ "#" + MappingsRecordsDisplayId }
@@ -191,7 +191,7 @@ templ CreateVirtualHostForm(existingHostnames []string) {
 	<form
 		id="create-vhost-form"
 		class="flex flex-col gap-5"
-		hx-post="/api/v1/vhost/"
+		hx-post="api/v1/vhost/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeCreateVirtualHostModal()"
@@ -269,7 +269,7 @@ templ UpdateVirtualHostForm() {
 	<form
 		id="update-vhost-form"
 		class="flex flex-col gap-3"
-		hx-put="/api/v1/vhost/"
+		hx-put="api/v1/vhost/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeUpdateVirtualHostModal()"
@@ -345,7 +345,7 @@ templ CreateMappingForm(
 	<!-- CreateMappingForm -->
 	<form
 		class="flex flex-col gap-5"
-		hx-post="/api/v1/vhost/mapping/"
+		hx-post="api/v1/vhost/mapping/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeCreateMappingModal()"
@@ -456,7 +456,7 @@ templ UpdateMappingForm(
 ) {
 	<!-- UpdateMappingForm -->
 	<form
-		hx-put="/api/v1/vhost/mapping/"
+		hx-put="api/v1/vhost/mapping/"
 		class="flex flex-col gap-5"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
