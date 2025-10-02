@@ -204,7 +204,7 @@ UiToolset.RegisterAlpineState(() => {
       const osBaseUrl = currentUrl.replace("/file-manager/", "");
 
       window.open(
-        osBaseUrl + "/api/v1/files/download/?sourcePath=" + fileEntity.path,
+        osBaseUrl + Infinite.OsApiBasePath + "/v1/files/download/?sourcePath=" + fileEntity.path,
         "_blank"
       );
     },
@@ -236,7 +236,7 @@ UiToolset.RegisterAlpineState(() => {
       const destinationPath = fileEntity.path.split(".")[0];
 
       htmx
-        .ajax("PUT", "/api/v1/files/extract/", {
+        .ajax("PUT", Infinite.OsApiBasePath + "/v1/files/extract/", {
           swap: "none",
           values: {
             sourcePath: fileEntity.path,
@@ -300,7 +300,7 @@ UiToolset.RegisterAlpineState(() => {
       const shouldDisplayToast = false;
       UiToolset.JsonAjax(
         "GET",
-        "/api/v1/files/?sourcePath=" + fileEntity.path,
+        Infinite.OsApiBasePath + "/v1/files/?sourcePath=" + fileEntity.path,
         {},
         shouldDisplayToast
       )
@@ -526,7 +526,7 @@ UiToolset.RegisterAlpineState(() => {
         sourcePaths.push(fileEntity.path);
       }
 
-      UiToolset.JsonAjax("PUT", "/api/v1/files/delete/", {
+      UiToolset.JsonAjax("PUT", Infinite.OsApiBasePath + "/v1/files/delete/", {
         sourcePaths: sourcePaths,
         hardDelete: shouldHardDelete,
       }).then(() => {

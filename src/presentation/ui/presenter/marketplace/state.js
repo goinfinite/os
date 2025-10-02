@@ -92,7 +92,7 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          "/api/v1/marketplace/installed/" + this.marketplaceItem.id + "/",
+          Infinite.OsApiBasePath + "/v1/marketplace/installed/" + this.marketplaceItem.id + "/",
           { swap: "none" }
         )
         .then(() => {

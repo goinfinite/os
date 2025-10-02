@@ -105,7 +105,7 @@ UiToolset.RegisterAlpineState(() => {
     },
     deleteCronJob() {
       htmx
-        .ajax("DELETE", "/api/v1/cron/" + this.cron.id + "/", { swap: "none" })
+        .ajax("DELETE", Infinite.OsApiBasePath + "/v1/cron/" + this.cron.id + "/", { swap: "none" })
         .then(() => {
           this.$dispatch("delete:cron");
         })

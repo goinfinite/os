@@ -61,7 +61,7 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          "/api/v1/database/" + databaseType + "/" + this.database.name + "/",
+          Infinite.OsApiBasePath + "/v1/database/" + databaseType + "/" + this.database.name + "/",
           { swap: "none" }
         )
         .finally(() => {
@@ -92,7 +92,7 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          "/api/v1/database/" +
+          Infinite.OsApiBasePath + "/v1/database/" +
             databaseType +
             "/" +
             this.database.name +

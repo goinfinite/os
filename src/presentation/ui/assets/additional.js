@@ -106,4 +106,5 @@ window.Infinite = {
   },
   CreateFilterQueryParams: createFilterQueryParams,
   DownloadFile: downloadFile,
+  OsApiBasePath: document.baseURI + "api",
 };

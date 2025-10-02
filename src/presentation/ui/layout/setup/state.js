@@ -6,7 +6,7 @@ UiToolset.RegisterAlpineState(() => {
       const shouldDisplayToast = false;
       UiToolset.JsonAjax(
         "POST",
-        "/api/v1/setup/",
+        Infinite.OsApiBasePath + "/v1/setup/",
         {
           username: this.username,
           password: this.password,
@@ -16,7 +16,7 @@ UiToolset.RegisterAlpineState(() => {
         .then(() => {
           UiToolset.JsonAjax(
             "POST",
-            "/api/v1/auth/login/",
+            Infinite.OsApiBasePath + "/v1/auth/login/",
             {
               username: this.username,
               password: this.password,
@@ -31,8 +31,8 @@ UiToolset.RegisterAlpineState(() => {
             }
 
             Alpine.store("toast").displayToast("LoginSuccessful", "success");
-            document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=${authResponse.tokenStr}; path=/`;
-            window.location.href = "/overview/";
+            document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=${authResponse.tokenStr}; path=/; Secure; SameSite=Lax;`;
+            window.location.href = document.baseURI + "overview/";
           });
         })
         .catch((error) =>

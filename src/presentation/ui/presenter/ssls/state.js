@@ -80,14 +80,14 @@ UiToolset.RegisterAlpineState(() => {
     swapToSelfSigned() {
       this.closeSwapToSelfSignedModal();
       htmx
-        .ajax("DELETE", "/api/v1/ssl/" + this.sslPair.id + "/", {
+        .ajax("DELETE", Infinite.OsApiBasePath + "/v1/ssl/" + this.sslPair.id + "/", {
           swap: "none",
         })
         .then(() => this.$dispatch("refresh:ssl-pairs-table"));
     },
     createPubliclyTrusted(vhostHostname) {
       htmx
-        .ajax("POST", "/api/v1/ssl/trusted/", {
+        .ajax("POST", Infinite.OsApiBasePath + "/v1/ssl/trusted/", {
           values: { virtualHostHostname: vhostHostname },
           swap: "none",
         })

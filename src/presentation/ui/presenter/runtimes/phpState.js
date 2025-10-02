@@ -15,7 +15,7 @@ UiToolset.RegisterAlpineState(() => {
     updatePhpConfigs() {
       UiToolset.JsonAjax(
         "PUT",
-        "/api/v1/runtime/php/" + this.vhostHostname + "/",
+        Infinite.OsApiBasePath + "/v1/runtime/php/" + this.vhostHostname + "/",
         {
           version: this.phpConfigs.version.value,
           modules: this.phpConfigs.modules,
@@ -38,7 +38,7 @@ UiToolset.RegisterAlpineState(() => {
     updatePhpVersion() {
       this.closeUpdatePhpVersionModal();
       htmx
-        .ajax("PUT", "/api/v1/runtime/php/" + this.vhostHostname + "/", {
+        .ajax("PUT", Infinite.OsApiBasePath + "/v1/runtime/php/" + this.vhostHostname + "/", {
           swap: "none",
           values: { version: this.phpConfigs.version.value },
         })

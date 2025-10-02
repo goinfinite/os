@@ -82,7 +82,7 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          "/api/v1/marketplace/installed/" + this.marketplaceItem.id + "/",
+          Infinite.OsApiBasePath + "/v1/marketplace/installed/" + this.marketplaceItem.id + "/",
           { swap: "none" }
         )
         .then(() => this.$store.main.refreshScheduledTasksPopover());
@@ -94,7 +94,7 @@ UiToolset.RegisterAlpineState(() => {
     // AuxiliaryState
     refreshIntervalSecs: 20,
     async updateResourceUsageCharts(chartInstance) {
-      const o11yCurrentUsageResource = await fetch("/api/v1/o11y/overview/", {
+      const o11yCurrentUsageResource = await fetch(Infinite.OsApiBasePath + "/v1/o11y/overview/", {
         method: "GET",
         headers: {
           Accept: "application/json",
@@ -370,7 +370,7 @@ UiToolset.RegisterAlpineState(() => {
     },
     updateServiceStatus(serviceName, desiredStatus) {
       return htmx
-        .ajax("PUT", "/api/v1/services/", {
+        .ajax("PUT", Infinite.OsApiBasePath + "/v1/services/", {
           swap: "none",
           values: { name: serviceName, status: desiredStatus },
         })
@@ -420,7 +420,7 @@ UiToolset.RegisterAlpineState(() => {
 
       UiToolset.JsonAjax(
         "POST",
-        "/api/v1/services/" + this.targetServiceType + "/",
+        Infinite.OsApiBasePath + "/v1/services/" + this.targetServiceType + "/",
         serviceInstallationAttributes
       )
         .then(() => {
@@ -502,7 +502,7 @@ UiToolset.RegisterAlpineState(() => {
 
       this.closeUpdateInstalledServiceModal();
 
-      UiToolset.JsonAjax("PUT", "/api/v1/services/", serviceAttributesToUpdate)
+      UiToolset.JsonAjax("PUT", Infinite.OsApiBasePath + "/v1/services/", serviceAttributesToUpdate)
         .then(() => this.$dispatch("update:service"))
         .catch((error) =>
           Alpine.store("toast").displayToast(error.message, "danger")
@@ -520,7 +520,7 @@ UiToolset.RegisterAlpineState(() => {
     },
     uninstallService() {
       htmx
-        .ajax("DELETE", "/api/v1/services/" + this.service.name + "/", {
+        .ajax("DELETE", Infinite.OsApiBasePath + "/v1/services/" + this.service.name + "/", {
           swap: "none",
         })
         .then(() => this.$dispatch("delete:service"))
