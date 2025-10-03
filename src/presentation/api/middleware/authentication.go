@@ -66,10 +66,13 @@ func Authentication(
 			if rawAccessToken == "" {
 				rawAccessToken = echoContext.Request().Header.Get("Authorization")
 				if rawAccessToken == "" {
-					return authError("MissingAccessToken")
+					return authError("MissingAuthorizationHeader")
 				}
-				tokenWithoutPrefix := rawAccessToken[7:]
-				rawAccessToken = tokenWithoutPrefix
+				bearerPrefix := "Bearer "
+				if !strings.HasPrefix(rawAccessToken, bearerPrefix) {
+					return authError("AuthorizationHeaderMissingBearerPrefix")
+				}
+				rawAccessToken = strings.TrimPrefix(rawAccessToken, bearerPrefix)
 			}
 
 			accessTokenStr, err := valueObject.NewAccessTokenStr(rawAccessToken)

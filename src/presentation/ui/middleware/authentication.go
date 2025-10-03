@@ -90,8 +90,15 @@ func Authentication(
 					slog.Debug("MissingAuthorizationHeader")
 					return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)
 				}
-				tokenWithoutPrefix := rawAccessToken[7:]
-				rawAccessToken = tokenWithoutPrefix
+				bearerPrefix := "Bearer "
+				if !strings.HasPrefix(rawAccessToken, bearerPrefix) {
+					slog.Debug(
+						"AuthorizationHeaderMissingBearerPrefix",
+						slog.String("rawAuthorization", rawAccessToken),
+					)
+					return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)
+				}
+				rawAccessToken = strings.TrimPrefix(rawAccessToken, bearerPrefix)
 			}
 
 			accessTokenStr, err := valueObject.NewAccessTokenStr(rawAccessToken)
