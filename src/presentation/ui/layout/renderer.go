@@ -37,7 +37,7 @@ func Renderer(componentSettings LayoutRendererSettings) error {
 
 	baseHref, assertOk := componentSettings.EchoContext.Get("baseHref").(string)
 	if !assertOk {
-		return errors.New("AssertBaseHrefFailed")
+		baseHref = "/"
 	}
 
 	return layoutMain.Main(layoutMain.MainLayoutSettings{
