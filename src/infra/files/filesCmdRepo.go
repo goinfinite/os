@@ -334,7 +334,7 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 
 		err := repo.Delete(moveDto.DestinationPath)
 		if err != nil {
-			return errors.New("TrashFileError: " + err.Error())
+			return errors.New("DeletePreviousDestinationFileError: " + err.Error())
 		}
 	}
 
