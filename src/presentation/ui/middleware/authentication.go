@@ -19,23 +19,23 @@ import (
 func extractAccountIdFromAccessToken(
 	authQueryRepo repository.AuthQueryRepo,
 	accessTokenStr valueObject.AccessTokenStr,
-	ipAddress valueObject.IpAddress,
-) (valueObject.AccountId, error) {
-	trustedIpsRaw := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
+	userIpAddress valueObject.IpAddress,
+) (accountId valueObject.AccountId, err error) {
 	var trustedIps []valueObject.IpAddress
-	for _, trustedIp := range trustedIpsRaw {
-		ipAddress, err := valueObject.NewIpAddress(trustedIp)
+	rawTrustedIps := strings.SplitSeq(os.Getenv("TRUSTED_IPS"), ",")
+	for rawTrustedIp := range rawTrustedIps {
+		trustedIp, err := valueObject.NewIpAddress(rawTrustedIp)
 		if err != nil {
 			continue
 		}
-		trustedIps = append(trustedIps, ipAddress)
+		trustedIps = append(trustedIps, trustedIp)
 	}
 
 	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
-		authQueryRepo, accessTokenStr, trustedIps, ipAddress,
+		authQueryRepo, accessTokenStr, trustedIps, userIpAddress,
 	)
 	if err != nil {
-		return valueObject.AccountId(0), err
+		return accountId, err
 	}
 
 	return accessTokenDetails.AccountId, nil

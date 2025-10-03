@@ -59,9 +59,12 @@ func isDomainLayerPanic(stackTrace *StackTrace) bool {
 
 func isTrustworthy(c echo.Context) bool {
 	currentIp := c.RealIP()
-	trustedIps := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
+	if currentIp == "" {
+		return false
+	}
 
-	for _, staffIp := range trustedIps {
+	trustedIps := strings.SplitSeq(os.Getenv("TRUSTED_IPS"), ",")
+	for staffIp := range trustedIps {
 		if currentIp == strings.TrimSpace(staffIp) {
 			return true
 		}
