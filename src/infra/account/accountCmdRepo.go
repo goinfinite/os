@@ -242,6 +242,10 @@ func (repo *AccountCmdRepo) updatePassword(
 }
 
 func (repo *AccountCmdRepo) Update(updateDto dto.UpdateAccount) error {
+	if updateDto.AccountId == nil && updateDto.AccountUsername == nil {
+		return errors.New("AccountIdOrUsernameRequired")
+	}
+
 	accountEntity, err := repo.accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
 		AccountId:       updateDto.AccountId,
 		AccountUsername: updateDto.AccountUsername,
