@@ -308,17 +308,19 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 		rawTrashFilePath := destinationPathStr + "/" + fileNameStr
 		trashFilePath, err := valueObject.NewUnixFilePath(rawTrashFilePath)
 		if err != nil {
-			return errors.New("MoveFileToTrashError: " + err.Error())
+			return errors.New("DefineTrashFilePathError: " + err.Error())
 		}
 
 		trashFilePathStr := trashFilePath.String()
 		if infraHelper.FileExists(trashFilePathStr) {
-			err := repo.Delete(trashFilePath)
+			uniqueTrashPathStr := trashFilePathStr + "-" + valueObject.NewUnixTimeNow().String()
+			uniqueTrashFilePath, err := valueObject.NewUnixFilePath(uniqueTrashPathStr)
 			if err != nil {
-				return errors.New("RemoveTrashFileWithSameNameError: " + err.Error())
+				return errors.New("DefineUniqueTrashFilePathError: " + err.Error())
 			}
 
-			slog.Debug("TrashFileWithSameNameRemoved", slog.String("filePath", trashFilePathStr))
+			trashFilePath = uniqueTrashFilePath
+			trashFilePathStr = uniqueTrashFilePath.String()
 		}
 
 		return os.Rename(sourcePathStr, trashFilePathStr)
