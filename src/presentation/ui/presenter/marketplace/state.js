@@ -35,12 +35,18 @@ UiToolset.RegisterAlpineState(() => {
       this.selectedMarketplaceCatalogVerticalTab = tabName;
     },
     reloadMarketplacePageContent(listType) {
-      htmx.ajax("GET", document.baseURI + "marketplace/?listType=" + listType, {
-        select: "#marketplace-page-content",
-        target: "#marketplace-page-content",
-        indicator: "#loading-overlay",
-        swap: "outerHTML transition:true",
-      });
+      htmx.ajax(
+        "GET",
+        document.baseURI +
+          "marketplace/?listType=" +
+          encodeURIComponent(listType),
+        {
+          select: "#marketplace-page-content",
+          target: "#marketplace-page-content",
+          indicator: "#loading-overlay",
+          swap: "outerHTML transition:true",
+        }
+      );
     },
     imageLightbox: {
       isOpen: false,

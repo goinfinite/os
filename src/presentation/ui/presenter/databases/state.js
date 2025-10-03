@@ -20,11 +20,17 @@ UiToolset.RegisterAlpineState(() => {
 
     // AuxiliaryState
     changeSelectedDatabaseType(databaseType) {
-      htmx.ajax("GET", document.baseURI + "databases/?dbType=" + databaseType, {
-        select: "#databases-page-content",
-        target: "#databases-page-content",
-        swap: "outerHTML transition:true",
-      });
+      htmx.ajax(
+        "GET",
+        document.baseURI +
+          "databases/?dbType=" +
+          encodeURIComponent(databaseType),
+        {
+          select: "#databases-page-content",
+          target: "#databases-page-content",
+          swap: "outerHTML transition:true",
+        }
+      );
     },
     get shouldDisableCreateDatabaseSubmitButton() {
       return this.database.name == "";
@@ -63,9 +69,9 @@ UiToolset.RegisterAlpineState(() => {
           "DELETE",
           Infinite.OsApiBasePath +
             "/v1/database/" +
-            databaseType +
+            encodeURIComponent(databaseType) +
             "/" +
-            this.database.name +
+            encodeURIComponent(this.database.name) +
             "/",
           { swap: "none" }
         )
@@ -99,11 +105,11 @@ UiToolset.RegisterAlpineState(() => {
           "DELETE",
           Infinite.OsApiBasePath +
             "/v1/database/" +
-            databaseType +
+            encodeURIComponent(databaseType) +
             "/" +
-            this.database.name +
+            encodeURIComponent(this.database.name) +
             "/user/" +
-            this.databaseUser.username +
+            encodeURIComponent(this.databaseUser.username) +
             "/",
           { swap: "none" }
         )

@@ -15,7 +15,10 @@ UiToolset.RegisterAlpineState(() => {
     updatePhpConfigs() {
       UiToolset.JsonAjax(
         "PUT",
-        Infinite.OsApiBasePath + "/v1/runtime/php/" + this.vhostHostname + "/",
+        Infinite.OsApiBasePath +
+          "/v1/runtime/php/" +
+          encodeURIComponent(this.vhostHostname) +
+          "/",
         {
           version: this.phpConfigs.version.value,
           modules: this.phpConfigs.modules,
@@ -38,10 +41,17 @@ UiToolset.RegisterAlpineState(() => {
     updatePhpVersion() {
       this.closeUpdatePhpVersionModal();
       htmx
-        .ajax("PUT", Infinite.OsApiBasePath + "/v1/runtime/php/" + this.vhostHostname + "/", {
-          swap: "none",
-          values: { version: this.phpConfigs.version.value },
-        })
+        .ajax(
+          "PUT",
+          Infinite.OsApiBasePath +
+            "/v1/runtime/php/" +
+            encodeURIComponent(this.vhostHostname) +
+            "/",
+          {
+            swap: "none",
+            values: { version: this.phpConfigs.version.value },
+          }
+        )
         .then(() => this.$dispatch("refresh:runtimes-page-content"));
     },
   }));
