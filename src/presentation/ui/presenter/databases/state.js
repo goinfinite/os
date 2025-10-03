@@ -20,11 +20,17 @@ UiToolset.RegisterAlpineState(() => {
 
     // AuxiliaryState
     changeSelectedDatabaseType(databaseType) {
-      htmx.ajax("GET", "/databases/?dbType=" + databaseType, {
-        select: "#databases-page-content",
-        target: "#databases-page-content",
-        swap: "outerHTML transition:true",
-      });
+      htmx.ajax(
+        "GET",
+        document.baseURI +
+          "databases/?dbType=" +
+          encodeURIComponent(databaseType),
+        {
+          select: "#databases-page-content",
+          target: "#databases-page-content",
+          swap: "outerHTML transition:true",
+        }
+      );
     },
     get shouldDisableCreateDatabaseSubmitButton() {
       return this.database.name == "";
@@ -61,7 +67,12 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          "/api/v1/database/" + databaseType + "/" + this.database.name + "/",
+          Infinite.OsApiBasePath +
+            "/v1/database/" +
+            encodeURIComponent(databaseType) +
+            "/" +
+            encodeURIComponent(this.database.name) +
+            "/",
           { swap: "none" }
         )
         .finally(() => {
@@ -92,12 +103,13 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          "/api/v1/database/" +
-            databaseType +
+          Infinite.OsApiBasePath +
+            "/v1/database/" +
+            encodeURIComponent(databaseType) +
             "/" +
-            this.database.name +
+            encodeURIComponent(this.database.name) +
             "/user/" +
-            this.databaseUser.username +
+            encodeURIComponent(this.databaseUser.username) +
             "/",
           { swap: "none" }
         )

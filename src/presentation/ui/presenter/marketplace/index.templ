@@ -40,7 +40,7 @@ templ MarketplaceIndex(
 		)
 		<div
 			id="marketplace-page-content"
-			hx-get="/marketplace/"
+			hx-get="marketplace/"
 			hx-trigger="uninstall:marketplace-item delay:500ms"
 			hx-select="#marketplace-page-content"
 			hx-target="#marketplace-page-content"
@@ -255,7 +255,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 	<!-- ScheduleSelectedMarketplaceItemInstallationForm -->
 	<form
 		id="schedule-marketplace-item-installation-form"
-		hx-post="/api/v1/marketplace/catalog/"
+		hx-post="api/v1/marketplace/catalog/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="$store.main.refreshScheduledTasksPopover()"

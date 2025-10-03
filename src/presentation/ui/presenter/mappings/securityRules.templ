@@ -44,7 +44,7 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 	<!-- MappingSecurityRulesTable -->
 	<div
 		id={ MappingSecurityRulesDisplayId }
-		hx-get="/mappings/security-rules/"
+		hx-get="mappings/security-rules/"
 		hx-trigger={ MappingSecurityRulesDisplayRefreshEventName + " from:window" }
 		hx-select={ "#" + MappingSecurityRulesDisplayId }
 		hx-target={ "#" + MappingSecurityRulesDisplayId }
@@ -270,9 +270,9 @@ templ MappingSecurityRuleForm(isUpdate bool) {
 	<form
 		class="flex flex-col gap-4"
 		if !isUpdate {
-			hx-post="/api/v1/vhost/mapping/security-rule/"
+			hx-post="api/v1/vhost/mapping/security-rule/"
 		} else {
-			hx-put="/api/v1/vhost/mapping/security-rule/"
+			hx-put="api/v1/vhost/mapping/security-rule/"
 		}
 		hx-indicator="#loading-overlay"
 		hx-swap="none"

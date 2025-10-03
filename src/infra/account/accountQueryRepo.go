@@ -3,13 +3,12 @@ package accountInfra
 import (
 	"errors"
 	"log/slog"
-	"math"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
-	"github.com/iancoleman/strcase"
 )
 
 type AccountQueryRepo struct {
@@ -47,50 +46,28 @@ func (repo *AccountQueryRepo) Count(
 func (repo *AccountQueryRepo) Read(
 	requestDto dto.ReadAccountsRequest,
 ) (responseDto dto.ReadAccountsResponse, err error) {
-	model := dbModel.Account{}
+	accountModel := dbModel.Account{}
 	if requestDto.AccountId != nil {
-		model.ID = requestDto.AccountId.Uint64()
+		accountModel.ID = requestDto.AccountId.Uint64()
 	}
 	if requestDto.AccountUsername != nil {
-		model.Username = requestDto.AccountUsername.String()
+		accountModel.Username = requestDto.AccountUsername.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.
-		Model(&model).
-		Where(&model)
+	dbQuery := repo.persistentDbSvc.Handler.Model(&accountModel).Where(&accountModel)
 	if requestDto.ShouldIncludeSecureAccessPublicKeys != nil && *requestDto.ShouldIncludeSecureAccessPublicKeys {
 		dbQuery = dbQuery.Preload("SecureAccessPublicKeys")
 	}
 
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
+	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination,
+	)
 	if err != nil {
-		return responseDto, errors.New("CountAccountsTotalError: " + err.Error())
-	}
-
-	dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
-	if requestDto.Pagination.LastSeenId == nil {
-		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
-		dbQuery = dbQuery.Offset(offset)
-	} else {
-		dbQuery = dbQuery.Where("id > ?", requestDto.Pagination.LastSeenId.String())
-	}
-	if requestDto.Pagination.SortBy != nil {
-		orderStatement := requestDto.Pagination.SortBy.String()
-		orderStatement = strcase.ToSnake(orderStatement)
-		if orderStatement == "id" {
-			orderStatement = "ID"
-		}
-
-		if requestDto.Pagination.SortDirection != nil {
-			orderStatement += " " + requestDto.Pagination.SortDirection.String()
-		}
-
-		dbQuery = dbQuery.Order(orderStatement)
+		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
 	}
 
 	accountModels := []dbModel.Account{}
-	err = dbQuery.Find(&accountModels).Error
+	err = paginatedDbQuery.Find(&accountModels).Error
 	if err != nil {
 		return responseDto, errors.New("ReadAccountsError: " + err.Error())
 	}
@@ -100,26 +77,14 @@ func (repo *AccountQueryRepo) Read(
 		accountEntity, err := model.ToEntity()
 		if err != nil {
 			slog.Debug(
-				"AccountModelToEntityError", slog.Uint64("id", uint64(model.ID)),
+				"AccountModelToEntityError",
+				slog.Uint64("id", model.ID),
 				slog.String("err", err.Error()),
 			)
 			continue
 		}
 
 		accountEntities = append(accountEntities, accountEntity)
-	}
-
-	itemsTotalUint := uint64(itemsTotal)
-	pagesTotal := uint32(
-		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
-	)
-	responsePagination := dto.Pagination{
-		PageNumber:    requestDto.Pagination.PageNumber,
-		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
-		SortBy:        requestDto.Pagination.SortBy,
-		SortDirection: requestDto.Pagination.SortDirection,
-		PagesTotal:    &pagesTotal,
-		ItemsTotal:    &itemsTotalUint,
 	}
 
 	return dto.ReadAccountsResponse{
@@ -150,51 +115,27 @@ func (repo *AccountQueryRepo) ReadFirst(
 func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 	requestDto dto.ReadSecureAccessPublicKeysRequest,
 ) (responseDto dto.ReadSecureAccessPublicKeysResponse, err error) {
-	model := dbModel.SecureAccessPublicKey{
+	publicKeyModel := dbModel.SecureAccessPublicKey{
 		AccountID: requestDto.AccountId.Uint64(),
 	}
 	if requestDto.SecureAccessPublicKeyId != nil {
-		model.ID = requestDto.SecureAccessPublicKeyId.Uint16()
+		publicKeyModel.ID = requestDto.SecureAccessPublicKeyId.Uint16()
 	}
 	if requestDto.SecureAccessPublicKeyName != nil {
-		model.Name = requestDto.SecureAccessPublicKeyName.String()
+		publicKeyModel.Name = requestDto.SecureAccessPublicKeyName.String()
 	}
 
-	dbQuery := repo.persistentDbSvc.Handler.
-		Model(&model).
-		Where(&model)
+	dbQuery := repo.persistentDbSvc.Handler.Model(&publicKeyModel).Where(&publicKeyModel)
 
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
+	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination,
+	)
 	if err != nil {
-		return responseDto, errors.New(
-			"CountSecureAccessPublicKeysTotalError: " + err.Error(),
-		)
-	}
-
-	dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
-	if requestDto.Pagination.LastSeenId == nil {
-		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
-		dbQuery = dbQuery.Offset(offset)
-	} else {
-		dbQuery = dbQuery.Where("id > ?", requestDto.Pagination.LastSeenId.String())
-	}
-	if requestDto.Pagination.SortBy != nil {
-		orderStatement := requestDto.Pagination.SortBy.String()
-		orderStatement = strcase.ToSnake(orderStatement)
-		if orderStatement == "id" {
-			orderStatement = "ID"
-		}
-
-		if requestDto.Pagination.SortDirection != nil {
-			orderStatement += " " + requestDto.Pagination.SortDirection.String()
-		}
-
-		dbQuery = dbQuery.Order(orderStatement)
+		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
 	}
 
 	secureAccessKeysModels := []dbModel.SecureAccessPublicKey{}
-	err = dbQuery.Find(&secureAccessKeysModels).Error
+	err = paginatedDbQuery.Find(&secureAccessKeysModels).Error
 	if err != nil {
 		return responseDto, errors.New("ReadSecureAccessPublicKeysError: " + err.Error())
 	}
@@ -205,7 +146,8 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 		if err != nil {
 			slog.Debug(
 				"SecureAccessPublicKeyModelToEntityError",
-				slog.Uint64("id", uint64(model.ID)), slog.String("err", err.Error()),
+				slog.Uint64("id", uint64(model.ID)),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -213,19 +155,6 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 		secureAccessKeysEntities = append(
 			secureAccessKeysEntities, secureAccessKeysEntity,
 		)
-	}
-
-	itemsTotalUint := uint64(itemsTotal)
-	pagesTotal := uint32(
-		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
-	)
-	responsePagination := dto.Pagination{
-		PageNumber:    requestDto.Pagination.PageNumber,
-		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
-		SortBy:        requestDto.Pagination.SortBy,
-		SortDirection: requestDto.Pagination.SortDirection,
-		PagesTotal:    &pagesTotal,
-		ItemsTotal:    &itemsTotalUint,
 	}
 
 	return dto.ReadSecureAccessPublicKeysResponse{

@@ -11,6 +11,7 @@ import (
 )
 
 type LoginLayoutSettings struct {
+	BaseHref          string
 	PrefilledUsername string
 	PrefilledPassword string
 }
@@ -21,15 +22,19 @@ var loginLayoutAlpineState string
 templ Login(componentSettings LoginLayoutSettings) {
 	<!DOCTYPE html>
 	<html>
-		@layoutMain.HeadTag()
+		@layoutMain.HeadTag(componentSettings.BaseHref)
 		<!-- Login Layout JavaScript -->
 		@uiToolset.MinifierTemplateJs(&loginLayoutAlpineState)
 		<!-- Login Layout HTML -->
-		<body class="bg-primary-500 h-vh flex flex-col items-center justify-center bg-[url('/assets/infinite-os-bg.jpg')] bg-cover bg-no-repeat text-neutral-50" un-cloak>
+		<body
+			class="h-vh flex flex-col items-center justify-center text-neutral-50 bg-fixed bg-center bg-cover bg-no-repeat"
+			style="background-image: linear-gradient(-45deg, rgba(7, 27, 39, .75), rgba(7, 27, 39, .25)), url('assets/bg-infinite-relief.webp');"
+			un-cloak
+		>
 			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
 			<div class="flex flex-col gap-4">
 				<a href="https://goinfinite.net/os/" target="_blank" class="flex w-[120px] gap-2 hover:opacity-90">
-					<img src="/assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
+					<img src="assets/os-logo.svg" alt="Infinite Os" class="fill-white"/>
 					<p class="text-[8px] text-neutral-500">v{ infraEnvs.InfiniteOsVersion }</p>
 				</a>
 				if componentSettings.PrefilledPassword != "" {

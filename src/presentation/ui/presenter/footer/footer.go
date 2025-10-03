@@ -30,19 +30,19 @@ func NewFooterPresenter(
 	}
 }
 
-func (presenter *FooterPresenter) Handler(c echo.Context) error {
+func (presenter *FooterPresenter) Handler(echoContext echo.Context) error {
 	o11yLiaison := liaison.NewO11yLiaison(presenter.transientDbSvc)
 
 	o11yLiaisonOutput := o11yLiaison.ReadOverview()
 	if o11yLiaisonOutput.Status != liaison.Success {
 		slog.Debug("FooterPresenterReadOverviewFailure")
-		return nil
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
 	o11yOverviewEntity, assertOk := o11yLiaisonOutput.Body.(entity.O11yOverview)
 	if !assertOk {
 		slog.Debug("FooterPresenterAssertOverviewFailure")
-		return nil
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
 	scheduledTaskLiaison := liaison.NewScheduledTaskLiaison(presenter.persistentDbSvc)
@@ -56,18 +56,18 @@ func (presenter *FooterPresenter) Handler(c echo.Context) error {
 	scheduledTaskLiaisonOutput := scheduledTaskLiaison.Read(scheduledTaskReadRequestBody)
 	if scheduledTaskLiaisonOutput.Status != liaison.Success {
 		slog.Debug("FooterPresenterReadScheduledTaskFailure")
-		return nil
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
 	tasksResponseDto, assertOk := scheduledTaskLiaisonOutput.Body.(dto.ReadScheduledTasksResponse)
 	if !assertOk {
 		slog.Debug("FooterPresenterAssertScheduledTaskResponseFailure")
-		return nil
+		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
-	c.Response().Writer.WriteHeader(http.StatusOK)
-	c.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
+	echoContext.Response().Header().Set(echo.HeaderContentType, echo.MIMETextHTML)
+	echoContext.Response().Writer.WriteHeader(http.StatusOK)
 
 	return layoutFooter.Footer(o11yOverviewEntity, tasksResponseDto.Tasks).
-		Render(c.Request().Context(), c.Response().Writer)
+		Render(echoContext.Request().Context(), echoContext.Response().Writer)
 }

@@ -302,18 +302,40 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 		return errors.New("SourceFileNotFound")
 	}
 
+	if moveDto.DestinationPath == valueObject.UnixFilePathTrashDir {
+		fileNameStr := moveDto.SourcePath.ReadFileName().String()
+		destinationPathStr := moveDto.DestinationPath.String()
+		rawTrashFilePath := destinationPathStr + "/" + fileNameStr
+		trashFilePath, err := valueObject.NewUnixFilePath(rawTrashFilePath)
+		if err != nil {
+			return errors.New("DefineTrashFilePathError: " + err.Error())
+		}
+
+		trashFilePathStr := trashFilePath.String()
+		if infraHelper.FileExists(trashFilePathStr) {
+			uniqueTrashPathStr := trashFilePathStr + "-" + valueObject.NewUnixTimeNow().String()
+			uniqueTrashFilePath, err := valueObject.NewUnixFilePath(uniqueTrashPathStr)
+			if err != nil {
+				return errors.New("DefineUniqueTrashFilePathError: " + err.Error())
+			}
+
+			trashFilePath = uniqueTrashFilePath
+			trashFilePathStr = uniqueTrashFilePath.String()
+		}
+
+		return os.Rename(sourcePathStr, trashFilePathStr)
+	}
+
 	destinationPathStr := moveDto.DestinationPath.String()
-	if !infraHelper.FileExists(destinationPathStr) {
-		return os.Rename(sourcePathStr, destinationPathStr)
-	}
+	if infraHelper.FileExists(destinationPathStr) {
+		if !moveDto.ShouldOverwrite {
+			return errors.New("DestinationPathAlreadyExists")
+		}
 
-	if !moveDto.ShouldOverwrite {
-		return nil
-	}
-
-	err := repo.Delete(moveDto.DestinationPath)
-	if err != nil {
-		return errors.New("MoveFileToTrashError: " + err.Error())
+		err := repo.Delete(moveDto.DestinationPath)
+		if err != nil {
+			return errors.New("DeletePreviousDestinationFileError: " + err.Error())
+		}
 	}
 
 	return os.Rename(sourcePathStr, destinationPathStr)

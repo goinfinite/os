@@ -61,7 +61,7 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          "/api/v1/vhost/mapping/security-rule/" +
+          Infinite.OsApiBasePath + "/v1/vhost/mapping/security-rule/" +
             this.mappingSecurityRule.id +
             "/",
           {

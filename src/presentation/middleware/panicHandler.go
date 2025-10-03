@@ -1,4 +1,4 @@
-package apiMiddleware
+package presentationMiddleware
 
 import (
 	"fmt"
@@ -30,8 +30,8 @@ func convertPanicMessageToError(rec interface{}) error {
 
 func getStackTrace() *StackTrace {
 	buf := make([]byte, 1<<16)
-	runtime.Stack(buf, true)
-	stackTraceString := string(buf)
+	stackBufBytesCount := runtime.Stack(buf, true)
+	stackTraceString := string(buf[:stackBufBytesCount])
 	lines := strings.Split(stackTraceString, "\n")
 
 	filteredLines := []string{}
@@ -59,9 +59,12 @@ func isDomainLayerPanic(stackTrace *StackTrace) bool {
 
 func isTrustworthy(c echo.Context) bool {
 	currentIp := c.RealIP()
-	trustedIps := strings.Split(os.Getenv("TRUSTED_IPS"), ",")
+	if currentIp == "" {
+		return false
+	}
 
-	for _, staffIp := range trustedIps {
+	trustedIps := strings.SplitSeq(os.Getenv("TRUSTED_IPS"), ",")
+	for staffIp := range trustedIps {
 		if currentIp == strings.TrimSpace(staffIp) {
 			return true
 		}

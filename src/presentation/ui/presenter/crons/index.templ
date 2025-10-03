@@ -23,7 +23,7 @@ templ CronsIndex(crons []entity.Cron) {
 		)
 		<div
 			id="crons-page-content"
-			hx-get="/crons/"
+			hx-get="crons/"
 			hx-trigger="submit from:form delay:500ms, delete:cron from:window delay:250ms"
 			hx-select="#crons-page-content"
 			hx-target="#crons-page-content"
@@ -210,7 +210,7 @@ templ customScheduleInput() {
 templ CreateCronJobForm() {
 	<!-- CreateCronJobForm -->
 	<form
-		hx-post="/api/v1/cron/"
+		hx-post="api/v1/cron/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -272,7 +272,7 @@ templ CreateCronJobModal() {
 templ UpdateCronJobForm() {
 	<!-- UpdateCronJobForm -->
 	<form
-		hx-put="/api/v1/cron/"
+		hx-put="api/v1/cron/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>

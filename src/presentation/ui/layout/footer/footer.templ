@@ -10,7 +10,7 @@ import (
 templ FooterSkeleton() {
 	<footer
 		id="footer"
-		hx-get="/fragment/footer"
+		hx-get="fragment/footer"
 		hx-trigger="load delay:500ms"
 		hx-target="this"
 		hx-swap="outerHTML transition:true"
@@ -154,7 +154,7 @@ templ ScheduledTasksPopover(
 									<div class="space-x-2">
 										if scheduledTask.Status.String() == "pending" {
 											<button
-												hx-put="/api/v1/scheduled-task/"
+												hx-put="api/v1/scheduled-task/"
 												hx-vals={ "{\"taskId\": " + scheduledTask.Id.String() + ", \"status\": \"cancelled\"}" }
 												hx-trigger="click"
 												hx-swap="none"
@@ -167,7 +167,7 @@ templ ScheduledTasksPopover(
 										} else {
 											if scheduledTask.Status.String() != "running" {
 												<button
-													hx-put="/api/v1/scheduled-task/"
+													hx-put="api/v1/scheduled-task/"
 													hx-vals={ "{\"taskId\": " + scheduledTask.Id.String() + ", \"status\": \"pending\"}" }
 													hx-trigger="click"
 													hx-swap="none"
@@ -212,7 +212,7 @@ templ Footer(
 ) {
 	<footer
 		id="footer"
-		hx-get="/fragment/footer"
+		hx-get="fragment/footer"
 		hx-trigger="every 20s"
 		hx-target="this"
 		hx-swap="outerHTML"

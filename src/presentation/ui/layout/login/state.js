@@ -6,7 +6,7 @@ UiToolset.RegisterAlpineState(() => {
       const shouldDisplayToast = false;
       UiToolset.JsonAjax(
         "POST",
-        "/api/v1/auth/login/",
+        Infinite.OsApiBasePath + "/v1/auth/login/",
         {
           username: this.username,
           password: this.password,
@@ -17,8 +17,8 @@ UiToolset.RegisterAlpineState(() => {
           Alpine.store("toast").displayToast("LoginSuccessful", "success");
 
           UiToolset.ToggleLoadingOverlay(true);
-          document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=${authResponse.tokenStr}; path=/`;
-          window.location.href = "/overview/";
+          document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=${authResponse.tokenStr}; path=/; Secure; SameSite=Lax;`;
+          window.location.href = document.baseURI + "overview/";
         })
         .catch((error) => {
           UiToolset.ToggleLoadingOverlay(false);
@@ -27,8 +27,17 @@ UiToolset.RegisterAlpineState(() => {
     },
     init() {
       document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-      this.username = document.getElementById("prefilledUsername")?.value;
-      this.password = document.getElementById("prefilledPassword")?.value;
+      const prefilledUsername = document.getElementById("prefilledUsername")?.value;
+      const usernameBasicRegex = /^[\w\-]{2,64}$/;
+      if (usernameBasicRegex.test(prefilledUsername)) {
+        this.username = prefilledUsername;
+      }
+      
+      const prefilledPassword = document.getElementById("prefilledPassword")?.value;
+      const passwordBasicRegex = /^.{4,128}$/;
+      if (passwordBasicRegex.test(prefilledPassword)) {
+        this.password = prefilledPassword;
+      }
     },
   }));
 });

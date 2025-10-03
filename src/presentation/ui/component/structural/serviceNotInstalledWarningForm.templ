@@ -4,7 +4,7 @@ import componentForm "github.com/goinfinite/os/src/presentation/ui/component/for
 
 templ ServiceNotInstalledWarningForm(serviceName string) {
 	<form
-		hx-post="/api/v1/services/installables/"
+		hx-post="api/v1/services/installables/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="$store.main.refreshScheduledTasksPopover()"

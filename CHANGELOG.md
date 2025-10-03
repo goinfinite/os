@@ -1,6 +1,14 @@
 # Changelog
 
 ```log
+0.2.7 - 2025/10/02
+feat: allow account update via username
+fix: autologin layout adjustments
+fix: custom db connection params
+fix: allow for extract .tar.gz on file manager #277
+fix: add "delete index.html message" to index.html #278
+fix: .trash being shown as file on file manager #279
+
 0.2.6 - 2025/06/06
 feat: runtime php run
 feat: implement clearable fields for cron and mappings

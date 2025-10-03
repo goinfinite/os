@@ -116,29 +116,25 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 		return err
 	}
 
-	for _, fileToMoveToTrash := range deleteDto.SourcePaths {
-		shouldOverwrite := true
-		moveDto := dto.NewMoveUnixFile(
-			fileToMoveToTrash, valueObject.UnixFilePathTrashDir, shouldOverwrite,
+	shouldOverwrite := true
+	for _, disposableFile := range deleteDto.SourcePaths {
+		err = uc.filesCmdRepo.Move(
+			dto.NewMoveUnixFile(disposableFile, valueObject.UnixFilePathTrashDir, shouldOverwrite),
 		)
-
-		err = uc.filesCmdRepo.Move(moveDto)
 		if err != nil {
 			slog.Debug(
 				"MoveUnixFileToTrashError",
-				slog.String("fileToMoveToTrash", fileToMoveToTrash.String()),
+				slog.String("fileToMoveToTrash", disposableFile.String()),
 				slog.String("err", err.Error()),
 			)
 			continue
 		}
 
 		slog.Info(
-			"FileMovedToTrash", slog.String("filePath", fileToMoveToTrash.String()),
+			"FileMovedToTrash", slog.String("filePath", disposableFile.String()),
 		)
 	}
 
-	NewCreateSecurityActivityRecord(uc.activityRecordCmdRepo).
-		DeleteUnixFiles(deleteDto)
-
+	NewCreateSecurityActivityRecord(uc.activityRecordCmdRepo).DeleteUnixFiles(deleteDto)
 	return nil
 }

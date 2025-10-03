@@ -69,11 +69,14 @@ func (uc *CreateSecurityActivityRecord) CreateAccount(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) UpdateAccount(updateDto dto.UpdateAccount) {
+func (uc *CreateSecurityActivityRecord) UpdateAccount(
+	accountId valueObject.AccountId,
+	updateDto dto.UpdateAccount,
+) {
 	createRecordDto := dto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewAccountSri(updateDto.AccountId),
+			valueObject.NewAccountSri(accountId),
 		},
 		RecordDetails:     updateDto,
 		OperatorAccountId: &updateDto.OperatorAccountId,

@@ -15,6 +15,7 @@ import (
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	wsInfra "github.com/goinfinite/os/src/infra/webServer"
 	"github.com/goinfinite/os/src/presentation/api"
+	presentationMiddleware "github.com/goinfinite/os/src/presentation/middleware"
 	"github.com/goinfinite/os/src/presentation/ui"
 	"github.com/labstack/echo/v4"
 )
@@ -100,9 +101,19 @@ func HttpServerInit(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
 	echoInstance := echo.New()
+	echoInstance.Use(presentationMiddleware.PanicHandler)
 
-	api.ApiInit(echoInstance, persistentDbSvc, transientDbSvc, trailDbSvc)
-	ui.UiInit(echoInstance, persistentDbSvc, transientDbSvc, trailDbSvc)
+	rootBasePath := "/"
+	apiBasePath := rootBasePath + "api"
+	uiBasePath := rootBasePath + ""
+	if uiBasePath == rootBasePath {
+		uiBasePath = ""
+	}
+
+	echoInstance.Use(presentationMiddleware.BaseHref(rootBasePath, apiBasePath, uiBasePath))
+
+	api.ApiInit(echoInstance, apiBasePath, persistentDbSvc, transientDbSvc, trailDbSvc)
+	ui.UiInit(echoInstance, uiBasePath, persistentDbSvc, transientDbSvc, trailDbSvc)
 
 	webServerSetup(persistentDbSvc, transientDbSvc)
 

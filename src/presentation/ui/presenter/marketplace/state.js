@@ -35,12 +35,18 @@ UiToolset.RegisterAlpineState(() => {
       this.selectedMarketplaceCatalogVerticalTab = tabName;
     },
     reloadMarketplacePageContent(listType) {
-      htmx.ajax("GET", "/marketplace/?listType=" + listType, {
-        select: "#marketplace-page-content",
-        target: "#marketplace-page-content",
-        indicator: "#loading-overlay",
-        swap: "outerHTML transition:true",
-      });
+      htmx.ajax(
+        "GET",
+        document.baseURI +
+          "marketplace/?listType=" +
+          encodeURIComponent(listType),
+        {
+          select: "#marketplace-page-content",
+          target: "#marketplace-page-content",
+          indicator: "#loading-overlay",
+          swap: "outerHTML transition:true",
+        }
+      );
     },
     imageLightbox: {
       isOpen: false,
@@ -92,7 +98,10 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          "/api/v1/marketplace/installed/" + this.marketplaceItem.id + "/",
+          Infinite.OsApiBasePath +
+            "/v1/marketplace/installed/" +
+            this.marketplaceItem.id +
+            "/",
           { swap: "none" }
         )
         .then(() => {

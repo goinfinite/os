@@ -1,12 +1,13 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion                  string = "0.2.6"
+	InfiniteOsVersion                  string = "0.2.7"
 	InfiniteOsMainDir                  string = "/infinite"
 	InfiniteOsBinary                   string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath              string = InfiniteOsMainDir + "/.env"
 	InfiniteOsApiHttpPublicPort        string = "1618"
 	PersistentDatabaseFilePath         string = InfiniteOsMainDir + "/os.db"
+	PersistentDatabaseConnectionParams string = "?cache=shared&mode=rwc&_journal_mode=WAL&_busy_timeout=5000&_foreign_keys=on"
 	TrailDatabaseFilePath              string = InfiniteOsMainDir + "/trail.db"
 	MarketplaceCatalogItemsDir         string = InfiniteOsMainDir + "/marketplace"
 	MarketplaceCatalogItemsRepoUrl     string = "https://github.com/goinfinite/os-marketplace"

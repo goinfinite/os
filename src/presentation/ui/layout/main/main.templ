@@ -11,32 +11,34 @@ import (
 	"os"
 )
 
-//go:embed state.js
-var mainLayoutAlpineState string
-
-templ HeadTag() {
+templ HeadTag(baseHref string) {
 	<head>
 		<meta charset="utf-8"/>
+		<base href={ baseHref }/>
 		<meta name="robots" content="noindex"/>
 		<meta name="viewport" content="width=device-width, initial-scale=1"/>
 		<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests"/>
 		<title>Infinite OS</title>
-		<link rel="icon" type="image/ico" href="/assets/favicon.ico"/>
-		<script src="/assets/additional.js"></script>
+		<link rel="icon" type="image/ico" href="assets/favicon.ico"/>
+		<script src="assets/additional.js"></script>
 		@uiImport.HeadTagsFull()
-		<link rel="stylesheet" type="text/css" href="/assets/additional.css"/>
+		<link rel="stylesheet" type="text/css" href="assets/additional.css"/>
 		@uiImport.HeadTagsVega()
 	</head>
 }
 
 type MainLayoutSettings struct {
+	BaseHref    string
 	PageContent templ.Component
 }
+
+//go:embed state.js
+var mainLayoutAlpineState string
 
 templ Main(componentSettings MainLayoutSettings) {
 	<!DOCTYPE html>
 	<html>
-		@HeadTag()
+		@HeadTag(componentSettings.BaseHref)
 		<!-- MainLayout JavaScript -->
 		@uiToolset.MinifierTemplateJs(&mainLayoutAlpineState)
 		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {

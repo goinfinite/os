@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.2.6"
+        "version": "0.2.7"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -3667,6 +3667,9 @@
             "properties": {
                 "accountId": {
                     "type": "integer"
+                },
+                "accountUsername": {
+                    "type": "string"
                 },
                 "isSuperAdmin": {
                     "type": "boolean"

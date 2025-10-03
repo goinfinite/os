@@ -6,7 +6,8 @@ UiToolset.RegisterAlpineState(() => {
     reloadRuntimePageContent(vhostHostname, runtimeType) {
       htmx.ajax(
         "GET",
-        "/runtimes/?vhostHostname=" +
+        document.baseURI +
+          "runtimes/?vhostHostname=" +
           vhostHostname +
           "&runtimeType=" +
           runtimeType,

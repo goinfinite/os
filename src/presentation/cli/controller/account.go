@@ -145,7 +145,7 @@ func (controller *AccountController) Update() *cobra.Command {
 			}
 
 			if usernameStr != "" {
-				requestBody["username"] = usernameStr
+				requestBody["accountUsername"] = usernameStr
 			}
 
 			if passwordStr != "" {

@@ -12,16 +12,16 @@ import (
 var assetsFiles embed.FS
 
 func UiInit(
-	e *echo.Echo,
+	echoInstance *echo.Echo,
+	uiBasePath string,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
-	basePath := ""
-	baseRoute := e.Group(basePath)
+	baseRoute := echoInstance.Group(uiBasePath)
 
-	e.Use(uiMiddleware.Authentication(persistentDbSvc))
-	e.Use(uiMiddleware.Embed([]uiMiddleware.EmbedKeyFs{
+	echoInstance.Use(uiMiddleware.Authentication(uiBasePath, persistentDbSvc))
+	echoInstance.Use(uiMiddleware.Embed([]uiMiddleware.EmbedKeyFs{
 		{EmbedKey: "assets", EmbedFs: assetsFiles},
 	}))
 

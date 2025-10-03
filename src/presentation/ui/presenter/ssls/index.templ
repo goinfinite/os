@@ -40,7 +40,7 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 	<!-- SslPairsTable -->
 	<div
 		id={ SslPairsRecordsDisplayId }
-		hx-get="/ssls/"
+		hx-get="ssls/"
 		hx-trigger={ SslPairsRecordsDisplayRefreshEventName + " from:window" }
 		hx-select={ "#" + SslPairsRecordsDisplayId }
 		hx-target={ "#" + SslPairsRecordsDisplayId }
@@ -147,7 +147,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 	<form
 		id="import-ssl-certificate-form"
 		class="flex flex-col gap-4"
-		hx-post="/api/v1/ssl/"
+		hx-post="api/v1/ssl/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeImportSslCertificateModal()"

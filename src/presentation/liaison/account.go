@@ -188,15 +188,27 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 		untrustedInput["accountId"] = untrustedInput["id"]
 	}
 
-	requiredParams := []string{"accountId"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
-	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+	if untrustedInput["username"] != nil {
+		untrustedInput["accountUsername"] = untrustedInput["username"]
 	}
 
-	accountId, err := valueObject.NewAccountId(untrustedInput["accountId"])
-	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+	var err error
+	var accountIdPtr *valueObject.AccountId
+	if untrustedInput["accountId"] != nil {
+		accountId, err := valueObject.NewAccountId(untrustedInput["accountId"])
+		if err != nil {
+			return NewLiaisonOutput(UserError, err.Error())
+		}
+		accountIdPtr = &accountId
+	}
+
+	var accountUsernamePtr *valueObject.Username
+	if untrustedInput["accountUsername"] != nil {
+		accountUsername, err := valueObject.NewUsername(untrustedInput["accountUsername"])
+		if err != nil {
+			return NewLiaisonOutput(UserError, err.Error())
+		}
+		accountUsernamePtr = &accountUsername
 	}
 
 	var passwordPtr *valueObject.Password
@@ -243,7 +255,7 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 	}
 
 	updateDto := dto.NewUpdateAccount(
-		accountId, passwordPtr, isSuperAdminPtr, shouldUpdateApiKeyPtr,
+		accountIdPtr, accountUsernamePtr, passwordPtr, isSuperAdminPtr, shouldUpdateApiKeyPtr,
 		operatorAccountId, operatorIpAddress,
 	)
 
