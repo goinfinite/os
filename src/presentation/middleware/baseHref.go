@@ -21,7 +21,16 @@ func BaseHref(rootBasePath, apiBasePath, uiBasePath string) echo.MiddlewareFunc 
 			// If the application is behind a reverse proxy, it will receive the request URLs
 			// as if it was running on the root of the hostname. On the other hand, the base href
 			// won't, that's why X-Base-Href header is used.
-			echoContext.Set("baseHref", "/")
+			baseHrefStr := rootBasePath
+			if len(baseHrefStr) == 0 {
+				baseHrefStr = "/"
+			}
+			baseHrefHasTrailingSlash := baseHrefStr[len(baseHrefStr)-1] == '/'
+			if !baseHrefHasTrailingSlash {
+				baseHrefStr += "/"
+			}
+
+			echoContext.Set("baseHref", baseHrefStr)
 			rawBaseHref := echoContext.Request().Header.Get("X-Base-Href")
 			if rawBaseHref == "" {
 				return subsequentHandler(echoContext)
@@ -33,11 +42,11 @@ func BaseHref(rootBasePath, apiBasePath, uiBasePath string) echo.MiddlewareFunc 
 				return subsequentHandler(echoContext)
 			}
 
-			baseHrefStr := baseHref.String()
+			baseHrefStr = baseHref.String()
 			if len(baseHrefStr) == 0 {
 				baseHrefStr = "/"
 			}
-			baseHrefHasTrailingSlash := baseHrefStr[len(baseHrefStr)-1] == '/'
+			baseHrefHasTrailingSlash = baseHrefStr[len(baseHrefStr)-1] == '/'
 			if !baseHrefHasTrailingSlash {
 				baseHrefStr += "/"
 			}
