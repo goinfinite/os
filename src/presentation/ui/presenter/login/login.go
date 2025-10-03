@@ -56,10 +56,15 @@ func (presenter *LoginPresenter) Handler(echoContext echo.Context) error {
 			sessionCookieExpiresIn := valueObject.NewUnixTimeAfterNow(
 				useCase.SessionTokenExpiresIn,
 			)
+			cookiePathStr := uiBasePath
+			if len(cookiePathStr) == 0 {
+				cookiePathStr = "/"
+			}
+
 			echoContext.SetCookie(&http.Cookie{
 				Name:     infraEnvs.AccessTokenCookieKey,
 				Value:    accessToken.String(),
-				Path:     uiBasePath,
+				Path:     cookiePathStr,
 				Expires:  sessionCookieExpiresIn.ReadAsGoTime(),
 				MaxAge:   int(useCase.SessionTokenExpiresIn.Seconds()),
 				HttpOnly: false,
