@@ -32,7 +32,7 @@ templ DatabasesIndex(selectedDbOverview DatabaseOverview) {
 		)
 		<div
 			id="databases-page-content"
-			hx-get={ "/databases/?dbType=" + selectedDbOverview.Type.String() }
+			hx-get={ "databases/?dbType=" + selectedDbOverview.Type.String() }
 			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
 			hx-select="#databases-page-content"
 			hx-target="#databases-page-content"
@@ -138,7 +138,7 @@ templ CreateDatabaseForm(selectedDbType valueObject.DatabaseType) {
 	<!-- CreateDatabaseForm -->
 	<form
 		id="create-database-form"
-		hx-post={ "/api/v1/database/" + selectedDbType.String() }
+		hx-post={ "api/v1/database/" + selectedDbType.String() }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
@@ -179,7 +179,7 @@ templ CreateDatabaseUserForm(selectedDbOverview DatabaseOverview) {
 	<form
 		id="create-database-user-form"
 		class="flex flex-col gap-5"
-		hx-post={ "/api/v1/database/" + selectedDbOverview.Type.String() + "/user" }
+		hx-post={ "api/v1/database/" + selectedDbOverview.Type.String() + "/user" }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
