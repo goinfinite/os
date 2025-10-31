@@ -3,6 +3,8 @@
 ```log
 0.2.7.1 - 2025/10/31
 fix: remove / from database and runtime hx-get/post to respect base href
+fix: add / to footer fragment
+chore: update go version
 
 0.2.7 - 2025/10/02
 feat: allow account update via username
