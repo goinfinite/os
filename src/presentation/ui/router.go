@@ -200,7 +200,7 @@ func (router *Router) fragmentRoutes() {
 	footerPresenter := presenterFooter.NewFooterPresenter(
 		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
-	fragmentGroup.GET("/footer", footerPresenter.Handler)
+	fragmentGroup.GET("/footer/", footerPresenter.Handler)
 }
 
 func (router *Router) RegisterRoutes() {

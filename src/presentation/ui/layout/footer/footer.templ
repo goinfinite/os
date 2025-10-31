@@ -10,7 +10,7 @@ import (
 templ FooterSkeleton() {
 	<footer
 		id="footer"
-		hx-get="fragment/footer"
+		hx-get="fragment/footer/"
 		hx-trigger="load delay:500ms"
 		hx-target="this"
 		hx-swap="outerHTML transition:true"
@@ -212,7 +212,7 @@ templ Footer(
 ) {
 	<footer
 		id="footer"
-		hx-get="fragment/footer"
+		hx-get="fragment/footer/"
 		hx-trigger="every 20s"
 		hx-target="this"
 		hx-swap="outerHTML"
