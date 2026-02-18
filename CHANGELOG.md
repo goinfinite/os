@@ -1,6 +1,10 @@
 # Changelog
 
 ```log
+0.2.8 - 2026/02/XX
+fix: use installedServiceName for update dir
+chore: update go and deps
+
 0.2.7.1 - 2025/10/31
 fix: remove / from database and runtime hx-get/post to respect base href
 fix: add / to footer fragment
