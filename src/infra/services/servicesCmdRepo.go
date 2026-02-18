@@ -487,7 +487,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 	if installableServiceEntity.ExecUser != nil {
 		err = repo.updateDefaultDirectoriesPermissions(
-			installableServiceEntity.Name, *installableServiceEntity.ExecUser,
+			installedServiceName, *installableServiceEntity.ExecUser,
 		)
 		if err != nil {
 			return installedServiceName, err
