@@ -38,8 +38,8 @@ func NewSetupController(
 // @Param        createFirstAccount body dto.CreateAccount true "CreateFirstAccount"
 // @Success      201 {object} object{} "FirstAccountCreated"
 // @Router       /v1/setup/ [post]
-func (controller *SetupController) Setup(c echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(c)
+func (controller *SetupController) Setup(echoContext echo.Context) error {
+	requestBody, err := apiHelper.ReadRequestInputData(echoContext)
 	if err != nil {
 		return err
 	}
@@ -52,12 +52,12 @@ func (controller *SetupController) Setup(c echo.Context) error {
 
 	username, err := valueObject.NewUsername(requestBody["username"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
 	password, err := valueObject.NewPassword(requestBody["password"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
 	isSuperAdmin := false
@@ -68,7 +68,7 @@ func (controller *SetupController) Setup(c echo.Context) error {
 			requestBody["operatorIpAddress"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 		}
 	}
 
@@ -81,8 +81,8 @@ func (controller *SetupController) Setup(c echo.Context) error {
 		accountQueryRepo, accountCmdRepo, activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(c, http.StatusInternalServerError, err.Error())
+		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
 	}
 
-	return apiHelper.ResponseWrapper(c, http.StatusCreated, "FirstAccountCreated")
+	return apiHelper.ResponseWrapper(echoContext, http.StatusCreated, "FirstAccountCreated")
 }

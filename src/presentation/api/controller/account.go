@@ -4,6 +4,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -37,14 +38,15 @@ func NewAccountController(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadAccountsResponse
 // @Router       /v1/account/ [get]
-func (controller *AccountController) Read(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *AccountController) Read(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.accountLiaison.Read(requestInputData),
+		echoContext, controller.accountLiaison.Read(requestData),
 	)
 }
 
@@ -58,14 +60,15 @@ func (controller *AccountController) Read(c echo.Context) error {
 // @Param        createAccountDto 	  body    dto.CreateAccount  true  "All props are required."
 // @Success      201 {object} object{} "AccountCreated"
 // @Router       /v1/account/ [post]
-func (controller *AccountController) Create(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *AccountController) Create(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.accountLiaison.Create(requestInputData),
+		echoContext, controller.accountLiaison.Create(requestData),
 	)
 }
 
@@ -79,14 +82,15 @@ func (controller *AccountController) Create(c echo.Context) error {
 // @Param        updateDto 	  body dto.UpdateAccount  true   "Only id or username is required."
 // @Success      200 {object} object{} "'AccountUpdated' message or new API key in string format"
 // @Router       /v1/account/ [put]
-func (controller *AccountController) Update(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *AccountController) Update(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.accountLiaison.Update(requestInputData),
+		echoContext, controller.accountLiaison.Update(requestData),
 	)
 }
 
@@ -100,14 +104,15 @@ func (controller *AccountController) Update(c echo.Context) error {
 // @Param        accountId 	  path   string  true  "AccountId to delete."
 // @Success      200 {object} object{} "AccountDeleted"
 // @Router       /v1/account/{accountId}/ [delete]
-func (controller *AccountController) Delete(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *AccountController) Delete(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.accountLiaison.Delete(requestInputData),
+		echoContext, controller.accountLiaison.Delete(requestData),
 	)
 }
 
@@ -121,14 +126,15 @@ func (controller *AccountController) Delete(c echo.Context) error {
 // @Param        createSecureAccessPublicKey 	  body    dto.CreateSecureAccessPublicKey  true  "'name' is optional. Will only become required if there is no name in 'content'. If the 'name' is provided, it will overwrite the name in the 'content'."
 // @Success      201 {object} object{} "SecureAccessPublicKeyCreated"
 // @Router       /v1/account/secure-access-public-key/ [post]
-func (controller *AccountController) CreateSecureAccessPublicKey(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *AccountController) CreateSecureAccessPublicKey(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.accountLiaison.CreateSecureAccessPublicKey(requestInputData),
+		echoContext, controller.accountLiaison.CreateSecureAccessPublicKey(requestData),
 	)
 }
 
@@ -142,13 +148,14 @@ func (controller *AccountController) CreateSecureAccessPublicKey(c echo.Context)
 // @Param        secureAccessPublicKeyId 	  path   string  true  "SecureAccessPublicKeyId to delete."
 // @Success      200 {object} object{} "SecureAccessPublicKeyDeleted"
 // @Router       /v1/account/secure-access-public-key/{secureAccessPublicKeyId}/ [delete]
-func (controller *AccountController) DeleteSecureAccessPublicKey(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *AccountController) DeleteSecureAccessPublicKey(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.accountLiaison.DeleteSecureAccessPublicKey(requestInputData),
+		echoContext, controller.accountLiaison.DeleteSecureAccessPublicKey(requestData),
 	)
 }

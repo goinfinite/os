@@ -1,6 +1,7 @@
 package apiController
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -76,22 +77,23 @@ func (controller *ScheduledTaskController) parseTaskTags(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadScheduledTasksResponse
 // @Router       /v1/scheduled-task/ [get]
-func (controller *ScheduledTaskController) Read(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ScheduledTaskController) Read(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if _, exists := requestInputData["taskTags"]; exists {
-		taskTags, err := controller.parseTaskTags(requestInputData["taskTags"])
+	if _, exists := requestData["taskTags"]; exists {
+		taskTags, err := controller.parseTaskTags(requestData["taskTags"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 		}
-		requestInputData["taskTags"] = taskTags
+		requestData["taskTags"] = taskTags
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.scheduledTaskLiaison.Read(requestInputData),
+		echoContext, controller.scheduledTaskLiaison.Read(requestData),
 	)
 }
 
@@ -105,14 +107,15 @@ func (controller *ScheduledTaskController) Read(c echo.Context) error {
 // @Param        updateScheduledTaskDto 	  body dto.UpdateScheduledTask  true  "UpdateScheduledTask (Only id is required.)"
 // @Success      200 {object} object{} "ScheduledTaskUpdated"
 // @Router       /v1/scheduled-task/ [put]
-func (controller *ScheduledTaskController) Update(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ScheduledTaskController) Update(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.scheduledTaskLiaison.Update(requestInputData),
+		echoContext, controller.scheduledTaskLiaison.Update(requestData),
 	)
 }
 

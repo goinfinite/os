@@ -1,6 +1,7 @@
 package apiController
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -37,14 +38,15 @@ func NewRuntimeController(
 // @Param        hostname 	  path   string  true  "Hostname"
 // @Success      200 {object} entity.PhpConfigs
 // @Router       /v1/runtime/php/{hostname}/ [get]
-func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *RuntimeController) ReadPhpConfigs(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.runtimeLiaison.ReadPhpConfigs(requestInputData),
+		echoContext, controller.runtimeLiaison.ReadPhpConfigs(requestData),
 	)
 }
 
@@ -148,30 +150,31 @@ func (controller *RuntimeController) parsePhpSettings(rawPhpSettings any) (
 // @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"modules and settings are optional."
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /v1/runtime/php/{hostname}/ [put]
-func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if _, exists := requestInputData["modules"]; exists {
-		phpModules, err := controller.parsePhpModules(requestInputData["modules"])
+	if _, exists := requestData["modules"]; exists {
+		phpModules, err := controller.parsePhpModules(requestData["modules"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err)
 		}
-		requestInputData["modules"] = phpModules
+		requestData["modules"] = phpModules
 	}
 
-	if _, exists := requestInputData["settings"]; exists {
-		phpSettings, err := controller.parsePhpSettings(requestInputData["settings"])
+	if _, exists := requestData["settings"]; exists {
+		phpSettings, err := controller.parsePhpSettings(requestData["settings"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err)
 		}
-		requestInputData["settings"] = phpSettings
+		requestData["settings"] = phpSettings
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.runtimeLiaison.UpdatePhpConfigs(requestInputData),
+		echoContext, controller.runtimeLiaison.UpdatePhpConfigs(requestData),
 	)
 }
 
@@ -186,12 +189,12 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 // @Success      200 {object} dto.RunPhpCommandResponse
 // @Router       /v1/runtime/php/run/ [post]
 func (controller *RuntimeController) RunPhpCommand(echoContext echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(echoContext)
+	requestData, err := apiHelper.ReadRequestInputData(echoContext)
 	if err != nil {
 		return err
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		echoContext, controller.runtimeLiaison.RunPhpCommand(requestInputData),
+		echoContext, controller.runtimeLiaison.RunPhpCommand(requestData),
 	)
 }

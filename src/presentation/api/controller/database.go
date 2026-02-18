@@ -44,14 +44,15 @@ func NewDatabaseController(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadDatabasesResponse
 // @Router       /v1/database/{dbType}/ [get]
-func (controller *DatabaseController) Read(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *DatabaseController) Read(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.databaseLiaison.Read(requestInputData),
+		echoContext, controller.databaseLiaison.Read(requestData),
 	)
 }
 
@@ -66,14 +67,15 @@ func (controller *DatabaseController) Read(c echo.Context) error {
 // @Param        createDatabaseDto body dto.CreateDatabase true "All props are required."
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /v1/database/{dbType}/ [post]
-func (controller *DatabaseController) Create(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *DatabaseController) Create(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.databaseLiaison.Create(requestInputData),
+		echoContext, controller.databaseLiaison.Create(requestData),
 	)
 }
 
@@ -88,14 +90,15 @@ func (controller *DatabaseController) Create(c echo.Context) error {
 // @Param        dbName path string true "DatabaseName"
 // @Success      200 {object} object{} "DatabaseDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/ [delete]
-func (controller *DatabaseController) Delete(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *DatabaseController) Delete(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.databaseLiaison.Delete(requestInputData),
+		echoContext, controller.databaseLiaison.Delete(requestData),
 	)
 }
 
@@ -111,24 +114,25 @@ func (controller *DatabaseController) Delete(c echo.Context) error {
 // @Param        createDatabaseUserDto body dto.CreateDatabaseUser true "privileges is optional. When not provided, privileges will be 'ALL'."
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /v1/database/{dbType}/{dbName}/user/ [post]
-func (controller *DatabaseController) CreateUser(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *DatabaseController) CreateUser(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if requestInputData["privileges"] != nil {
-		if requestInputData["privileges"] == "" {
-			delete(requestInputData, "privileges")
+	if requestData["privileges"] != nil {
+		if requestData["privileges"] == "" {
+			delete(requestData, "privileges")
 		}
 
-		requestInputData["privileges"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["privileges"], valueObject.NewDatabasePrivilege,
+		requestData["privileges"] = tkPresentation.StringSliceValueObjectParser(
+			requestData["privileges"], valueObject.NewDatabasePrivilege,
 		)
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.databaseLiaison.CreateUser(requestInputData),
+		echoContext, controller.databaseLiaison.CreateUser(requestData),
 	)
 }
 
@@ -144,13 +148,14 @@ func (controller *DatabaseController) CreateUser(c echo.Context) error {
 // @Param        dbUser path string true "DatabaseUsername to delete."
 // @Success      200 {object} object{} "DatabaseUserDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
-func (controller *DatabaseController) DeleteUser(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *DatabaseController) DeleteUser(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.databaseLiaison.DeleteUser(requestInputData),
+		echoContext, controller.databaseLiaison.DeleteUser(requestData),
 	)
 }

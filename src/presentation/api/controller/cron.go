@@ -1,6 +1,7 @@
 package apiController
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
@@ -35,13 +36,14 @@ func NewCronController(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadCronsResponse
 // @Router       /v1/cron/ [get]
-func (controller *CronController) Read(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *CronController) Read(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(c, controller.cronLiaison.Read(requestInputData))
+	return apiHelper.LiaisonResponseWrapper(echoContext, controller.cronLiaison.Read(requestData))
 }
 
 // CreateCron    godoc
@@ -54,14 +56,15 @@ func (controller *CronController) Read(c echo.Context) error {
 // @Param        createCronDto 	  body    dto.CreateCron  true  "comment is optional."
 // @Success      201 {object} object{} "CronCreated"
 // @Router       /v1/cron/ [post]
-func (controller *CronController) Create(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *CronController) Create(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.cronLiaison.Create(requestInputData),
+		echoContext, controller.cronLiaison.Create(requestData),
 	)
 }
 
@@ -75,14 +78,15 @@ func (controller *CronController) Create(c echo.Context) error {
 // @Param        updateCronDto 	  body dto.UpdateCron  true  "Only id is required."
 // @Success      200 {object} object{} "CronUpdated message"
 // @Router       /v1/cron/ [put]
-func (controller *CronController) Update(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *CronController) Update(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.cronLiaison.Update(requestInputData),
+		echoContext, controller.cronLiaison.Update(requestData),
 	)
 }
 
@@ -96,13 +100,14 @@ func (controller *CronController) Update(c echo.Context) error {
 // @Param        cronId 	  path   string  true  "CronId to delete."
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /v1/cron/{cronId}/ [delete]
-func (controller *CronController) Delete(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *CronController) Delete(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	return apiHelper.LiaisonResponseWrapper(
-		c, controller.cronLiaison.Delete(requestInputData),
+		echoContext, controller.cronLiaison.Delete(requestData),
 	)
 }

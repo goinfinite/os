@@ -3,6 +3,7 @@
 ```log
 0.2.8 - 2026/02/XX
 fix: use installedServiceName for update dir
+fix: use tk input reader for api
 chore: update go and deps
 
 0.2.7.1 - 2025/10/31
