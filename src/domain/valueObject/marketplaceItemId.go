@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type MarketplaceItemId uint16
@@ -12,7 +12,7 @@ type MarketplaceItemId uint16
 func NewMarketplaceItemId(value interface{}) (
 	marketplaceItemId MarketplaceItemId, err error,
 ) {
-	uintValue, err := voHelper.InterfaceToUint16(value)
+	uintValue, err := tkVoUtil.InterfaceToUint16(value)
 	if err != nil {
 		return marketplaceItemId, errors.New("MarketplaceItemIdMustBeUint16")
 	}

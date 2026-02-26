@@ -7,13 +7,13 @@ import (
 	"encoding/pem"
 	"errors"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type SslPrivateKey string
 
 func NewSslPrivateKey(value interface{}) (privateKey SslPrivateKey, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return privateKey, errors.New("SslPrivateKeyMustBeString")
 	}

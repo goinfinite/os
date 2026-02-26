@@ -1,21 +1,24 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CreateCron struct {
 	Schedule          valueObject.CronSchedule `json:"schedule"`
-	Command           valueObject.UnixCommand  `json:"command"`
+	Command           tkValueObject.UnixCommand  `json:"command"`
 	Comment           *valueObject.CronComment `json:"comment"`
-	OperatorAccountId valueObject.AccountId    `json:"-"`
-	OperatorIpAddress valueObject.IpAddress    `json:"-"`
+	OperatorAccountId tkValueObject.AccountId    `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress    `json:"-"`
 }
 
 func NewCreateCron(
 	schedule valueObject.CronSchedule,
-	command valueObject.UnixCommand,
+	command tkValueObject.UnixCommand,
 	comment *valueObject.CronComment,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CreateCron {
 	return CreateCron{
 		Schedule:          schedule,

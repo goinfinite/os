@@ -1,12 +1,14 @@
 package valueObject
 
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+
 type StorageInfo struct {
-	Total     Byte `json:"total"`
-	Available Byte `json:"available"`
-	Used      Byte `json:"used"`
+	Total     tkValueObject.Byte `json:"total"`
+	Available tkValueObject.Byte `json:"available"`
+	Used      tkValueObject.Byte `json:"used"`
 }
 
-func NewStorageInfo(total, available, used Byte) StorageInfo {
+func NewStorageInfo(total, available, used tkValueObject.Byte) StorageInfo {
 	return StorageInfo{
 		Total:     total,
 		Available: available,

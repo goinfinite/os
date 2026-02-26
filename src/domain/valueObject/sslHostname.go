@@ -4,18 +4,19 @@ import (
 	"errors"
 	"net"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type SslHostname string
 
 func NewSslHostname(value interface{}) (sslHostname SslHostname, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return sslHostname, errors.New("SslHostnameMustBeString")
 	}
 
-	_, err = NewFqdn(stringValue)
+	_, err = tkValueObject.NewFqdn(stringValue)
 	if err == nil {
 		return SslHostname(stringValue), nil
 	}

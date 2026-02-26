@@ -1,16 +1,16 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type MoveUnixFile struct {
-	SourcePath      valueObject.UnixFilePath `json:"sourcePath"`
-	DestinationPath valueObject.UnixFilePath `json:"destinationPath"`
-	ShouldOverwrite bool                     `json:"shouldOverwrite"`
+	SourcePath      tkValueObject.UnixAbsoluteFilePath `json:"sourcePath"`
+	DestinationPath tkValueObject.UnixAbsoluteFilePath `json:"destinationPath"`
+	ShouldOverwrite bool                               `json:"shouldOverwrite"`
 }
 
 func NewMoveUnixFile(
-	sourcePath valueObject.UnixFilePath,
-	destinationPath valueObject.UnixFilePath,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
+	destinationPath tkValueObject.UnixAbsoluteFilePath,
 	shouldOverwrite bool,
 ) MoveUnixFile {
 	return MoveUnixFile{

@@ -2,12 +2,12 @@ package dto
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type ReadFilesRequest struct {
-	SourcePath            valueObject.UnixFilePath `json:"sourcePath"`
-	ShouldIncludeFileTree *bool                    `json:"shouldIncludeFileTree,omitempty"`
+	SourcePath            tkValueObject.UnixAbsoluteFilePath `json:"sourcePath"`
+	ShouldIncludeFileTree *bool                              `json:"shouldIncludeFileTree,omitempty"`
 }
 
 type ReadFilesResponse struct {

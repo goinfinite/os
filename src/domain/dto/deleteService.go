@@ -1,17 +1,20 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type DeleteService struct {
 	Name              valueObject.ServiceName `json:"name"`
-	OperatorAccountId valueObject.AccountId   `json:"-"`
-	OperatorIpAddress valueObject.IpAddress   `json:"-"`
+	OperatorAccountId tkValueObject.AccountId `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress `json:"-"`
 }
 
 func NewDeleteService(
 	name valueObject.ServiceName,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) DeleteService {
 	return DeleteService{
 		Name:              name,

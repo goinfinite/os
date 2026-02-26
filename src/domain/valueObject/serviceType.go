@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type ServiceType string
@@ -25,7 +25,7 @@ var ValidServiceTypes = []string{
 }
 
 func NewServiceType(value interface{}) (serviceType ServiceType, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceType, errors.New("ServiceTypeValueMustBeString")
 	}

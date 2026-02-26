@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type MappingMatchPattern string
@@ -19,7 +19,7 @@ const (
 func NewMappingMatchPattern(value interface{}) (
 	matchPattern MappingMatchPattern, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return matchPattern, errors.New("MappingMatchPatternMustBeString")
 	}

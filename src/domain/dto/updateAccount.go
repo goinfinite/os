@@ -1,24 +1,27 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type UpdateAccount struct {
-	AccountId          *valueObject.AccountId `json:"accountId"`
-	AccountUsername    *valueObject.Username  `json:"accountUsername"`
-	Password           *valueObject.Password  `json:"password"`
-	IsSuperAdmin       *bool                  `json:"isSuperAdmin"`
-	ShouldUpdateApiKey *bool                  `json:"shouldUpdateApiKey"`
-	OperatorAccountId  valueObject.AccountId  `json:"-"`
-	OperatorIpAddress  valueObject.IpAddress  `json:"-"`
+	AccountId          *tkValueObject.AccountId `json:"accountId"`
+	AccountUsername    *valueObject.Username    `json:"accountUsername"`
+	Password           *tkValueObject.Password  `json:"password"`
+	IsSuperAdmin       *bool                    `json:"isSuperAdmin"`
+	ShouldUpdateApiKey *bool                    `json:"shouldUpdateApiKey"`
+	OperatorAccountId  tkValueObject.AccountId  `json:"-"`
+	OperatorIpAddress  tkValueObject.IpAddress  `json:"-"`
 }
 
 func NewUpdateAccount(
-	accountId *valueObject.AccountId,
+	accountId *tkValueObject.AccountId,
 	accountUsername *valueObject.Username,
-	password *valueObject.Password,
+	password *tkValueObject.Password,
 	isSuperAdmin, shouldUpdateApiKey *bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) UpdateAccount {
 	return UpdateAccount{
 		AccountId:          accountId,

@@ -1,6 +1,9 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type UpdateMapping struct {
 	Id                            valueObject.MappingId              `json:"id"`
@@ -8,12 +11,12 @@ type UpdateMapping struct {
 	MatchPattern                  *valueObject.MappingMatchPattern   `json:"matchPattern"`
 	TargetType                    *valueObject.MappingTargetType     `json:"targetType"`
 	TargetValue                   *valueObject.MappingTargetValue    `json:"targetValue"`
-	TargetHttpResponseCode        *valueObject.HttpResponseCode      `json:"targetHttpResponseCode"`
+	TargetHttpResponseCode        *tkValueObject.HttpStatusCode      `json:"targetHttpResponseCode"`
 	ShouldUpgradeInsecureRequests *bool                              `json:"shouldUpgradeInsecureRequests"`
 	MappingSecurityRuleId         *valueObject.MappingSecurityRuleId `json:"mappingSecurityRuleId"`
 	ClearableFields               []string                           `json:"-"`
-	OperatorAccountId             valueObject.AccountId              `json:"-"`
-	OperatorIpAddress             valueObject.IpAddress              `json:"-"`
+	OperatorAccountId             tkValueObject.AccountId            `json:"-"`
+	OperatorIpAddress             tkValueObject.IpAddress            `json:"-"`
 }
 
 func NewUpdateMapping(
@@ -22,12 +25,12 @@ func NewUpdateMapping(
 	matchPattern *valueObject.MappingMatchPattern,
 	targetType *valueObject.MappingTargetType,
 	targetValue *valueObject.MappingTargetValue,
-	targetHttpResponseCode *valueObject.HttpResponseCode,
+	targetHttpResponseCode *tkValueObject.HttpStatusCode,
 	shouldUpgradeInsecureRequests *bool,
 	mappingSecurityRuleId *valueObject.MappingSecurityRuleId,
 	clearableFields []string,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) UpdateMapping {
 	return UpdateMapping{
 		Id:                            id,

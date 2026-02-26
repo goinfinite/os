@@ -1,21 +1,24 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CreateUnixFile struct {
-	FilePath          valueObject.UnixFilePath        `json:"filePath"`
-	Permissions       valueObject.UnixFilePermissions `json:"permissions"`
-	MimeType          valueObject.MimeType            `json:"mimeType"`
-	OperatorAccountId valueObject.AccountId           `json:"-"`
-	OperatorIpAddress valueObject.IpAddress           `json:"-"`
+	FilePath          tkValueObject.UnixAbsoluteFilePath `json:"filePath"`
+	Permissions       valueObject.UnixFilePermissions    `json:"permissions"`
+	MimeType          tkValueObject.MimeType             `json:"mimeType"`
+	OperatorAccountId tkValueObject.AccountId            `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress            `json:"-"`
 }
 
 func NewCreateUnixFile(
-	filePath valueObject.UnixFilePath,
+	filePath tkValueObject.UnixAbsoluteFilePath,
 	permissionsPtr *valueObject.UnixFilePermissions,
-	mimeType valueObject.MimeType,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	mimeType tkValueObject.MimeType,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CreateUnixFile {
 	permissions := valueObject.NewUnixFileDefaultPermissions()
 	if mimeType.IsDir() {

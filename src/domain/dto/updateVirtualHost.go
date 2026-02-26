@@ -1,19 +1,19 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type UpdateVirtualHost struct {
-	Hostname          valueObject.Fqdn      `json:"hostname"`
-	IsWildcard        *bool                 `json:"isWildcard"`
-	OperatorAccountId valueObject.AccountId `json:"-"`
-	OperatorIpAddress valueObject.IpAddress `json:"-"`
+	Hostname          tkValueObject.Fqdn      `json:"hostname"`
+	IsWildcard        *bool                   `json:"isWildcard"`
+	OperatorAccountId tkValueObject.AccountId `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress `json:"-"`
 }
 
 func NewUpdateVirtualHost(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	isWildcard *bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) UpdateVirtualHost {
 	return UpdateVirtualHost{
 		Hostname:          hostname,

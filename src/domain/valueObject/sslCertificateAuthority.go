@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const sslCertificateAuthorityRegex string = `^\w{1,3}[\w\.\,\'\(\)\ \-]{0,100}$`
@@ -14,7 +14,7 @@ type SslCertificateAuthority string
 func NewSslCertificateAuthority(value interface{}) (
 	certificateAuthority SslCertificateAuthority, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return certificateAuthority, errors.New("SslCertificateAuthorityMustBeString")
 	}

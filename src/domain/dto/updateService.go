@@ -1,32 +1,35 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type UpdateService struct {
-	Name              valueObject.ServiceName     `json:"name"`
-	Type              *valueObject.ServiceType    `json:"type"`
-	Version           *valueObject.ServiceVersion `json:"version"`
-	Status            *valueObject.ServiceStatus  `json:"status"`
-	StartCmd          *valueObject.UnixCommand    `json:"startCmd"`
-	Envs              []valueObject.ServiceEnv    `json:"envs"`
-	PortBindings      []valueObject.PortBinding   `json:"portBindings"`
-	StopCmdSteps      []valueObject.UnixCommand   `json:"stopCmdSteps"`
-	PreStartCmdSteps  []valueObject.UnixCommand   `json:"preStartCmdSteps"`
-	PostStartCmdSteps []valueObject.UnixCommand   `json:"postStartCmdSteps"`
-	PreStopCmdSteps   []valueObject.UnixCommand   `json:"preStopCmdSteps"`
-	PostStopCmdSteps  []valueObject.UnixCommand   `json:"postStopCmdSteps"`
-	ExecUser          *valueObject.UnixUsername   `json:"execUser"`
-	WorkingDirectory  *valueObject.UnixFilePath   `json:"workingDirectory"`
-	StartupFile       *valueObject.UnixFilePath   `json:"startupFile"`
-	AutoStart         *bool                       `json:"autoStart"`
-	AutoRestart       *bool                       `json:"autoRestart"`
-	TimeoutStartSecs  *uint                       `json:"timeoutStartSecs"`
-	MaxStartRetries   *uint                       `json:"maxStartRetries"`
-	LogOutputPath     *valueObject.UnixFilePath   `json:"logOutputPath"`
-	LogErrorPath      *valueObject.UnixFilePath   `json:"logErrorPath"`
-	AvatarUrl         *valueObject.Url            `json:"avatarUrl"`
-	OperatorAccountId valueObject.AccountId       `json:"-"`
-	OperatorIpAddress valueObject.IpAddress       `json:"-"`
+	Name              valueObject.ServiceName              `json:"name"`
+	Type              *valueObject.ServiceType             `json:"type"`
+	Version           *valueObject.ServiceVersion          `json:"version"`
+	Status            *valueObject.ServiceStatus           `json:"status"`
+	StartCmd          *tkValueObject.UnixCommand           `json:"startCmd"`
+	Envs              []valueObject.ServiceEnv             `json:"envs"`
+	PortBindings      []valueObject.PortBinding            `json:"portBindings"`
+	StopCmdSteps      []tkValueObject.UnixCommand          `json:"stopCmdSteps"`
+	PreStartCmdSteps  []tkValueObject.UnixCommand          `json:"preStartCmdSteps"`
+	PostStartCmdSteps []tkValueObject.UnixCommand          `json:"postStartCmdSteps"`
+	PreStopCmdSteps   []tkValueObject.UnixCommand          `json:"preStopCmdSteps"`
+	PostStopCmdSteps  []tkValueObject.UnixCommand          `json:"postStopCmdSteps"`
+	ExecUser          *tkValueObject.UnixUsername           `json:"execUser"`
+	WorkingDirectory  *tkValueObject.UnixAbsoluteFilePath  `json:"workingDirectory"`
+	StartupFile       *tkValueObject.UnixAbsoluteFilePath  `json:"startupFile"`
+	AutoStart         *bool                                `json:"autoStart"`
+	AutoRestart       *bool                                `json:"autoRestart"`
+	TimeoutStartSecs  *uint                                `json:"timeoutStartSecs"`
+	MaxStartRetries   *uint                                `json:"maxStartRetries"`
+	LogOutputPath     *tkValueObject.UnixAbsoluteFilePath  `json:"logOutputPath"`
+	LogErrorPath      *tkValueObject.UnixAbsoluteFilePath  `json:"logErrorPath"`
+	AvatarUrl         *tkValueObject.Url                   `json:"avatarUrl"`
+	OperatorAccountId tkValueObject.AccountId              `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress              `json:"-"`
 }
 
 func NewUpdateService(
@@ -34,18 +37,18 @@ func NewUpdateService(
 	svcType *valueObject.ServiceType,
 	version *valueObject.ServiceVersion,
 	status *valueObject.ServiceStatus,
-	startCmd *valueObject.UnixCommand,
+	startCmd *tkValueObject.UnixCommand,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
-	execUser *valueObject.UnixUsername,
-	workingDirectory, startupFile *valueObject.UnixFilePath,
+	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []tkValueObject.UnixCommand,
+	execUser *tkValueObject.UnixUsername,
+	workingDirectory, startupFile *tkValueObject.UnixAbsoluteFilePath,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
-	logOutputPath, logErrorPath *valueObject.UnixFilePath,
-	avatarUrl *valueObject.Url,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	logOutputPath, logErrorPath *tkValueObject.UnixAbsoluteFilePath,
+	avatarUrl *tkValueObject.Url,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) UpdateService {
 	return UpdateService{
 		Name:              name,

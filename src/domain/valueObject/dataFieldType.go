@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type DataFieldType string
@@ -18,7 +18,7 @@ var validDataFieldTypes = []string{
 func NewDataFieldType(value interface{}) (
 	dataFieldType DataFieldType, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return dataFieldType, errors.New("DataFieldTypeMustBeString")
 	}

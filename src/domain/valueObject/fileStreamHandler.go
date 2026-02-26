@@ -3,11 +3,13 @@ package valueObject
 import (
 	"errors"
 	"mime/multipart"
+
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type FileStreamHandler struct {
-	Name UnixFileName
-	Size Byte
+	Name tkValueObject.UnixFileName
+	Size tkValueObject.Byte
 	Open func() (multipart.File, error)
 }
 
@@ -19,7 +21,7 @@ func NewFileStreamHandler(value *multipart.FileHeader) (
 		return fileStreamHandler, err
 	}
 
-	fileSize, err := NewByte(value.Size)
+	fileSize, err := tkValueObject.NewByte(value.Size)
 	if err != nil {
 		return fileStreamHandler, errors.New("InvalidFileSize")
 	}

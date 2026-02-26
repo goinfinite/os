@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const dataFieldLabelRegex string = `^\w[\w- ]{1,127}\w$`
@@ -14,7 +14,7 @@ type DataFieldLabel string
 func NewDataFieldLabel(value interface{}) (
 	dataFieldLabel DataFieldLabel, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return dataFieldLabel, errors.New("DataFieldLabelMustBeString")
 	}

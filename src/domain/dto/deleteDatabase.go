@@ -1,17 +1,20 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type DeleteDatabase struct {
 	DatabaseName      valueObject.DatabaseName `json:"dbName"`
-	OperatorAccountId valueObject.AccountId    `json:"-"`
-	OperatorIpAddress valueObject.IpAddress    `json:"-"`
+	OperatorAccountId tkValueObject.AccountId  `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress  `json:"-"`
 }
 
 func NewDeleteDatabase(
 	dbName valueObject.DatabaseName,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) DeleteDatabase {
 	return DeleteDatabase{
 		DatabaseName:      dbName,

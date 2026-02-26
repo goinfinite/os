@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const SecureAccessPublicKeyFingerprintRegex string = `^SHA256:[\w\/\+\=]{43}$`
@@ -14,7 +14,7 @@ type SecureAccessPublicKeyFingerprint string
 func NewSecureAccessPublicKeyFingerprint(
 	value interface{},
 ) (keyFingerprint SecureAccessPublicKeyFingerprint, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return keyFingerprint, errors.New("SecureAccessPublicKeyFingerprintMustBeString")
 	}

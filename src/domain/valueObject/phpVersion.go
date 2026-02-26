@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const phpVersionRegex string = `^\d\.\d$`
@@ -12,7 +12,7 @@ const phpVersionRegex string = `^\d\.\d$`
 type PhpVersion string
 
 func NewPhpVersion(value interface{}) (phpVersion PhpVersion, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return phpVersion, errors.New("PhpVersionMustBeString")
 	}

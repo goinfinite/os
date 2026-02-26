@@ -3,16 +3,18 @@ package dto
 import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type ReadAccountsRequest struct {
-	Pagination                          Pagination             `json:"pagination"`
-	AccountId                           *valueObject.AccountId `json:"id,omitempty"`
-	AccountUsername                     *valueObject.Username  `json:"username,omitempty"`
-	ShouldIncludeSecureAccessPublicKeys *bool                  `json:"shouldIncludeSecureAccessPublicKeys,omitempty"`
+	Pagination                          tkDto.Pagination        `json:"pagination"`
+	AccountId                           *tkValueObject.AccountId `json:"id,omitempty"`
+	AccountUsername                     *valueObject.Username   `json:"username,omitempty"`
+	ShouldIncludeSecureAccessPublicKeys *bool                   `json:"shouldIncludeSecureAccessPublicKeys,omitempty"`
 }
 
 type ReadAccountsResponse struct {
-	Pagination Pagination       `json:"pagination"`
+	Pagination tkDto.Pagination `json:"pagination"`
 	Accounts   []entity.Account `json:"accounts"`
 }

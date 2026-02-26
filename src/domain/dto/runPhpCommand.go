@@ -1,21 +1,24 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type RunPhpCommandRequest struct {
-	Hostname          valueObject.Fqdn        `json:"hostname"`
-	Command           valueObject.UnixCommand `json:"command"`
-	TimeoutSecs       *uint64                 `json:"timeoutSecs"`
-	OperatorAccountId valueObject.AccountId   `json:"-"`
-	OperatorIpAddress valueObject.IpAddress   `json:"-"`
+	Hostname          tkValueObject.Fqdn        `json:"hostname"`
+	Command           tkValueObject.UnixCommand `json:"command"`
+	TimeoutSecs       *uint64                   `json:"timeoutSecs"`
+	OperatorAccountId tkValueObject.AccountId   `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress   `json:"-"`
 }
 
 func NewRunPhpCommandRequest(
-	hostname valueObject.Fqdn,
-	command valueObject.UnixCommand,
+	hostname tkValueObject.Fqdn,
+	command tkValueObject.UnixCommand,
 	timeoutSecs *uint64,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) RunPhpCommandRequest {
 	return RunPhpCommandRequest{
 		Hostname:          hostname,

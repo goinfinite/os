@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const databaseNameRegex string = `^\w[\w-]{1,30}\w$`
@@ -12,7 +12,7 @@ const databaseNameRegex string = `^\w[\w-]{1,30}\w$`
 type DatabaseName string
 
 func NewDatabaseName(value interface{}) (dbName DatabaseName, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return dbName, errors.New("DatabaseNameMustBeString")
 	}

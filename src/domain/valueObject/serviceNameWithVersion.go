@@ -5,7 +5,7 @@ import (
 	"errors"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type ServiceNameWithVersion struct {
@@ -25,7 +25,7 @@ func NewServiceNameWithVersion(
 func NewServiceNameWithVersionFromString(value interface{}) (
 	serviceNameWithVersion ServiceNameWithVersion, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceNameWithVersion, errors.New("ServiceNameWithVersionMustBeString")
 	}

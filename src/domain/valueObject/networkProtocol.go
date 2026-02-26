@@ -1,35 +1,9 @@
 package valueObject
 
-import (
-	"errors"
-	"slices"
-	"strings"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
-)
-
-type NetworkProtocol string
+var NewNetworkProtocol = tkValueObject.NewNetworkProtocol
 
 var ValidNetworkProtocols = []string{
 	"http", "https", "ws", "wss", "grpc", "grpcs", "tcp", "udp",
-}
-
-func NewNetworkProtocol(value interface{}) (
-	networkProtocol NetworkProtocol, err error,
-) {
-	stringValue, err := voHelper.InterfaceToString(value)
-	if err != nil {
-		return networkProtocol, errors.New("NetworkProtocolMustBeString")
-	}
-	stringValue = strings.ToLower(stringValue)
-
-	if !slices.Contains(ValidNetworkProtocols, stringValue) {
-		return networkProtocol, errors.New("InvalidNetworkProtocol")
-	}
-
-	return NetworkProtocol(stringValue), nil
-}
-
-func (vo NetworkProtocol) String() string {
-	return string(vo)
 }

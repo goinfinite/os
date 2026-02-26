@@ -1,19 +1,19 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type ExtractUnixFiles struct {
-	SourcePath        valueObject.UnixFilePath `json:"sourcePath"`
-	DestinationPath   valueObject.UnixFilePath `json:"destinationPath"`
-	OperatorAccountId valueObject.AccountId    `json:"-"`
-	OperatorIpAddress valueObject.IpAddress    `json:"-"`
+	SourcePath        tkValueObject.UnixAbsoluteFilePath `json:"sourcePath"`
+	DestinationPath   tkValueObject.UnixAbsoluteFilePath `json:"destinationPath"`
+	OperatorAccountId tkValueObject.AccountId            `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress            `json:"-"`
 }
 
 func NewExtractUnixFiles(
-	sourcePath valueObject.UnixFilePath,
-	destinationPath valueObject.UnixFilePath,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
+	destinationPath tkValueObject.UnixAbsoluteFilePath,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) ExtractUnixFiles {
 	return ExtractUnixFiles{
 		SourcePath:        sourcePath,

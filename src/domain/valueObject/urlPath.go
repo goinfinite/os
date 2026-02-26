@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const urlPathRegex string = `^(\/|\/\w{1,256}[\w\/\.-]{0,256})$`
@@ -13,7 +13,7 @@ const urlPathRegex string = `^(\/|\/\w{1,256}[\w\/\.-]{0,256})$`
 type UrlPath string
 
 func NewUrlPath(value interface{}) (urlPath UrlPath, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return urlPath, errors.New("UrlPathValueMustBeString")
 	}

@@ -1,19 +1,19 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type DeleteUnixFiles struct {
-	SourcePaths       []valueObject.UnixFilePath `json:"sourcePaths"`
-	HardDelete        bool                       `json:"hardDelete"`
-	OperatorAccountId valueObject.AccountId      `json:"-"`
-	OperatorIpAddress valueObject.IpAddress      `json:"-"`
+	SourcePaths       []tkValueObject.UnixAbsoluteFilePath `json:"sourcePaths"`
+	HardDelete        bool                                 `json:"hardDelete"`
+	OperatorAccountId tkValueObject.AccountId              `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress              `json:"-"`
 }
 
 func NewDeleteUnixFiles(
-	sourcePaths []valueObject.UnixFilePath,
+	sourcePaths []tkValueObject.UnixAbsoluteFilePath,
 	hardDelete bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) DeleteUnixFiles {
 	return DeleteUnixFiles{
 		SourcePaths:       sourcePaths,

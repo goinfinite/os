@@ -1,12 +1,14 @@
 package valueObject
 
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+
 type UpdateProcessFailure struct {
-	FilePath UnixFilePath  `json:"filePath"`
-	Reason   FailureReason `json:"reason"`
+	FilePath tkValueObject.UnixAbsoluteFilePath `json:"filePath"`
+	Reason   FailureReason                      `json:"reason"`
 }
 
 func NewUpdateProcessFailure(
-	filePath UnixFilePath,
+	filePath tkValueObject.UnixAbsoluteFilePath,
 	reason FailureReason,
 ) UpdateProcessFailure {
 	return UpdateProcessFailure{

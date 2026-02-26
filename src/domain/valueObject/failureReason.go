@@ -3,13 +3,13 @@ package valueObject
 import (
 	"errors"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type FailureReason string
 
 func NewFailureReason(value interface{}) (failureReason FailureReason, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return failureReason, errors.New("FailureReasonMustBeString")
 	}

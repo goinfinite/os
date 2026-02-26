@@ -1,21 +1,21 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type CopyUnixFile struct {
-	SourcePath        valueObject.UnixFilePath `json:"sourcePath"`
-	DestinationPath   valueObject.UnixFilePath `json:"destinationPath"`
-	ShouldOverwrite   bool                     `json:"shouldOverwrite"`
-	OperatorAccountId valueObject.AccountId    `json:"-"`
-	OperatorIpAddress valueObject.IpAddress    `json:"-"`
+	SourcePath        tkValueObject.UnixAbsoluteFilePath `json:"sourcePath"`
+	DestinationPath   tkValueObject.UnixAbsoluteFilePath `json:"destinationPath"`
+	ShouldOverwrite   bool                               `json:"shouldOverwrite"`
+	OperatorAccountId tkValueObject.AccountId            `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress            `json:"-"`
 }
 
 func NewCopyUnixFile(
-	sourcePath valueObject.UnixFilePath,
-	destinationPath valueObject.UnixFilePath,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
+	destinationPath tkValueObject.UnixAbsoluteFilePath,
 	shouldOverwrite bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CopyUnixFile {
 	return CopyUnixFile{
 		SourcePath:        sourcePath,

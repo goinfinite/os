@@ -2,6 +2,8 @@ package valueObject
 
 import (
 	"errors"
+
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type MappingTargetValue string
@@ -11,7 +13,7 @@ func NewMappingTargetValue(
 ) (mappingTargetValue MappingTargetValue, err error) {
 	switch targetType.String() {
 	case "url":
-		targetUrl, err := NewUrl(value)
+		targetUrl, err := tkValueObject.NewUrl(value)
 		if err == nil {
 			return MappingTargetValue(targetUrl.String()), nil
 		}
@@ -21,7 +23,7 @@ func NewMappingTargetValue(
 			return MappingTargetValue(targetServiceName.String()), nil
 		}
 	case "response-code":
-		targetHttpResponseCode, err := NewHttpResponseCode(value)
+		targetHttpResponseCode, err := tkValueObject.NewHttpStatusCode(value)
 		if err == nil {
 			return MappingTargetValue(
 				targetHttpResponseCode.String(),
