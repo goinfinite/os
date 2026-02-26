@@ -2,12 +2,12 @@ package repository
 
 import (
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type AuthQueryRepo interface {
 	IsLoginValid(createDto dto.CreateSessionToken) bool
 	ReadAccessTokenDetails(
-		token valueObject.AccessTokenStr,
+		token tkValueObject.AccessTokenValue,
 	) (dto.AccessTokenDetails, error)
 }
