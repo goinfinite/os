@@ -4,8 +4,8 @@ import (
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestRuntimeQueryRepo(t *testing.T) {
@@ -32,7 +32,7 @@ func TestRuntimeQueryRepo(t *testing.T) {
 			t.Errorf("PrimaryVirtualHostNotFound")
 		}
 
-		hostname, _ := valueObject.NewFqdn(primaryVhost.String())
+		hostname, _ := tkValueObject.NewFqdn(primaryVhost.String())
 		phpConfigs, err := repo.ReadPhpConfigs(hostname)
 
 		if err != nil {

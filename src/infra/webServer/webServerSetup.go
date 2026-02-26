@@ -16,6 +16,7 @@ import (
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type WebServerSetup struct {
@@ -33,11 +34,11 @@ func NewWebServerSetup(
 	}
 }
 
-func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
+func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal tkValueObject.Byte) error {
 	log.Print("UpdatingMaxPhpChildProcesses...")
 
-	maxChildProcesses := int64(300)
-	childProcessPerGb := int64(5)
+	maxChildProcesses := uint64(300)
+	childProcessPerGb := uint64(5)
 
 	memoryInGb := memoryTotal.ToGiB()
 	desiredChildProcesses := memoryInGb * childProcessPerGb
@@ -45,7 +46,7 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byt
 		desiredChildProcesses = maxChildProcesses
 	}
 
-	desiredChildProcessesStr := strconv.FormatInt(desiredChildProcesses, 10)
+	desiredChildProcessesStr := strconv.FormatUint(desiredChildProcesses, 10)
 	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
 		Command: "sed",
 		Args: []string{
@@ -108,7 +109,7 @@ func (ws *WebServerSetup) FirstSetup() {
 		log.Fatal("PkiConfDirNotFound")
 	}
 
-	aliasesHostnames := []valueObject.Fqdn{}
+	aliasesHostnames := []tkValueObject.Fqdn{}
 	err = infraHelper.CreateSelfSignedSsl(
 		pkiConfDir, primaryVirtualHostHostname, aliasesHostnames,
 	)
@@ -137,7 +138,7 @@ func (ws *WebServerSetup) FirstSetup() {
 	updateServiceDto := dto.NewUpdateService(
 		nginxServiceName, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil, nil,
-		valueObject.AccountIdSystem, valueObject.IpAddressSystem,
+		tkValueObject.AccountIdSystem, tkValueObject.IpAddressLocal,
 	)
 	err = servicesCmdRepo.Update(updateServiceDto)
 	if err != nil {

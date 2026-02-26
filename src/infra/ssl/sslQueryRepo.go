@@ -13,6 +13,8 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type SslQueryRepo struct{}
@@ -61,9 +63,9 @@ func (repo *SslQueryRepo) sslCertificatesFactory(
 }
 
 func (repo *SslQueryRepo) sslPairFactory(
-	crtFilePath valueObject.UnixFilePath,
+	crtFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (sslPairEntity entity.SslPair, err error) {
-	crtKeyFilePath := crtFilePath.ReadWithoutExtension().String() + ".key"
+	crtKeyFilePath := crtFilePath.ReadWithoutExtension(false).String() + ".key"
 	crtKeyContentStr, err := infraHelper.ReadFileContent(crtKeyFilePath)
 	if err != nil {
 		return sslPairEntity, errors.New("OpenCertKeyFileError: " + err.Error())
@@ -101,14 +103,14 @@ func (repo *SslQueryRepo) sslPairFactory(
 		return sslPairEntity, err
 	}
 
-	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension()
-	virtualHostHostname, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
+	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension(false)
+	virtualHostHostname, err := tkValueObject.NewFqdn(crtFileNameWithoutExt.String())
 	if err != nil {
 		if mainCert.CommonName == nil {
 			return sslPairEntity, errors.New("VirtualHostHostnameError: " + err.Error())
 		}
 
-		mainCertSslHostname, err := valueObject.NewFqdn(mainCert.CommonName.String())
+		mainCertSslHostname, err := tkValueObject.NewFqdn(mainCert.CommonName.String())
 		if err != nil {
 			return sslPairEntity, errors.New("VirtualHostHostnameFallbackError: " + err.Error())
 		}
@@ -243,7 +245,7 @@ func (repo *SslQueryRepo) Read(
 func (repo *SslQueryRepo) ReadFirst(
 	requestDto dto.ReadSslPairsRequest,
 ) (sslPairEntity entity.SslPair, err error) {
-	requestDto.Pagination = dto.PaginationSingleItem
+	requestDto.Pagination = tkDto.PaginationSingleItem
 	responseDto, err := repo.Read(requestDto)
 	if err != nil {
 		return sslPairEntity, err
@@ -258,9 +260,9 @@ func (repo *SslQueryRepo) ReadFirst(
 
 func (repo SslQueryRepo) GetOwnershipValidationHash(
 	sslCrtContent valueObject.SslCertificateContent,
-) (valueObject.Hash, error) {
+) (tkValueObject.Hash, error) {
 	sslCrtContentBytes := []byte(sslCrtContent.String())
 	sslCrtContentHash := md5.Sum(sslCrtContentBytes)
 	sslCrtContentHashStr := hex.EncodeToString(sslCrtContentHash[:])
-	return valueObject.NewHash(sslCrtContentHashStr)
+	return tkValueObject.NewHash(sslCrtContentHashStr)
 }

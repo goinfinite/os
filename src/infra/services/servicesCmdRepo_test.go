@@ -7,6 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestServiceCmdRepo(t *testing.T) {
@@ -27,14 +28,14 @@ func TestServiceCmdRepo(t *testing.T) {
 
 		serviceName, _ := valueObject.NewServiceName("python-ws")
 		serviceType, _ := valueObject.NewServiceType("webserver")
-		unixCommand, _ := valueObject.NewUnixCommand("python3 -m http.server")
+		unixCommand, _ := tkValueObject.NewUnixCommand("python3 -m http.server")
 		err = servicesCmdRepo.CreateCustom(dto.CreateCustomService{
 			Name:              serviceName,
 			Type:              serviceType,
 			StartCmd:          unixCommand,
 			PortBindings:      []valueObject.PortBinding{portBinding},
-			OperatorAccountId: valueObject.AccountIdSystem,
-			OperatorIpAddress: valueObject.IpAddressSystem,
+			OperatorAccountId: tkValueObject.AccountIdSystem,
+			OperatorIpAddress: tkValueObject.IpAddressLocal,
 		})
 		if err != nil {
 			t.Errorf("CreateCustomServiceFailed : %v", err)

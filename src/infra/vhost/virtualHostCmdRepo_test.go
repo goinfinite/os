@@ -8,6 +8,8 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestVirtualHostCmdRepo(t *testing.T) {
@@ -21,8 +23,8 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 
 	t.Run("Create", func(t *testing.T) {
 		vhostType, _ := valueObject.NewVirtualHostType("top-level")
-		operatorAccountId, _ := valueObject.NewAccountId(0)
-		ipAddress := valueObject.IpAddressSystem
+		operatorAccountId, _ := tkValueObject.NewAccountId(0)
+		ipAddress := tkValueObject.IpAddressLocal
 
 		err := vhostCmdRepo.Create(dto.NewCreateVirtualHost(
 			vhostName, vhostType, nil, nil, operatorAccountId, ipAddress,
@@ -34,7 +36,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 
 	t.Run("Update", func(t *testing.T) {
 		vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-			Pagination: dto.PaginationUnpaginated,
+			Pagination: tkDto.PaginationUnpaginated,
 		})
 		if err != nil || len(vhostReadResponse.VirtualHosts) == 0 {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)
@@ -52,7 +54,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 
 	t.Run("Delete", func(t *testing.T) {
 		vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-			Pagination: dto.PaginationUnpaginated,
+			Pagination: tkDto.PaginationUnpaginated,
 		})
 		if err != nil || len(vhostReadResponse.VirtualHosts) == 0 {
 			t.Errorf("ExpectingNoErrorButGot: %v", err)

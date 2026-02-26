@@ -18,6 +18,8 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 
 	"github.com/shirou/gopsutil/process"
@@ -346,7 +348,7 @@ func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
 ) (installedItem entity.InstalledService, err error) {
 	shouldIncludeMetrics := false
 	readRequestDto := dto.ReadInstalledServicesItemsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			PageNumber:   0,
 			ItemsPerPage: 1,
 		},
@@ -370,14 +372,14 @@ func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 	stepsType string,
 	rawCmdSteps interface{},
-) (cmdSteps []valueObject.UnixCommand, err error) {
+) (cmdSteps []tkValueObject.UnixCommand, err error) {
 	cmdStepsMap, assertOk := rawCmdSteps.([]interface{})
 	if !assertOk {
 		return cmdSteps, errors.New("InvalidCmdStepsStructure")
 	}
 
 	for _, rawCmd := range cmdStepsMap {
-		command, err := valueObject.NewUnixCommand(rawCmd)
+		command, err := tkValueObject.NewUnixCommand(rawCmd)
 		if err != nil {
 			slog.Debug(
 				"ParseInvalidCmdStepError",
@@ -393,7 +395,7 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 }
 
 func (repo *ServicesQueryRepo) installableServiceFactory(
-	serviceFilePath valueObject.UnixFilePath,
+	serviceFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (installableService entity.InstallableService, err error) {
 	serviceMap, err := tkInfra.FileDeserializer(serviceFilePath.String())
 	if err != nil {
@@ -437,7 +439,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		return installableService, err
 	}
 
-	startCommand, err := valueObject.NewUnixCommand(serviceMap["startCmd"])
+	startCommand, err := tkValueObject.NewUnixCommand(serviceMap["startCmd"])
 	if err != nil {
 		return installableService, err
 	}
@@ -507,9 +509,9 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	stopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	stopTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if serviceMap["stopTimeoutSecs"] != nil {
-		stopTimeoutSecs, err = valueObject.NewUnixTime(
+		stopTimeoutSecs, err = tkValueObject.NewUnixTime(
 			serviceMap["stopTimeoutSecs"],
 		)
 		if err != nil {
@@ -517,7 +519,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	stopCmdSteps := []valueObject.UnixCommand{}
+	stopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["stopCmdSteps"] != nil {
 		stopCmdSteps, err = repo.parseManifestCmdSteps(
 			"Stop", serviceMap["stopCmdSteps"],
@@ -527,9 +529,9 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	installTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	installTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if serviceMap["installTimeoutSecs"] != nil {
-		installTimeoutSecs, err = valueObject.NewUnixTime(
+		installTimeoutSecs, err = tkValueObject.NewUnixTime(
 			serviceMap["installTimeoutSecs"],
 		)
 		if err != nil {
@@ -537,7 +539,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	installCmdSteps := []valueObject.UnixCommand{}
+	installCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["installCmdSteps"] != nil {
 		installCmdSteps, err = repo.parseManifestCmdSteps(
 			"Install", serviceMap["installCmdSteps"],
@@ -547,9 +549,9 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	uninstallTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	uninstallTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if serviceMap["uninstallTimeoutSecs"] != nil {
-		uninstallTimeoutSecs, err = valueObject.NewUnixTime(
+		uninstallTimeoutSecs, err = tkValueObject.NewUnixTime(
 			serviceMap["uninstallTimeoutSecs"],
 		)
 		if err != nil {
@@ -557,7 +559,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	uninstallCmdSteps := []valueObject.UnixCommand{}
+	uninstallCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["uninstallCmdSteps"] != nil {
 		uninstallCmdSteps, err = repo.parseManifestCmdSteps(
 			"Uninstall", serviceMap["uninstallCmdSteps"],
@@ -567,7 +569,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	uninstallFilePaths := []valueObject.UnixFilePath{}
+	uninstallFilePaths := []tkValueObject.UnixAbsoluteFilePath{}
 	if serviceMap["uninstallFilePaths"] != nil {
 		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]interface{})
 		if !assertOk {
@@ -587,9 +589,9 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	preStartTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	preStartTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if serviceMap["preStartTimeoutSecs"] != nil {
-		preStartTimeoutSecs, err = valueObject.NewUnixTime(
+		preStartTimeoutSecs, err = tkValueObject.NewUnixTime(
 			serviceMap["preStartTimeoutSecs"],
 		)
 		if err != nil {
@@ -597,7 +599,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	preStartCmdSteps := []valueObject.UnixCommand{}
+	preStartCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["preStartCmdSteps"] != nil {
 		preStartCmdSteps, err = repo.parseManifestCmdSteps(
 			"PreStart", serviceMap["preStartCmdSteps"],
@@ -607,9 +609,9 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	postStartTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	postStartTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if serviceMap["postStartTimeoutSecs"] != nil {
-		postStartTimeoutSecs, err = valueObject.NewUnixTime(
+		postStartTimeoutSecs, err = tkValueObject.NewUnixTime(
 			serviceMap["postStartTimeoutSecs"],
 		)
 		if err != nil {
@@ -617,7 +619,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	postStartCmdSteps := []valueObject.UnixCommand{}
+	postStartCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["postStartCmdSteps"] != nil {
 		postStartCmdSteps, err = repo.parseManifestCmdSteps(
 			"PostStart", serviceMap["postStartCmdSteps"],
@@ -627,9 +629,9 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	preStopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	preStopTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if serviceMap["preStopTimeoutSecs"] != nil {
-		preStopTimeoutSecs, err = valueObject.NewUnixTime(
+		preStopTimeoutSecs, err = tkValueObject.NewUnixTime(
 			serviceMap["preStopTimeoutSecs"],
 		)
 		if err != nil {
@@ -637,7 +639,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	preStopCmdSteps := []valueObject.UnixCommand{}
+	preStopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["preStopCmdSteps"] != nil {
 		preStopCmdSteps, err = repo.parseManifestCmdSteps(
 			"PreStop", serviceMap["preStopCmdSteps"],
@@ -647,9 +649,9 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	postStopTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	postStopTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if serviceMap["postStopTimeoutSecs"] != nil {
-		postStopTimeoutSecs, err = valueObject.NewUnixTime(
+		postStopTimeoutSecs, err = tkValueObject.NewUnixTime(
 			serviceMap["postStopTimeoutSecs"],
 		)
 		if err != nil {
@@ -657,7 +659,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	postStopCmdSteps := []valueObject.UnixCommand{}
+	postStopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["postStopCmdSteps"] != nil {
 		postStopCmdSteps, err = repo.parseManifestCmdSteps(
 			"PostStop", serviceMap["postStopCmdSteps"],
@@ -667,16 +669,16 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		}
 	}
 
-	var execUserPtr *valueObject.UnixUsername
+	var execUserPtr *tkValueObject.UnixUsername
 	if serviceMap["execUser"] != nil {
-		execUser, err := valueObject.NewUnixUsername(serviceMap["execUser"])
+		execUser, err := tkValueObject.NewUnixUsername(serviceMap["execUser"])
 		if err != nil {
 			return installableService, err
 		}
 		execUserPtr = &execUser
 	}
 
-	var workingDirectoryPtr *valueObject.UnixFilePath
+	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["workingDirectory"] != nil {
 		workingDirectory, err := valueObject.NewUnixFilePath(
 			serviceMap["workingDirectory"],
@@ -687,7 +689,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		workingDirectoryPtr = &workingDirectory
 	}
 
-	var startupFilePtr *valueObject.UnixFilePath
+	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["startupFile"] != nil {
 		startupFile, err := valueObject.NewUnixFilePath(serviceMap["startupFile"])
 		if err != nil {
@@ -696,7 +698,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		startupFilePtr = &startupFile
 	}
 
-	var logOutputPathPtr *valueObject.UnixFilePath
+	var logOutputPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["logOutputPath"] != nil {
 		logOutputPath, err := valueObject.NewUnixFilePath(serviceMap["logOutputPath"])
 		if err != nil {
@@ -705,7 +707,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		logOutputPathPtr = &logOutputPath
 	}
 
-	var logErrorPathPtr *valueObject.UnixFilePath
+	var logErrorPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["logErrorPath"] != nil {
 		logErrorPath, err := valueObject.NewUnixFilePath(serviceMap["logErrorPath"])
 		if err != nil {
@@ -714,18 +716,18 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		logErrorPathPtr = &logErrorPath
 	}
 
-	var estimatedSizeBytesPtr *valueObject.Byte
+	var estimatedSizeBytesPtr *tkValueObject.Byte
 	if serviceMap["estimatedSizeBytes"] != nil {
-		estimatedSizeBytes, err := valueObject.NewByte(serviceMap["estimatedSizeBytes"])
+		estimatedSizeBytes, err := tkValueObject.NewByte(serviceMap["estimatedSizeBytes"])
 		if err != nil {
 			return installableService, err
 		}
 		estimatedSizeBytesPtr = &estimatedSizeBytes
 	}
 
-	var avatarUrlPtr *valueObject.Url
+	var avatarUrlPtr *tkValueObject.Url
 	if serviceMap["avatarUrl"] != nil {
-		avatarUrl, err := valueObject.NewUrl(serviceMap["avatarUrl"])
+		avatarUrl, err := tkValueObject.NewUrl(serviceMap["avatarUrl"])
 		if err != nil {
 			return installableService, err
 		}
@@ -877,7 +879,7 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 func (repo *ServicesQueryRepo) ReadFirstInstallableItem(
 	requestDto dto.ReadInstallableServicesItemsRequest,
 ) (installableService entity.InstallableService, err error) {
-	requestDto.Pagination = dto.Pagination{
+	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}

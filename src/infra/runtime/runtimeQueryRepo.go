@@ -11,14 +11,15 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type RuntimeQueryRepo struct {
 }
 
 func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
-	hostname valueObject.Fqdn,
-) (vhostPhpConfFilePath valueObject.UnixFilePath, err error) {
+	hostname tkValueObject.Fqdn,
+) (vhostPhpConfFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
 	primaryVhostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
 	vhostPhpConfFilePathStr := "/app/conf/php-webserver/" + hostname.String() + ".conf"
 
@@ -74,7 +75,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 }
 
 func (repo RuntimeQueryRepo) ReadPhpVersion(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 ) (phpVersion entity.PhpVersion, err error) {
 	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
@@ -209,7 +210,7 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 }
 
 func (repo RuntimeQueryRepo) ReadPhpSettings(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 ) (phpSettings []entity.PhpSetting, err error) {
 	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
@@ -289,7 +290,7 @@ func (repo RuntimeQueryRepo) ReadPhpModules(
 }
 
 func (repo RuntimeQueryRepo) ReadPhpConfigs(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 ) (phpConfigs entity.PhpConfigs, err error) {
 	phpVersion, err := repo.ReadPhpVersion(hostname)
 	if err != nil {

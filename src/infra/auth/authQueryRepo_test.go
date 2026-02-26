@@ -9,6 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestAuthQueryRepo(t *testing.T) {
@@ -16,12 +17,14 @@ func TestAuthQueryRepo(t *testing.T) {
 	authQueryRepo := AuthQueryRepo{}
 	accountCmdRepo := accountInfra.NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
 
-	accountId, _ := valueObject.NewAccountId(1001)
+	accountId, _ := tkValueObject.NewAccountId(1001)
 	username, _ := valueObject.NewUsername("authDummyUser")
-	password, _ := valueObject.NewPassword("q1w2e3r4t5y6")
-	localIpAddress := valueObject.IpAddressSystem
+	rawPassword := "q1w2e3r4!5y6"
+	accountPassword, _ := tkValueObject.NewPassword(rawPassword)
+	sessionPassword, _ := tkValueObject.NewWeakPassword(rawPassword)
+	localIpAddress := tkValueObject.IpAddressLocal
 	createDto := dto.NewCreateAccount(
-		username, password, false, accountId, localIpAddress,
+		username, accountPassword, false, accountId, localIpAddress,
 	)
 
 	_, err := accountCmdRepo.Create(createDto)
@@ -30,7 +33,7 @@ func TestAuthQueryRepo(t *testing.T) {
 	}
 
 	t.Run("ValidLoginCredentials", func(t *testing.T) {
-		createDto := dto.NewCreateSessionToken(username, password, localIpAddress)
+		createDto := dto.NewCreateSessionToken(username, sessionPassword, localIpAddress)
 		isValid := authQueryRepo.IsLoginValid(createDto)
 		if !isValid {
 			t.Fatal("LoginCredentialsInvalid")
@@ -38,9 +41,9 @@ func TestAuthQueryRepo(t *testing.T) {
 	})
 
 	t.Run("InvalidLoginCredentials", func(t *testing.T) {
-		password, _ := valueObject.NewPassword("wrongPassword")
+		wrongPassword, _ := tkValueObject.NewWeakPassword("wrongPassword")
 
-		createDto := dto.NewCreateSessionToken(username, password, localIpAddress)
+		createDto := dto.NewCreateSessionToken(username, wrongPassword, localIpAddress)
 		isValid := authQueryRepo.IsLoginValid(createDto)
 		if isValid {
 			t.Error("Expected invalid login credentials, but got valid")
@@ -51,9 +54,9 @@ func TestAuthQueryRepo(t *testing.T) {
 		authCmdRepo := AuthCmdRepo{}
 
 		token, _ := authCmdRepo.CreateSessionToken(
-			valueObject.AccountId(1000),
-			valueObject.NewUnixTimeAfterNow(3*time.Hour),
-			valueObject.IpAddressSystem,
+			tkValueObject.AccountId(1000),
+			tkValueObject.NewUnixTimeAfterNow(3*time.Hour),
+			tkValueObject.IpAddressLocal,
 		)
 
 		_, err := authQueryRepo.ReadAccessTokenDetails(token.TokenStr)
@@ -63,7 +66,7 @@ func TestAuthQueryRepo(t *testing.T) {
 	})
 
 	t.Run("InvalidSessionAccessToken", func(t *testing.T) {
-		invalidToken, _ := valueObject.NewAccessTokenStr(
+		invalidToken, _ := tkValueObject.NewAccessTokenValue(
 			"invalidTokenInvalidTokenInvalidTokenInvalidTokenInvalidToken",
 		)
 		_, err := authQueryRepo.ReadAccessTokenDetails(invalidToken)
@@ -73,7 +76,7 @@ func TestAuthQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ValidAccountApiKey", func(t *testing.T) {
-		accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
+		accountId, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 		apiKey, err := accountCmdRepo.UpdateApiKey(accountId)
 		if err != nil {
 			t.Error(err)

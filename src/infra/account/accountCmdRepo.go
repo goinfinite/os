@@ -12,6 +12,8 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	"github.com/google/uuid"
@@ -80,7 +82,7 @@ func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 
 func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 	accountUsername valueObject.Username,
-	accountHomeDirectory valueObject.UnixFilePath,
+	accountHomeDirectory tkValueObject.UnixAbsoluteFilePath,
 ) error {
 	accountUsernameStr := accountUsername.String()
 
@@ -109,7 +111,7 @@ func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 
 func (repo *AccountCmdRepo) Create(
 	createDto dto.CreateAccount,
-) (accountId valueObject.AccountId, err error) {
+) (accountId tkValueObject.AccountId, err error) {
 	passHash, err := bcrypt.GenerateFromPassword(
 		[]byte(createDto.Password.String()), bcrypt.DefaultCost,
 	)
@@ -150,17 +152,17 @@ func (repo *AccountCmdRepo) Create(
 		return accountId, errors.New("UserLookupFailed: " + err.Error())
 	}
 
-	accountId, err = valueObject.NewAccountId(userInfo.Uid)
+	accountId, err = tkValueObject.NewAccountId(userInfo.Uid)
 	if err != nil {
 		return accountId, err
 	}
 
-	groupId, err := valueObject.NewGroupId(userInfo.Gid)
+	groupId, err := tkValueObject.NewUnixGroupId(userInfo.Gid)
 	if err != nil {
 		return accountId, err
 	}
 
-	nowUnixTime := valueObject.NewUnixTimeNow()
+	nowUnixTime := tkValueObject.NewUnixTimeNow()
 	accountEntity := entity.NewAccount(
 		accountId, groupId, createDto.Username, homeDirectory,
 		createDto.IsSuperAdmin,
@@ -180,7 +182,7 @@ func (repo *AccountCmdRepo) Create(
 	return accountId, nil
 }
 
-func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
+func (repo *AccountCmdRepo) Delete(accountId tkValueObject.AccountId) error {
 	accountEntity, err := repo.accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
 		AccountId: &accountId,
 	})
@@ -225,7 +227,7 @@ func (repo *AccountCmdRepo) Delete(accountId valueObject.AccountId) error {
 }
 
 func (repo *AccountCmdRepo) updatePassword(
-	accountEntity entity.Account, password valueObject.Password,
+	accountEntity entity.Account, password tkValueObject.Password,
 ) error {
 	passHash, err := bcrypt.GenerateFromPassword(
 		[]byte(password.String()), bcrypt.DefaultCost,
@@ -278,8 +280,8 @@ func (repo *AccountCmdRepo) Update(updateDto dto.UpdateAccount) error {
 }
 
 func (repo *AccountCmdRepo) UpdateApiKey(
-	accountId valueObject.AccountId,
-) (tokenValue valueObject.AccessTokenStr, err error) {
+	accountId tkValueObject.AccountId,
+) (tokenValue tkValueObject.AccessTokenValue, err error) {
 	uuidStr := uuid.New().String()
 	apiKeyPlainText := accountId.String() + ":" + uuidStr
 
@@ -289,7 +291,7 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 		return tokenValue, err
 	}
 
-	apiKey, err := valueObject.NewAccessTokenStr(encryptedApiKey)
+	apiKey, err := tkValueObject.NewAccessTokenValue(encryptedApiKey)
 	if err != nil {
 		return tokenValue, err
 	}
@@ -308,11 +310,11 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 }
 
 func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
-	accountId valueObject.AccountId,
-	accountHomeDirectory valueObject.UnixFilePath,
+	accountId tkValueObject.AccountId,
+	accountHomeDirectory tkValueObject.UnixAbsoluteFilePath,
 ) error {
 	readPublicKeysRequestDto := dto.ReadSecureAccessPublicKeysRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 		AccountId: accountId,

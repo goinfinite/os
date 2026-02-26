@@ -13,6 +13,8 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type RuntimeCmdRepo struct {
@@ -71,7 +73,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 		return runResponse, err
 	}
 
-	if errorMessage, assertOk := cmdErr.(*infraHelper.CmdError); assertOk {
+	if errorMessage, assertOk := cmdErr.(*tkInfra.ShellError); assertOk {
 		stdError, err := valueObject.NewUnixCommandOutput(errorMessage.StdErr)
 		if err != nil {
 			return runResponse, err
@@ -103,7 +105,7 @@ func (repo *RuntimeCmdRepo) restartPhpWebserver() error {
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpVersion(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	version valueObject.PhpVersion,
 ) error {
 	phpVersion, err := repo.runtimeQueryRepo.ReadPhpVersion(hostname)
@@ -148,7 +150,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpSettings(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
 	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
@@ -289,7 +291,7 @@ func (repo *RuntimeCmdRepo) DisablePhpModule(
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpModules(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	modules []entity.PhpModule,
 ) error {
 	phpVersion, err := repo.runtimeQueryRepo.ReadPhpVersion(hostname)
@@ -341,7 +343,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 	return repo.restartPhpWebserver()
 }
 
-func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error {
+func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) error {
 	vhostExists := true
 
 	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)

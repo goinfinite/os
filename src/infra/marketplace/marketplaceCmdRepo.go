@@ -20,6 +20,8 @@ import (
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 	"github.com/google/uuid"
 )
@@ -43,10 +45,10 @@ func NewMarketplaceCmdRepo(
 }
 
 func (repo *MarketplaceCmdRepo) installServices(
-	vhostName valueObject.Fqdn,
+	vhostName tkValueObject.Fqdn,
 	services []valueObject.ServiceNameWithVersion,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) error {
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(repo.persistentDbSvc)
 	serviceCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
@@ -93,9 +95,9 @@ func (repo *MarketplaceCmdRepo) installServices(
 func (repo *MarketplaceCmdRepo) parseSystemDataFields(
 	itemName valueObject.MarketplaceItemName,
 	itemType valueObject.MarketplaceItemType,
-	installDir valueObject.UnixFilePath,
+	installDir tkValueObject.UnixAbsoluteFilePath,
 	installUrlPath valueObject.UrlPath,
-	installHostname valueObject.Fqdn,
+	installHostname tkValueObject.Fqdn,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 ) (systemDataFields []valueObject.MarketplaceInstallableItemDataField) {
 	synthesizer := tkInfra.Synthesizer{}
@@ -158,9 +160,9 @@ func (repo *MarketplaceCmdRepo) interpolateMissingOptionalDataFields(
 }
 
 func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
-	cmdSteps []valueObject.UnixCommand,
+	cmdSteps []tkValueObject.UnixCommand,
 	dataFields []valueObject.MarketplaceInstallableItemDataField,
-) (cmdStepsWithDataFields []valueObject.UnixCommand, err error) {
+) (cmdStepsWithDataFields []tkValueObject.UnixCommand, err error) {
 	dataFieldsMap := map[string]string{}
 	for _, dataField := range dataFields {
 		dataFieldKeyStr := dataField.Name.String()
@@ -183,7 +185,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 				dataFieldValue = ""
 			}
 
-			printableDataFieldValue := infraHelper.ShellEscape{}.StripUnsafe(dataFieldValue)
+			printableDataFieldValue := tkInfra.ShellEscape{}.StripUnsafe(dataFieldValue)
 
 			cmdStepWithDataFieldStr := strings.ReplaceAll(
 				cmdStepStr, "%"+cmdStepDataPlaceholder+"%", printableDataFieldValue,
@@ -191,7 +193,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 			cmdStepStr = cmdStepWithDataFieldStr
 		}
 
-		cmdStepWithDataField, _ := valueObject.NewUnixCommand(cmdStepStr)
+		cmdStepWithDataField, _ := tkValueObject.NewUnixCommand(cmdStepStr)
 		cmdStepsWithDataFields = append(cmdStepsWithDataFields, cmdStepWithDataField)
 	}
 
@@ -200,8 +202,8 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
 	stepsType string,
-	steps []valueObject.UnixCommand,
-	totalExecTimeoutSecs valueObject.UnixTime,
+	steps []tkValueObject.UnixCommand,
+	totalExecTimeoutSecs tkValueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
@@ -248,7 +250,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 }
 
 func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
-	targetDir valueObject.UnixFilePath,
+	targetDir tkValueObject.UnixAbsoluteFilePath,
 ) error {
 	targetDirStr := targetDir.String()
 
@@ -313,14 +315,14 @@ func (repo *MarketplaceCmdRepo) updateMappingsBase(
 }
 
 func (repo *MarketplaceCmdRepo) createMappings(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	catalogMappings []valueObject.MarketplaceItemMapping,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) (mappingIds []valueObject.MappingId, err error) {
 	mappingQueryRepo := vhostInfra.NewMappingQueryRepo(repo.persistentDbSvc)
 	mappingsReadResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		Pagination: dto.PaginationUnpaginated,
+		Pagination: tkDto.PaginationUnpaginated,
 		Hostname:   &hostname,
 	})
 	if err != nil {
@@ -370,9 +372,9 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 func (repo *MarketplaceCmdRepo) persistInstalledItem(
 	catalogItem entity.MarketplaceCatalogItem,
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	installUrlPath valueObject.UrlPath,
-	installDir valueObject.UnixFilePath,
+	installDir tkValueObject.UnixAbsoluteFilePath,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 	mappingsId []valueObject.MappingId,
 ) error {
@@ -553,9 +555,9 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 }
 
 func (repo *MarketplaceCmdRepo) moveSelectedFiles(
-	sourceDir valueObject.UnixFilePath,
-	targetDir valueObject.UnixFilePath,
-	fileNames []valueObject.UnixFileName,
+	sourceDir tkValueObject.UnixAbsoluteFilePath,
+	targetDir tkValueObject.UnixAbsoluteFilePath,
+	fileNames []tkValueObject.UnixFileName,
 	keepOnlySelectedInstead bool,
 ) error {
 	fileNamesFilterParams := "-name \"" + fileNames[0].String() + "\""
@@ -583,7 +585,7 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 	installedItem entity.MarketplaceInstalledItem,
 	catalogItem entity.MarketplaceCatalogItem,
-	softDeleteDestDirPath valueObject.UnixFilePath,
+	softDeleteDestDirPath tkValueObject.UnixAbsoluteFilePath,
 ) error {
 	itemHostnameStr := installedItem.Hostname.String()
 	unfamiliarFilesBackupDir, err := valueObject.NewUnixFilePath(

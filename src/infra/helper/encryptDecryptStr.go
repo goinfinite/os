@@ -3,48 +3,29 @@ package infraHelper
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"encoding/base64"
 	"errors"
-	"io"
 	"log/slog"
+
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 func EncryptStr(
 	secretKey, plainText string,
 ) (encryptedText string, err error) {
-	secretKeyBytes, err := base64.RawURLEncoding.DecodeString(secretKey)
+	cypher, err := tkInfra.NewCypher(secretKey)
 	if err != nil {
-		slog.Error("EncryptSecretKeyError", slog.String("err", err.Error()))
 		return encryptedText, errors.New("EncryptSecretKeyError")
 	}
 
-	block, err := aes.NewCipher(secretKeyBytes)
-	if err != nil {
-		slog.Error("EncryptCipherError", slog.String("err", err.Error()))
-		return encryptedText, errors.New("EncryptCipherError")
-	}
-
-	plainTextBytes := []byte(plainText)
-	cipherText := make([]byte, aes.BlockSize+len(plainTextBytes))
-	iv := cipherText[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		slog.Error("EncryptIvGenerationError", slog.String("err", err.Error()))
-		return encryptedText, errors.New("EncryptIvGenerationError")
-	}
-
-	stream := cipher.NewCTR(block, iv)
-	stream.XORKeyStream(cipherText[aes.BlockSize:], plainTextBytes)
-
-	return base64.StdEncoding.EncodeToString(cipherText), nil
+	return cypher.Encrypt(plainText)
 }
 
-func DecryptStr(
+func legacyCtrDecrypt(
 	secretKey, encryptedText string,
 ) (decryptedText string, err error) {
 	apiKeyDecoded, err := base64.StdEncoding.DecodeString(encryptedText)
 	if err != nil {
-		slog.Error("DecryptDecodingError", slog.String("err", err.Error()))
 		return decryptedText, errors.New("DecryptDecodingError")
 	}
 	if len(apiKeyDecoded) < aes.BlockSize {
@@ -53,13 +34,11 @@ func DecryptStr(
 
 	secretKeyBytes, err := base64.RawURLEncoding.DecodeString(secretKey)
 	if err != nil {
-		slog.Error("DecryptSecretDecodingError", slog.String("err", err.Error()))
 		return decryptedText, errors.New("DecryptSecretDecodingError")
 	}
 
 	block, err := aes.NewCipher(secretKeyBytes)
 	if err != nil {
-		slog.Error("DecryptCipherError", slog.String("err", err.Error()))
 		return decryptedText, errors.New("DecryptCipherError")
 	}
 
@@ -70,4 +49,21 @@ func DecryptStr(
 	stream.XORKeyStream(apiKeyDecryptedBinary, apiKeyDecoded[aes.BlockSize:])
 
 	return string(apiKeyDecryptedBinary), nil
+}
+
+func DecryptStr(
+	secretKey, encryptedText string,
+) (decryptedText string, err error) {
+	cypher, err := tkInfra.NewCypher(secretKey)
+	if err != nil {
+		return decryptedText, errors.New("DecryptSecretKeyError")
+	}
+
+	decryptedText, err = cypher.Decrypt(encryptedText)
+	if err == nil {
+		return decryptedText, nil
+	}
+
+	slog.Debug("GcmDecryptFailed, trying legacy CTR decryption")
+	return legacyCtrDecrypt(secretKey, encryptedText)
 }

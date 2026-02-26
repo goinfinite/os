@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestVirtualHostQueryRepo(t *testing.T) {
@@ -19,8 +20,8 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 		itemType, _ := valueObject.NewMarketplaceItemType("app")
 
 		paginationDto := useCase.MarketplaceDefaultPagination
-		sortBy, _ := valueObject.NewPaginationSortBy("id")
-		sortDirection, _ := valueObject.NewPaginationSortDirection("desc")
+		sortBy, _ := tkValueObject.NewPaginationSortBy("id")
+		sortDirection, _ := tkValueObject.NewPaginationSortDirection("desc")
 		paginationDto.SortBy = &sortBy
 		paginationDto.SortDirection = &sortDirection
 
@@ -62,8 +63,8 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 		itemType, _ := valueObject.NewMarketplaceItemType("app")
 
 		paginationDto := useCase.MarketplaceDefaultPagination
-		sortBy, _ := valueObject.NewPaginationSortBy("id")
-		sortDirection, _ := valueObject.NewPaginationSortDirection("desc")
+		sortBy, _ := tkValueObject.NewPaginationSortBy("id")
+		sortDirection, _ := tkValueObject.NewPaginationSortDirection("desc")
 		paginationDto.SortBy = &sortBy
 		paginationDto.SortDirection = &sortDirection
 

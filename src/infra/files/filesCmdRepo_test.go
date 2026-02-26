@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestFilesCmdRepo(t *testing.T) {
@@ -16,14 +17,14 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	fileDefaultPermissions := valueObject.NewUnixFileDefaultPermissions()
 	directoryDefaultPermissions := valueObject.NewUnixDirDefaultPermissions()
-	operatorAccountId, _ := valueObject.NewAccountId(0)
-	ipAddress := valueObject.IpAddressSystem
+	operatorAccountId, _ := tkValueObject.NewAccountId(0)
+	ipAddress := tkValueObject.IpAddressLocal
 
 	t.Run("CreateUnixDirectory", func(t *testing.T) {
 		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &directoryDefaultPermissions, valueObject.MimeTypeDirectory,
+			filePath, &directoryDefaultPermissions, tkValueObject.MimeTypeDirectory,
 			operatorAccountId, ipAddress,
 		)
 
@@ -39,7 +40,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &fileDefaultPermissions, valueObject.MimeTypeGeneric,
+			filePath, &fileDefaultPermissions, tkValueObject.MimeTypeGeneric,
 			operatorAccountId, ipAddress,
 		)
 
@@ -165,7 +166,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath}, destinationFilePath,
 			&compressionType, operatorAccountId, ipAddress,
 		)
 
@@ -184,7 +185,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath, nil,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath}, destinationFilePath, nil,
 			operatorAccountId, ipAddress,
 		)
 
@@ -203,7 +204,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath, nil,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath}, destinationFilePath, nil,
 			operatorAccountId, ipAddress,
 		)
 

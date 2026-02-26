@@ -5,7 +5,7 @@ import (
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/useCase"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestAuthCmdRepo(t *testing.T) {
@@ -14,9 +14,9 @@ func TestAuthCmdRepo(t *testing.T) {
 
 	t.Run("GetSessionToken", func(t *testing.T) {
 		token, err := authCmdRepo.CreateSessionToken(
-			valueObject.AccountId(1000),
-			valueObject.NewUnixTimeAfterNow(useCase.SessionTokenExpiresIn),
-			valueObject.IpAddressSystem,
+			tkValueObject.AccountId(1000),
+			tkValueObject.NewUnixTimeAfterNow(useCase.SessionTokenExpiresIn),
+			tkValueObject.IpAddressLocal,
 		)
 		if err != nil {
 			t.Errorf("UnexpectedError: %s", err.Error())

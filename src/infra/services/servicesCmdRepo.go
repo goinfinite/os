@@ -16,6 +16,8 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
@@ -39,8 +41,8 @@ func NewServicesCmdRepo(
 
 func (repo *ServicesCmdRepo) runCmdSteps(
 	stepsType string,
-	steps []valueObject.UnixCommand,
-	totalExecTimeoutSecs valueObject.UnixTime,
+	steps []tkValueObject.UnixCommand,
+	totalExecTimeoutSecs tkValueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
@@ -199,7 +201,7 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 	shouldIncludeMetrics := false
 	readInstalledItemsDto := dto.ReadInstalledServicesItemsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
@@ -340,7 +342,7 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 }
 
 func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
-	serviceName valueObject.ServiceName, execUser valueObject.UnixUsername,
+	serviceName valueObject.ServiceName, execUser tkValueObject.UnixUsername,
 ) error {
 	execUserStr := execUser.String()
 	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
@@ -367,9 +369,9 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 }
 
 func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
-	cmdSteps []valueObject.UnixCommand,
+	cmdSteps []tkValueObject.UnixCommand,
 	placeholders map[string]string,
-) (usableCmdSteps []valueObject.UnixCommand, err error) {
+) (usableCmdSteps []tkValueObject.UnixCommand, err error) {
 	if len(cmdSteps) == 0 {
 		return usableCmdSteps, nil
 	}
@@ -389,14 +391,14 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 				placeholderValue = ""
 			}
 
-			printablePlaceholderValue := infraHelper.ShellEscape{}.StripUnsafe(placeholderValue)
+			printablePlaceholderValue := tkInfra.ShellEscape{}.StripUnsafe(placeholderValue)
 
 			cmdStepStr = strings.ReplaceAll(
 				cmdStepStr, "%"+stepPlaceholder+"%", printablePlaceholderValue,
 			)
 		}
 
-		usableCmdStep, err := valueObject.NewUnixCommand(cmdStepStr)
+		usableCmdStep, err := tkValueObject.NewUnixCommand(cmdStepStr)
 		if err != nil {
 			return nil, errors.New("InvalidCmdStep: " + cmdStepStr)
 		}
@@ -494,8 +496,8 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		}
 	}
 
-	startCmdSteps := []valueObject.UnixCommand{installableServiceEntity.StartCmd}
-	usableCmdSteps := map[string][]valueObject.UnixCommand{
+	startCmdSteps := []tkValueObject.UnixCommand{installableServiceEntity.StartCmd}
+	usableCmdSteps := map[string][]tkValueObject.UnixCommand{
 		"start":     startCmdSteps,
 		"stop":      installableServiceEntity.StopCmdSteps,
 		"preStart":  installableServiceEntity.PreStartCmdSteps,

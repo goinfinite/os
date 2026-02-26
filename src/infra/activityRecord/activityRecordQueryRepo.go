@@ -1,12 +1,16 @@
 package activityRecordInfra
 
 import (
+	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/entity"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkEntity "github.com/goinfinite/tk/src/domain/entity"
+	tkInfraDbModel "github.com/goinfinite/tk/src/infra/db/model"
+
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
+	"gorm.io/gorm"
 )
 
 type ActivityRecordQueryRepo struct {
@@ -21,42 +25,36 @@ func NewActivityRecordQueryRepo(
 	}
 }
 
-func (repo *ActivityRecordQueryRepo) Read(
-	readDto dto.ReadActivityRecords,
-) ([]entity.ActivityRecord, error) {
-	activityRecordEvents := []entity.ActivityRecord{}
-
-	readModel := dbModel.ActivityRecord{}
+func (repo *ActivityRecordQueryRepo) buildBaseQuery(
+	readDto tkDto.ReadActivityRecordsRequest,
+) *gorm.DB {
+	readModel := tkInfraDbModel.ActivityRecord{}
 	if readDto.RecordId != nil {
-		recordId := readDto.RecordId.Uint64()
-		readModel.ID = recordId
+		readModel.ID = readDto.RecordId.Uint64()
 	}
 
 	if readDto.RecordLevel != nil {
-		recordLevelStr := readDto.RecordLevel.String()
-		readModel.RecordLevel = recordLevelStr
+		readModel.RecordLevel = readDto.RecordLevel.String()
 	}
 
 	if readDto.RecordCode != nil {
-		recordCodeStr := readDto.RecordCode.String()
-		readModel.RecordCode = recordCodeStr
+		readModel.RecordCode = readDto.RecordCode.String()
 	}
 
 	if len(readDto.AffectedResources) > 0 {
-		affectedResources := []dbModel.ActivityRecordAffectedResource{}
+		affectedResources := []tkInfraDbModel.ActivityRecordAffectedResource{}
 		for _, affectedResourceSri := range readDto.AffectedResources {
-			affectedResourceModel := dbModel.ActivityRecordAffectedResource{
+			affectedResourceModel := tkInfraDbModel.ActivityRecordAffectedResource{
 				SystemResourceIdentifier: affectedResourceSri.String(),
 			}
 			affectedResources = append(affectedResources, affectedResourceModel)
 		}
-
 		readModel.AffectedResources = affectedResources
 	}
 
-	if readDto.OperatorAccountId != nil {
-		operatorAccountId := readDto.OperatorAccountId.Uint64()
-		readModel.OperatorAccountId = &operatorAccountId
+	if readDto.OperatorSri != nil {
+		operatorSriStr := readDto.OperatorSri.String()
+		readModel.OperatorSri = &operatorSriStr
 	}
 
 	if readDto.OperatorIpAddress != nil {
@@ -72,26 +70,60 @@ func (repo *ActivityRecordQueryRepo) Read(
 		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.ReadAsGoTime())
 	}
 
-	activityRecordEventModels := []dbModel.ActivityRecord{}
-	err := dbQuery.
-		Preload("AffectedResources").
-		Find(&activityRecordEventModels).Error
+	return dbQuery
+}
+
+func (repo *ActivityRecordQueryRepo) Read(
+	readDto tkDto.ReadActivityRecordsRequest,
+) (responseDto tkDto.ReadActivityRecordsResponse, err error) {
+	dbQuery := repo.buildBaseQuery(readDto)
+
+	dbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+		dbQuery, readDto.Pagination,
+	)
 	if err != nil {
-		return activityRecordEvents, err
+		return responseDto, err
+	}
+	responseDto.Pagination = responsePagination
+
+	activityRecordModels := []tkInfraDbModel.ActivityRecord{}
+	err = dbQuery.
+		Preload("AffectedResources").
+		Find(&activityRecordModels).Error
+	if err != nil {
+		return responseDto, err
 	}
 
-	for _, activityRecordEventModel := range activityRecordEventModels {
-		activityRecordEvent, err := activityRecordEventModel.ToEntity()
+	for _, activityRecordModel := range activityRecordModels {
+		activityRecordEntity, err := activityRecordModel.ToEntity()
 		if err != nil {
 			slog.Debug(
 				"ModelToEntityError",
-				slog.Uint64("id", activityRecordEventModel.ID),
+				slog.Uint64("id", activityRecordModel.ID),
 				slog.String("err", err.Error()),
 			)
 			continue
 		}
-		activityRecordEvents = append(activityRecordEvents, activityRecordEvent)
+		responseDto.ActivityRecords = append(
+			responseDto.ActivityRecords, activityRecordEntity,
+		)
 	}
 
-	return activityRecordEvents, nil
+	return responseDto, nil
+}
+
+func (repo *ActivityRecordQueryRepo) ReadFirst(
+	readDto tkDto.ReadActivityRecordsRequest,
+) (tkEntity.ActivityRecord, error) {
+	dbQuery := repo.buildBaseQuery(readDto)
+
+	activityRecordModel := tkInfraDbModel.ActivityRecord{}
+	err := dbQuery.
+		Preload("AffectedResources").
+		First(&activityRecordModel).Error
+	if err != nil {
+		return tkEntity.ActivityRecord{}, errors.New("ActivityRecordNotFound")
+	}
+
+	return activityRecordModel.ToEntity()
 }

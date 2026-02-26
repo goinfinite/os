@@ -12,6 +12,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type FilesCmdRepo struct {
@@ -39,7 +40,7 @@ func (repo FilesCmdRepo) uploadFailureFactory(
 }
 
 func (repo FilesCmdRepo) uploadSingleFile(
-	destinationPath valueObject.UnixFilePath,
+	destinationPath tkValueObject.UnixAbsoluteFilePath,
 	fileToUpload valueObject.FileStreamHandler,
 ) error {
 	destinationFilePath := destinationPath.String() + "/" + fileToUpload.Name.String()
@@ -69,7 +70,7 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 		return errors.New("FileToCopyNotFound")
 	}
 
-	sourceFileName := copyDto.SourcePath.ReadFileName()
+	sourceFileName := copyDto.SourcePath.ReadFileName(false)
 	destinationAbsolutePath := copyDto.DestinationPath.String() + "/" + sourceFileName.String()
 	if !copyDto.ShouldOverwrite {
 		destinationPathExists := infraHelper.FileExists(destinationAbsolutePath)
@@ -122,7 +123,7 @@ func (repo FilesCmdRepo) Compress(
 		compressionTypeStr = compressDto.CompressionType.String()
 	}
 
-	destinationPathWithoutExt := compressDto.DestinationPath.ReadWithoutExtension()
+	destinationPathWithoutExt := compressDto.DestinationPath.ReadWithoutExtension(false)
 	compressionTypeAsExt := compressionTypeStr
 	newDestinationPath, err := valueObject.NewUnixFilePath(
 		destinationPathWithoutExt.String() + "." + compressionTypeAsExt,
@@ -165,7 +166,7 @@ func (repo FilesCmdRepo) Compress(
 	}
 
 	compressionProcessReport = dto.NewCompressionProcessReport(
-		[]valueObject.UnixFilePath{},
+		[]tkValueObject.UnixAbsoluteFilePath{},
 		[]valueObject.CompressionProcessFailure{},
 		newDestinationPath,
 	)
@@ -203,7 +204,7 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 	}
 
 	fileOwnershipStr := unixUser.Username + ":" + unixUser.Username
-	fileOwner, err := valueObject.NewUnixFileOwnership(fileOwnershipStr)
+	fileOwner, err := tkValueObject.NewUnixFileOwnership(fileOwnershipStr)
 	if err != nil {
 		return err
 	}
@@ -235,7 +236,7 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 	return repo.UpdatePermissions(updatePermissionsDto)
 }
 
-func (repo FilesCmdRepo) Delete(unixFilePath valueObject.UnixFilePath) error {
+func (repo FilesCmdRepo) Delete(unixFilePath tkValueObject.UnixAbsoluteFilePath) error {
 	fileExists := infraHelper.FileExists(unixFilePath.String())
 	if !fileExists {
 		return errors.New("FileNotFound")
@@ -303,7 +304,7 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 	}
 
 	if moveDto.DestinationPath == valueObject.UnixFilePathTrashDir {
-		fileNameStr := moveDto.SourcePath.ReadFileName().String()
+		fileNameStr := moveDto.SourcePath.ReadFileName(false).String()
 		destinationPathStr := moveDto.DestinationPath.String()
 		rawTrashFilePath := destinationPathStr + "/" + fileNameStr
 		trashFilePath, err := valueObject.NewUnixFilePath(rawTrashFilePath)
@@ -313,7 +314,7 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 
 		trashFilePathStr := trashFilePath.String()
 		if infraHelper.FileExists(trashFilePathStr) {
-			uniqueTrashPathStr := trashFilePathStr + "-" + valueObject.NewUnixTimeNow().String()
+			uniqueTrashPathStr := trashFilePathStr + "-" + tkValueObject.NewUnixTimeNow().String()
 			uniqueTrashFilePath, err := valueObject.NewUnixFilePath(uniqueTrashPathStr)
 			if err != nil {
 				return errors.New("DefineUniqueTrashFilePathError: " + err.Error())
@@ -416,7 +417,7 @@ func (repo FilesCmdRepo) Upload(
 	uploadDto dto.UploadUnixFiles,
 ) (dto.UploadProcessReport, error) {
 	uploadProcessReport := dto.NewUploadProcessReport(
-		[]valueObject.UnixFileName{},
+		[]tkValueObject.UnixFileName{},
 		[]valueObject.UploadProcessFailure{},
 		uploadDto.DestinationPath,
 	)

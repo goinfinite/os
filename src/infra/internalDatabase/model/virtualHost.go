@@ -9,6 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type VirtualHost struct {
@@ -41,7 +42,7 @@ func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
 }
 
 func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
-	hostname, err := valueObject.NewFqdn(model.Hostname)
+	hostname, err := tkValueObject.NewFqdn(model.Hostname)
 	if err != nil {
 		return vhost, err
 	}
@@ -56,16 +57,16 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		return vhost, err
 	}
 
-	var parentHostnamePtr *valueObject.Fqdn
+	var parentHostnamePtr *tkValueObject.Fqdn
 	if model.ParentHostname != nil {
-		parentHostname, err := valueObject.NewFqdn(*model.ParentHostname)
+		parentHostname, err := tkValueObject.NewFqdn(*model.ParentHostname)
 		if err != nil {
 			return vhost, err
 		}
 		parentHostnamePtr = &parentHostname
 	}
 
-	aliasesHostnames := []valueObject.Fqdn{}
+	aliasesHostnames := []tkValueObject.Fqdn{}
 	for _, alias := range model.Aliases {
 		if alias.Type != valueObject.VirtualHostTypeAlias.String() {
 			continue
@@ -77,7 +78,7 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 			continue
 		}
 
-		aliasHostname, err := valueObject.NewFqdn(alias.Hostname)
+		aliasHostname, err := tkValueObject.NewFqdn(alias.Hostname)
 		if err != nil {
 			slog.Debug("AliasHostnameError", slog.String("alias", alias.Hostname))
 			continue
@@ -88,6 +89,6 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 	return entity.NewVirtualHost(
 		hostname, vhostType, rootDir, parentHostnamePtr, model.IsPrimary,
 		model.IsWildcard, aliasesHostnames,
-		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt),
 	), nil
 }

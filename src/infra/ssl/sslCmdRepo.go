@@ -8,6 +8,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
@@ -37,13 +39,13 @@ func NewSslCmdRepo(
 }
 
 func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
-	vhostHostnames []valueObject.Fqdn,
-	serverPublicIpAddress valueObject.IpAddress,
-) []valueObject.Fqdn {
-	functionalHostnames := []valueObject.Fqdn{}
+	vhostHostnames []tkValueObject.Fqdn,
+	serverPublicIpAddress tkValueObject.IpAddress,
+) []tkValueObject.Fqdn {
+	functionalHostnames := []tkValueObject.Fqdn{}
 
 	for _, vhostHostname := range vhostHostnames {
-		wwwVirtualHostHostname, err := valueObject.NewFqdn("www." + vhostHostname.String())
+		wwwVirtualHostHostname, err := tkValueObject.NewFqdn("www." + vhostHostname.String())
 		if err != nil {
 			slog.Debug(
 				"InvalidWwwVirtualHostHostname",
@@ -95,15 +97,15 @@ func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
 
 func (repo *SslCmdRepo) createOwnershipValidationMapping(
 	mappingCmdRepo *vhostInfra.MappingCmdRepo,
-	targetVirtualHostHostname valueObject.Fqdn,
-	expectedOwnershipHash valueObject.Hash,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	targetVirtualHostHostname tkValueObject.Fqdn,
+	expectedOwnershipHash tkValueObject.Hash,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) (mappingId valueObject.MappingId, err error) {
 	path, _ := valueObject.NewMappingPath(DomainOwnershipValidationUrlPath)
 	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
 	targetType, _ := valueObject.NewMappingTargetType("inline-html")
-	httpResponseCode, _ := valueObject.NewHttpResponseCode(200)
+	httpResponseCode, _ := tkValueObject.NewHttpStatusCode(200)
 	targetValue, _ := valueObject.NewMappingTargetValue(
 		expectedOwnershipHash.String(), targetType,
 	)
@@ -119,13 +121,13 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 }
 
 func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
-	vhostHostnames []valueObject.Fqdn,
-	expectedOwnershipHash valueObject.Hash,
-	serverPublicIpAddress valueObject.IpAddress,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
-) []valueObject.Fqdn {
-	functionalHostnames := []valueObject.Fqdn{}
+	vhostHostnames []tkValueObject.Fqdn,
+	expectedOwnershipHash tkValueObject.Hash,
+	serverPublicIpAddress tkValueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
+) []tkValueObject.Fqdn {
+	functionalHostnames := []tkValueObject.Fqdn{}
 
 	serverPublicIpAddressStr := serverPublicIpAddress.String()
 	expectedHashStr := expectedOwnershipHash.String()
@@ -176,8 +178,8 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 }
 
 func (repo *SslCmdRepo) issueValidSsl(
-	mainHostname valueObject.Fqdn,
-	functionalHostnames []valueObject.Fqdn,
+	mainHostname tkValueObject.Fqdn,
+	functionalHostnames []tkValueObject.Fqdn,
 ) error {
 	mainHostnameStr := mainHostname.String()
 	vhostRootDir := infraEnvs.PrimaryPublicDir
@@ -233,7 +235,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 	}
 
 	vhostReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination: dto.PaginationSingleItem,
+		Pagination: tkDto.PaginationSingleItem,
 		Hostname:   &createDto.VirtualHostHostname,
 	})
 	if err != nil {
@@ -244,7 +246,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 		return sslPairId, errors.New("VirtualHostNotFound")
 	}
 
-	virtualHostsHostnames := []valueObject.Fqdn{createDto.VirtualHostHostname}
+	virtualHostsHostnames := []tkValueObject.Fqdn{createDto.VirtualHostHostname}
 	virtualHostsHostnames = append(
 		virtualHostsHostnames, vhostReadResponse.VirtualHosts[0].AliasesHostnames...,
 	)
@@ -260,7 +262,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 	dummyValue := synthesizer.PasswordFactory(32, false)
 	dummyHash := infraHelper.GenStrongHash(dummyValue)
 
-	expectedOwnershipHash, err := valueObject.NewHash(dummyHash)
+	expectedOwnershipHash, err := tkValueObject.NewHash(dummyHash)
 	if err != nil {
 		return sslPairId, errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
@@ -334,7 +336,7 @@ func (repo *SslCmdRepo) Create(
 	return sslPairEntity.Id, nil
 }
 
-func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) error {
+func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) error {
 	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 		Hostname: &vhostHostname,
 	})
@@ -346,14 +348,14 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 	}
 
 	aliasesVirtualHostsReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination:     dto.PaginationUnpaginated,
+		Pagination:     tkDto.PaginationUnpaginated,
 		ParentHostname: &vhostHostname,
 	})
 	if err != nil {
 		return errors.New("ReadAliasesError: " + err.Error())
 	}
 
-	aliasesHostnames := []valueObject.Fqdn{}
+	aliasesHostnames := []tkValueObject.Fqdn{}
 	for _, aliasVirtualHostEntity := range aliasesVirtualHostsReadResponse.VirtualHosts {
 		aliasesHostnames = append(aliasesHostnames, aliasVirtualHostEntity.Hostname)
 	}

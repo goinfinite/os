@@ -6,10 +6,11 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type MappingQueryRepo struct {
@@ -76,7 +77,7 @@ func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
 			sortByStr = "Path"
 		}
 
-		sortBy, err := valueObject.NewPaginationSortBy(sortByStr)
+		sortBy, err := tkValueObject.NewPaginationSortBy(sortByStr)
 		if err == nil {
 			requestDto.Pagination.SortBy = &sortBy
 		}
@@ -118,7 +119,7 @@ func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
 func (repo *MappingQueryRepo) ReadFirst(
 	requestDto dto.ReadMappingsRequest,
 ) (mappingEntity entity.Mapping, err error) {
-	requestDto.Pagination = dto.PaginationSingleItem
+	requestDto.Pagination = tkDto.PaginationSingleItem
 	responseDto, err := repo.Read(requestDto)
 	if err != nil {
 		return mappingEntity, err
@@ -198,7 +199,7 @@ func (repo *MappingQueryRepo) ReadSecurityRule(
 func (repo *MappingQueryRepo) ReadFirstSecurityRule(
 	requestDto dto.ReadMappingSecurityRulesRequest,
 ) (ruleEntity entity.MappingSecurityRule, err error) {
-	requestDto.Pagination = dto.PaginationSingleItem
+	requestDto.Pagination = tkDto.PaginationSingleItem
 	readResponse, err := repo.ReadSecurityRule(requestDto)
 	if err != nil {
 		return ruleEntity, err

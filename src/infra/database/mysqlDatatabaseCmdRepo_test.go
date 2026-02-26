@@ -7,6 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestMysqlDatabaseCmdRepo(t *testing.T) {
@@ -23,12 +24,12 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 
 	dbName, _ := valueObject.NewDatabaseName("testing")
 	dbUsername, _ := valueObject.NewDatabaseUsername("testing")
-	dbPassword, _ := valueObject.NewPassword("testing")
+	dbPassword, _ := tkValueObject.NewPassword("Testing@1")
 	dbPrivilege, _ := valueObject.NewDatabasePrivilege("ALL")
 	dbPrivileges := []valueObject.DatabasePrivilege{dbPrivilege}
 
-	ipAddress := valueObject.IpAddressSystem
-	operatorAccountId, _ := valueObject.NewAccountId(0)
+	ipAddress := tkValueObject.IpAddressLocal
+	operatorAccountId, _ := tkValueObject.NewAccountId(0)
 
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
 

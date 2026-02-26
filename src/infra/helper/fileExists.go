@@ -1,8 +1,9 @@
 package infraHelper
 
-import "os"
+import tkInfra "github.com/goinfinite/tk/src/infra"
+
+var fileClerk = tkInfra.FileClerk{}
 
 func FileExists(filePath string) bool {
-	_, err := os.Stat(filePath)
-	return !os.IsNotExist(err)
+	return fileClerk.FileExists(filePath)
 }

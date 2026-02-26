@@ -1,8 +1,8 @@
 package infraHelper
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
-func IsPrimaryVirtualHost(vhost valueObject.Fqdn) bool {
+func IsPrimaryVirtualHost(vhost tkValueObject.Fqdn) bool {
 	primaryVhost, err := ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return false

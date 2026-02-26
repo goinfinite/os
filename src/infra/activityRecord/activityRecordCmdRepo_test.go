@@ -4,20 +4,20 @@ import (
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
-	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestActivityRecordCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 	trailDbSvc := testHelpers.GetTrailDbSvc()
 	activityRecordCmdRepo := NewActivityRecordCmdRepo(trailDbSvc)
-	level, _ := valueObject.NewActivityRecordLevel("SEC")
-	recordCode, _ := valueObject.NewActivityRecordCode("LoginFailed")
-	operatorIpAddress := valueObject.IpAddressSystem
+	level, _ := tkValueObject.NewActivityRecordLevel("SEC")
+	recordCode, _ := tkValueObject.NewActivityRecordCode("LoginFailed")
+	operatorIpAddress := tkValueObject.IpAddressLocal
 
 	t.Run("CreateActivityRecord", func(t *testing.T) {
-		createDto := dto.CreateActivityRecord{
+		createDto := tkDto.CreateActivityRecord{
 			RecordLevel:       level,
 			RecordCode:        recordCode,
 			OperatorIpAddress: &operatorIpAddress,
@@ -30,8 +30,8 @@ func TestActivityRecordCmdRepo(t *testing.T) {
 	})
 
 	t.Run("DeleteActivityRecords", func(t *testing.T) {
-		ipAddress := valueObject.IpAddressSystem
-		deleteDto := dto.NewDeleteActivityRecord(
+		ipAddress := tkValueObject.IpAddressLocal
+		deleteDto := tkDto.NewDeleteActivityRecord(
 			nil, &level, &recordCode, nil, nil, &ipAddress, nil, nil,
 		)
 

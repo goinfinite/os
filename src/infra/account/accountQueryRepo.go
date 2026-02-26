@@ -9,6 +9,7 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 )
 
 type AccountQueryRepo struct {
@@ -96,7 +97,7 @@ func (repo *AccountQueryRepo) Read(
 func (repo *AccountQueryRepo) ReadFirst(
 	requestDto dto.ReadAccountsRequest,
 ) (account entity.Account, err error) {
-	requestDto.Pagination = dto.Pagination{
+	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
@@ -166,7 +167,7 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 func (repo *AccountQueryRepo) ReadFirstSecureAccessPublicKey(
 	requestDto dto.ReadSecureAccessPublicKeysRequest,
 ) (secureAccessPublicKey entity.SecureAccessPublicKey, err error) {
-	requestDto.Pagination = dto.Pagination{
+	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}

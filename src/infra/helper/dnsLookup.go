@@ -1,39 +1,24 @@
 package infraHelper
 
-import "strings"
+import (
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+)
 
 func DnsLookup(recordName string, recordType *string) ([]string, error) {
-	resourceRecords := []string{}
+	hostname, err := tkValueObject.NewUnixHostname(recordName)
+	if err != nil {
+		return []string{}, err
+	}
 
-	recordTypeStr := "A"
+	var dnsRecordTypePtr *tkValueObject.DnsRecordType
 	if recordType != nil {
-		recordTypeStr = *recordType
-	}
-
-	digCmd := "dig +short +time=5 +tries=2 " + recordTypeStr + " " + recordName
-
-	rawRecords, err := RunCmd(RunCmdSettings{
-		Command:               digCmd + " @dns.google",
-		ShouldRunWithSubShell: true,
-	})
-	if err != nil || rawRecords == "" {
-		rawRecords, err = RunCmd(RunCmdSettings{
-			Command:               digCmd + " @security-filter-dns.cleanbrowsing.org",
-			ShouldRunWithSubShell: true,
-		})
+		dnsRecordType, err := tkValueObject.NewDnsRecordType(*recordType)
 		if err != nil {
-			return resourceRecords, err
+			return []string{}, err
 		}
+		dnsRecordTypePtr = &dnsRecordType
 	}
 
-	if rawRecords == "" {
-		return resourceRecords, nil
-	}
-
-	rawRecordsParts := strings.Split(rawRecords, "\n")
-	for _, rawRecord := range rawRecordsParts {
-		resourceRecords = append(resourceRecords, strings.TrimSpace(rawRecord))
-	}
-
-	return resourceRecords, nil
+	return tkInfra.NewDnsLookup(hostname, dnsRecordTypePtr).Execute()
 }

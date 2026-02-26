@@ -3,9 +3,10 @@ package activityRecordInfra
 import (
 	"encoding/json"
 
-	"github.com/goinfinite/os/src/domain/dto"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfraDbModel "github.com/goinfinite/tk/src/infra/db/model"
+
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 )
 
 type ActivityRecordCmdRepo struct {
@@ -20,10 +21,10 @@ func NewActivityRecordCmdRepo(
 	}
 }
 
-func (repo *ActivityRecordCmdRepo) Create(createDto dto.CreateActivityRecord) error {
-	affectedResources := []dbModel.ActivityRecordAffectedResource{}
+func (repo *ActivityRecordCmdRepo) Create(createDto tkDto.CreateActivityRecord) error {
+	affectedResources := []tkInfraDbModel.ActivityRecordAffectedResource{}
 	for _, affectedResourceSri := range createDto.AffectedResources {
-		affectedResourceModel := dbModel.ActivityRecordAffectedResource{
+		affectedResourceModel := tkInfraDbModel.ActivityRecordAffectedResource{
 			SystemResourceIdentifier: affectedResourceSri.String(),
 		}
 		affectedResources = append(affectedResources, affectedResourceModel)
@@ -39,10 +40,10 @@ func (repo *ActivityRecordCmdRepo) Create(createDto dto.CreateActivityRecord) er
 		recordDetails = &recordDetailsStr
 	}
 
-	var operatorAccountIdPtr *uint64
-	if createDto.OperatorAccountId != nil {
-		operatorAccountId := createDto.OperatorAccountId.Uint64()
-		operatorAccountIdPtr = &operatorAccountId
+	var operatorSriPtr *string
+	if createDto.OperatorSri != nil {
+		operatorSri := createDto.OperatorSri.String()
+		operatorSriPtr = &operatorSri
 	}
 
 	var operatorIpAddressPtr *string
@@ -51,16 +52,16 @@ func (repo *ActivityRecordCmdRepo) Create(createDto dto.CreateActivityRecord) er
 		operatorIpAddressPtr = &operatorIpAddress
 	}
 
-	activityRecordModel := dbModel.NewActivityRecord(
+	activityRecordModel := tkInfraDbModel.NewActivityRecord(
 		0, createDto.RecordLevel.String(), createDto.RecordCode.String(),
-		affectedResources, recordDetails, operatorAccountIdPtr, operatorIpAddressPtr,
+		affectedResources, recordDetails, operatorSriPtr, operatorIpAddressPtr,
 	)
 
 	return repo.trailDbSvc.Handler.Create(&activityRecordModel).Error
 }
 
-func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecord) error {
-	deleteModel := dbModel.ActivityRecord{}
+func (repo *ActivityRecordCmdRepo) Delete(deleteDto tkDto.DeleteActivityRecord) error {
+	deleteModel := tkInfraDbModel.ActivityRecord{}
 	if deleteDto.RecordId != nil {
 		deleteModel.ID = deleteDto.RecordId.Uint64()
 	}
@@ -73,18 +74,18 @@ func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecord) er
 		deleteModel.RecordCode = deleteDto.RecordCode.String()
 	}
 
-	affectedResources := []dbModel.ActivityRecordAffectedResource{}
+	affectedResources := []tkInfraDbModel.ActivityRecordAffectedResource{}
 	for _, affectedResourceSri := range deleteDto.AffectedResources {
-		affectedResourceModel := dbModel.ActivityRecordAffectedResource{
+		affectedResourceModel := tkInfraDbModel.ActivityRecordAffectedResource{
 			SystemResourceIdentifier: affectedResourceSri.String(),
 		}
 		affectedResources = append(affectedResources, affectedResourceModel)
 	}
 	deleteModel.AffectedResources = affectedResources
 
-	if deleteDto.OperatorAccountId != nil {
-		operatorAccountId := deleteDto.OperatorAccountId.Uint64()
-		deleteModel.OperatorAccountId = &operatorAccountId
+	if deleteDto.OperatorSri != nil {
+		operatorSriStr := deleteDto.OperatorSri.String()
+		deleteModel.OperatorSri = &operatorSriStr
 	}
 
 	if deleteDto.OperatorIpAddress != nil {
@@ -101,5 +102,5 @@ func (repo *ActivityRecordCmdRepo) Delete(deleteDto dto.DeleteActivityRecord) er
 		dbQuery.Where("created_at > ?", deleteDto.CreatedAfterAt.ReadAsGoTime())
 	}
 
-	return dbQuery.Delete(&dbModel.ActivityRecord{}).Error
+	return dbQuery.Delete(&tkInfraDbModel.ActivityRecord{}).Error
 }

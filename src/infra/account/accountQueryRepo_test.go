@@ -7,6 +7,7 @@ import (
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestAccountQueryRepo(t *testing.T) {
@@ -15,7 +16,7 @@ func TestAccountQueryRepo(t *testing.T) {
 	persistentDbSvc := testHelpers.GetPersistentDbSvc()
 	accountQueryRepo := NewAccountQueryRepo(persistentDbSvc)
 
-	id, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
+	id, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
 	addDummyUser()
 

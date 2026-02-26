@@ -12,6 +12,8 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -115,9 +117,9 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 			targetValuePtr = &targetValue
 		}
 
-		var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+		var targetHttpResponseCodePtr *tkValueObject.HttpStatusCode
 		if rawItemMappingMap["targetHttpResponseCode"] != nil {
-			targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
+			targetHttpResponseCode, err := tkValueObject.NewHttpStatusCode(
 				rawItemMappingMap["targetHttpResponseCode"],
 			)
 			if err != nil {
@@ -321,7 +323,7 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 
 func (repo *MarketplaceQueryRepo) catalogItemCmdStepsFactory(
 	catalogItemCmdStepsMap interface{},
-) (itemCmdSteps []valueObject.UnixCommand, err error) {
+) (itemCmdSteps []tkValueObject.UnixCommand, err error) {
 	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
 	if !assertOk {
 		return itemCmdSteps, errors.New(
@@ -330,7 +332,7 @@ func (repo *MarketplaceQueryRepo) catalogItemCmdStepsFactory(
 	}
 
 	for _, rawItemCmdStep := range rawItemCmdSteps {
-		itemCmdStep, err := valueObject.NewUnixCommand(rawItemCmdStep)
+		itemCmdStep, err := tkValueObject.NewUnixCommand(rawItemCmdStep)
 		if err != nil {
 			slog.Debug(err.Error(), slog.Any("cmdStep", rawItemCmdStep))
 			continue
@@ -344,7 +346,7 @@ func (repo *MarketplaceQueryRepo) catalogItemCmdStepsFactory(
 
 func (repo *MarketplaceQueryRepo) catalogItemUninstallFileNamesFactory(
 	catalogItemUninstallFileNames interface{},
-) (itemUninstallFileNames []valueObject.UnixFileName, err error) {
+) (itemUninstallFileNames []tkValueObject.UnixFileName, err error) {
 	rawItemUninstallFileNames, assertOk := catalogItemUninstallFileNames.([]interface{})
 	if !assertOk {
 		return itemUninstallFileNames, errors.New(
@@ -371,7 +373,7 @@ func (repo *MarketplaceQueryRepo) catalogItemUninstallFileNamesFactory(
 
 func (repo *MarketplaceQueryRepo) catalogItemScreenshotUrlsFactory(
 	catalogItemUrlsMap interface{},
-) (itemUrls []valueObject.Url, err error) {
+) (itemUrls []tkValueObject.Url, err error) {
 	if catalogItemUrlsMap == nil {
 		return itemUrls, nil
 	}
@@ -384,7 +386,7 @@ func (repo *MarketplaceQueryRepo) catalogItemScreenshotUrlsFactory(
 	}
 
 	for _, rawItemUrl := range rawItemUrls {
-		itemUrl, err := valueObject.NewUrl(rawItemUrl)
+		itemUrl, err := tkValueObject.NewUrl(rawItemUrl)
 		if err != nil {
 			slog.Debug(err.Error(), slog.Any("url", rawItemUrl))
 			continue
@@ -397,7 +399,7 @@ func (repo *MarketplaceQueryRepo) catalogItemScreenshotUrlsFactory(
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemFactory(
-	catalogItemFilePath valueObject.UnixFilePath,
+	catalogItemFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
 	itemMap, err := tkInfra.FileDeserializer(catalogItemFilePath.String())
 	if err != nil {
@@ -491,9 +493,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemInstallTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	itemInstallTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if itemMap["installTimeoutSecs"] != nil {
-		itemInstallTimeoutSecs, err = valueObject.NewUnixTime(
+		itemInstallTimeoutSecs, err = tkValueObject.NewUnixTime(
 			itemMap["installTimeoutSecs"],
 		)
 		if err != nil {
@@ -501,7 +503,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemInstallCmdSteps := []valueObject.UnixCommand{}
+	itemInstallCmdSteps := []tkValueObject.UnixCommand{}
 	if itemMap["installCmdSteps"] != nil {
 		itemInstallCmdSteps, err = repo.catalogItemCmdStepsFactory(
 			itemMap["installCmdSteps"],
@@ -511,9 +513,9 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemUninstallTimeoutSecs, _ := valueObject.NewUnixTime(600)
+	itemUninstallTimeoutSecs, _ := tkValueObject.NewUnixTime(600)
 	if itemMap["uninstallTimeoutSecs"] != nil {
-		itemUninstallTimeoutSecs, err = valueObject.NewUnixTime(
+		itemUninstallTimeoutSecs, err = tkValueObject.NewUnixTime(
 			itemMap["uninstallTimeoutSecs"],
 		)
 		if err != nil {
@@ -521,7 +523,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemUninstallCmdSteps := []valueObject.UnixCommand{}
+	itemUninstallCmdSteps := []tkValueObject.UnixCommand{}
 	if itemMap["uninstallCmdSteps"] != nil {
 		itemUninstallCmdSteps, err = repo.catalogItemCmdStepsFactory(
 			itemMap["uninstallCmdSteps"],
@@ -531,7 +533,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	itemUninstallFileNames := []valueObject.UnixFileName{}
+	itemUninstallFileNames := []tkValueObject.UnixFileName{}
 	if itemMap["uninstallFileNames"] != nil {
 		itemUninstallFileNames, err = repo.catalogItemUninstallFileNamesFactory(
 			itemMap["uninstallFileNames"],
@@ -541,20 +543,20 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 		}
 	}
 
-	estimatedSizeBytes := valueObject.Byte(1000000000)
+	estimatedSizeBytes := tkValueObject.Byte(1000000000)
 	if itemMap["estimatedSizeBytes"] != nil {
-		estimatedSizeBytes, err = valueObject.NewByte(itemMap["estimatedSizeBytes"])
+		estimatedSizeBytes, err = tkValueObject.NewByte(itemMap["estimatedSizeBytes"])
 		if err != nil {
 			return catalogItem, err
 		}
 	}
 
-	itemAvatarUrl, err := valueObject.NewUrl(itemMap["avatarUrl"])
+	itemAvatarUrl, err := tkValueObject.NewUrl(itemMap["avatarUrl"])
 	if err != nil {
 		return catalogItem, err
 	}
 
-	itemScreenshotUrls := []valueObject.Url{}
+	itemScreenshotUrls := []tkValueObject.Url{}
 	if itemMap["screenshotUrls"] != nil {
 		itemScreenshotUrls, err = repo.catalogItemScreenshotUrlsFactory(
 			itemMap["screenshotUrls"],
@@ -752,7 +754,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 func (repo *MarketplaceQueryRepo) ReadFirstCatalogItem(
 	requestDto dto.ReadMarketplaceCatalogItemsRequest,
 ) (catalogItem entity.MarketplaceCatalogItem, err error) {
-	requestDto.Pagination = dto.Pagination{
+	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
@@ -843,7 +845,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 	pagesTotal := uint32(
 		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
 	)
-	responsePagination := dto.Pagination{
+	responsePagination := tkDto.Pagination{
 		PageNumber:    requestDto.Pagination.PageNumber,
 		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
 		SortBy:        requestDto.Pagination.SortBy,
@@ -861,7 +863,7 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 func (repo *MarketplaceQueryRepo) ReadFirstInstalledItem(
 	requestDto dto.ReadMarketplaceInstalledItemsRequest,
 ) (installedItem entity.MarketplaceInstalledItem, err error) {
-	requestDto.Pagination = dto.Pagination{
+	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}

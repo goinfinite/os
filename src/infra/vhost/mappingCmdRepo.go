@@ -15,6 +15,8 @@ import (
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type MappingCmdRepo struct {
@@ -282,10 +284,10 @@ func (repo *MappingCmdRepo) locationUriConfigFactory(
 }
 
 func (repo *MappingCmdRepo) RecreateMappingFile(
-	vhostHostname valueObject.Fqdn,
+	vhostHostname tkValueObject.Fqdn,
 ) error {
 	mappingsReadResponse, err := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		Pagination: dto.PaginationUnpaginated,
+		Pagination: tkDto.PaginationUnpaginated,
 		Hostname:   &vhostHostname,
 	})
 	if err != nil {
@@ -651,7 +653,7 @@ deny {{ . }};
 
 func (repo *MappingCmdRepo) RecreateSecurityRuleFiles() error {
 	responseDto, err := repo.mappingQueryRepo.ReadSecurityRule(
-		dto.ReadMappingSecurityRulesRequest{Pagination: dto.PaginationUnpaginated},
+		dto.ReadMappingSecurityRulesRequest{Pagination: tkDto.PaginationUnpaginated},
 	)
 	if err != nil {
 		return err

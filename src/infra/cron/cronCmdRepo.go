@@ -9,6 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 )
 
 type CronCmdRepo struct {
@@ -62,7 +63,7 @@ func (repo *CronCmdRepo) Create(
 	createDto dto.CreateCron,
 ) (cronId valueObject.CronId, err error) {
 	readRequestDto := dto.ReadCronsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 	}
@@ -88,7 +89,7 @@ func (repo *CronCmdRepo) Create(
 
 func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
 	readRequestDto := dto.ReadCronsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 	}
@@ -129,7 +130,7 @@ func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
 
 func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
 	readRequestDto := dto.ReadCronsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 	}

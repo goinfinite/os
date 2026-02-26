@@ -7,6 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestCronQueryRepo(t *testing.T) {
@@ -14,10 +15,10 @@ func TestCronQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
 	schedule, _ := valueObject.NewCronSchedule("* * * * *")
-	command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
+	command, _ := tkValueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
 	comment, _ := valueObject.NewCronComment("Test cron job")
-	ipAddress := valueObject.IpAddressSystem
-	operatorAccountId, _ := valueObject.NewAccountId(0)
+	ipAddress := tkValueObject.IpAddressLocal
+	operatorAccountId, _ := tkValueObject.NewAccountId(0)
 
 	createDto := dto.NewCreateCron(
 		schedule, command, &comment, operatorAccountId, ipAddress,
@@ -32,10 +33,10 @@ func TestCronQueryRepo(t *testing.T) {
 	t.Run("Read", func(t *testing.T) {
 		paginationDto := useCase.CronsDefaultPagination
 
-		sortBy, _ := valueObject.NewPaginationSortBy("id")
+		sortBy, _ := tkValueObject.NewPaginationSortBy("id")
 		paginationDto.SortBy = &sortBy
 
-		sortDirection, _ := valueObject.NewPaginationSortDirection("desc")
+		sortDirection, _ := tkValueObject.NewPaginationSortDirection("desc")
 		paginationDto.SortDirection = &sortDirection
 
 		readRequestDto := dto.ReadCronsRequest{

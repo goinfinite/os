@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"github.com/golang-jwt/jwt"
 )
 
@@ -15,9 +15,9 @@ type AuthCmdRepo struct {
 }
 
 func (repo AuthCmdRepo) CreateSessionToken(
-	accountId valueObject.AccountId,
-	expiresIn valueObject.UnixTime,
-	ipAddress valueObject.IpAddress,
+	accountId tkValueObject.AccountId,
+	expiresIn tkValueObject.UnixTime,
+	ipAddress tkValueObject.IpAddress,
 ) (entity.AccessToken, error) {
 	var accessToken entity.AccessToken
 
@@ -45,12 +45,12 @@ func (repo AuthCmdRepo) CreateSessionToken(
 		return accessToken, errors.New("SessionTokenGenerationError")
 	}
 
-	tokenType, err := valueObject.NewAccessTokenType("sessionToken")
+	tokenType, err := tkValueObject.NewAccessTokenType("sessionToken")
 	if err != nil {
 		return accessToken, err
 	}
 
-	tokenStr, err := valueObject.NewAccessTokenStr(tokenStrUnparsed)
+	tokenStr, err := tkValueObject.NewAccessTokenValue(tokenStrUnparsed)
 	if err != nil {
 		return accessToken, err
 	}

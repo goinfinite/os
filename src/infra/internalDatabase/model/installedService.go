@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type InstalledService struct {
@@ -92,7 +93,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 	return []interface{}{osApiService, cronService, nginxService}, nil
 }
 
-func (InstalledService) JoinCmdSteps(cmdSteps []valueObject.UnixCommand) string {
+func (InstalledService) JoinCmdSteps(cmdSteps []tkValueObject.UnixCommand) string {
 	cmdStepsStr := ""
 	for _, cmdStep := range cmdSteps {
 		cmdStepsStr += cmdStep.String() + "\n"
@@ -100,15 +101,15 @@ func (InstalledService) JoinCmdSteps(cmdSteps []valueObject.UnixCommand) string 
 	return strings.TrimSuffix(cmdStepsStr, "\n")
 }
 
-func (InstalledService) SplitCmdSteps(cmdStepsStr string) []valueObject.UnixCommand {
+func (InstalledService) SplitCmdSteps(cmdStepsStr string) []tkValueObject.UnixCommand {
 	rawCmdStepsList := strings.Split(cmdStepsStr, "\n")
-	cmdSteps := []valueObject.UnixCommand{}
+	cmdSteps := []tkValueObject.UnixCommand{}
 	for stepIndex, rawCmdStep := range rawCmdStepsList {
 		if len(rawCmdStep) == 0 {
 			continue
 		}
 
-		cmdStep, err := valueObject.NewUnixCommand(rawCmdStep)
+		cmdStep, err := tkValueObject.NewUnixCommand(rawCmdStep)
 		if err != nil {
 			slog.Debug(err.Error(), slog.Int("stepIndex", stepIndex))
 			continue
@@ -174,7 +175,7 @@ func NewInstalledService(
 	name, nature, serviceType, version, startCmd string,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
+	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []tkValueObject.UnixCommand,
 	execUser, workingDirectory, startupFile *string,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
@@ -270,7 +271,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		return serviceEntity, err
 	}
 
-	startCmd, err := valueObject.NewUnixCommand(model.StartCmd)
+	startCmd, err := tkValueObject.NewUnixCommand(model.StartCmd)
 	if err != nil {
 		return serviceEntity, err
 	}
@@ -287,66 +288,66 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		portBindings = model.SplitPortBindings(*model.PortBindings)
 	}
 
-	stopTimeoutSecs, err := valueObject.NewUnixTime(model.StopTimeoutSecs)
+	stopTimeoutSecs, err := tkValueObject.NewUnixTime(model.StopTimeoutSecs)
 	if err != nil {
 		return serviceEntity, err
 	}
 
-	stopCmdSteps := []valueObject.UnixCommand{}
+	stopCmdSteps := []tkValueObject.UnixCommand{}
 	if model.StopCmdSteps != nil {
 		stopCmdSteps = model.SplitCmdSteps(*model.StopCmdSteps)
 	}
 
-	preStartTimeoutSecs, err := valueObject.NewUnixTime(model.PreStartTimeoutSecs)
+	preStartTimeoutSecs, err := tkValueObject.NewUnixTime(model.PreStartTimeoutSecs)
 	if err != nil {
 		return serviceEntity, err
 	}
 
-	preStartCmdSteps := []valueObject.UnixCommand{}
+	preStartCmdSteps := []tkValueObject.UnixCommand{}
 	if model.PreStartCmdSteps != nil {
 		preStartCmdSteps = model.SplitCmdSteps(*model.PreStartCmdSteps)
 	}
 
-	postStartTimeoutSecs, err := valueObject.NewUnixTime(model.PostStartTimeoutSecs)
+	postStartTimeoutSecs, err := tkValueObject.NewUnixTime(model.PostStartTimeoutSecs)
 	if err != nil {
 		return serviceEntity, err
 	}
 
-	postStartCmdSteps := []valueObject.UnixCommand{}
+	postStartCmdSteps := []tkValueObject.UnixCommand{}
 	if model.PostStartCmdSteps != nil {
 		postStartCmdSteps = model.SplitCmdSteps(*model.PostStartCmdSteps)
 	}
 
-	preStopTimeoutSecs, err := valueObject.NewUnixTime(model.PreStopTimeoutSecs)
+	preStopTimeoutSecs, err := tkValueObject.NewUnixTime(model.PreStopTimeoutSecs)
 	if err != nil {
 		return serviceEntity, err
 	}
 
-	preStopCmdSteps := []valueObject.UnixCommand{}
+	preStopCmdSteps := []tkValueObject.UnixCommand{}
 	if model.PreStopCmdSteps != nil {
 		preStopCmdSteps = model.SplitCmdSteps(*model.PreStopCmdSteps)
 	}
 
-	postStopTimeoutSecs, err := valueObject.NewUnixTime(model.PostStopTimeoutSecs)
+	postStopTimeoutSecs, err := tkValueObject.NewUnixTime(model.PostStopTimeoutSecs)
 	if err != nil {
 		return serviceEntity, err
 	}
 
-	postStopCmdSteps := []valueObject.UnixCommand{}
+	postStopCmdSteps := []tkValueObject.UnixCommand{}
 	if model.PostStopCmdSteps != nil {
 		postStopCmdSteps = model.SplitCmdSteps(*model.PostStopCmdSteps)
 	}
 
-	var execUserPtr *valueObject.UnixUsername
+	var execUserPtr *tkValueObject.UnixUsername
 	if model.ExecUser != nil {
-		execUser, err := valueObject.NewUnixUsername(*model.ExecUser)
+		execUser, err := tkValueObject.NewUnixUsername(*model.ExecUser)
 		if err != nil {
 			return serviceEntity, err
 		}
 		execUserPtr = &execUser
 	}
 
-	var workingDirectoryPtr *valueObject.UnixFilePath
+	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if model.WorkingDirectory != nil {
 		workingDirectory, err := valueObject.NewUnixFilePath(*model.WorkingDirectory)
 		if err != nil {
@@ -355,7 +356,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		workingDirectoryPtr = &workingDirectory
 	}
 
-	var startupFilePtr *valueObject.UnixFilePath
+	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if model.StartupFile != nil {
 		startupFile, err := valueObject.NewUnixFilePath(*model.StartupFile)
 		if err != nil {
@@ -384,7 +385,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		maxStartRetries = model.MaxStartRetries
 	}
 
-	var logOutputPathPtr *valueObject.UnixFilePath
+	var logOutputPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if model.LogOutputPath != nil {
 		logOutputPath, err := valueObject.NewUnixFilePath(*model.LogOutputPath)
 		if err != nil {
@@ -393,7 +394,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		logOutputPathPtr = &logOutputPath
 	}
 
-	var logErrorPathPtr *valueObject.UnixFilePath
+	var logErrorPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if model.LogErrorPath != nil {
 		logErrorPath, err := valueObject.NewUnixFilePath(*model.LogErrorPath)
 		if err != nil {
@@ -402,9 +403,9 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		logErrorPathPtr = &logErrorPath
 	}
 
-	var avatarUrlPtr *valueObject.Url
+	var avatarUrlPtr *tkValueObject.Url
 	if model.AvatarUrl != nil {
-		avatarUrl, err := valueObject.NewUrl(*model.AvatarUrl)
+		avatarUrl, err := tkValueObject.NewUrl(*model.AvatarUrl)
 		if err != nil {
 			return serviceEntity, err
 		}
@@ -418,7 +419,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		preStopCmdSteps, postStopTimeoutSecs, postStopCmdSteps, execUserPtr,
 		workingDirectoryPtr, startupFilePtr, autoStart, autoRestart, timeoutStartSecs,
 		maxStartRetries, logOutputPathPtr, logErrorPathPtr, avatarUrlPtr,
-		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
-		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }

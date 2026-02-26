@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	"github.com/golang-jwt/jwt"
@@ -62,7 +62,7 @@ func (repo *AuthQueryRepo) IsLoginValid(createDto dto.CreateSessionToken) bool {
 }
 
 func (repo *AuthQueryRepo) readSessionTokenClaims(
-	sessionToken valueObject.AccessTokenStr,
+	sessionToken tkValueObject.AccessTokenValue,
 ) (claims jwt.MapClaims, err error) {
 	parsedToken, err := jwt.Parse(
 		sessionToken.String(),
@@ -91,14 +91,14 @@ func (repo *AuthQueryRepo) readSessionTokenClaims(
 func (repo *AuthQueryRepo) readTokenDetailsFromSession(
 	sessionTokenClaims jwt.MapClaims,
 ) (tokenDetails dto.AccessTokenDetails, err error) {
-	tokenType, _ := valueObject.NewAccessTokenType("sessionToken")
+	tokenType, _ := tkValueObject.NewAccessTokenType("sessionToken")
 
-	accountId, err := valueObject.NewAccountId(sessionTokenClaims["accountId"])
+	accountId, err := tkValueObject.NewAccountId(sessionTokenClaims["accountId"])
 	if err != nil {
 		return tokenDetails, errors.New("AccountIdUnreadable")
 	}
 
-	issuedIp, err := valueObject.NewIpAddress(sessionTokenClaims["originalIp"])
+	issuedIp, err := tkValueObject.NewIpAddress(sessionTokenClaims["originalIp"])
 	if err != nil {
 		return tokenDetails, errors.New("OriginalIpUnreadable")
 	}
@@ -107,7 +107,7 @@ func (repo *AuthQueryRepo) readTokenDetailsFromSession(
 }
 
 func (repo *AuthQueryRepo) readKeyHash(
-	accountId valueObject.AccountId,
+	accountId tkValueObject.AccountId,
 ) (keyHash string, err error) {
 	accountModel := dbModel.Account{ID: accountId.Uint64()}
 	err = repo.persistentDbSvc.Handler.Model(&accountModel).First(&accountModel).Error
@@ -123,7 +123,7 @@ func (repo *AuthQueryRepo) readKeyHash(
 }
 
 func (repo *AuthQueryRepo) readTokenDetailsFromApiKey(
-	token valueObject.AccessTokenStr,
+	token tkValueObject.AccessTokenValue,
 ) (tokenDetails dto.AccessTokenDetails, err error) {
 	secretKey := os.Getenv("ACCOUNT_API_KEY_SECRET")
 	decryptedApiKey, err := infraHelper.DecryptStr(secretKey, token.String())
@@ -137,7 +137,7 @@ func (repo *AuthQueryRepo) readTokenDetailsFromApiKey(
 		return tokenDetails, errors.New("ApiKeyFormatError")
 	}
 
-	accountId, err := valueObject.NewAccountId(keyParts[0])
+	accountId, err := tkValueObject.NewAccountId(keyParts[0])
 	if err != nil {
 		return tokenDetails, errors.New("AccountIdUnreadable")
 	}
@@ -153,13 +153,13 @@ func (repo *AuthQueryRepo) readTokenDetailsFromApiKey(
 		return tokenDetails, errors.New("UserKeyHashMismatch")
 	}
 
-	tokenType, _ := valueObject.NewAccessTokenType("accountApiKey")
+	tokenType, _ := tkValueObject.NewAccessTokenType("accountApiKey")
 
 	return dto.NewAccessTokenDetails(tokenType, accountId, nil), nil
 }
 
 func (repo *AuthQueryRepo) ReadAccessTokenDetails(
-	token valueObject.AccessTokenStr,
+	token tkValueObject.AccessTokenValue,
 ) (tokenDetails dto.AccessTokenDetails, err error) {
 	sessionTokenClaims, err := repo.readSessionTokenClaims(token)
 	if err != nil {
