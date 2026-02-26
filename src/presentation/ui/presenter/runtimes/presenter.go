@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
@@ -33,7 +34,7 @@ func NewRuntimesPresenter(
 
 func (presenter *RuntimesPresenter) runtimeOverviewFactory(
 	runtimeType valueObject.RuntimeType,
-	selectedVhostHostname valueObject.Fqdn,
+	selectedVhostHostname tkValueObject.Fqdn,
 ) (runtimeOverview RuntimeOverview, err error) {
 	isInstalled := false
 	isVirtualHostUsingRuntime := false
@@ -85,7 +86,7 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 	}
 	selectedVhostHostname := primaryVhostHostname
 	if c.QueryParam("vhostHostname") != "" {
-		selectedVhostHostname, err = valueObject.NewFqdn(c.QueryParam("vhostHostname"))
+		selectedVhostHostname, err = tkValueObject.NewFqdn(c.QueryParam("vhostHostname"))
 		if err != nil {
 			slog.Error("InvalidVhostHostname", slog.String("err", err.Error()))
 			return nil

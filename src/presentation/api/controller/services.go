@@ -9,7 +9,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
@@ -105,7 +105,7 @@ func (controller *ServicesController) transformRawEnvsInterfaceSliceToMap(
 			continue
 		}
 
-		envVarNameStr, err := voHelper.InterfaceToString(rawEnvMap["name"])
+		envVarNameStr, err := tkVoUtil.InterfaceToString(rawEnvMap["name"])
 		if err != nil {
 			slog.Debug("EnvVarNameMustBeString", slog.Int("envIndex", rawEnvIndex))
 			continue
@@ -136,7 +136,7 @@ func (controller *ServicesController) parseRawEnvs(
 	}
 
 	for envVarName, envVarValue := range rawEnvsMap {
-		envValueStr, err := voHelper.InterfaceToString(envVarValue)
+		envValueStr, err := tkVoUtil.InterfaceToString(envVarValue)
 		if err != nil {
 			slog.Debug("InvalidServiceEnvValue", slog.Any("envVarName", envVarName))
 			continue
@@ -170,7 +170,7 @@ func (controller *ServicesController) transformRawPortBindingsInterfaceSliceToMa
 			continue
 		}
 
-		portStr, err := voHelper.InterfaceToString(rawPortBindingMap["port"])
+		portStr, err := tkVoUtil.InterfaceToString(rawPortBindingMap["port"])
 		if err != nil {
 			slog.Debug(
 				"PortBindingPortBeString",
@@ -213,7 +213,7 @@ func (controller *ServicesController) parseRawPortBindings(
 	for port, protocol := range rawPortBindingsMap {
 		rawPortBindingIndex++
 
-		protocolStr, err := voHelper.InterfaceToString(protocol)
+		protocolStr, err := tkVoUtil.InterfaceToString(protocol)
 		if err != nil {
 			slog.Debug(
 				"InvalidPortBindingProtocol",

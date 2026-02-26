@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -47,7 +48,7 @@ func (liaison *RuntimeLiaison) ReadPhpConfigs(
 		return NewLiaisonOutput(InfraError, sharedHelper.ServiceUnavailableError)
 	}
 
-	hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+	hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
@@ -73,7 +74,7 @@ func (liaison *RuntimeLiaison) UpdatePhpConfigs(
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+	hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
@@ -103,7 +104,7 @@ func (liaison *RuntimeLiaison) UpdatePhpConfigs(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -111,7 +112,7 @@ func (liaison *RuntimeLiaison) UpdatePhpConfigs(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -148,12 +149,12 @@ func (liaison *RuntimeLiaison) RunPhpCommand(
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+	hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	command, err := valueObject.NewUnixCommand(untrustedInput["command"])
+	command, err := tkValueObject.NewUnixCommand(untrustedInput["command"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
@@ -169,7 +170,7 @@ func (liaison *RuntimeLiaison) RunPhpCommand(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -177,7 +178,7 @@ func (liaison *RuntimeLiaison) RunPhpCommand(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}

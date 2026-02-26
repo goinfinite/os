@@ -8,7 +8,9 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -80,7 +82,7 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 
 	paginationDto := useCase.MarketplaceDefaultPagination
 	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
+		pageNumber, err := tkVoUtil.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
 		}
@@ -88,7 +90,7 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	}
 
 	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
+		itemsPerPage, err := tkVoUtil.InterfaceToUint16(untrustedInput["itemsPerPage"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
 		}
@@ -96,7 +98,7 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	}
 
 	if untrustedInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
+		sortBy, err := tkValueObject.NewPaginationSortBy(untrustedInput["sortBy"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -104,7 +106,7 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	}
 
 	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(
+		sortDirection, err := tkValueObject.NewPaginationSortDirection(
 			untrustedInput["sortDirection"],
 		)
 		if err != nil {
@@ -114,7 +116,7 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	}
 
 	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
+		lastSeenId, err := tkValueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -147,7 +149,7 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	}
 
 	if untrustedInput["hostname"] != nil {
-		hostname, err = valueObject.NewFqdn(untrustedInput["hostname"])
+		hostname, err = tkValueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -208,7 +210,7 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 		}
 
 		for _, dataField := range dataFields {
-			escapedField := infraHelper.ShellEscape{}.Quote(dataField.String())
+			escapedField := tkInfra.ShellEscape{}.Quote(dataField.String())
 			installParams = append(installParams, "--data-fields", escapedField)
 		}
 
@@ -216,7 +218,7 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 
 		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(liaison.persistentDbSvc)
 		taskName, _ := valueObject.NewScheduledTaskName("InstallMarketplaceCatalogItem")
-		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskCmd, _ := tkValueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
 		timeoutSecs := uint16(1800)
@@ -235,7 +237,7 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -243,7 +245,7 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -279,9 +281,9 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 		idPtr = &id
 	}
 
-	var hostnamePtr *valueObject.Fqdn
+	var hostnamePtr *tkValueObject.Fqdn
 	if untrustedInput["hostname"] != nil {
-		hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+		hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -310,7 +312,7 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 
 	paginationDto := useCase.MarketplaceDefaultPagination
 	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
+		pageNumber, err := tkVoUtil.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
 		}
@@ -318,7 +320,7 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	}
 
 	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
+		itemsPerPage, err := tkVoUtil.InterfaceToUint16(untrustedInput["itemsPerPage"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
 		}
@@ -326,7 +328,7 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	}
 
 	if untrustedInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
+		sortBy, err := tkValueObject.NewPaginationSortBy(untrustedInput["sortBy"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -334,7 +336,7 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	}
 
 	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(
+		sortDirection, err := tkValueObject.NewPaginationSortDirection(
 			untrustedInput["sortDirection"],
 		)
 		if err != nil {
@@ -344,7 +346,7 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	}
 
 	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
+		lastSeenId, err := tkValueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -387,7 +389,7 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 
 	shouldUninstallServices := true
 	if untrustedInput["shouldUninstallServices"] != nil {
-		shouldUninstallServices, err = voHelper.InterfaceToBool(
+		shouldUninstallServices, err = tkVoUtil.InterfaceToBool(
 			untrustedInput["shouldUninstallServices"],
 		)
 		if err != nil {
@@ -397,7 +399,7 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -405,7 +407,7 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -424,7 +426,7 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 			liaison.persistentDbSvc,
 		)
 		taskName, _ := valueObject.NewScheduledTaskName("DeleteMarketplaceCatalogItem")
-		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskCmd, _ := tkValueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
 		timeoutSeconds := uint16(600)

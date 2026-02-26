@@ -8,7 +8,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
@@ -77,7 +77,7 @@ func (controller *RuntimeController) parsePhpModules(rawPhpModules any) (
 			continue
 		}
 
-		moduleStatus, err := voHelper.InterfaceToBool(rawModuleMap["status"])
+		moduleStatus, err := tkVoUtil.InterfaceToBool(rawModuleMap["status"])
 		if err != nil {
 			slog.Debug(err.Error(), slog.Any("status", rawModuleMap["status"]))
 			continue

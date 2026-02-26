@@ -1,21 +1,13 @@
 package apiHelper
 
-import (
-	"strings"
-)
+import tkPresentation "github.com/goinfinite/tk/src/presentation"
 
 func CheckMissingParams(
 	requestBody map[string]interface{},
 	requiredParams []string,
 ) {
-	missingParams := []string{}
-	for _, param := range requiredParams {
-		if _, ok := requestBody[param]; !ok {
-			missingParams = append(missingParams, param)
-		}
-	}
-
-	if len(missingParams) > 0 {
-		panic("MissingParams: " + strings.Join(missingParams, ", "))
+	err := tkPresentation.RequiredParamsInspector(requestBody, requiredParams)
+	if err != nil {
+		panic(err.Error())
 	}
 }

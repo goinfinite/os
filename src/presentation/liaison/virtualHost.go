@@ -6,7 +6,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
@@ -14,7 +14,6 @@ import (
 	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type VirtualHostLiaison struct {
@@ -46,9 +45,9 @@ func (liaison *VirtualHostLiaison) VirtualHostReadRequestFactory(
 	untrustedInput map[string]any,
 	withMappings bool,
 ) (readRequestDto dto.ReadVirtualHostsRequest, err error) {
-	var hostnamePtr *valueObject.Fqdn
+	var hostnamePtr *tkValueObject.Fqdn
 	if untrustedInput["hostname"] != nil {
-		hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+		hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
 			return readRequestDto, err
 		}
@@ -64,7 +63,7 @@ func (liaison *VirtualHostLiaison) VirtualHostReadRequestFactory(
 		typePtr = &vhostType
 	}
 
-	var rootDirectoryPtr *valueObject.UnixFilePath
+	var rootDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["rootDirectory"] != nil {
 		rootDirectory, err := valueObject.NewUnixFilePath(untrustedInput["rootDirectory"])
 		if err != nil {
@@ -73,9 +72,9 @@ func (liaison *VirtualHostLiaison) VirtualHostReadRequestFactory(
 		rootDirectoryPtr = &rootDirectory
 	}
 
-	var parentHostnamePtr *valueObject.Fqdn
+	var parentHostnamePtr *tkValueObject.Fqdn
 	if untrustedInput["parentHostname"] != nil {
-		parentHostname, err := valueObject.NewFqdn(untrustedInput["parentHostname"])
+		parentHostname, err := tkValueObject.NewFqdn(untrustedInput["parentHostname"])
 		if err != nil {
 			return readRequestDto, err
 		}
@@ -83,7 +82,7 @@ func (liaison *VirtualHostLiaison) VirtualHostReadRequestFactory(
 	}
 
 	if untrustedInput["withMappings"] != nil {
-		withMappings, err = voHelper.InterfaceToBool(untrustedInput["withMappings"])
+		withMappings, err = tkVoUtil.InterfaceToBool(untrustedInput["withMappings"])
 		if err != nil {
 			return readRequestDto, err
 		}
@@ -134,7 +133,7 @@ func (liaison *VirtualHostLiaison) Create(untrustedInput map[string]any) Liaison
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+	hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
@@ -149,15 +148,15 @@ func (liaison *VirtualHostLiaison) Create(untrustedInput map[string]any) Liaison
 
 	isWildcard := false
 	if untrustedInput["isWildcard"] != nil {
-		isWildcard, err = voHelper.InterfaceToBool(untrustedInput["isWildcard"])
+		isWildcard, err = tkVoUtil.InterfaceToBool(untrustedInput["isWildcard"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
 	}
 
-	var parentHostnamePtr *valueObject.Fqdn
+	var parentHostnamePtr *tkValueObject.Fqdn
 	if untrustedInput["parentHostname"] != nil {
-		parentHostname, err := valueObject.NewFqdn(untrustedInput["parentHostname"])
+		parentHostname, err := tkValueObject.NewFqdn(untrustedInput["parentHostname"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -166,7 +165,7 @@ func (liaison *VirtualHostLiaison) Create(untrustedInput map[string]any) Liaison
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -174,7 +173,7 @@ func (liaison *VirtualHostLiaison) Create(untrustedInput map[string]any) Liaison
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -203,14 +202,14 @@ func (liaison *VirtualHostLiaison) Update(untrustedInput map[string]any) Liaison
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+	hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
 	var isWildcardPtr *bool
 	if untrustedInput["isWildcard"] != nil {
-		isWildcard, err := voHelper.InterfaceToBool(untrustedInput["isWildcard"])
+		isWildcard, err := tkVoUtil.InterfaceToBool(untrustedInput["isWildcard"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidIsWildcard"))
 		}
@@ -219,7 +218,7 @@ func (liaison *VirtualHostLiaison) Update(untrustedInput map[string]any) Liaison
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -227,7 +226,7 @@ func (liaison *VirtualHostLiaison) Update(untrustedInput map[string]any) Liaison
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -255,14 +254,14 @@ func (liaison *VirtualHostLiaison) Delete(untrustedInput map[string]any) Liaison
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+	hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -270,7 +269,7 @@ func (liaison *VirtualHostLiaison) Delete(untrustedInput map[string]any) Liaison
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -313,7 +312,7 @@ func (liaison *VirtualHostLiaison) CreateMapping(
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+	hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
@@ -347,12 +346,12 @@ func (liaison *VirtualHostLiaison) CreateMapping(
 		targetValuePtr = &targetValue
 	}
 
-	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+	var targetHttpResponseCodePtr *tkValueObject.HttpStatusCode
 	if untrustedInput["targetHttpResponseCode"] != nil {
 		if untrustedInput["targetHttpResponseCode"] == "" {
 			untrustedInput["targetHttpResponseCode"] = 301
 		}
-		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
+		targetHttpResponseCode, err := tkValueObject.NewHttpStatusCode(
 			untrustedInput["targetHttpResponseCode"],
 		)
 		if err != nil {
@@ -385,7 +384,7 @@ func (liaison *VirtualHostLiaison) CreateMapping(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -393,7 +392,7 @@ func (liaison *VirtualHostLiaison) CreateMapping(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -438,7 +437,7 @@ func (liaison *VirtualHostLiaison) DeleteMapping(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -446,7 +445,7 @@ func (liaison *VirtualHostLiaison) DeleteMapping(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -522,9 +521,9 @@ func (liaison *VirtualHostLiaison) UpdateMapping(untrustedInput map[string]any) 
 		targetValuePtr = &targetValue
 	}
 
-	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+	var targetHttpResponseCodePtr *tkValueObject.HttpStatusCode
 	if untrustedInput["targetHttpResponseCode"] != nil {
-		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(untrustedInput["targetHttpResponseCode"])
+		targetHttpResponseCode, err := tkValueObject.NewHttpStatusCode(untrustedInput["targetHttpResponseCode"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -556,7 +555,7 @@ func (liaison *VirtualHostLiaison) UpdateMapping(untrustedInput map[string]any) 
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -564,7 +563,7 @@ func (liaison *VirtualHostLiaison) UpdateMapping(untrustedInput map[string]any) 
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -743,18 +742,18 @@ func (liaison *VirtualHostLiaison) CreateMappingSecurityRule(
 		maxConnectionsPerIpPtr = &maxConns
 	}
 
-	var bandwidthBpsLimitPerConnectionPtr *valueObject.Byte
+	var bandwidthBpsLimitPerConnectionPtr *tkValueObject.Byte
 	if untrustedInput["bandwidthBpsLimitPerConnection"] != nil && untrustedInput["bandwidthBpsLimitPerConnection"] != "" {
-		bandwidthBpsLimit, err := valueObject.NewByte(untrustedInput["bandwidthBpsLimitPerConnection"])
+		bandwidthBpsLimit, err := tkValueObject.NewByte(untrustedInput["bandwidthBpsLimitPerConnection"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, "InvalidBandwidthBpsLimitPerConnection")
 		}
 		bandwidthBpsLimitPerConnectionPtr = &bandwidthBpsLimit
 	}
 
-	var bandwidthLimitOnlyAfterBytesPtr *valueObject.Byte
+	var bandwidthLimitOnlyAfterBytesPtr *tkValueObject.Byte
 	if untrustedInput["bandwidthLimitOnlyAfterBytes"] != nil && untrustedInput["bandwidthLimitOnlyAfterBytes"] != "" {
-		bandwidthLimitOnlyAfterBytes, err := valueObject.NewByte(untrustedInput["bandwidthLimitOnlyAfterBytes"])
+		bandwidthLimitOnlyAfterBytes, err := tkValueObject.NewByte(untrustedInput["bandwidthLimitOnlyAfterBytes"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, "InvalidBandwidthLimitOnlyAfterBytes")
 		}
@@ -772,7 +771,7 @@ func (liaison *VirtualHostLiaison) CreateMappingSecurityRule(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -780,7 +779,7 @@ func (liaison *VirtualHostLiaison) CreateMappingSecurityRule(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -904,18 +903,18 @@ func (liaison *VirtualHostLiaison) UpdateMappingSecurityRule(
 		maxConnectionsPerIpPtr = &maxConns
 	}
 
-	var bandwidthBpsLimitPerConnectionPtr *valueObject.Byte
+	var bandwidthBpsLimitPerConnectionPtr *tkValueObject.Byte
 	if untrustedInput["bandwidthBpsLimitPerConnection"] != nil && untrustedInput["bandwidthBpsLimitPerConnection"] != "" {
-		bandwidthBpsLimit, err := valueObject.NewByte(untrustedInput["bandwidthBpsLimitPerConnection"])
+		bandwidthBpsLimit, err := tkValueObject.NewByte(untrustedInput["bandwidthBpsLimitPerConnection"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, "InvalidBandwidthBpsLimitPerConnection")
 		}
 		bandwidthBpsLimitPerConnectionPtr = &bandwidthBpsLimit
 	}
 
-	var bandwidthLimitOnlyAfterBytesPtr *valueObject.Byte
+	var bandwidthLimitOnlyAfterBytesPtr *tkValueObject.Byte
 	if untrustedInput["bandwidthLimitOnlyAfterBytes"] != nil && untrustedInput["bandwidthLimitOnlyAfterBytes"] != "" {
-		bandwidthLimitOnlyAfterBytes, err := valueObject.NewByte(untrustedInput["bandwidthLimitOnlyAfterBytes"])
+		bandwidthLimitOnlyAfterBytes, err := tkValueObject.NewByte(untrustedInput["bandwidthLimitOnlyAfterBytes"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, "InvalidBandwidthLimitOnlyAfterBytes")
 		}
@@ -933,7 +932,7 @@ func (liaison *VirtualHostLiaison) UpdateMappingSecurityRule(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -941,7 +940,7 @@ func (liaison *VirtualHostLiaison) UpdateMappingSecurityRule(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -982,7 +981,7 @@ func (liaison *VirtualHostLiaison) DeleteMappingSecurityRule(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -990,7 +989,7 @@ func (liaison *VirtualHostLiaison) DeleteMappingSecurityRule(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}

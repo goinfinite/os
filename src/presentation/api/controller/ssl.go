@@ -8,6 +8,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
@@ -113,7 +114,7 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 	}
 
 	requestData["virtualHostsHostnames"] = sharedHelper.StringSliceValueObjectParser(
-		requestData["virtualHostsHostnames"], valueObject.NewFqdn,
+		requestData["virtualHostsHostnames"], tkValueObject.NewFqdn,
 	)
 
 	var err error

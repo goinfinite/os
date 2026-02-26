@@ -3,7 +3,7 @@ package uiHelper
 import (
 	"fmt"
 
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func FormatPointer[ParamType interface{}](pointer *ParamType) string {
@@ -12,9 +12,9 @@ func FormatPointer[ParamType interface{}](pointer *ParamType) string {
 	}
 
 	switch pointerType := any(*pointer).(type) {
-	case valueObject.UnixTime:
+	case tkValueObject.UnixTime:
 		return pointerType.ReadRfcDate()
-	case valueObject.Byte:
+	case tkValueObject.Byte:
 		return pointerType.StringWithSuffix()
 	}
 

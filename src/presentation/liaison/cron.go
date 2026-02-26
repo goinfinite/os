@@ -6,7 +6,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	cronInfra "github.com/goinfinite/os/src/infra/cron"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -50,7 +51,7 @@ func (liaison *CronLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
 
 	paginationDto := useCase.CronsDefaultPagination
 	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
+		pageNumber, err := tkVoUtil.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
 		}
@@ -58,7 +59,7 @@ func (liaison *CronLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
 	}
 
 	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
+		itemsPerPage, err := tkVoUtil.InterfaceToUint16(untrustedInput["itemsPerPage"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
 		}
@@ -66,7 +67,7 @@ func (liaison *CronLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
 	}
 
 	if untrustedInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
+		sortBy, err := tkValueObject.NewPaginationSortBy(untrustedInput["sortBy"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -74,7 +75,7 @@ func (liaison *CronLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
 	}
 
 	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(
+		sortDirection, err := tkValueObject.NewPaginationSortDirection(
 			untrustedInput["sortDirection"],
 		)
 		if err != nil {
@@ -84,7 +85,7 @@ func (liaison *CronLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
 	}
 
 	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
+		lastSeenId, err := tkValueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -117,7 +118,7 @@ func (liaison *CronLiaison) Create(untrustedInput map[string]any) LiaisonOutput 
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	command, err := valueObject.NewUnixCommand(untrustedInput["command"])
+	command, err := tkValueObject.NewUnixCommand(untrustedInput["command"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
@@ -133,7 +134,7 @@ func (liaison *CronLiaison) Create(untrustedInput map[string]any) LiaisonOutput 
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -141,7 +142,7 @@ func (liaison *CronLiaison) Create(untrustedInput map[string]any) LiaisonOutput 
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -182,9 +183,9 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 		schedulePtr = &schedule
 	}
 
-	var commandPtr *valueObject.UnixCommand
+	var commandPtr *tkValueObject.UnixCommand
 	if untrustedInput["command"] != nil {
-		command, err := valueObject.NewUnixCommand(untrustedInput["command"])
+		command, err := tkValueObject.NewUnixCommand(untrustedInput["command"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -208,7 +209,7 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -216,7 +217,7 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -261,7 +262,7 @@ func (liaison *CronLiaison) Delete(untrustedInput map[string]any) LiaisonOutput 
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -269,7 +270,7 @@ func (liaison *CronLiaison) Delete(untrustedInput map[string]any) LiaisonOutput 
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}

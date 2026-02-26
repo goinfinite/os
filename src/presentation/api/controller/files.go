@@ -10,7 +10,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	filesInfra "github.com/goinfinite/os/src/infra/files"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -61,7 +62,7 @@ func (controller *FilesController) Read(echoContext echo.Context) error {
 
 	shouldIncludeFileTree := false
 	if requestData["shouldIncludeFileTree"] != nil {
-		shouldIncludeFileTree, err = voHelper.InterfaceToBool(
+		shouldIncludeFileTree, err = tkVoUtil.InterfaceToBool(
 			requestData["shouldIncludeFileTree"],
 		)
 		if err != nil {
@@ -106,15 +107,15 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	fileType := valueObject.MimeTypeGeneric
+	fileType := tkValueObject.MimeTypeGeneric
 	if requestData["mimeType"] != nil {
-		fileType, err = valueObject.NewMimeType(requestData["mimeType"])
+		fileType, err = tkValueObject.NewMimeType(requestData["mimeType"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 		}
 
-		if fileType != valueObject.MimeTypeDirectory {
-			fileType = valueObject.MimeTypeGeneric
+		if fileType != tkValueObject.MimeTypeDirectory {
+			fileType = tkValueObject.MimeTypeGeneric
 		}
 	}
 
@@ -135,14 +136,14 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 		}
 	}
 
-	operatorAccountId, err := valueObject.NewAccountId(
+	operatorAccountId, err := tkValueObject.NewAccountId(
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(
+	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
@@ -166,8 +167,8 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 
 func (controller *FilesController) parseSourcePaths(
 	rawSourcePathsUnknownType any,
-) ([]valueObject.UnixFilePath, error) {
-	sourcePaths := []valueObject.UnixFilePath{}
+) ([]tkValueObject.UnixAbsoluteFilePath, error) {
+	sourcePaths := []tkValueObject.UnixAbsoluteFilePath{}
 
 	rawSourcePathsStrSlice := []string{}
 	switch rawSourcePathsValues := rawSourcePathsUnknownType.(type) {
@@ -177,7 +178,7 @@ func (controller *FilesController) parseSourcePaths(
 		rawSourcePathsStrSlice = rawSourcePathsValues
 	case []interface{}:
 		for _, rawSourcePath := range rawSourcePathsValues {
-			rawSourcePathStr, err := voHelper.InterfaceToString(rawSourcePath)
+			rawSourcePathStr, err := tkVoUtil.InterfaceToString(rawSourcePath)
 			if err != nil {
 				slog.Debug(err.Error(), slog.Any("rawSourcePath", rawSourcePath))
 				continue
@@ -233,7 +234,7 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	var destinationPathPtr *valueObject.UnixFilePath
+	var destinationPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if requestData["destinationPath"] != nil {
 		destinationPath, err := valueObject.NewUnixFilePath(
 			requestData["destinationPath"],
@@ -266,9 +267,9 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 		encodedContentPtr = &encodedContent
 	}
 
-	var ownershipPtr *valueObject.UnixFileOwnership
+	var ownershipPtr *tkValueObject.UnixFileOwnership
 	if requestData["ownership"] != nil {
-		ownership, err := valueObject.NewUnixFileOwnership(
+		ownership, err := tkValueObject.NewUnixFileOwnership(
 			requestData["ownership"],
 		)
 		if err != nil {
@@ -279,7 +280,7 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 
 	var shouldFixPermissionsPtr *bool
 	if requestData["shouldFixPermissions"] != nil {
-		shouldFixPermissions, err := voHelper.InterfaceToBool(
+		shouldFixPermissions, err := tkVoUtil.InterfaceToBool(
 			requestData["shouldFixPermissions"],
 		)
 		if err != nil {
@@ -288,14 +289,14 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 		shouldFixPermissionsPtr = &shouldFixPermissions
 	}
 
-	operatorAccountId, err := valueObject.NewAccountId(
+	operatorAccountId, err := tkValueObject.NewAccountId(
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(
+	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
@@ -360,7 +361,7 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 	shouldOverwrite := false
 	if requestData["shouldOverwrite"] != nil {
 		var err error
-		shouldOverwrite, err = voHelper.InterfaceToBool(requestData["shouldOverwrite"])
+		shouldOverwrite, err = tkVoUtil.InterfaceToBool(requestData["shouldOverwrite"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(
 				echoContext, http.StatusBadRequest, "InvalidShouldOverwrite",
@@ -368,14 +369,14 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 		}
 	}
 
-	operatorAccountId, err := valueObject.NewAccountId(
+	operatorAccountId, err := tkValueObject.NewAccountId(
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(
+	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
@@ -432,7 +433,7 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 	hardDelete := false
 	if requestData["hardDelete"] != nil {
 		var err error
-		hardDelete, err = voHelper.InterfaceToBool(requestData["hardDelete"])
+		hardDelete, err = tkVoUtil.InterfaceToBool(requestData["hardDelete"])
 		if err != nil {
 			return apiHelper.ResponseWrapper(
 				echoContext, http.StatusBadRequest, "InvalidHardDelete",
@@ -440,14 +441,14 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 		}
 	}
 
-	operatorAccountId, err := valueObject.NewAccountId(
+	operatorAccountId, err := tkValueObject.NewAccountId(
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(
+	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
@@ -519,14 +520,14 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 		compressionUnixTypePtr = &compressionUnixType
 	}
 
-	operatorAccountId, err := valueObject.NewAccountId(
+	operatorAccountId, err := tkValueObject.NewAccountId(
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(
+	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
@@ -587,14 +588,14 @@ func (controller *FilesController) Extract(echoContext echo.Context) error {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	operatorAccountId, err := valueObject.NewAccountId(
+	operatorAccountId, err := tkValueObject.NewAccountId(
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(
+	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
@@ -652,14 +653,14 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 		filesToUpload = append(filesToUpload, fileStreamHandler)
 	}
 
-	operatorAccountId, err := valueObject.NewAccountId(
+	operatorAccountId, err := tkValueObject.NewAccountId(
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(
+	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
@@ -713,5 +714,5 @@ func (controller *FilesController) Download(echoContext echo.Context) error {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	return echoContext.Attachment(sourcePath.String(), sourcePath.ReadFileName().String())
+	return echoContext.Attachment(sourcePath.String(), sourcePath.ReadFileName(false).String())
 }

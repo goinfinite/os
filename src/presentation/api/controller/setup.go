@@ -6,6 +6,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -55,7 +56,7 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	password, err := valueObject.NewPassword(requestBody["password"])
+	password, err := tkValueObject.NewPassword(requestBody["password"])
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
@@ -64,7 +65,7 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 
 	operatorIpAddress := liaison.LocalOperatorIpAddress
 	if requestBody["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(
+		operatorIpAddress, err = tkValueObject.NewIpAddress(
 			requestBody["operatorIpAddress"],
 		)
 		if err != nil {

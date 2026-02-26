@@ -4,6 +4,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	authInfra "github.com/goinfinite/os/src/infra/auth"
@@ -40,12 +41,12 @@ func (liaison *AuthenticationLiaison) Login(
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	password, err := valueObject.NewPassword(untrustedInput["password"])
+	password, err := tkValueObject.NewWeakPassword(untrustedInput["password"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	operatorIpAddress, err := valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+	operatorIpAddress, err := tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}

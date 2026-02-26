@@ -3,13 +3,14 @@ package componentMappings
 import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"github.com/goinfinite/ui/src/display"
 )
 
 templ VirtualHostMappingsList(
 	mappingEntity entity.Mapping,
-	rootDirectory valueObject.UnixFilePath,
+	rootDirectory tkValueObject.UnixAbsoluteFilePath,
 ) {
 	<!-- VirtualHostMappingsList -->
 	<div class="flex w-full items-center justify-between rounded-md bg-neutral-500/5 p-3">

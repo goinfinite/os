@@ -8,7 +8,8 @@ import (
 	"os"
 
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -30,8 +31,8 @@ func webServerSetup(
 }
 
 func initialSslSetup() (
-	certFilePath valueObject.UnixFilePath,
-	keyFilePath valueObject.UnixFilePath,
+	certFilePath tkValueObject.UnixAbsoluteFilePath,
+	keyFilePath tkValueObject.UnixAbsoluteFilePath,
 	err error,
 ) {
 	rawOsPkiDir := "/infinite/pki"
@@ -59,7 +60,7 @@ func initialSslSetup() (
 			return certFilePath, keyFilePath, errors.New("CreatePkiDirFailed")
 		}
 
-		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os", []valueObject.Fqdn{})
+		err = infraHelper.CreateSelfSignedSsl(pkiDir, "os", []tkValueObject.Fqdn{})
 		if err != nil {
 			return certFilePath, keyFilePath, errors.New("CreateSelfSignedSslFailed")
 		}
@@ -77,7 +78,7 @@ func initialBannerSetup(
 	o11yOverview, err := o11yQueryRepo.ReadOverview(false)
 	if err == nil {
 		devModeStr := ""
-		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+		if isDevMode, _ := tkVoUtil.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 			devModeStr = "(🚧 DevMode 🚧)"
 		}
 

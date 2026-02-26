@@ -2,6 +2,7 @@ package cliController
 
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
@@ -93,7 +94,7 @@ func (controller *SslController) Create() *cobra.Command {
 			requestBody := map[string]interface{}{}
 
 			vhostHostnames := tkPresentation.StringSliceValueObjectParser(
-				virtualHostsSlice, valueObject.NewFqdn,
+				virtualHostsSlice, tkValueObject.NewFqdn,
 			)
 			requestBody["virtualHostsHostnames"] = vhostHostnames
 

@@ -9,7 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	"github.com/goinfinite/os/src/presentation/liaison"
@@ -81,13 +81,13 @@ func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 	pageNumber := uint16(0)
 	pageNumberQueryParam := c.QueryParam("pageNumber")
 	if pageNumberQueryParam != "" {
-		pageNumber, _ = voHelper.InterfaceToUint16(pageNumberQueryParam)
+		pageNumber, _ = tkVoUtil.InterfaceToUint16(pageNumberQueryParam)
 	}
 
 	itemsPerPage := uint16(5)
 	itemsPerPageQueryParam := c.QueryParam("itemsPerPage")
 	if itemsPerPageQueryParam != "" {
-		itemsPerPage, _ = voHelper.InterfaceToUint16(itemsPerPageQueryParam)
+		itemsPerPage, _ = tkVoUtil.InterfaceToUint16(itemsPerPageQueryParam)
 	}
 
 	readInstalledServicesRequestBody := map[string]interface{}{

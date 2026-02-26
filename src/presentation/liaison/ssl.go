@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -58,9 +59,9 @@ func (liaison *SslLiaison) SslPairReadRequestFactory(
 		untrustedInput["virtualHostHostname"] = untrustedInput["hostname"]
 	}
 
-	var vhostHostnamePtr *valueObject.Fqdn
+	var vhostHostnamePtr *tkValueObject.Fqdn
 	if untrustedInput["virtualHostHostname"] != nil {
-		vhostHostname, err := valueObject.NewFqdn(untrustedInput["virtualHostHostname"])
+		vhostHostname, err := tkValueObject.NewFqdn(untrustedInput["virtualHostHostname"])
 		if err != nil {
 			return readRequestDto, err
 		}
@@ -123,7 +124,7 @@ func (liaison *SslLiaison) Create(untrustedInput map[string]any) LiaisonOutput {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	vhostHostnames, assertOk := untrustedInput["virtualHostsHostnames"].([]valueObject.Fqdn)
+	vhostHostnames, assertOk := untrustedInput["virtualHostsHostnames"].([]tkValueObject.Fqdn)
 	if !assertOk {
 		return NewLiaisonOutput(UserError, errors.New("InvalidVirtualHostsStructure"))
 	}
@@ -157,7 +158,7 @@ func (liaison *SslLiaison) Create(untrustedInput map[string]any) LiaisonOutput {
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -165,7 +166,7 @@ func (liaison *SslLiaison) Create(untrustedInput map[string]any) LiaisonOutput {
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -206,14 +207,14 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	vhostHostname, err := valueObject.NewFqdn(untrustedInput["virtualHostHostname"])
+	vhostHostname, err := tkValueObject.NewFqdn(untrustedInput["virtualHostHostname"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -221,7 +222,7 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -236,7 +237,7 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 
 		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(liaison.persistentDbSvc)
 		taskName, _ := valueObject.NewScheduledTaskName("CreatePubliclyTrustedSslPair")
-		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskCmd, _ := tkValueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("ssl")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
 		timeoutSecs := uint16(1800)
@@ -287,7 +288,7 @@ func (liaison *SslLiaison) Delete(untrustedInput map[string]any) LiaisonOutput {
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -295,7 +296,7 @@ func (liaison *SslLiaison) Delete(untrustedInput map[string]any) LiaisonOutput {
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}

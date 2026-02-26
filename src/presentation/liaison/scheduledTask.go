@@ -6,7 +6,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
@@ -66,9 +67,9 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 		}
 	}
 
-	var startedBeforeAtPtr, startedAfterAtPtr *valueObject.UnixTime
-	var finishedBeforeAtPtr, finishedAfterAtPtr *valueObject.UnixTime
-	var createdBeforeAtPtr, createdAfterAtPtr *valueObject.UnixTime
+	var startedBeforeAtPtr, startedAfterAtPtr *tkValueObject.UnixTime
+	var finishedBeforeAtPtr, finishedAfterAtPtr *tkValueObject.UnixTime
+	var createdBeforeAtPtr, createdAfterAtPtr *tkValueObject.UnixTime
 
 	timeParamNames := []string{
 		"startedBeforeAt", "startedAfterAt",
@@ -80,7 +81,7 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 			continue
 		}
 
-		timeParam, err := valueObject.NewUnixTime(untrustedInput[timeParamName])
+		timeParam, err := tkValueObject.NewUnixTime(untrustedInput[timeParamName])
 		if err != nil {
 			capitalParamName := cases.Title(language.English).String(timeParamName)
 			return NewLiaisonOutput(UserError, errors.New("Invalid"+capitalParamName))
@@ -104,7 +105,7 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 
 	paginationDto := useCase.ScheduledTasksDefaultPagination
 	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
+		pageNumber, err := tkVoUtil.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
 		}
@@ -112,7 +113,7 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 	}
 
 	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
+		itemsPerPage, err := tkVoUtil.InterfaceToUint16(untrustedInput["itemsPerPage"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
 		}
@@ -120,7 +121,7 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 	}
 
 	if untrustedInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
+		sortBy, err := tkValueObject.NewPaginationSortBy(untrustedInput["sortBy"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -128,7 +129,7 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 	}
 
 	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(untrustedInput["sortDirection"])
+		sortDirection, err := tkValueObject.NewPaginationSortDirection(untrustedInput["sortDirection"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -136,7 +137,7 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 	}
 
 	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
+		lastSeenId, err := tkValueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -192,9 +193,9 @@ func (liaison *ScheduledTaskLiaison) Update(untrustedInput map[string]any) Liais
 		taskStatusPtr = &taskStatus
 	}
 
-	var runAtPtr *valueObject.UnixTime
+	var runAtPtr *tkValueObject.UnixTime
 	if untrustedInput["runAt"] != nil {
-		runAt, err := valueObject.NewUnixTime(untrustedInput["runAt"])
+		runAt, err := tkValueObject.NewUnixTime(untrustedInput["runAt"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}

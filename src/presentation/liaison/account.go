@@ -6,15 +6,16 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 )
 
-var LocalOperatorAccountId = valueObject.AccountIdSystem
-var LocalOperatorIpAddress = valueObject.IpAddressSystem
+var LocalOperatorAccountId = tkValueObject.AccountIdSystem
+var LocalOperatorIpAddress = tkValueObject.IpAddressLocal
 
 type AccountLiaison struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
@@ -40,9 +41,9 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 		untrustedInput["accountId"] = untrustedInput["id"]
 	}
 
-	var idPtr *valueObject.AccountId
+	var idPtr *tkValueObject.AccountId
 	if untrustedInput["accountId"] != nil {
-		id, err := valueObject.NewAccountId(untrustedInput["accountId"])
+		id, err := tkValueObject.NewAccountId(untrustedInput["accountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -61,7 +62,7 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 	shouldIncludeSecureAccessPublicKeys := false
 	if untrustedInput["shouldIncludeSecureAccessPublicKeys"] != nil {
 		var err error
-		shouldIncludeSecureAccessPublicKeys, err = voHelper.InterfaceToBool(
+		shouldIncludeSecureAccessPublicKeys, err = tkVoUtil.InterfaceToBool(
 			untrustedInput["shouldIncludeSecureAccessPublicKeys"],
 		)
 		if err != nil {
@@ -71,7 +72,7 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 
 	paginationDto := useCase.AccountsDefaultPagination
 	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
+		pageNumber, err := tkVoUtil.InterfaceToUint32(untrustedInput["pageNumber"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
 		}
@@ -79,7 +80,7 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 	}
 
 	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
+		itemsPerPage, err := tkVoUtil.InterfaceToUint16(untrustedInput["itemsPerPage"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
 		}
@@ -87,7 +88,7 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 	}
 
 	if untrustedInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
+		sortBy, err := tkValueObject.NewPaginationSortBy(untrustedInput["sortBy"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -95,7 +96,7 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 	}
 
 	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(
+		sortDirection, err := tkValueObject.NewPaginationSortDirection(
 			untrustedInput["sortDirection"],
 		)
 		if err != nil {
@@ -105,7 +106,7 @@ func (liaison *AccountLiaison) Read(untrustedInput map[string]any) LiaisonOutput
 	}
 
 	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
+		lastSeenId, err := tkValueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err)
 		}
@@ -139,14 +140,14 @@ func (liaison *AccountLiaison) Create(untrustedInput map[string]any) LiaisonOutp
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	password, err := valueObject.NewPassword(untrustedInput["password"])
+	password, err := tkValueObject.NewPassword(untrustedInput["password"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
 	isSuperAdmin := false
 	if untrustedInput["isSuperAdmin"] != nil {
-		isSuperAdmin, err = voHelper.InterfaceToBool(untrustedInput["isSuperAdmin"])
+		isSuperAdmin, err = tkVoUtil.InterfaceToBool(untrustedInput["isSuperAdmin"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -154,7 +155,7 @@ func (liaison *AccountLiaison) Create(untrustedInput map[string]any) LiaisonOutp
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -162,7 +163,7 @@ func (liaison *AccountLiaison) Create(untrustedInput map[string]any) LiaisonOutp
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -193,9 +194,9 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 	}
 
 	var err error
-	var accountIdPtr *valueObject.AccountId
+	var accountIdPtr *tkValueObject.AccountId
 	if untrustedInput["accountId"] != nil {
-		accountId, err := valueObject.NewAccountId(untrustedInput["accountId"])
+		accountId, err := tkValueObject.NewAccountId(untrustedInput["accountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -211,9 +212,9 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 		accountUsernamePtr = &accountUsername
 	}
 
-	var passwordPtr *valueObject.Password
+	var passwordPtr *tkValueObject.Password
 	if untrustedInput["password"] != nil && untrustedInput["password"] != "" {
-		password, err := valueObject.NewPassword(untrustedInput["password"])
+		password, err := tkValueObject.NewPassword(untrustedInput["password"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -222,7 +223,7 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 
 	var isSuperAdminPtr *bool
 	if untrustedInput["isSuperAdmin"] != nil {
-		isSuperAdmin, err := voHelper.InterfaceToBool(untrustedInput["isSuperAdmin"])
+		isSuperAdmin, err := tkVoUtil.InterfaceToBool(untrustedInput["isSuperAdmin"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -231,7 +232,7 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 
 	var shouldUpdateApiKeyPtr *bool
 	if untrustedInput["shouldUpdateApiKey"] != nil {
-		shouldUpdateApiKey, err := voHelper.InterfaceToBool(untrustedInput["shouldUpdateApiKey"])
+		shouldUpdateApiKey, err := tkVoUtil.InterfaceToBool(untrustedInput["shouldUpdateApiKey"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -240,7 +241,7 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -248,7 +249,7 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) LiaisonOutp
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -292,14 +293,14 @@ func (liaison *AccountLiaison) Delete(untrustedInput map[string]any) LiaisonOutp
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
-	accountId, err := valueObject.NewAccountId(untrustedInput["accountId"])
+	accountId, err := tkValueObject.NewAccountId(untrustedInput["accountId"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -307,7 +308,7 @@ func (liaison *AccountLiaison) Delete(untrustedInput map[string]any) LiaisonOutp
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -348,14 +349,14 @@ func (liaison *AccountLiaison) CreateSecureAccessPublicKey(
 		}
 	}
 
-	accountId, err := valueObject.NewAccountId(untrustedInput["accountId"])
+	accountId, err := tkValueObject.NewAccountId(untrustedInput["accountId"])
 	if err != nil {
 		return NewLiaisonOutput(UserError, err.Error())
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -363,7 +364,7 @@ func (liaison *AccountLiaison) CreateSecureAccessPublicKey(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -401,7 +402,7 @@ func (liaison *AccountLiaison) DeleteSecureAccessPublicKey(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -409,7 +410,7 @@ func (liaison *AccountLiaison) DeleteSecureAccessPublicKey(
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}

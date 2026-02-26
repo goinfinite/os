@@ -2,9 +2,9 @@ package uiLayout
 
 import (
 	_ "embed"
-	"github.com/goinfinite/os/src/domain/valueObject/helper"
 	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
 	layoutSidebar "github.com/goinfinite/os/src/presentation/ui/layout/sidebar"
+	"github.com/goinfinite/tk/src/domain/valueObject/util"
 	"github.com/goinfinite/ui/src/display"
 	uiImport "github.com/goinfinite/ui/src/import"
 	"github.com/goinfinite/ui/src/toolset"
@@ -41,7 +41,7 @@ templ Main(componentSettings MainLayoutSettings) {
 		@HeadTag(componentSettings.BaseHref)
 		<!-- MainLayout JavaScript -->
 		@uiToolset.MinifierTemplateJs(&mainLayoutAlpineState)
-		if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+		if isDevMode, _ := tkVoUtil.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 			@templ.JSFuncCall("devWsHotReload")
 		}
 		<!-- MainLayout HTML -->
