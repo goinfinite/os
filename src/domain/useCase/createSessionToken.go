@@ -7,7 +7,9 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 const MaxFailedLoginAttemptsPerIpAddress uint = 3
@@ -15,29 +17,32 @@ const FailedLoginAttemptsInterval time.Duration = 15 * time.Minute
 const SessionTokenExpiresIn time.Duration = 3 * time.Hour
 
 func getFailedLoginAttemptsCount(
-	activityRecordQueryRepo repository.ActivityRecordQueryRepo,
+	activityRecordQueryRepo tkRepository.ActivityRecordQueryRepo,
 	createDto dto.CreateSessionToken,
 ) uint {
-	recordLevel, _ := valueObject.NewActivityRecordLevel("SEC")
-	recordCode, _ := valueObject.NewActivityRecordCode("LoginFailed")
-	failedAttemptsIntervalStartsAt := valueObject.NewUnixTimeBeforeNow(
+	recordLevel, _ := tkValueObject.NewActivityRecordLevel("SEC")
+	recordCode, _ := tkValueObject.NewActivityRecordCode("LoginFailed")
+	failedAttemptsIntervalStartsAt := tkValueObject.NewUnixTimeBeforeNow(
 		FailedLoginAttemptsInterval,
 	)
-	readDto := dto.NewReadActivityRecords(
-		nil, &recordLevel, &recordCode, nil, nil, nil, &createDto.OperatorIpAddress,
-		nil, &failedAttemptsIntervalStartsAt,
-	)
+	readDto := tkDto.ReadActivityRecordsRequest{
+		Pagination:        tkDto.PaginationUnpaginated,
+		RecordLevel:       &recordLevel,
+		RecordCode:        &recordCode,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+		CreatedAfterAt:    &failedAttemptsIntervalStartsAt,
+	}
 
-	failedLoginAttempts := ReadActivityRecords(activityRecordQueryRepo, readDto)
-	return uint(len(failedLoginAttempts))
+	responseDto := ReadActivityRecords(activityRecordQueryRepo, readDto)
+	return uint(len(responseDto.ActivityRecords))
 }
 
 func CreateSessionToken(
 	authQueryRepo repository.AuthQueryRepo,
 	authCmdRepo repository.AuthCmdRepo,
 	accountQueryRepo repository.AccountQueryRepo,
-	activityRecordQueryRepo repository.ActivityRecordQueryRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordQueryRepo tkRepository.ActivityRecordQueryRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateSessionToken,
 ) (accessToken entity.AccessToken, err error) {
 	failedAttemptsCount := getFailedLoginAttemptsCount(activityRecordQueryRepo, createDto)
@@ -46,7 +51,7 @@ func CreateSessionToken(
 	}
 
 	if !authQueryRepo.IsLoginValid(createDto) {
-		recordCode, _ := valueObject.NewActivityRecordCode("LoginFailed")
+		recordCode, _ := tkValueObject.NewActivityRecordCode("LoginFailed")
 		NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 			CreateSessionToken(recordCode, createDto)
 
@@ -61,11 +66,11 @@ func CreateSessionToken(
 		return accessToken, errors.New("AccountNotFound")
 	}
 
-	recordCode, _ := valueObject.NewActivityRecordCode("LoginSuccessful")
+	recordCode, _ := tkValueObject.NewActivityRecordCode("LoginSuccessful")
 	NewCreateSecurityActivityRecord(activityRecordCmdRepo).
 		CreateSessionToken(recordCode, createDto)
 
-	expiresIn := valueObject.NewUnixTimeAfterNow(SessionTokenExpiresIn)
+	expiresIn := tkValueObject.NewUnixTimeAfterNow(SessionTokenExpiresIn)
 
 	return authCmdRepo.CreateSessionToken(
 		accountEntity.Id, expiresIn, createDto.OperatorIpAddress,

@@ -7,18 +7,20 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type UpdateUnixFiles struct {
 	filesQueryRepo        repository.FilesQueryRepo
 	filesCmdRepo          repository.FilesCmdRepo
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo
 }
 
 func NewUpdateUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 ) UpdateUnixFiles {
 	return UpdateUnixFiles{
 		filesCmdRepo:          filesCmdRepo,
@@ -27,7 +29,7 @@ func NewUpdateUnixFiles(
 }
 
 func (uc UpdateUnixFiles) updateFailureFactory(
-	filePath valueObject.UnixFilePath,
+	filePath tkValueObject.UnixAbsoluteFilePath,
 	errMessage string,
 ) valueObject.UpdateProcessFailure {
 	failureReason, err := valueObject.NewFailureReason(errMessage)
@@ -40,7 +42,7 @@ func (uc UpdateUnixFiles) updateFailureFactory(
 }
 
 func (uc UpdateUnixFiles) updateFilePermissions(
-	sourcePath valueObject.UnixFilePath,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
 	permissions valueObject.UnixFilePermissions,
 ) error {
 	updatePermissions := dto.NewUpdateUnixFilePermissions(
@@ -57,7 +59,7 @@ func (uc UpdateUnixFiles) updateFilePermissions(
 }
 
 func (uc UpdateUnixFiles) updateFileContent(
-	sourcePath valueObject.UnixFilePath,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
 	encodedContent valueObject.EncodedContent,
 ) error {
 	updateContentDto := dto.NewUpdateUnixFileContent(sourcePath, encodedContent)
@@ -72,8 +74,8 @@ func (uc UpdateUnixFiles) updateFileContent(
 }
 
 func (uc UpdateUnixFiles) updateFileOwnership(
-	sourcePath valueObject.UnixFilePath,
-	ownership valueObject.UnixFileOwnership,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
+	ownership tkValueObject.UnixFileOwnership,
 ) error {
 	updateOwnershipDto := dto.NewUpdateUnixFileOwnership(sourcePath, ownership)
 
@@ -87,7 +89,7 @@ func (uc UpdateUnixFiles) updateFileOwnership(
 }
 
 func (uc UpdateUnixFiles) fixFilePermissions(
-	sourcePath valueObject.UnixFilePath,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
 ) error {
 	_, err := uc.filesQueryRepo.ReadFirst(sourcePath)
 	if err != nil {
@@ -118,8 +120,8 @@ func (uc UpdateUnixFiles) fixFilePermissions(
 }
 
 func (uc UpdateUnixFiles) moveFile(
-	sourcePath valueObject.UnixFilePath,
-	destinationPath valueObject.UnixFilePath,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
+	destinationPath tkValueObject.UnixAbsoluteFilePath,
 ) error {
 	shouldOverwrite := false
 	moveDto := dto.NewMoveUnixFile(sourcePath, destinationPath, shouldOverwrite)
@@ -139,7 +141,7 @@ func (uc UpdateUnixFiles) Execute(
 	updateDto dto.UpdateUnixFiles,
 ) (dto.UpdateProcessReport, error) {
 	updateProcessReport := dto.NewUpdateProcessReport(
-		[]valueObject.UnixFilePath{},
+		[]tkValueObject.UnixAbsoluteFilePath{},
 		[]valueObject.UpdateProcessFailure{},
 	)
 

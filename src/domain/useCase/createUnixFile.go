@@ -8,11 +8,13 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func NormalizeKnownUnixFilePathPermissions(
 	filesCmdRepo repository.FilesCmdRepo,
-	filePath valueObject.UnixFilePath,
+	filePath tkValueObject.UnixAbsoluteFilePath,
 ) {
 	isAppDirectoryDescendant := strings.HasPrefix(
 		filePath.String(),
@@ -37,7 +39,7 @@ func NormalizeKnownUnixFilePathPermissions(
 func CreateUnixFile(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateUnixFile,
 ) error {
 	err := filesCmdRepo.Create(createDto)

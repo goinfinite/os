@@ -6,7 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 var RuntimeRunPhpCommandTimeoutSecsDefault uint64 = 600
@@ -16,7 +16,7 @@ func RunPhpCommand(
 	runtimeCmdRepo repository.RuntimeCmdRepo,
 	runRequest dto.RunPhpCommandRequest,
 ) (runResponse dto.RunPhpCommandResponse, err error) {
-	if runRequest.OperatorAccountId != valueObject.AccountIdSystem {
+	if runRequest.OperatorAccountId != tkValueObject.AccountIdSystem {
 		operatorAccountEntity, err := accountQueryRepo.ReadFirst(
 			dto.ReadAccountsRequest{AccountId: &runRequest.OperatorAccountId},
 		)

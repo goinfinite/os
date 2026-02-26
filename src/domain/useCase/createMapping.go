@@ -7,6 +7,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func mappingTargetLinter(createDto dto.CreateMapping) (dto.CreateMapping, error) {
@@ -27,7 +29,7 @@ func mappingTargetLinter(createDto dto.CreateMapping) (dto.CreateMapping, error)
 
 	if isResponseCodeTarget && hasTargetValue {
 		targetValueStr := createDto.TargetValue.String()
-		httpRespondeCode, err := valueObject.NewHttpResponseCode(targetValueStr)
+		httpRespondeCode, err := tkValueObject.NewHttpStatusCode(targetValueStr)
 		if err != nil {
 			return createDto, errors.New("MappingResponseCodeInvalid")
 		}
@@ -35,9 +37,9 @@ func mappingTargetLinter(createDto dto.CreateMapping) (dto.CreateMapping, error)
 		createDto.TargetValue = nil
 	}
 
-	defaultResponseCode, _ := valueObject.NewHttpResponseCode(200)
+	defaultResponseCode, _ := tkValueObject.NewHttpStatusCode(200)
 	if createDto.TargetType == valueObject.MappingTargetTypeUrl {
-		defaultResponseCode, _ = valueObject.NewHttpResponseCode(301)
+		defaultResponseCode, _ = tkValueObject.NewHttpStatusCode(301)
 	}
 	if !hasResponseCode && createDto.TargetType != valueObject.MappingTargetTypeService {
 		createDto.TargetHttpResponseCode = &defaultResponseCode
@@ -50,7 +52,7 @@ func CreateMapping(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateMapping,
 ) error {
 	withMappings := true

@@ -7,6 +7,9 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func DeleteServiceMappings(
@@ -14,8 +17,8 @@ func DeleteServiceMappings(
 	mappingCmdRepo repository.MappingCmdRepo,
 	serviceName valueObject.ServiceName,
 	shouldRecreate bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) error {
 	targetType := valueObject.MappingTargetTypeService
 	serviceNameStr := serviceName.String()
@@ -26,7 +29,7 @@ func DeleteServiceMappings(
 	}
 
 	readMappingsResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		Pagination:  dto.PaginationUnpaginated,
+		Pagination:  tkDto.PaginationUnpaginated,
 		TargetType:  &targetType,
 		TargetValue: &targetValue,
 	})
@@ -82,7 +85,7 @@ func DeleteService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteService,
 ) error {
 	serviceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(

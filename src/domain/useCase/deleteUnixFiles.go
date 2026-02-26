@@ -7,18 +7,20 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type DeleteUnixFiles struct {
 	filesQueryRepo        repository.FilesQueryRepo
 	filesCmdRepo          repository.FilesCmdRepo
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo
 }
 
 func NewDeleteUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 ) DeleteUnixFiles {
 	return DeleteUnixFiles{
 		filesQueryRepo:        filesQueryRepo,
@@ -28,8 +30,8 @@ func NewDeleteUnixFiles(
 }
 
 func (uc DeleteUnixFiles) emptyTrash(
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) error {
 	err := uc.filesCmdRepo.Delete(valueObject.UnixFilePathTrashDir)
 	if err != nil {
@@ -40,8 +42,8 @@ func (uc DeleteUnixFiles) emptyTrash(
 }
 
 func (uc DeleteUnixFiles) CreateGeneralTrash(
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) error {
 	_, err := uc.filesQueryRepo.ReadFirst(valueObject.UnixFilePathTrashDir)
 	if err == nil {
@@ -51,7 +53,7 @@ func (uc DeleteUnixFiles) CreateGeneralTrash(
 	trashDirPermissions := valueObject.NewUnixDirDefaultPermissions()
 	createGeneralTrashDir := dto.NewCreateUnixFile(
 		valueObject.UnixFilePathTrashDir, &trashDirPermissions,
-		valueObject.MimeTypeDirectory, operatorAccountId, operatorIpAddress,
+		tkValueObject.MimeTypeDirectory, operatorAccountId, operatorIpAddress,
 	)
 
 	return CreateUnixFile(
@@ -82,7 +84,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 			continue
 		}
 
-		if !fileToDelete.IsFileSystemRootDir() {
+		if fileToDelete != valueObject.UnixFilePathFileSystemRootDir {
 			continue
 		}
 

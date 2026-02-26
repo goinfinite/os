@@ -6,15 +6,16 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func UpdateAccountApiKey(
 	accountQueryRepo repository.AccountQueryRepo,
 	accountCmdRepo repository.AccountCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateAccount,
-) (newKey valueObject.AccessTokenStr, err error) {
+) (newKey tkValueObject.AccessTokenValue, err error) {
 	if updateDto.AccountId == nil && updateDto.AccountUsername == nil {
 		return newKey, errors.New("AccountIdOrUsernameRequired")
 	}

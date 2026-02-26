@@ -6,12 +6,12 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func ReadPhpConfigs(
 	runtimeQueryRepo repository.RuntimeQueryRepo,
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 ) (entity.PhpConfigs, error) {
 	phpConfigs, err := runtimeQueryRepo.ReadPhpConfigs(hostname)
 	if err != nil {

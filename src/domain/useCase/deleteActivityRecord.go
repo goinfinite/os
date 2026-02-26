@@ -4,13 +4,13 @@ import (
 	"errors"
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/repository"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func DeleteActivityRecord(
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
-	deleteDto dto.DeleteActivityRecord,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
+	deleteDto tkDto.DeleteActivityRecord,
 ) error {
 	err := activityRecordCmdRepo.Delete(deleteDto)
 	if err != nil {

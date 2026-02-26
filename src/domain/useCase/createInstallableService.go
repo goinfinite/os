@@ -7,6 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func CreateInstallableService(
@@ -14,7 +15,7 @@ func CreateInstallableService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateInstallableService,
 ) error {
 	installedServiceEntity, err := servicesQueryRepo.ReadFirstInstalledItem(

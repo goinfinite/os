@@ -8,23 +8,26 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func CreateSslPair(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateSslPair,
 ) error {
 	vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination: dto.PaginationUnpaginated,
+		Pagination: tkDto.PaginationUnpaginated,
 	})
 	if err != nil {
 		slog.Error("ReadVirtualHostInfraError", slog.String("err", err.Error()))
 		return errors.New("ReadVirtualHostInfraError")
 	}
 
-	existingVirtualHostHostnames := []valueObject.Fqdn{}
+	existingVirtualHostHostnames := []tkValueObject.Fqdn{}
 	for _, vhostEntity := range vhostReadResponse.VirtualHosts {
 		if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
 			continue

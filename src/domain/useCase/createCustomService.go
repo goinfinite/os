@@ -7,17 +7,19 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func CreateServiceAutoMapping(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
 	serviceName valueObject.ServiceName,
-	mappingHostname *valueObject.Fqdn,
+	mappingHostname *tkValueObject.Fqdn,
 	mappingPath *valueObject.MappingPath,
 	mappingUpgradeInsecureRequests *bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) error {
 	if mappingHostname == nil {
 		isPrimary := true
@@ -80,7 +82,7 @@ func CreateCustomService(
 	servicesCmdRepo repository.ServicesCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateCustomService,
 ) error {
 	_, err := servicesQueryRepo.ReadFirstInstalledItem(

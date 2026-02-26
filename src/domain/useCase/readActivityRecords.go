@@ -3,19 +3,18 @@ package useCase
 import (
 	"log/slog"
 
-	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/repository"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func ReadActivityRecords(
-	activityRecordQueryRepo repository.ActivityRecordQueryRepo,
-	readDto dto.ReadActivityRecords,
-) (activityRecords []entity.ActivityRecord) {
-	activityRecords, err := activityRecordQueryRepo.Read(readDto)
+	activityRecordQueryRepo tkRepository.ActivityRecordQueryRepo,
+	readDto tkDto.ReadActivityRecordsRequest,
+) (responseDto tkDto.ReadActivityRecordsResponse) {
+	responseDto, err := activityRecordQueryRepo.Read(readDto)
 	if err != nil {
 		slog.Error("ReadActivityRecordsInfraError", slog.String("err", err.Error()))
 	}
 
-	return activityRecords
+	return responseDto
 }
