@@ -2,22 +2,23 @@ package entity
 
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type O11yOverview struct {
-	Hostname             valueObject.Fqdn                 `json:"hostname"`
+	Hostname             tkValueObject.Fqdn               `json:"hostname"`
 	UptimeSecs           uint64                           `json:"uptimeSecs"`
-	UptimeRelative       valueObject.RelativeTime         `json:"uptimeRelative"`
-	PublicIpAddress      valueObject.IpAddress            `json:"publicIp"`
+	UptimeRelative       tkValueObject.RelativeTime       `json:"uptimeRelative"`
+	PublicIpAddress      tkValueObject.IpAddress          `json:"publicIp"`
 	HardwareSpecs        valueObject.HardwareSpecs        `json:"specs"`
 	CurrentResourceUsage valueObject.CurrentResourceUsage `json:"currentUsage"`
 }
 
 func NewO11yOverview(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	uptimeSecs uint64,
-	uptimeRelative valueObject.RelativeTime,
-	publicIpAddress valueObject.IpAddress,
+	uptimeRelative tkValueObject.RelativeTime,
+	publicIpAddress tkValueObject.IpAddress,
 	hardwareSpecs valueObject.HardwareSpecs,
 	currentResourceUsage valueObject.CurrentResourceUsage,
 ) O11yOverview {

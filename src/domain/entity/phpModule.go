@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type PhpModule struct {
@@ -39,7 +39,7 @@ func NewPhpModuleFromString(stringValue string) (module PhpModule, err error) {
 		return module, err
 	}
 
-	status, err := voHelper.InterfaceToBool(stringValueParts[1])
+	status, err := tkVoUtil.InterfaceToBool(stringValueParts[1])
 	if err != nil {
 		return module, err
 	}

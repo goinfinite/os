@@ -4,13 +4,14 @@ import (
 	"time"
 
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 const EarlyRenewalThresholdHours int64 = 48
 
 type SslPair struct {
 	Id                  valueObject.SslPairId     `json:"sslPairId"`
-	VirtualHostHostname valueObject.Fqdn          `json:"virtualHostHostname"`
+	VirtualHostHostname tkValueObject.Fqdn        `json:"virtualHostHostname"`
 	Certificate         SslCertificate            `json:"certificate"`
 	Key                 valueObject.SslPrivateKey `json:"key"`
 	ChainCertificates   []SslCertificate          `json:"chainCertificates"`
@@ -18,7 +19,7 @@ type SslPair struct {
 
 func NewSslPair(
 	sslPairId valueObject.SslPairId,
-	virtualHostHostname valueObject.Fqdn,
+	virtualHostHostname tkValueObject.Fqdn,
 	certificate SslCertificate,
 	key valueObject.SslPrivateKey,
 	chainCertificates []SslCertificate,

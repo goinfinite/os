@@ -2,25 +2,26 @@ package entity
 
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type SecureAccessPublicKey struct {
 	Id          valueObject.SecureAccessPublicKeyId          `json:"id"`
-	AccountId   valueObject.AccountId                        `json:"accountId"`
+	AccountId   tkValueObject.AccountId                      `json:"accountId"`
 	Content     valueObject.SecureAccessPublicKeyContent     `json:"-"`
 	Name        valueObject.SecureAccessPublicKeyName        `json:"name"`
 	Fingerprint valueObject.SecureAccessPublicKeyFingerprint `json:"fingerprint"`
-	CreatedAt   valueObject.UnixTime                         `json:"createdAt"`
-	UpdatedAt   valueObject.UnixTime                         `json:"updatedAt"`
+	CreatedAt   tkValueObject.UnixTime                       `json:"createdAt"`
+	UpdatedAt   tkValueObject.UnixTime                       `json:"updatedAt"`
 }
 
 func NewSecureAccessPublicKey(
 	id valueObject.SecureAccessPublicKeyId,
-	accountId valueObject.AccountId,
+	accountId tkValueObject.AccountId,
 	content valueObject.SecureAccessPublicKeyContent,
 	fingerprint valueObject.SecureAccessPublicKeyFingerprint,
 	name valueObject.SecureAccessPublicKeyName,
-	createdAt, updatedAt valueObject.UnixTime,
+	createdAt, updatedAt tkValueObject.UnixTime,
 ) SecureAccessPublicKey {
 	return SecureAccessPublicKey{
 		Id:          id,

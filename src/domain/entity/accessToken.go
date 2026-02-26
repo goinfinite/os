@@ -1,17 +1,17 @@
 package entity
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type AccessToken struct {
-	Type      valueObject.AccessTokenType `json:"type"`
-	ExpiresIn valueObject.UnixTime        `json:"expiresIn"`
-	TokenStr  valueObject.AccessTokenStr  `json:"tokenStr"`
+	Type      tkValueObject.AccessTokenType  `json:"type"`
+	ExpiresIn tkValueObject.UnixTime         `json:"expiresIn"`
+	TokenStr  tkValueObject.AccessTokenValue `json:"tokenStr"`
 }
 
 func NewAccessToken(
-	tokenType valueObject.AccessTokenType,
-	expiresIn valueObject.UnixTime,
-	tokenStr valueObject.AccessTokenStr,
+	tokenType tkValueObject.AccessTokenType,
+	expiresIn tkValueObject.UnixTime,
+	tokenStr tkValueObject.AccessTokenValue,
 ) AccessToken {
 	return AccessToken{
 		Type:      tokenType,

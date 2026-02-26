@@ -2,36 +2,37 @@ package entity
 
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type UnixFile struct {
-	Name        valueObject.UnixFileName        `json:"name"`
-	Path        valueObject.UnixFilePath        `json:"path"`
-	MimeType    valueObject.MimeType            `json:"mimeType"`
-	Permissions valueObject.UnixFilePermissions `json:"permissions"`
-	Size        valueObject.Byte                `json:"size"`
-	Extension   *valueObject.UnixFileExtension  `json:"extension"`
-	Content     *valueObject.UnixFileContent    `json:"content"`
-	Uid         valueObject.UnixUid             `json:"uid"`
-	Owner       valueObject.Username            `json:"owner"`
-	Gid         valueObject.GroupId             `json:"gid"`
-	Group       valueObject.GroupName           `json:"group"`
-	UpdatedAt   valueObject.UnixTime            `json:"updatedAt"`
+	Name        tkValueObject.UnixFileName         `json:"name"`
+	Path        tkValueObject.UnixAbsoluteFilePath `json:"path"`
+	MimeType    tkValueObject.MimeType             `json:"mimeType"`
+	Permissions valueObject.UnixFilePermissions    `json:"permissions"`
+	Size        tkValueObject.Byte                 `json:"size"`
+	Extension   *tkValueObject.UnixFileExtension   `json:"extension"`
+	Content     *valueObject.UnixFileContent       `json:"content"`
+	Uid         tkValueObject.UnixUserId           `json:"uid"`
+	Owner       valueObject.Username               `json:"owner"`
+	Gid         tkValueObject.UnixGroupId          `json:"gid"`
+	Group       tkValueObject.UnixGroupName        `json:"group"`
+	UpdatedAt   tkValueObject.UnixTime             `json:"updatedAt"`
 }
 
 func NewUnixFile(
-	name valueObject.UnixFileName,
-	path valueObject.UnixFilePath,
-	mimeType valueObject.MimeType,
+	name tkValueObject.UnixFileName,
+	path tkValueObject.UnixAbsoluteFilePath,
+	mimeType tkValueObject.MimeType,
 	permissions valueObject.UnixFilePermissions,
-	size valueObject.Byte,
-	extension *valueObject.UnixFileExtension,
+	size tkValueObject.Byte,
+	extension *tkValueObject.UnixFileExtension,
 	content *valueObject.UnixFileContent,
-	uid valueObject.UnixUid,
+	uid tkValueObject.UnixUserId,
 	owner valueObject.Username,
-	gid valueObject.GroupId,
-	group valueObject.GroupName,
-	updatedAt valueObject.UnixTime,
+	gid tkValueObject.UnixGroupId,
+	group tkValueObject.UnixGroupName,
+	updatedAt tkValueObject.UnixTime,
 ) UnixFile {
 	return UnixFile{
 		Name:        name,
@@ -58,15 +59,15 @@ func (entity UnixFile) ToSimplified() SimplifiedUnixFile {
 }
 
 type SimplifiedUnixFile struct {
-	Name     valueObject.UnixFileName `json:"name"`
-	Path     valueObject.UnixFilePath `json:"path"`
-	MimeType valueObject.MimeType     `json:"mimeType"`
+	Name     tkValueObject.UnixFileName         `json:"name"`
+	Path     tkValueObject.UnixAbsoluteFilePath `json:"path"`
+	MimeType tkValueObject.MimeType             `json:"mimeType"`
 }
 
 func NewSimplifiedUnixFile(
-	name valueObject.UnixFileName,
-	path valueObject.UnixFilePath,
-	mimeType valueObject.MimeType,
+	name tkValueObject.UnixFileName,
+	path tkValueObject.UnixAbsoluteFilePath,
+	mimeType tkValueObject.MimeType,
 ) SimplifiedUnixFile {
 	return SimplifiedUnixFile{
 		Name:     name,

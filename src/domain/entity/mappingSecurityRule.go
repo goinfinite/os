@@ -20,11 +20,11 @@ type MappingSecurityRule struct {
 	RpsHardLimitPerIp              *uint                                       `json:"rpsHardLimitPerIp"`
 	ResponseCodeOnMaxRequests      *uint                                       `json:"responseCodeOnMaxRequests"`
 	MaxConnectionsPerIp            *uint                                       `json:"maxConnectionsPerIp"`
-	BandwidthBpsLimitPerConnection *valueObject.Byte                           `json:"bandwidthBpsLimitPerConnection"`
-	BandwidthLimitOnlyAfterBytes   *valueObject.Byte                           `json:"bandwidthLimitOnlyAfterBytes"`
+	BandwidthBpsLimitPerConnection *tkValueObject.Byte                         `json:"bandwidthBpsLimitPerConnection"`
+	BandwidthLimitOnlyAfterBytes   *tkValueObject.Byte                         `json:"bandwidthLimitOnlyAfterBytes"`
 	ResponseCodeOnMaxConnections   *uint                                       `json:"responseCodeOnMaxConnections"`
-	CreatedAt                      valueObject.UnixTime                        `json:"createdAt"`
-	UpdatedAt                      valueObject.UnixTime                        `json:"updatedAt"`
+	CreatedAt                      tkValueObject.UnixTime                      `json:"createdAt"`
+	UpdatedAt                      tkValueObject.UnixTime                      `json:"updatedAt"`
 }
 
 func NewMappingSecurityRule(
@@ -33,9 +33,9 @@ func NewMappingSecurityRule(
 	description *valueObject.MappingSecurityRuleDescription,
 	allowedIps, blockedIps []tkValueObject.CidrBlock,
 	rpsSoftLimitPerIp, rpsHardLimitPerIp, responseCodeOnMaxRequests, maxConnectionsPerIp *uint,
-	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *valueObject.Byte,
+	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *tkValueObject.Byte,
 	responseCodeOnMaxConnections *uint,
-	createdAt, updatedAt valueObject.UnixTime,
+	createdAt, updatedAt tkValueObject.UnixTime,
 ) MappingSecurityRule {
 	return MappingSecurityRule{
 		Id:                             id,
@@ -62,8 +62,8 @@ func MappingSecurityRulePresetBreezy() MappingSecurityRule {
 	rpsSoftLimitPerIp := uint(24)
 	rpsHardLimitPerIp := uint(32)
 	maxConnectionsPerIp := uint(16)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(32 * 1024 * 1024) // 32MiB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(64 * 1024 * 1024)   // 32MiB
+	bandwidthBpsLimitPerConnection := tkValueObject.Byte(32 * 1024 * 1024) // 32MiB
+	bandwidthLimitOnlyAfterBytes := tkValueObject.Byte(64 * 1024 * 1024)   // 32MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("breezy"),
@@ -85,8 +85,8 @@ func MappingSecurityRulePresetPermissive() MappingSecurityRule {
 	rpsSoftLimitPerIp := uint(16)
 	rpsHardLimitPerIp := uint(24)
 	maxConnectionsPerIp := uint(12)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(16 * 1024 * 1024) // 16MiB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(32 * 1024 * 1024)   // 24MiB
+	bandwidthBpsLimitPerConnection := tkValueObject.Byte(16 * 1024 * 1024) // 16MiB
+	bandwidthLimitOnlyAfterBytes := tkValueObject.Byte(32 * 1024 * 1024)   // 24MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("permissive"),
@@ -108,8 +108,8 @@ func MappingSecurityRulePresetReasonable() MappingSecurityRule {
 	rpsSoftLimitPerIp := uint(12)
 	rpsHardLimitPerIp := uint(16)
 	maxConnectionsPerIp := uint(8)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(8 * 1024 * 1024) // 8MiB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(16 * 1024 * 1024)  // 16MiB
+	bandwidthBpsLimitPerConnection := tkValueObject.Byte(8 * 1024 * 1024) // 8MiB
+	bandwidthLimitOnlyAfterBytes := tkValueObject.Byte(16 * 1024 * 1024)  // 16MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("reasonable"),
@@ -131,8 +131,8 @@ func MappingSecurityRulePresetVigilant() MappingSecurityRule {
 	rpsSoftLimitPerIp := uint(8)
 	rpsHardLimitPerIp := uint(12)
 	maxConnectionsPerIp := uint(6)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(4 * 1024 * 1024) // 4MiB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(8 * 1024 * 1024)   // 12MiB
+	bandwidthBpsLimitPerConnection := tkValueObject.Byte(4 * 1024 * 1024) // 4MiB
+	bandwidthLimitOnlyAfterBytes := tkValueObject.Byte(8 * 1024 * 1024)   // 12MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("vigilant"),
@@ -154,8 +154,8 @@ func MappingSecurityRulePresetIronclad() MappingSecurityRule {
 	rpsSoftLimitPerIp := uint(6)
 	rpsHardLimitPerIp := uint(8)
 	maxConnectionsPerIp := uint(4)
-	bandwidthBpsLimitPerConnection := valueObject.Byte(2 * 1024 * 1024) // 2MiB
-	bandwidthLimitOnlyAfterBytes := valueObject.Byte(4 * 1024 * 1024)   // 8MiB
+	bandwidthBpsLimitPerConnection := tkValueObject.Byte(2 * 1024 * 1024) // 2MiB
+	bandwidthLimitOnlyAfterBytes := tkValueObject.Byte(4 * 1024 * 1024)   // 8MiB
 
 	return MappingSecurityRule{
 		Name:                           valueObject.MappingSecurityRuleName("ironclad"),

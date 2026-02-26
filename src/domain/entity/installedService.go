@@ -1,38 +1,41 @@
 package entity
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type InstalledService struct {
-	Name                 valueObject.ServiceName    `json:"name"`
-	Nature               valueObject.ServiceNature  `json:"nature"`
-	Type                 valueObject.ServiceType    `json:"type"`
-	Version              valueObject.ServiceVersion `json:"version"`
-	Status               valueObject.ServiceStatus  `json:"status"`
-	StartCmd             valueObject.UnixCommand    `json:"startCmd"`
-	Envs                 []valueObject.ServiceEnv   `json:"envs"`
-	PortBindings         []valueObject.PortBinding  `json:"portBindings"`
-	StopTimeoutSecs      valueObject.UnixTime       `json:"-"`
-	StopCmdSteps         []valueObject.UnixCommand  `json:"-"`
-	PreStartTimeoutSecs  valueObject.UnixTime       `json:"-"`
-	PreStartCmdSteps     []valueObject.UnixCommand  `json:"-"`
-	PostStartTimeoutSecs valueObject.UnixTime       `json:"-"`
-	PostStartCmdSteps    []valueObject.UnixCommand  `json:"-"`
-	PreStopTimeoutSecs   valueObject.UnixTime       `json:"-"`
-	PreStopCmdSteps      []valueObject.UnixCommand  `json:"-"`
-	PostStopTimeoutSecs  valueObject.UnixTime       `json:"-"`
-	PostStopCmdSteps     []valueObject.UnixCommand  `json:"-"`
-	ExecUser             *valueObject.UnixUsername  `json:"execUser"`
-	WorkingDirectory     *valueObject.UnixFilePath  `json:"workingDirectory"`
-	StartupFile          *valueObject.UnixFilePath  `json:"startupFile"`
-	AutoStart            *bool                      `json:"autoStart"`
-	AutoRestart          *bool                      `json:"autoRestart"`
-	TimeoutStartSecs     *uint                      `json:"timeoutStartSecs"`
-	MaxStartRetries      *uint                      `json:"maxStartRetries"`
-	LogOutputPath        *valueObject.UnixFilePath  `json:"logOutputPath"`
-	LogErrorPath         *valueObject.UnixFilePath  `json:"logErrorPath"`
-	AvatarUrl            *valueObject.Url           `json:"avatarUrl"`
-	CreatedAt            valueObject.UnixTime       `json:"createdAt"`
-	UpdatedAt            valueObject.UnixTime       `json:"updatedAt"`
+	Name                 valueObject.ServiceName              `json:"name"`
+	Nature               valueObject.ServiceNature            `json:"nature"`
+	Type                 valueObject.ServiceType              `json:"type"`
+	Version              valueObject.ServiceVersion           `json:"version"`
+	Status               valueObject.ServiceStatus            `json:"status"`
+	StartCmd             tkValueObject.UnixCommand            `json:"startCmd"`
+	Envs                 []valueObject.ServiceEnv             `json:"envs"`
+	PortBindings         []valueObject.PortBinding            `json:"portBindings"`
+	StopTimeoutSecs      tkValueObject.UnixTime               `json:"-"`
+	StopCmdSteps         []tkValueObject.UnixCommand          `json:"-"`
+	PreStartTimeoutSecs  tkValueObject.UnixTime               `json:"-"`
+	PreStartCmdSteps     []tkValueObject.UnixCommand          `json:"-"`
+	PostStartTimeoutSecs tkValueObject.UnixTime               `json:"-"`
+	PostStartCmdSteps    []tkValueObject.UnixCommand          `json:"-"`
+	PreStopTimeoutSecs   tkValueObject.UnixTime               `json:"-"`
+	PreStopCmdSteps      []tkValueObject.UnixCommand          `json:"-"`
+	PostStopTimeoutSecs  tkValueObject.UnixTime               `json:"-"`
+	PostStopCmdSteps     []tkValueObject.UnixCommand          `json:"-"`
+	ExecUser             *tkValueObject.UnixUsername           `json:"execUser"`
+	WorkingDirectory     *tkValueObject.UnixAbsoluteFilePath  `json:"workingDirectory"`
+	StartupFile          *tkValueObject.UnixAbsoluteFilePath  `json:"startupFile"`
+	AutoStart            *bool                                `json:"autoStart"`
+	AutoRestart          *bool                                `json:"autoRestart"`
+	TimeoutStartSecs     *uint                                `json:"timeoutStartSecs"`
+	MaxStartRetries      *uint                                `json:"maxStartRetries"`
+	LogOutputPath        *tkValueObject.UnixAbsoluteFilePath  `json:"logOutputPath"`
+	LogErrorPath         *tkValueObject.UnixAbsoluteFilePath  `json:"logErrorPath"`
+	AvatarUrl            *tkValueObject.Url                   `json:"avatarUrl"`
+	CreatedAt            tkValueObject.UnixTime               `json:"createdAt"`
+	UpdatedAt            tkValueObject.UnixTime               `json:"updatedAt"`
 }
 
 func NewInstalledService(
@@ -40,28 +43,28 @@ func NewInstalledService(
 	nature valueObject.ServiceNature,
 	serviceType valueObject.ServiceType,
 	version valueObject.ServiceVersion,
-	startCmd valueObject.UnixCommand,
+	startCmd tkValueObject.UnixCommand,
 	status valueObject.ServiceStatus,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	stopTimeoutSecs valueObject.UnixTime,
-	stopSteps []valueObject.UnixCommand,
-	preStartTimeoutSecs valueObject.UnixTime,
-	preStartSteps []valueObject.UnixCommand,
-	postStartTimeoutSecs valueObject.UnixTime,
-	postStartSteps []valueObject.UnixCommand,
-	preStopTimeoutSecs valueObject.UnixTime,
-	preStopSteps []valueObject.UnixCommand,
-	postStopTimeoutSecs valueObject.UnixTime,
-	postStopSteps []valueObject.UnixCommand,
-	execUser *valueObject.UnixUsername,
-	workingDirectory, startupFile *valueObject.UnixFilePath,
+	stopTimeoutSecs tkValueObject.UnixTime,
+	stopSteps []tkValueObject.UnixCommand,
+	preStartTimeoutSecs tkValueObject.UnixTime,
+	preStartSteps []tkValueObject.UnixCommand,
+	postStartTimeoutSecs tkValueObject.UnixTime,
+	postStartSteps []tkValueObject.UnixCommand,
+	preStopTimeoutSecs tkValueObject.UnixTime,
+	preStopSteps []tkValueObject.UnixCommand,
+	postStopTimeoutSecs tkValueObject.UnixTime,
+	postStopSteps []tkValueObject.UnixCommand,
+	execUser *tkValueObject.UnixUsername,
+	workingDirectory, startupFile *tkValueObject.UnixAbsoluteFilePath,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
-	logOutputPath, logErrorPath *valueObject.UnixFilePath,
-	avatarUrl *valueObject.Url,
-	createdAt valueObject.UnixTime,
-	updatedAt valueObject.UnixTime,
+	logOutputPath, logErrorPath *tkValueObject.UnixAbsoluteFilePath,
+	avatarUrl *tkValueObject.Url,
+	createdAt tkValueObject.UnixTime,
+	updatedAt tkValueObject.UnixTime,
 ) InstalledService {
 	return InstalledService{
 		Name:                 name,

@@ -6,6 +6,7 @@ import (
 	"errors"
 
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type SslCertificate struct {
@@ -15,8 +16,8 @@ type SslCertificate struct {
 	IsIntermediary       bool                                `json:"-"`
 	CertificateAuthority valueObject.SslCertificateAuthority `json:"certificateAuthority"`
 	AltNames             []valueObject.SslHostname           `json:"altNames"`
-	IssuedAt             valueObject.UnixTime                `json:"issuedAt"`
-	ExpiresAt            valueObject.UnixTime                `json:"expiresAt"`
+	IssuedAt             tkValueObject.UnixTime              `json:"issuedAt"`
+	ExpiresAt            tkValueObject.UnixTime              `json:"expiresAt"`
 }
 
 func NewSslCertificate(
@@ -37,8 +38,8 @@ func NewSslCertificate(
 		return certificate, err
 	}
 
-	issuedAt := valueObject.NewUnixTimeWithGoTime(parsedCert.NotBefore)
-	expiresAt := valueObject.NewUnixTimeWithGoTime(parsedCert.NotAfter)
+	issuedAt := tkValueObject.NewUnixTimeWithGoTime(parsedCert.NotBefore)
+	expiresAt := tkValueObject.NewUnixTimeWithGoTime(parsedCert.NotAfter)
 
 	isIntermediary := true
 

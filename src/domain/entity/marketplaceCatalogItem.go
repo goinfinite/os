@@ -2,6 +2,7 @@ package entity
 
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type MarketplaceCatalogItem struct {
@@ -14,14 +15,14 @@ type MarketplaceCatalogItem struct {
 	Services             []valueObject.ServiceNameWithVersion          `json:"services"`
 	Mappings             []valueObject.MarketplaceItemMapping          `json:"mappings"`
 	DataFields           []valueObject.MarketplaceCatalogItemDataField `json:"dataFields"`
-	InstallTimeoutSecs   valueObject.UnixTime                          `json:"-"`
-	InstallCmdSteps      []valueObject.UnixCommand                     `json:"-"`
-	UninstallTimeoutSecs valueObject.UnixTime                          `json:"-"`
-	UninstallCmdSteps    []valueObject.UnixCommand                     `json:"-"`
-	UninstallFileNames   []valueObject.UnixFileName                    `json:"-"`
-	EstimatedSizeBytes   valueObject.Byte                              `json:"estimatedSizeBytes"`
-	AvatarUrl            valueObject.Url                               `json:"avatarUrl"`
-	ScreenshotUrls       []valueObject.Url                             `json:"screenshotUrls"`
+	InstallTimeoutSecs   tkValueObject.UnixTime                        `json:"-"`
+	InstallCmdSteps      []tkValueObject.UnixCommand                   `json:"-"`
+	UninstallTimeoutSecs tkValueObject.UnixTime                        `json:"-"`
+	UninstallCmdSteps    []tkValueObject.UnixCommand                   `json:"-"`
+	UninstallFileNames   []tkValueObject.UnixFileName                  `json:"-"`
+	EstimatedSizeBytes   tkValueObject.Byte                            `json:"estimatedSizeBytes"`
+	AvatarUrl            tkValueObject.Url                             `json:"avatarUrl"`
+	ScreenshotUrls       []tkValueObject.Url                           `json:"screenshotUrls"`
 }
 
 func NewMarketplaceCatalogItem(
@@ -34,14 +35,14 @@ func NewMarketplaceCatalogItem(
 	services []valueObject.ServiceNameWithVersion,
 	mappings []valueObject.MarketplaceItemMapping,
 	dataFields []valueObject.MarketplaceCatalogItemDataField,
-	installTimeoutSecs valueObject.UnixTime,
-	installCmdSteps []valueObject.UnixCommand,
-	uninstallTimeoutSecs valueObject.UnixTime,
-	uninstallCmdSteps []valueObject.UnixCommand,
-	uninstallFileNames []valueObject.UnixFileName,
-	estimatedSizeBytes valueObject.Byte,
-	avatarUrl valueObject.Url,
-	screenshotUrls []valueObject.Url,
+	installTimeoutSecs tkValueObject.UnixTime,
+	installCmdSteps []tkValueObject.UnixCommand,
+	uninstallTimeoutSecs tkValueObject.UnixTime,
+	uninstallCmdSteps []tkValueObject.UnixCommand,
+	uninstallFileNames []tkValueObject.UnixFileName,
+	estimatedSizeBytes tkValueObject.Byte,
+	avatarUrl tkValueObject.Url,
+	screenshotUrls []tkValueObject.Url,
 ) MarketplaceCatalogItem {
 	return MarketplaceCatalogItem{
 		ManifestVersion:      manifestVersion,

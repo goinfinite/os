@@ -1,18 +1,16 @@
 package entity
 
-import (
-	"github.com/goinfinite/os/src/domain/valueObject"
-)
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type PhpConfigs struct {
-	Hostname valueObject.Fqdn `json:"hostname"`
-	Version  PhpVersion       `json:"version"`
-	Settings []PhpSetting     `json:"settings"`
-	Modules  []PhpModule      `json:"modules"`
+	Hostname tkValueObject.Fqdn `json:"hostname"`
+	Version  PhpVersion         `json:"version"`
+	Settings []PhpSetting       `json:"settings"`
+	Modules  []PhpModule        `json:"modules"`
 }
 
 func NewPhpConfigs(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	version PhpVersion,
 	settings []PhpSetting,
 	modules []PhpModule,

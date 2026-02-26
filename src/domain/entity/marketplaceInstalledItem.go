@@ -2,38 +2,39 @@ package entity
 
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type MarketplaceInstalledItem struct {
 	Id               valueObject.MarketplaceItemId            `json:"id"`
 	Name             valueObject.MarketplaceItemName          `json:"name"`
-	Hostname         valueObject.Fqdn                         `json:"hostname"`
+	Hostname         tkValueObject.Fqdn                      `json:"hostname"`
 	Type             valueObject.MarketplaceItemType          `json:"type"`
 	UrlPath          valueObject.UrlPath                      `json:"urlPath"`
-	InstallDirectory valueObject.UnixFilePath                 `json:"installDirectory"`
+	InstallDirectory tkValueObject.UnixAbsoluteFilePath       `json:"installDirectory"`
 	InstallUuid      valueObject.MarketplaceInstalledItemUuid `json:"installUuid"`
 	Services         []valueObject.ServiceNameWithVersion     `json:"services"`
 	Mappings         []Mapping                                `json:"mappings"`
-	AvatarUrl        valueObject.Url                          `json:"avatarUrl"`
+	AvatarUrl        tkValueObject.Url                        `json:"avatarUrl"`
 	Slug             valueObject.MarketplaceItemSlug          `json:"-"`
-	CreatedAt        valueObject.UnixTime                     `json:"createdAt"`
-	UpdatedAt        valueObject.UnixTime                     `json:"updatedAt"`
+	CreatedAt        tkValueObject.UnixTime                   `json:"createdAt"`
+	UpdatedAt        tkValueObject.UnixTime                   `json:"updatedAt"`
 }
 
 func NewMarketplaceInstalledItem(
 	id valueObject.MarketplaceItemId,
 	itemName valueObject.MarketplaceItemName,
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	itemType valueObject.MarketplaceItemType,
 	urlPath valueObject.UrlPath,
-	installDirectory valueObject.UnixFilePath,
+	installDirectory tkValueObject.UnixAbsoluteFilePath,
 	installUuid valueObject.MarketplaceInstalledItemUuid,
 	services []valueObject.ServiceNameWithVersion,
 	mappings []Mapping,
-	avatarUrl valueObject.Url,
+	avatarUrl tkValueObject.Url,
 	slug valueObject.MarketplaceItemSlug,
-	createdAt valueObject.UnixTime,
-	updatedAt valueObject.UnixTime,
+	createdAt tkValueObject.UnixTime,
+	updatedAt tkValueObject.UnixTime,
 ) MarketplaceInstalledItem {
 	return MarketplaceInstalledItem{
 		Id:               id,
