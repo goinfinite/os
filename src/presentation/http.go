@@ -10,6 +10,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -17,9 +18,12 @@ import (
 	wsInfra "github.com/goinfinite/os/src/infra/webServer"
 	"github.com/goinfinite/os/src/presentation/api"
 	presentationMiddleware "github.com/goinfinite/os/src/presentation/middleware"
+	tkPresentationMiddleware "github.com/goinfinite/tk/src/presentation/middleware"
 	"github.com/goinfinite/os/src/presentation/ui"
 	"github.com/labstack/echo/v4"
 )
+
+var fileClerk = tkInfra.FileClerk{}
 
 func webServerSetup(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
@@ -54,8 +58,8 @@ func initialSslSetup() (
 		return certFilePath, keyFilePath, errors.New("InvalidKeyFilePath")
 	}
 
-	if !infraHelper.FileExists(certFilePath.String()) {
-		err := infraHelper.MakeDir(osPkiDirStr)
+	if !fileClerk.FileExists(certFilePath.String()) {
+		err := fileClerk.CreateDir(osPkiDirStr)
 		if err != nil {
 			return certFilePath, keyFilePath, errors.New("CreatePkiDirFailed")
 		}
@@ -102,7 +106,7 @@ func HttpServerInit(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
 	echoInstance := echo.New()
-	echoInstance.Use(presentationMiddleware.PanicHandler)
+	echoInstance.Use(tkPresentationMiddleware.ApiPanicHandler)
 
 	rootBasePath := "/"
 	apiBasePath := rootBasePath + "api"
