@@ -21,13 +21,13 @@ func NewFileStreamHandler(value *multipart.FileHeader) (
 		return fileStreamHandler, err
 	}
 
+	if value.Size > 5*1024*1024*1024 {
+		return fileStreamHandler, errors.New("FileIsTooBig")
+	}
+
 	fileSize, err := tkValueObject.NewByte(value.Size)
 	if err != nil {
 		return fileStreamHandler, errors.New("InvalidFileSize")
-	}
-
-	if fileSize.ToGiB() > 5 {
-		return fileStreamHandler, errors.New("FileIsTooBig")
 	}
 
 	return FileStreamHandler{
