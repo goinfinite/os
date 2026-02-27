@@ -32,6 +32,7 @@ type MarketplaceCmdRepo struct {
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
 	marketplaceQueryRepo *MarketplaceQueryRepo
 	mappingCmdRepo       *vhostInfra.MappingCmdRepo
+	fileClerk            tkInfra.FileClerk
 }
 
 func NewMarketplaceCmdRepo(
@@ -41,6 +42,7 @@ func NewMarketplaceCmdRepo(
 		persistentDbSvc:      persistentDbSvc,
 		marketplaceQueryRepo: NewMarketplaceQueryRepo(persistentDbSvc),
 		mappingCmdRepo:       vhostInfra.NewMappingCmdRepo(persistentDbSvc),
+		fileClerk:            tkInfra.FileClerk{},
 	}
 }
 
@@ -210,9 +212,9 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	}
 
 	totalExecTimeoutSecsUint := uint64(totalExecTimeoutSecs.Int64())
-	runCmdSettings := infraHelper.RunCmdSettings{
-		ShouldRunWithSubShell: true,
-		ExecutionTimeoutSecs:  totalExecTimeoutSecsUint,
+	shellSettings := tkInfra.ShellSettings{
+		ShouldUseSubShell:    true,
+		ExecutionTimeoutSecs: totalExecTimeoutSecsUint,
 	}
 
 	totalExecRemainingTime := totalExecTimeoutSecsUint
@@ -221,13 +223,13 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 
 		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
 
-		runCmdSettings.Command = stepStr
+		shellSettings.Command = stepStr
 
 		stepExecTimeStart := time.Now()
-		stepOutput, err := infraHelper.RunCmd(runCmdSettings)
+		stepOutput, err := tkInfra.NewShell(shellSettings).Run()
 		if err != nil {
 			errorMessage := stepOutput + " | " + err.Error()
-			if infraHelper.IsRunCmdTimeout(err) {
+			if strings.Contains(err.Error(), "CommandDeadlineExceeded") {
 				errorMessage = "MarketplaceItem" + stepsType + "TimeoutExceeded"
 			}
 
@@ -243,7 +245,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 			return errors.New("MarketplaceItem" + stepsType + "TimeoutExceeded")
 		}
 
-		runCmdSettings.ExecutionTimeoutSecs = totalExecRemainingTime
+		shellSettings.ExecutionTimeoutSecs = totalExecRemainingTime
 	}
 
 	return nil
@@ -271,10 +273,10 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 		targetDirStr, dirDefaultPermissions.String(), targetDirStr,
 		fileDefaultPermissions.String(),
 	)
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               updatePrivilegesCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           updatePrivilegesCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("ChmodError (" + targetDirStr + "): " + err.Error())
 	}
@@ -479,12 +481,12 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 	receivedDataFields = slices.Concat(receivedDataFields, optionalFieldsWithDefaultValues)
 
-	err = infraHelper.MakeDir(installDirStr)
+	err = repo.fileClerk.CreateDir(installDirStr)
 	if err != nil {
 		return errors.New("CreateInstallDirectoryError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir(installTempDirPath)
+	err = repo.fileClerk.CreateDir(installTempDirPath)
 	if err != nil {
 		return errors.New("CreateTmpDirectoryError: " + err.Error())
 	}
@@ -503,10 +505,10 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return err
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "rm",
 		Args:    []string{"-rf", installTempDirPath},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("DeleteTmpDirectoryError: " + err.Error())
 	}
@@ -575,10 +577,10 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 		"find %s/ %s \\( %s \\) -exec mv -t %s {} +",
 		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams, targetDir.String(),
 	)
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               moveCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           moveCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	return err
 }
 
@@ -596,7 +598,7 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 	}
 
 	unfamiliarFilesBackupDirStr := unfamiliarFilesBackupDir.String()
-	err = infraHelper.MakeDir(unfamiliarFilesBackupDirStr)
+	err = repo.fileClerk.CreateDir(unfamiliarFilesBackupDirStr)
 	if err != nil {
 		return errors.New("CreateUnfamiliarFilesBackupDirError: " + err.Error())
 	}
@@ -623,10 +625,10 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 	installedItemRealRootDirPathStr := installedItemRealRootDirPath.String()
 
 	softDeleteCmd := "mv " + installedItemRealRootDirPathStr + "/* " + softDeleteDestDirPath.String()
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               softDeleteCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           softDeleteCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("SoftDeleteItemFilesError: " + err.Error())
 	}
@@ -636,24 +638,24 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               "rm -rf " + installedItemRealRootDirPathStr,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           "rm -rf " + installedItemRealRootDirPathStr,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("DeleteItemRealRootPathError: " + err.Error())
 	}
 
 	itemAliasesRootDirStr := installedItem.InstallDirectory.String()
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               "rm -rf " + itemAliasesRootDirStr,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           "rm -rf " + itemAliasesRootDirStr,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("DeleteItemAliasesRootDirError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir(itemAliasesRootDirStr)
+	err = repo.fileClerk.CreateDir(itemAliasesRootDirStr)
 	if err != nil {
 		return errors.New("RecreateItemAliasesRootDirAsRealDirError: " + err.Error())
 	}
@@ -667,10 +669,10 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		return errors.New("RestoreUnfamiliarFilesError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               "rm -rf " + unfamiliarFilesBackupDirStr,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           "rm -rf " + unfamiliarFilesBackupDirStr,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("DeleteUnfamiliarFilesBackupDirError: " + err.Error())
 	}
@@ -696,12 +698,12 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 		return err
 	}
 
-	err = infraHelper.MakeDir(softDeleteDestDirPath.String())
+	err = repo.fileClerk.CreateDir(softDeleteDestDirPath.String())
 	if err != nil {
 		return errors.New("CreateSoftDeleteDirError: " + err.Error())
 	}
 
-	if infraHelper.IsSymlink(installedItem.InstallDirectory.String()) {
+	if repo.fileClerk.IsSymlink(installedItem.InstallDirectory.String()) {
 		return repo.uninstallSymlinkFilesDelete(
 			installedItem, catalogItem, softDeleteDestDirPath,
 		)
@@ -793,19 +795,19 @@ func (repo *MarketplaceCmdRepo) RefreshCatalogItems() error {
 			infraEnvs.InfiniteOsMainDir, infraEnvs.MarketplaceCatalogItemsRepoBranch,
 			infraEnvs.MarketplaceCatalogItemsRepoUrl,
 		)
-		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-			Command:               repoCloneCmd,
-			ShouldRunWithSubShell: true,
-		})
+		_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:           repoCloneCmd,
+			ShouldUseSubShell: true,
+		}).Run()
 		if err != nil {
 			return errors.New("CloneMarketplaceItemsRepoError: " + err.Error())
 		}
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "cd " + infraEnvs.MarketplaceCatalogItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
-		ShouldRunWithSubShell: true,
-	})
+		ShouldUseSubShell: true,
+	}).Run()
 	return err
 }
