@@ -3,7 +3,7 @@ package cliController
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
@@ -13,6 +13,7 @@ import (
 
 type SslController struct {
 	sslLiaison *liaison.SslLiaison
+	fileClerk  tkInfra.FileClerk
 }
 
 func NewSslController(
@@ -22,6 +23,7 @@ func NewSslController(
 ) *SslController {
 	return &SslController{
 		sslLiaison: liaison.NewSslLiaison(persistentDbSvc, transientDbSvc, trailDbSvc),
+		fileClerk:  tkInfra.FileClerk{},
 	}
 }
 
@@ -102,7 +104,9 @@ func (controller *SslController) Create() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidCertificateFilePath")
 			}
-			certContentStr, err := infraHelper.ReadFileContent(certFilePath.String())
+			certContentStr, err := controller.fileClerk.ReadFileContent(
+				certFilePath.String(), nil,
+			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "OpenSslCertificateFileError")
 			}
@@ -112,8 +116,8 @@ func (controller *SslController) Create() *cobra.Command {
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidSslPrivateKeyFilePath")
 			}
-			privateKeyContentStr, err := infraHelper.ReadFileContent(
-				privateKeyFilePath.String(),
+			privateKeyContentStr, err := controller.fileClerk.ReadFileContent(
+				privateKeyFilePath.String(), nil,
 			)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "OpenSslPrivateKeyFileError")
