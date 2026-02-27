@@ -23,6 +23,7 @@ func NewUpdateUnixFiles(
 	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 ) UpdateUnixFiles {
 	return UpdateUnixFiles{
+		filesQueryRepo:        filesQueryRepo,
 		filesCmdRepo:          filesCmdRepo,
 		activityRecordCmdRepo: activityRecordCmdRepo,
 	}
