@@ -17,11 +17,13 @@ import (
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type MappingCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	mappingQueryRepo *MappingQueryRepo
+	fileClerk        tkInfra.FileClerk
 }
 
 func NewMappingCmdRepo(
@@ -32,6 +34,7 @@ func NewMappingCmdRepo(
 	return &MappingCmdRepo{
 		persistentDbSvc:  persistentDbSvc,
 		mappingQueryRepo: mappingQueryRepo,
+		fileClerk:        tkInfra.FileClerk{},
 	}
 }
 
@@ -356,7 +359,7 @@ location {{ locationUriConfigFactory .MatchPattern .Path }} {
 	}
 
 	shouldOverwrite := true
-	return infraHelper.UpdateFile(
+	return repo.fileClerk.UpdateFileContent(
 		mappingFilePath.String(), mappingFileContent.String(), shouldOverwrite,
 	)
 }
@@ -577,14 +580,16 @@ limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m; #MaxConnectio
 		return errors.New("GlobalTemplateExecutionError: " + err.Error())
 	}
 
-	err = infraHelper.MakeDir(infraEnvs.MappingsSecurityRulesConfDir)
+	err = repo.fileClerk.CreateDir(infraEnvs.MappingsSecurityRulesConfDir)
 	if err != nil {
 		return errors.New("CreateSecurityRulesDirError: " + err.Error())
 	}
 
 	ruleGlobalFilePath := infraEnvs.MappingsSecurityRulesConfDir + "/" +
 		mappingSecurityRuleId.String() + ".global.conf"
-	err = infraHelper.UpdateFile(ruleGlobalFilePath, ruleGlobalFileContent.String(), true)
+	err = repo.fileClerk.UpdateFileContent(
+		ruleGlobalFilePath, ruleGlobalFileContent.String(), true,
+	)
 	if err != nil {
 		return errors.New("CreateSecurityRuleGlobalFileError: " + err.Error())
 	}
@@ -638,7 +643,9 @@ deny {{ . }};
 
 	ruleEmbeddableFilePath := infraEnvs.MappingsSecurityRulesConfDir + "/" +
 		mappingSecurityRuleId.String() + ".embeddable.conf"
-	err = infraHelper.UpdateFile(ruleEmbeddableFilePath, ruleEmbeddableFileContent.String(), true)
+	err = repo.fileClerk.UpdateFileContent(
+		ruleEmbeddableFilePath, ruleEmbeddableFileContent.String(), true,
+	)
 	if err != nil {
 		return errors.New("CreateSecurityRuleEmbeddableFileError: " + err.Error())
 	}

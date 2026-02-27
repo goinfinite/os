@@ -15,12 +15,14 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type VirtualHostCmdRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	vhostQueryRepo  *VirtualHostQueryRepo
+	fileClerk       tkInfra.FileClerk
 }
 
 func NewVirtualHostCmdRepo(
@@ -29,6 +31,7 @@ func NewVirtualHostCmdRepo(
 	return &VirtualHostCmdRepo{
 		persistentDbSvc: persistentDbSvc,
 		vhostQueryRepo:  NewVirtualHostQueryRepo(persistentDbSvc),
+		fileClerk:       tkInfra.FileClerk{},
 	}
 }
 
@@ -144,7 +147,9 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("ReadWebServerUnitConfFilePathError: " + err.Error())
 	}
 
-	err = infraHelper.UpdateFile(unitConfFilePath.String(), unitConfFileContent, true)
+	err = repo.fileClerk.UpdateFileContent(
+		unitConfFilePath.String(), unitConfFileContent, true,
+	)
 	if err != nil {
 		return errors.New("CreateWebServerConfUnitFileFailed: " + err.Error())
 	}
@@ -179,7 +184,7 @@ func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
 		return publicDir, errors.New("InvalidVirtualHostPublicDir")
 	}
 
-	err = infraHelper.MakeDir(publicDir.String())
+	err = repo.fileClerk.CreateDir(publicDir.String())
 	if err != nil {
 		return publicDir, errors.New("CreateVirtualHostPublicDirFailed")
 	}
