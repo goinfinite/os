@@ -8,7 +8,7 @@ import (
 
 var NewSystemResourceIdentifier = tkValueObject.NewSystemResourceIdentifier
 
-func NewSystemResourceIdentifierIgnoreError(
+func NewSystemResourceIdentifierMustCreate(
 	value interface{},
 ) tkValueObject.SystemResourceIdentifier {
 	return tkValueObject.NewSystemResourceIdentifierMustCreate(value)
@@ -18,7 +18,7 @@ func NewSecureAccessPublicKeySri(
 	accountId tkValueObject.AccountId,
 	secureAccessPublicKeyId SecureAccessPublicKeyId,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":secureAccessPublicKey/" +
 			secureAccessPublicKeyId.String(),
 	)
@@ -28,7 +28,7 @@ func NewCronSri(
 	accountId tkValueObject.AccountId,
 	cronId CronId,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":cron/" + cronId.String(),
 	)
 }
@@ -37,7 +37,7 @@ func NewDatabaseSri(
 	accountId tkValueObject.AccountId,
 	databaseName DatabaseName,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":database/" + databaseName.String(),
 	)
 }
@@ -46,7 +46,7 @@ func NewDatabaseUserSri(
 	accountId tkValueObject.AccountId,
 	databaseUsername DatabaseUsername,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":databaseUser/" + databaseUsername.String(),
 	)
 }
@@ -64,12 +64,12 @@ func NewMarketplaceCatalogItemSri(
 	itemSri := "sri://" + accountId.String() +
 		":marketplaceCatalogItem/"
 	if marketplaceCatalogItemId != nil {
-		return NewSystemResourceIdentifierIgnoreError(
+		return NewSystemResourceIdentifierMustCreate(
 			itemSri + marketplaceCatalogItemId.String(),
 		)
 	}
 
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		itemSri + marketplaceCatalogItemSlug.String(),
 	)
 }
@@ -78,7 +78,7 @@ func NewMarketplaceInstalledItemSri(
 	accountId tkValueObject.AccountId,
 	marketplaceInstalledItemId MarketplaceItemId,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":marketplaceInstalledItem/" +
 			marketplaceInstalledItemId.String(),
 	)
@@ -88,7 +88,7 @@ func NewPhpRuntimeSri(
 	accountId tkValueObject.AccountId,
 	virtualHostHostname tkValueObject.Fqdn,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":phpRuntime/" + virtualHostHostname.String(),
 	)
 }
@@ -97,7 +97,7 @@ func NewInstallableServiceSri(
 	accountId tkValueObject.AccountId,
 	serviceName ServiceName,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":installableService/" + serviceName.String(),
 	)
 }
@@ -106,7 +106,7 @@ func NewCustomServiceSri(
 	accountId tkValueObject.AccountId,
 	serviceName ServiceName,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":customService/" + serviceName.String(),
 	)
 }
@@ -115,7 +115,7 @@ func NewInstalledServiceSri(
 	accountId tkValueObject.AccountId,
 	serviceName ServiceName,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":installedService/" + serviceName.String(),
 	)
 }
@@ -124,7 +124,7 @@ func NewSslSri(
 	accountId tkValueObject.AccountId,
 	sslPairId SslPairId,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":ssl/" + sslPairId.String(),
 	)
 }
@@ -133,7 +133,7 @@ func NewVirtualHostSri(
 	accountId tkValueObject.AccountId,
 	vhostHostname tkValueObject.Fqdn,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":virtualHost/" + vhostHostname.String(),
 	)
 }
@@ -142,7 +142,7 @@ func NewMappingSri(
 	accountId tkValueObject.AccountId,
 	mappingId MappingId,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":mapping/" + mappingId.String(),
 	)
 }
@@ -151,7 +151,7 @@ func NewMappingSecurityRuleSri(
 	accountId tkValueObject.AccountId,
 	mappingSecurityRuleId MappingSecurityRuleId,
 ) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
+	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":mappingSecurityRule/" + mappingSecurityRuleId.String(),
 	)
 }
