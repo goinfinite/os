@@ -8,7 +8,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
@@ -16,13 +16,13 @@ type MysqlDatabaseQueryRepo struct {
 }
 
 func MysqlCmd(cmd string) (string, error) {
-	return infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	return tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "mysql",
 		Args: []string{
-			"--defaults-file=/root/.my.cnf", "--skip-column-names", "--silent",
-			"--execute", cmd,
+			"--defaults-file=/root/.my.cnf", "--skip-column-names",
+			"--silent", "--execute", cmd,
 		},
-	})
+	}).Run()
 }
 
 func (repo MysqlDatabaseQueryRepo) readDatabaseNames() ([]valueObject.DatabaseName, error) {

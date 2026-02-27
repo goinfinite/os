@@ -8,7 +8,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
@@ -21,10 +21,10 @@ func PostgresqlCmd(cmd string, dbName *valueObject.DatabaseName) (string, error)
 		cmdArgs = append(cmdArgs, "-d", dbName.String())
 	}
 
-	return infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	return tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "psql",
 		Args:    cmdArgs,
-	})
+	}).Run()
 }
 
 func (repo PostgresDatabaseQueryRepo) readDatabaseNames() ([]valueObject.DatabaseName, error) {

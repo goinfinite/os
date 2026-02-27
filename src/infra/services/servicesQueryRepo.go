@@ -14,7 +14,6 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -122,10 +121,10 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	stoppedServicesNames := []string{}
 
 	readStoppedServicesCmd := SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'"
-	rawStoppedServices, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               readStoppedServicesCmd,
-		ShouldRunWithSubShell: true,
-	})
+	rawStoppedServices, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           readStoppedServicesCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return stoppedServicesNames, err
 	}
@@ -162,10 +161,10 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 		serviceNameStr := installedService.Name.String()
 
-		supervisorStatus, _ := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-			Command:               SupervisorCtlBin + " status " + serviceNameStr,
-			ShouldRunWithSubShell: true,
-		})
+		supervisorStatus, _ := tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:           SupervisorCtlBin + " status " + serviceNameStr,
+			ShouldUseSubShell: true,
+		}).Run()
 		if len(supervisorStatus) == 0 {
 			installedServicesWithMetrics = append(
 				installedServicesWithMetrics, serviceWithoutMetrics,
@@ -759,12 +758,12 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		}
 	}
 
-	rawInstallableFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawInstallableFilesList, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",
-		ShouldRunWithSubShell: true,
-	})
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return installableItemsDto, errors.New(
 			"ReadInstallableFilesError: " + err.Error(),

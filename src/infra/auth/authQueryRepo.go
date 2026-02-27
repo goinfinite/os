@@ -8,6 +8,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -37,10 +38,10 @@ func NewAuthQueryRepo(
 func (repo *AuthQueryRepo) IsLoginValid(createDto dto.CreateSessionToken) bool {
 	readStoredPassHashCmd := "getent shadow " + createDto.Username.String() +
 		" | awk -F: '{print $2}'"
-	storedPassHash, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               readStoredPassHashCmd,
-		ShouldRunWithSubShell: true,
-	})
+	storedPassHash, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:            readStoredPassHashCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		slog.Debug(
 			"GetentShadowError",

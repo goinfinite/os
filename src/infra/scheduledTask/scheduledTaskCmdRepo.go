@@ -7,8 +7,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
@@ -97,10 +97,10 @@ func (repo *ScheduledTaskCmdRepo) Run(
 	startedAtUnixTime := tkValueObject.NewUnixTimeNow()
 
 	cmdWithTimeout := "timeout --kill-after=10s " + timeoutStr + " " + pendingTask.Command.String()
-	rawOutput, rawError := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               cmdWithTimeout,
-		ShouldRunWithSubShell: true,
-	})
+	rawOutput, rawError := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           cmdWithTimeout,
+		ShouldUseSubShell: true,
+	}).Run()
 
 	finalStatus, _ := valueObject.NewScheduledTaskStatus("completed")
 	if rawError != nil {

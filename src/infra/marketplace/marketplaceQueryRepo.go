@@ -14,7 +14,6 @@ import (
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
@@ -588,12 +587,12 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		}
 	}
 
-	rawCatalogFilesList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawCatalogFilesList, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
 			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
 			"-not -path '*/.*' -not -name '.*'",
-		ShouldRunWithSubShell: true,
-	})
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return responseDto, errors.New("ReadMarketplaceFilesError: " + err.Error())
 	}

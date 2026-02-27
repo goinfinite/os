@@ -10,8 +10,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
@@ -68,10 +68,10 @@ func (repo *CronQueryRepo) cronFactory(
 func (repo *CronQueryRepo) readCronsFromCrontab() ([]entity.Cron, error) {
 	crons := []entity.Cron{}
 
-	rawCronOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawCronOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "crontab",
 		Args:    []string{"-l"},
-	})
+	}).Run()
 	if err != nil {
 		if strings.Contains(err.Error(), "no crontab") {
 			return crons, nil
