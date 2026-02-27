@@ -49,6 +49,6 @@ func NewMarketplaceInstalledItem(
 		AvatarUrl:        avatarUrl,
 		Slug:             slug,
 		CreatedAt:        createdAt,
-		UpdatedAt:        createdAt,
+		UpdatedAt:        updatedAt,
 	}
 }
