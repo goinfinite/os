@@ -11,10 +11,16 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type RuntimeQueryRepo struct {
+	fileClerk tkInfra.FileClerk
+}
+
+func NewRuntimeQueryRepo() *RuntimeQueryRepo {
+	return &RuntimeQueryRepo{fileClerk: tkInfra.FileClerk{}}
 }
 
 func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
@@ -37,7 +43,7 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 		return vhostPhpConfFilePath, err
 	}
 
-	if !infraHelper.FileExists(vhostPhpConfFilePathStr) {
+	if !repo.fileClerk.FileExists(vhostPhpConfFilePathStr) {
 		return vhostPhpConfFilePath, errors.New("VirtualHostNotFound")
 	}
 
@@ -47,12 +53,12 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	phpVersions []valueObject.PhpVersion, err error,
 ) {
-	output, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	output, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "awk",
 		Args: []string{
 			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebserverMainConfFilePath,
 		},
-	})
+	}).Run()
 	if err != nil {
 		return phpVersions, errors.New("GetPhpVersionFromFileFailed: " + err.Error())
 	}
@@ -82,13 +88,13 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 		return phpVersion, err
 	}
 
-	currentPhpVersionStr, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	currentPhpVersionStr, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "awk",
 		Args: []string{
 			"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
 			vhostPhpConfFilePath.String(),
 		},
-	})
+	}).Run()
 	if err != nil {
 		return phpVersion, errors.New("GetCurrentPhpVersionFromFileFailed: " + err.Error())
 	}
@@ -108,10 +114,10 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 }
 
 func (repo RuntimeQueryRepo) getPhpTimezones() (timezones []string, err error) {
-	timezonesRaw, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	timezonesRaw, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "php",
 		Args:    []string{"-r", "echo json_encode(DateTimeZone::listIdentifiers());"},
-	})
+	}).Run()
 	if err != nil {
 		return timezones, errors.New("GetPhpTimezonesFailed: " + err.Error())
 	}
@@ -217,7 +223,7 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 		return phpSettings, err
 	}
 
-	output, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	output, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
 			"-n",
@@ -225,7 +231,7 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 				"s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
 			vhostPhpConfFilePath.String(),
 		},
-	})
+	}).Run()
 	if err != nil || output == "" {
 		return phpSettings, errors.New("GetPhpSettingsFailed: " + err.Error())
 	}
@@ -245,10 +251,10 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 func (repo RuntimeQueryRepo) ReadPhpModules(
 	version valueObject.PhpVersion,
 ) (phpModules []entity.PhpModule, err error) {
-	activeModuleList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	activeModuleList, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php",
 		Args:    []string{"-m"},
-	})
+	}).Run()
 	if err != nil {
 		return phpModules, errors.New("GetActivePhpModulesFailed: " + err.Error())
 	}
