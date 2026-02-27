@@ -20,7 +20,7 @@ func getFailedLoginAttemptsCount(
 	activityRecordQueryRepo tkRepository.ActivityRecordQueryRepo,
 	createDto dto.CreateSessionToken,
 ) uint {
-	recordLevel, _ := tkValueObject.NewActivityRecordLevel("SEC")
+	recordLevel := tkValueObject.ActivityRecordLevelSecurity
 	recordCode, _ := tkValueObject.NewActivityRecordCode("LoginFailed")
 	failedAttemptsIntervalStartsAt := tkValueObject.NewUnixTimeBeforeNow(
 		FailedLoginAttemptsInterval,

@@ -12,7 +12,7 @@ func TestActivityRecordCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 	trailDbSvc := testHelpers.GetTrailDbSvc()
 	activityRecordCmdRepo := NewActivityRecordCmdRepo(trailDbSvc)
-	level, _ := tkValueObject.NewActivityRecordLevel("SEC")
+	level := tkValueObject.ActivityRecordLevelSecurity
 	recordCode, _ := tkValueObject.NewActivityRecordCode("LoginFailed")
 	operatorIpAddress := tkValueObject.IpAddressLocal
 
