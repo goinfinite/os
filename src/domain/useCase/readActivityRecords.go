@@ -10,11 +10,12 @@ import (
 func ReadActivityRecords(
 	activityRecordQueryRepo tkRepository.ActivityRecordQueryRepo,
 	readDto tkDto.ReadActivityRecordsRequest,
-) (responseDto tkDto.ReadActivityRecordsResponse) {
+) (tkDto.ReadActivityRecordsResponse, error) {
 	responseDto, err := activityRecordQueryRepo.Read(readDto)
 	if err != nil {
 		slog.Error("ReadActivityRecordsInfraError", slog.String("err", err.Error()))
+		return responseDto, err
 	}
 
-	return responseDto
+	return responseDto, nil
 }

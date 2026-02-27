@@ -33,7 +33,7 @@ func getFailedLoginAttemptsCount(
 		CreatedAfterAt:    &failedAttemptsIntervalStartsAt,
 	}
 
-	responseDto := ReadActivityRecords(activityRecordQueryRepo, readDto)
+	responseDto, _ := ReadActivityRecords(activityRecordQueryRepo, readDto)
 	return uint(len(responseDto.ActivityRecords))
 }
 
