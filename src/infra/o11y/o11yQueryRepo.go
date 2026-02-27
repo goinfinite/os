@@ -17,6 +17,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
@@ -24,20 +25,24 @@ const PublicIpTransientKey string = "PublicIp"
 
 type O11yQueryRepo struct {
 	transientDbSvc *internalDbInfra.TransientDatabaseService
+	fileClerk      tkInfra.FileClerk
 }
 
 func NewO11yQueryRepo(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *O11yQueryRepo {
-	return &O11yQueryRepo{transientDbSvc: transientDbSvc}
+	return &O11yQueryRepo{
+		transientDbSvc: transientDbSvc,
+		fileClerk:      tkInfra.FileClerk{},
+	}
 }
 
 func (repo *O11yQueryRepo) getUptime() (uint64, error) {
 	nowEpoch := tkValueObject.NewUnixTimeNow()
-	rawFirstPidEpoch, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               "stat -c '%Y' /proc/1",
-		ShouldRunWithSubShell: true,
-	})
+	rawFirstPidEpoch, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           "stat -c '%Y' /proc/1",
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return 0, errors.New("ReadFirstPidEpochFailed")
 	}
@@ -59,7 +64,7 @@ func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
 		return tkValueObject.NewIpAddress(cachedIpAddressStr)
 	}
 
-	serverPublicIpAddress, err := infraHelper.ReadServerPublicIpAddress()
+	serverPublicIpAddress, err := tkInfra.ReadServerPublicIpAddress()
 	if err != nil {
 		return ipAddress, errors.New("ReadServerPublicIpAddressError: " + err.Error())
 	}
@@ -78,7 +83,7 @@ func (repo *O11yQueryRepo) isCgroupV2() bool {
 }
 
 func (repo *O11yQueryRepo) getFileContent(file string) (string, error) {
-	fileContent, err := infraHelper.ReadFileContent(file)
+	fileContent, err := repo.fileClerk.ReadFileContent(file, nil)
 	if err != nil {
 		return "", err
 	}
