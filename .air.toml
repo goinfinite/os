@@ -3,7 +3,7 @@ root = "."
 tmp_dir = "tmp"
 
 [build]
-entrypoint = "bin/os"
+entrypoint = ["bin/os"]
 cmd = "make build"
 delay = 1000
 exclude_dir = [".git", "bin", "logs", "tmp", "vendor", "src/devUtils"]
