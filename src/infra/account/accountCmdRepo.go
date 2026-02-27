@@ -13,6 +13,7 @@ import (
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -23,6 +24,7 @@ import (
 type AccountCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	accountQueryRepo *AccountQueryRepo
+	fileClerk        tkInfra.FileClerk
 }
 
 func NewAccountCmdRepo(
@@ -31,6 +33,7 @@ func NewAccountCmdRepo(
 	return &AccountCmdRepo{
 		persistentDbSvc:  persistentDbSvc,
 		accountQueryRepo: NewAccountQueryRepo(persistentDbSvc),
+		fileClerk:        tkInfra.FileClerk{},
 	}
 }
 
@@ -39,7 +42,7 @@ func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 	shouldPromoteAccount bool,
 ) error {
 	sudoersFilePath := "/etc/sudoers"
-	if !infraHelper.FileExists(sudoersFilePath) {
+	if !repo.fileClerk.FileExists(sudoersFilePath) {
 		err := infraHelper.InstallPkgs([]string{"sudo"})
 		if err != nil {
 			return errors.New("InstallSudoPkgError: " + err.Error())
@@ -47,7 +50,7 @@ func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 	}
 
 	accountNameStr := accountName.String()
-	toggleUserGroupSettings := infraHelper.RunCmdSettings{
+	toggleUserGroupSettings := tkInfra.ShellSettings{
 		Command: "usermod",
 		Args:    []string{"-G", "sudo", accountNameStr},
 	}
@@ -55,13 +58,13 @@ func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 		toggleUserGroupSettings.Command = "deluser"
 		toggleUserGroupSettings.Args = []string{accountNameStr, "sudo"}
 	}
-	_, err := infraHelper.RunCmd(toggleUserGroupSettings)
+	_, err := tkInfra.NewShell(toggleUserGroupSettings).Run()
 	if err != nil {
 		return errors.New("ToggleAccountSudoGroupError: " + err.Error())
 	}
 
 	sudoersDirPath := "/etc/sudoers.d"
-	err = infraHelper.MakeDir(sudoersDirPath)
+	err = repo.fileClerk.CreateDir(sudoersDirPath)
 	if err != nil {
 		return errors.New("CreateSudoersDirError: " + err.Error())
 	}
@@ -77,7 +80,7 @@ func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 	}
 
 	sudoersLine := accountNameStr + " ALL=(ALL) NOPASSWD:ALL"
-	return infraHelper.UpdateFile(sudoersDirAccountFilePath, sudoersLine, true)
+	return repo.fileClerk.UpdateFileContent(sudoersDirAccountFilePath, sudoersLine, true)
 }
 
 func (repo *AccountCmdRepo) createAuthorizedKeysFile(
@@ -87,7 +90,7 @@ func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 	accountUsernameStr := accountUsername.String()
 
 	sshDirPath := accountHomeDirectory.String() + "/.ssh"
-	err := infraHelper.MakeDir(sshDirPath)
+	err := repo.fileClerk.CreateDir(sshDirPath)
 	if err != nil {
 		return errors.New("CreateSshDirectoryError: " + err.Error())
 	}
@@ -98,10 +101,10 @@ func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 		return errors.New("CreateAuthorizedKeysFileError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "chown",
 		Args:    []string{"-R", accountUsernameStr, authorizedKeysFilePath},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("ChownAuthorizedKeysFileError: " + err.Error())
 	}
@@ -127,10 +130,12 @@ func (repo *AccountCmdRepo) Create(
 		return accountId, errors.New("DefineHomeDirectoryError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "useradd",
-		Args:    []string{"-m", "-s", "/bin/bash", "-p", string(passHash), usernameStr},
-	})
+		Args: []string{
+			"-m", "-s", "/bin/bash", "-p", string(passHash), usernameStr,
+		},
+	}).Run()
 	if err != nil {
 		return accountId, errors.New("UserAddFailed: " + err.Error())
 	}
@@ -191,15 +196,15 @@ func (repo *AccountCmdRepo) Delete(accountId tkValueObject.AccountId) error {
 	}
 
 	accountIdStr := accountId.String()
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "pgrep",
 		Args:    []string{"-u", accountIdStr},
-	})
+	}).Run()
 	if err == nil {
-		_, _ = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		_, _ = tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "pkill",
 			Args:    []string{"-9", "-U", accountIdStr},
-		})
+		}).Run()
 	}
 
 	if accountEntity.IsSuperAdmin {
@@ -209,10 +214,10 @@ func (repo *AccountCmdRepo) Delete(accountId tkValueObject.AccountId) error {
 		}
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "userdel",
 		Args:    []string{"-r", accountEntity.Username.String()},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("UserDeleteError: " + err.Error())
 	}
@@ -236,10 +241,10 @@ func (repo *AccountCmdRepo) updatePassword(
 		return errors.New("PasswordHashError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "usermod",
 		Args:    []string{"-p", string(passHash), accountEntity.Username.String()},
-	})
+	}).Run()
 	return err
 }
 
@@ -334,7 +339,7 @@ func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
 
 	authorizedKeysFilePath := accountHomeDirectory.String() + "/.ssh/authorized_keys"
 	shouldOverwrite := true
-	err = infraHelper.UpdateFile(
+	err = repo.fileClerk.UpdateFileContent(
 		authorizedKeysFilePath, keysFileContent, shouldOverwrite,
 	)
 	if err != nil {
