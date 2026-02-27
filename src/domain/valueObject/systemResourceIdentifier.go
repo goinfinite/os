@@ -14,14 +14,6 @@ func NewSystemResourceIdentifierIgnoreError(
 	return tkValueObject.NewSystemResourceIdentifierMustCreate(value)
 }
 
-func NewAccountSri(
-	accountId tkValueObject.AccountId,
-) tkValueObject.SystemResourceIdentifier {
-	return NewSystemResourceIdentifierIgnoreError(
-		"sri://0:account/" + accountId.String(),
-	)
-}
-
 func NewSecureAccessPublicKeySri(
 	accountId tkValueObject.AccountId,
 	secureAccessPublicKeyId SecureAccessPublicKeyId,
