@@ -24,12 +24,19 @@ func CreateSelfSignedSsl(
 	dirPathStr := dirPath.String()
 
 	shouldOverwrite := true
-	err = UpdateFile(dirPathStr+"/"+vhostHostnameStr+".key", keyPem, shouldOverwrite)
+	sslFileClerk := tkInfra.FileClerk{}
+	err = sslFileClerk.UpdateFileContent(
+		dirPathStr+"/"+vhostHostnameStr+".key",
+		keyPem, shouldOverwrite,
+	)
 	if err != nil {
 		return errors.New("WritePrivateKeyError: " + err.Error())
 	}
 
-	err = UpdateFile(dirPathStr+"/"+vhostHostnameStr+".crt", certPem, shouldOverwrite)
+	err = sslFileClerk.UpdateFileContent(
+		dirPathStr+"/"+vhostHostnameStr+".crt",
+		certPem, shouldOverwrite,
+	)
 	if err != nil {
 		return errors.New("WriteCertificateError: " + err.Error())
 	}
