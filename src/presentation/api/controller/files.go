@@ -53,7 +53,14 @@ func (controller *FilesController) Read(echoContext echo.Context) error {
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
-	apiHelper.CheckMissingParams(requestData, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(
+		requestData, requiredParams,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			echoContext, http.StatusBadRequest, err.Error(),
+		)
+	}
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestData["sourcePath"])
 	if err != nil {
@@ -100,7 +107,14 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
-	apiHelper.CheckMissingParams(requestData, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(
+		requestData, requiredParams,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			echoContext, http.StatusBadRequest, err.Error(),
+		)
+	}
 
 	filePath, err := valueObject.NewUnixFilePath(requestData["filePath"])
 	if err != nil {
@@ -227,7 +241,14 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 		}
 	}
 
-	apiHelper.CheckMissingParams(requestData, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(
+		requestData, requiredParams,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			echoContext, http.StatusBadRequest, err.Error(),
+		)
+	}
 
 	sourcePaths, err := controller.parseSourcePaths(requestData["sourcePaths"])
 	if err != nil {
@@ -346,7 +367,14 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
-	apiHelper.CheckMissingParams(requestData, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(
+		requestData, requiredParams,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			echoContext, http.StatusBadRequest, err.Error(),
+		)
+	}
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestData["sourcePath"])
 	if err != nil {
@@ -423,7 +451,14 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 		}
 	}
 
-	apiHelper.CheckMissingParams(requestData, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(
+		requestData, requiredParams,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			echoContext, http.StatusBadRequest, err.Error(),
+		)
+	}
 
 	sourcePaths, err := controller.parseSourcePaths(requestData["sourcePaths"])
 	if err != nil {
@@ -497,7 +532,14 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 		}
 	}
 
-	apiHelper.CheckMissingParams(requestData, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(
+		requestData, requiredParams,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			echoContext, http.StatusBadRequest, err.Error(),
+		)
+	}
 
 	sourcePaths, err := controller.parseSourcePaths(requestData["sourcePaths"])
 	if err != nil {
@@ -576,7 +618,14 @@ func (controller *FilesController) Extract(echoContext echo.Context) error {
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
-	apiHelper.CheckMissingParams(requestData, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(
+		requestData, requiredParams,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			echoContext, http.StatusBadRequest, err.Error(),
+		)
+	}
 
 	sourcePath, err := valueObject.NewUnixFilePath(requestData["sourcePath"])
 	if err != nil {
@@ -637,7 +686,14 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	apiHelper.CheckMissingParams(requestData, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(
+		requestData, requiredParams,
+	)
+	if err != nil {
+		return apiHelper.ResponseWrapper(
+			echoContext, http.StatusBadRequest, err.Error(),
+		)
+	}
 
 	destinationPath, err := valueObject.NewUnixFilePath(requestData["destinationPath"])
 	if err != nil {
