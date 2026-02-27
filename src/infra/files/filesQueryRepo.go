@@ -14,11 +14,17 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-type FilesQueryRepo struct{}
+type FilesQueryRepo struct {
+	fileClerk tkInfra.FileClerk
+}
+
+func NewFilesQueryRepo() *FilesQueryRepo {
+	return &FilesQueryRepo{fileClerk: tkInfra.FileClerk{}}
+}
 
 func (repo *FilesQueryRepo) unixFileFactory(
 	filePath tkValueObject.UnixAbsoluteFilePath,
@@ -99,7 +105,7 @@ func (repo *FilesQueryRepo) unixFileFactory(
 
 	var unixFileContentPtr *valueObject.UnixFileContent
 	if shouldReturnContent && unixFileSize.ToMiB() <= valueObject.FileContentMaxSizeInMb {
-		unixFileContentStr, err := infraHelper.ReadFileContent(filePath.String())
+		unixFileContentStr, err := repo.fileClerk.ReadFileContent(filePath.String(), nil)
 		if err != nil {
 			return unixFile, errors.New("FailedToReadFileContent: " + err.Error())
 		}
@@ -165,10 +171,10 @@ func (repo *FilesQueryRepo) unixFileBranchFactory(
 		findCmdArgs = append(findCmdArgs, "-type", "d")
 	}
 
-	rawBranchTwigs, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawBranchTwigs, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "find",
 		Args:    findCmdArgs,
-	})
+	}).Run()
 	if err != nil {
 		return fileBranch, err
 	}
@@ -254,7 +260,7 @@ func (repo *FilesQueryRepo) Read(
 ) (responseDto dto.ReadFilesResponse, err error) {
 	sourcePathStr := requestDto.SourcePath.String()
 
-	if !infraHelper.FileExists(sourcePathStr) {
+	if !repo.fileClerk.FileExists(sourcePathStr) {
 		return responseDto, errors.New("PathNotFound")
 	}
 
@@ -269,10 +275,10 @@ func (repo *FilesQueryRepo) Read(
 		factorableFilePathsWithoutSourcePath := factorableFilePaths[1:]
 		factorableFilePaths = factorableFilePathsWithoutSourcePath
 
-		rawDirectoryFiles, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		rawDirectoryFiles, err := tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "find",
 			Args:    []string{"-L", sourcePathStr, "-maxdepth", "1", "-printf", "%p\n"},
-		})
+		}).Run()
 		if err != nil {
 			return responseDto, errors.New("ReadDirectoryError: " + err.Error())
 		}
@@ -353,7 +359,7 @@ func (repo *FilesQueryRepo) Read(
 func (repo *FilesQueryRepo) ReadFirst(
 	unixFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (unixFileEntity entity.UnixFile, err error) {
-	if !infraHelper.FileExists(unixFilePath.String()) {
+	if !repo.fileClerk.FileExists(unixFilePath.String()) {
 		return unixFileEntity, errors.New("FileNotFound")
 	}
 

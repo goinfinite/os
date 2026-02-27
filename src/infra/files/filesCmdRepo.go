@@ -11,17 +11,19 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type FilesCmdRepo struct {
 	filesQueryRepo *FilesQueryRepo
+	fileClerk      tkInfra.FileClerk
 }
 
 func NewFilesCmdRepo() *FilesCmdRepo {
 	return &FilesCmdRepo{
-		filesQueryRepo: &FilesQueryRepo{},
+		filesQueryRepo: NewFilesQueryRepo(),
+		fileClerk:      tkInfra.FileClerk{},
 	}
 }
 
@@ -65,7 +67,7 @@ func (repo FilesCmdRepo) uploadSingleFile(
 
 func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 	sourcePathStr := copyDto.SourcePath.String()
-	fileToCopyExists := infraHelper.FileExists(sourcePathStr)
+	fileToCopyExists := repo.fileClerk.FileExists(sourcePathStr)
 	if !fileToCopyExists {
 		return errors.New("FileToCopyNotFound")
 	}
@@ -73,17 +75,17 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 	sourceFileName := copyDto.SourcePath.ReadFileName(false)
 	destinationAbsolutePath := copyDto.DestinationPath.String() + "/" + sourceFileName.String()
 	if !copyDto.ShouldOverwrite {
-		destinationPathExists := infraHelper.FileExists(destinationAbsolutePath)
+		destinationPathExists := repo.fileClerk.FileExists(destinationAbsolutePath)
 		if destinationPathExists {
 			return errors.New("DestinationPathAlreadyExists")
 		}
 	}
 
 	copyCmd := "rsync -avq " + sourcePathStr + " " + destinationAbsolutePath
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               copyCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:          copyCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	return err
 }
 
@@ -93,7 +95,7 @@ func (repo FilesCmdRepo) Compress(
 	compressibleFilesStr := []string{}
 	incompressibleFilesStr := map[string]interface{}{}
 	for _, sourcePath := range compressDto.SourcePaths {
-		sourcePathExists := infraHelper.FileExists(sourcePath.String())
+		sourcePathExists := repo.fileClerk.FileExists(sourcePath.String())
 		if !sourcePathExists {
 			incompressibleFilesStr[sourcePath.String()] = nil
 			slog.Debug(
@@ -140,7 +142,7 @@ func (repo FilesCmdRepo) Compress(
 		return compressionProcessReport, errors.New("UnsupportedCompressionType")
 	}
 
-	if infraHelper.FileExists(newDestinationPath.String()) {
+	if repo.fileClerk.FileExists(newDestinationPath.String()) {
 		return compressionProcessReport, errors.New("DestinationPathAlreadyExists")
 	}
 
@@ -157,10 +159,10 @@ func (repo FilesCmdRepo) Compress(
 		compressionBinary, compressionBinaryFlag,
 		newDestinationPath.String(), filesToCompress,
 	)
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               compressCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:          compressCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return compressionProcessReport, err
 	}
@@ -193,7 +195,7 @@ func (repo FilesCmdRepo) Compress(
 func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 	filePathStr := createDto.FilePath.String()
 
-	filesExists := infraHelper.FileExists(filePathStr)
+	filesExists := repo.fileClerk.FileExists(filePathStr)
 	if filesExists {
 		return errors.New("PathAlreadyExists")
 	}
@@ -237,7 +239,7 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 }
 
 func (repo FilesCmdRepo) Delete(unixFilePath tkValueObject.UnixAbsoluteFilePath) error {
-	fileExists := infraHelper.FileExists(unixFilePath.String())
+	fileExists := repo.fileClerk.FileExists(unixFilePath.String())
 	if !fileExists {
 		return errors.New("FileNotFound")
 	}
@@ -253,14 +255,14 @@ func (repo FilesCmdRepo) Delete(unixFilePath tkValueObject.UnixAbsoluteFilePath)
 func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 	fileToExtract := extractDto.SourcePath
 
-	fileToExtractExists := infraHelper.FileExists(fileToExtract.String())
+	fileToExtractExists := repo.fileClerk.FileExists(fileToExtract.String())
 	if !fileToExtractExists {
 		return errors.New("FileNotFound")
 	}
 
 	destinationPath := extractDto.DestinationPath
 
-	destinationPathExists := infraHelper.FileExists(destinationPath.String())
+	destinationPathExists := repo.fileClerk.FileExists(destinationPath.String())
 	if destinationPathExists {
 		return errors.New("DestinationPathAlreadyExists")
 	}
@@ -280,7 +282,7 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 		compressDestinationFlag = "-d"
 	}
 
-	err = infraHelper.MakeDir(destinationPath.String())
+	err = repo.fileClerk.CreateDir(destinationPath.String())
 	if err != nil {
 		return err
 	}
@@ -290,16 +292,16 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 		compressBinary, compressBinaryFlag, fileToExtract.String(),
 		compressDestinationFlag, destinationPath.String(),
 	)
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               compressCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:          compressCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	return err
 }
 
 func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 	sourcePathStr := moveDto.SourcePath.String()
-	if !infraHelper.FileExists(sourcePathStr) {
+	if !repo.fileClerk.FileExists(sourcePathStr) {
 		return errors.New("SourceFileNotFound")
 	}
 
@@ -313,7 +315,7 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 		}
 
 		trashFilePathStr := trashFilePath.String()
-		if infraHelper.FileExists(trashFilePathStr) {
+		if repo.fileClerk.FileExists(trashFilePathStr) {
 			uniqueTrashPathStr := trashFilePathStr + "-" + tkValueObject.NewUnixTimeNow().String()
 			uniqueTrashFilePath, err := valueObject.NewUnixFilePath(uniqueTrashPathStr)
 			if err != nil {
@@ -328,7 +330,7 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 	}
 
 	destinationPathStr := moveDto.DestinationPath.String()
-	if infraHelper.FileExists(destinationPathStr) {
+	if repo.fileClerk.FileExists(destinationPathStr) {
 		if !moveDto.ShouldOverwrite {
 			return errors.New("DestinationPathAlreadyExists")
 		}
@@ -359,7 +361,7 @@ func (repo FilesCmdRepo) UpdateContent(
 		return err
 	}
 
-	return infraHelper.UpdateFile(
+	return repo.fileClerk.UpdateFileContent(
 		updateContentDto.SourcePath.String(), decodedContent, true,
 	)
 }
@@ -368,14 +370,14 @@ func (repo FilesCmdRepo) UpdateOwnership(
 	updateOwnershipDto dto.UpdateUnixFileOwnership,
 ) error {
 	sourcePathStr := updateOwnershipDto.SourcePath.String()
-	if !infraHelper.FileExists(sourcePathStr) {
+	if !repo.fileClerk.FileExists(sourcePathStr) {
 		return errors.New("FileNotFound")
 	}
 
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "chown",
 		Args:    []string{updateOwnershipDto.Ownership.String(), sourcePathStr},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("UpdateFileOwnershipError: " + err.Error())
 	}
@@ -387,7 +389,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 	updatePermissionsDto dto.UpdateUnixFilePermissions,
 ) error {
 	sourcePathStr := updatePermissionsDto.SourcePath.String()
-	if !infraHelper.FileExists(sourcePathStr) {
+	if !repo.fileClerk.FileExists(sourcePathStr) {
 		return errors.New("FileOrDirNotFound")
 	}
 
@@ -402,10 +404,10 @@ func (repo FilesCmdRepo) UpdatePermissions(
 		)
 	}
 
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               updatePermissionsCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:          updatePermissionsCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("UpdatePermissionsError: " + err.Error())
 	}

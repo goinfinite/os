@@ -6,11 +6,12 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 func TestFilesQueryRepo(t *testing.T) {
-	filesQueryRepo := FilesQueryRepo{}
+	filesQueryRepo := NewFilesQueryRepo()
+	fileClerk := tkInfra.FileClerk{}
 	currentUser, _ := user.Current()
 	userHomeDir := "/home/" + currentUser.Username
 
@@ -45,7 +46,7 @@ func TestFilesQueryRepo(t *testing.T) {
 			SourcePath: tmpSymlinkPath,
 		}
 
-		err := infraHelper.CreateSymlink(
+		err := fileClerk.CreateSymlink(
 			downloadsDirPath.String(), tmpSymlinkPath.String(), false,
 		)
 		if err != nil {
@@ -60,7 +61,7 @@ func TestFilesQueryRepo(t *testing.T) {
 			t.Errorf("ExpectedNonEmptyFilesButGotEmpty")
 		}
 
-		_ = infraHelper.RemoveSymlink(tmpSymlinkPath.String())
+		_ = fileClerk.RemoveSymlink(tmpSymlinkPath.String())
 	})
 
 	t.Run("ReadFirstFile", func(t *testing.T) {
