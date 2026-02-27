@@ -12,15 +12,17 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-type SslQueryRepo struct{}
+type SslQueryRepo struct {
+	fileClerk tkInfra.FileClerk
+}
 
 func NewSslQueryRepo() *SslQueryRepo {
-	return &SslQueryRepo{}
+	return &SslQueryRepo{fileClerk: tkInfra.FileClerk{}}
 }
 
 func (repo *SslQueryRepo) sslCertificatesFactory(
@@ -66,7 +68,7 @@ func (repo *SslQueryRepo) sslPairFactory(
 	crtFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (sslPairEntity entity.SslPair, err error) {
 	crtKeyFilePath := crtFilePath.ReadWithoutExtension(false).String() + ".key"
-	crtKeyContentStr, err := infraHelper.ReadFileContent(crtKeyFilePath)
+	crtKeyContentStr, err := repo.fileClerk.ReadFileContent(crtKeyFilePath, nil)
 	if err != nil {
 		return sslPairEntity, errors.New("OpenCertKeyFileError: " + err.Error())
 	}
@@ -75,7 +77,9 @@ func (repo *SslQueryRepo) sslPairFactory(
 		return sslPairEntity, err
 	}
 
-	crtFileContentStr, err := infraHelper.ReadFileContent(crtFilePath.String())
+	crtFileContentStr, err := repo.fileClerk.ReadFileContent(
+		crtFilePath.String(), nil,
+	)
 	if err != nil {
 		return sslPairEntity, errors.New("OpenCertFileError: " + err.Error())
 	}
@@ -128,11 +132,11 @@ func (repo *SslQueryRepo) Read(
 ) (responseDto dto.ReadSslPairsResponse, err error) {
 	sslPairEntities := []entity.SslPair{}
 
-	rawCertFilePaths, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawCertFilePaths, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "find " + infraEnvs.PkiConfDir +
 			" \\( -type f -o -type l \\) -name *.crt",
-		ShouldRunWithSubShell: true,
-	})
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return responseDto, errors.New("FindCertFilesError: " + err.Error())
 	}

@@ -24,6 +24,7 @@ type SslCmdRepo struct {
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
 	sslQueryRepo    *SslQueryRepo
 	vhostQueryRepo  *vhostInfra.VirtualHostQueryRepo
+	fileClerk       tkInfra.FileClerk
 }
 
 func NewSslCmdRepo(
@@ -33,8 +34,9 @@ func NewSslCmdRepo(
 	return &SslCmdRepo{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
-		sslQueryRepo:    &SslQueryRepo{},
+		sslQueryRepo:    NewSslQueryRepo(),
 		vhostQueryRepo:  vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
+		fileClerk:       tkInfra.FileClerk{},
 	}
 }
 
@@ -147,16 +149,17 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 		hashUrlFull := "https://" + vhostHostnameStr + hashUrlPath
 		curlBaseCmd := "curl -skLm 10 "
 		sniFlag := "--resolve " + vhostHostnameStr + ":443:" + serverPublicIpAddressStr
-		ownershipHashFound, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-			Command:               curlBaseCmd + sniFlag + " " + hashUrlFull,
-			ShouldRunWithSubShell: true,
-		})
+		ownershipHashFound, err := tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:           curlBaseCmd + sniFlag + " " + hashUrlFull,
+			ShouldUseSubShell: true,
+		}).Run()
 		if err != nil {
 			hashUrlFull = "https://" + serverPublicIpAddressStr + hashUrlPath
-			ownershipHashFound, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-				Command:               curlBaseCmd + "-H \"Host: " + vhostHostnameStr + "\" " + hashUrlFull,
-				ShouldRunWithSubShell: true,
-			})
+			ownershipHashFound, err = tkInfra.NewShell(tkInfra.ShellSettings{
+				Command: curlBaseCmd + "-H \"Host: " + vhostHostnameStr +
+					"\" " + hashUrlFull,
+				ShouldUseSubShell: true,
+			}).Run()
 			if err != nil {
 				continue
 			}
@@ -187,7 +190,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 		vhostRootDir += "/" + mainHostnameStr
 	}
 
-	if !infraHelper.FileExists(vhostRootDir) {
+	if !repo.fileClerk.FileExists(vhostRootDir) {
 		return errors.New("VirtualHostRootDirNotFound")
 	}
 
@@ -197,10 +200,10 @@ func (repo *SslCmdRepo) issueValidSsl(
 		certbotCmd += " -d " + functionalHostname.String()
 	}
 
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               certbotCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           certbotCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("GenerateValidSslCertError: " + err.Error())
 	}
@@ -210,14 +213,18 @@ func (repo *SslCmdRepo) issueValidSsl(
 
 	certbotCrtFilePath := certbotDirPath + "/" + mainHostnameStr + "/fullchain.pem"
 	vhostCrtFilePath := infraEnvs.PkiConfDir + "/" + mainHostnameStr + ".crt"
-	err = infraHelper.CreateSymlink(certbotCrtFilePath, vhostCrtFilePath, shouldOverwrite)
+	err = repo.fileClerk.CreateSymlink(
+		certbotCrtFilePath, vhostCrtFilePath, shouldOverwrite,
+	)
 	if err != nil {
 		return errors.New("CreateSslCertSymlinkError: " + err.Error())
 	}
 
 	certbotKeyFilePath := certbotDirPath + "/" + mainHostnameStr + "/privkey.pem"
 	vhostKeyFilePath := infraEnvs.PkiConfDir + "/" + mainHostnameStr + ".key"
-	err = infraHelper.CreateSymlink(certbotKeyFilePath, vhostKeyFilePath, shouldOverwrite)
+	err = repo.fileClerk.CreateSymlink(
+		certbotKeyFilePath, vhostKeyFilePath, shouldOverwrite,
+	)
 	if err != nil {
 		return errors.New("CreateSslKeySymlinkError: " + err.Error())
 	}
@@ -308,12 +315,14 @@ func (repo *SslCmdRepo) Create(
 		}
 
 		shouldOverwrite := true
-		err := infraHelper.UpdateFile(vhostCertFilePath, certContentStr, shouldOverwrite)
+		err := repo.fileClerk.UpdateFileContent(
+			vhostCertFilePath, certContentStr, shouldOverwrite,
+		)
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertFileError: " + err.Error())
 		}
 
-		err = infraHelper.UpdateFile(
+		err = repo.fileClerk.UpdateFileContent(
 			vhostCertKeyFilePath, createDto.Key.String(), shouldOverwrite,
 		)
 		if err != nil {
@@ -362,7 +371,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) 
 
 	vhostHostnameStr := vhostHostname.String()
 	vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
-	vhostCertFileExists := infraHelper.FileExists(vhostCertFilePath)
+	vhostCertFileExists := repo.fileClerk.FileExists(vhostCertFilePath)
 	if vhostCertFileExists {
 		err := os.Remove(vhostCertFilePath)
 		if err != nil {
@@ -371,7 +380,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) 
 	}
 
 	vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
-	vhostCertKeyFileExists := infraHelper.FileExists(vhostCertKeyFilePath)
+	vhostCertKeyFileExists := repo.fileClerk.FileExists(vhostCertKeyFilePath)
 	if vhostCertKeyFileExists {
 		err := os.Remove(vhostCertKeyFilePath)
 		if err != nil {
