@@ -10,7 +10,6 @@ require (
 	github.com/glebarez/sqlite v1.11.0
 	github.com/goinfinite/tk v0.2.0
 	github.com/goinfinite/ui v0.1.5
-	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/google/uuid v1.6.0
 	github.com/iancoleman/strcase v0.3.0
 	github.com/joho/godotenv v1.5.1
@@ -27,6 +26,8 @@ require (
 	golang.org/x/text v0.34.0
 	gorm.io/gorm v1.31.1
 )
+
+require github.com/golang-jwt/jwt/v5 v5.3.1
 
 require (
 	github.com/KyleBanks/depth v1.2.1 // indirect
