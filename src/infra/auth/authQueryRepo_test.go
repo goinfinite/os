@@ -1,6 +1,7 @@
 package authInfra
 
 import (
+	"encoding/base64"
 	"os"
 	"testing"
 	"time"
@@ -10,11 +11,12 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func TestAuthQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	authQueryRepo := AuthQueryRepo{}
+	authQueryRepo := NewAuthQueryRepo(testHelpers.GetPersistentDbSvc())
 	accountCmdRepo := accountInfra.NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
 
 	accountId, _ := tkValueObject.NewAccountId(1001)
@@ -46,12 +48,12 @@ func TestAuthQueryRepo(t *testing.T) {
 		createDto := dto.NewCreateSessionToken(username, wrongPassword, localIpAddress)
 		isValid := authQueryRepo.IsLoginValid(createDto)
 		if isValid {
-			t.Error("Expected invalid login credentials, but got valid")
+			t.Error("ExpectedInvalidCredentials")
 		}
 	})
 
 	t.Run("ValidSessionAccessToken", func(t *testing.T) {
-		authCmdRepo := AuthCmdRepo{}
+		authCmdRepo := NewAuthCmdRepo()
 
 		token, _ := authCmdRepo.CreateSessionToken(
 			tkValueObject.AccountId(1000),
@@ -85,6 +87,99 @@ func TestAuthQueryRepo(t *testing.T) {
 		_, err = authQueryRepo.ReadAccessTokenDetails(apiKey)
 		if err != nil {
 			t.Error(err)
+		}
+	})
+
+	t.Run("SessionToken_CreationAndValidation_Success", func(t *testing.T) {
+		authCmdRepo := NewAuthCmdRepo()
+		token, err := authCmdRepo.CreateSessionToken(
+			tkValueObject.AccountId(1000),
+			tkValueObject.NewUnixTimeAfterNow(3*time.Hour),
+			tkValueObject.IpAddressLocal,
+		)
+		if err != nil {
+			t.Fatalf("UnexpectedCreationError: %s", err.Error())
+		}
+
+		claims, err := authQueryRepo.readSessionTokenClaims(token.TokenStr)
+		if err != nil {
+			t.Fatalf("UnexpectedParseError: %s", err.Error())
+		}
+
+		if claims["accountId"] == nil {
+			t.Fatal("MissingAccountIdClaim")
+		}
+	})
+
+	t.Run("SessionToken_ExpiredToken_ReturnsExpiredError", func(t *testing.T) {
+		jwtSecret := os.Getenv("JWT_SECRET")
+
+		pastTime := time.Now().Add(-1 * time.Hour).Unix()
+		claims := jwt.MapClaims{
+			"iss":        "test",
+			"iat":        pastTime,
+			"nbf":        pastTime,
+			"exp":        pastTime,
+			"accountId":  uint64(1000),
+			"originalIp": "127.0.0.1",
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		tokenStr, err := token.SignedString([]byte(jwtSecret))
+		if err != nil {
+			t.Fatalf("FailedToCreateExpiredToken: %s", err.Error())
+		}
+
+		tokenValue, _ := tkValueObject.NewAccessTokenValue(tokenStr)
+		_, err = authQueryRepo.readSessionTokenClaims(tokenValue)
+		if err != errSessionTokenExpired {
+			t.Fatalf("ExpectedSessionTokenExpired: %v", err)
+		}
+	})
+
+	t.Run("SessionToken_WrongSecret_ReturnsSignatureInvalidError", func(t *testing.T) {
+		futureTime := time.Now().Add(1 * time.Hour).Unix()
+		claims := jwt.MapClaims{
+			"iss":        "test",
+			"iat":        time.Now().Unix(),
+			"nbf":        time.Now().Unix(),
+			"exp":        futureTime,
+			"accountId":  uint64(1000),
+			"originalIp": "127.0.0.1",
+		}
+		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+		tokenStr, err := token.SignedString([]byte("wrong-secret-key"))
+		if err != nil {
+			t.Fatalf("FailedToCreateToken: %s", err.Error())
+		}
+
+		tokenValue, _ := tkValueObject.NewAccessTokenValue(tokenStr)
+		_, err = authQueryRepo.readSessionTokenClaims(tokenValue)
+		if err != errSessionTokenSignatureInvalid {
+			t.Fatalf("ExpectedSignatureInvalid: %v", err)
+		}
+	})
+
+	t.Run("SessionToken_AlgorithmSubstitutionAttack_Prevented", func(t *testing.T) {
+		// Craft a token with alg "none" manually — must be rejected by WithValidMethods
+		headerJSON := `{"alg":"none","typ":"JWT"}`
+		payloadJSON := `{"iss":"test","iat":1,"nbf":1,"exp":9999999999,"accountId":1000,"originalIp":"127.0.0.1"}`
+
+		encodeSegment := func(s string) string {
+			return base64.RawURLEncoding.EncodeToString([]byte(s))
+		}
+
+		noneToken := encodeSegment(headerJSON) + "." + encodeSegment(payloadJSON) + "."
+		tokenValue, err := tkValueObject.NewAccessTokenValue(noneToken)
+		if err != nil {
+			t.Fatalf("FailedToCreateTokenValue: %s", err.Error())
+		}
+
+		_, err = authQueryRepo.readSessionTokenClaims(tokenValue)
+		if err == nil {
+			t.Fatal("ExpectedAlgNoneRejection")
+		}
+		if err == errSessionTokenExpired {
+			t.Fatal("AlgNoneReachedExpiryCheck")
 		}
 	})
 }
