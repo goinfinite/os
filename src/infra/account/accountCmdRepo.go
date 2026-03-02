@@ -1,6 +1,8 @@
 package accountInfra
 
 import (
+	"crypto/sha3"
+	"encoding/hex"
 	"errors"
 	"log/slog"
 	"os"
@@ -291,9 +293,13 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 	apiKeyPlainText := accountId.String() + ":" + uuidStr
 
 	secretKey := os.Getenv("ACCOUNT_API_KEY_SECRET")
-	encryptedApiKey, err := infraHelper.EncryptStr(secretKey, apiKeyPlainText)
+	cypher, err := tkInfra.NewCypher(secretKey)
 	if err != nil {
-		return tokenValue, err
+		return tokenValue, errors.New("ApiKeyEncryptSecretKeyError: " + err.Error())
+	}
+	encryptedApiKey, err := cypher.Encrypt(apiKeyPlainText)
+	if err != nil {
+		return tokenValue, errors.New("ApiKeyEncryptionError: " + err.Error())
 	}
 
 	apiKey, err := tkValueObject.NewAccessTokenValue(encryptedApiKey)
@@ -301,14 +307,16 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 		return tokenValue, err
 	}
 
-	uuidHash := infraHelper.GenStrongHash(uuidStr)
+	apiKeyHasher := sha3.New256()
+	apiKeyHasher.Write([]byte(apiKeyPlainText))
+	apiKeyHashStr := hex.EncodeToString(apiKeyHasher.Sum(nil))
 
 	accountModel := dbModel.Account{ID: accountId.Uint64()}
 	updateResult := repo.persistentDbSvc.Handler.
 		Model(&accountModel).
-		Update("key_hash", uuidHash)
+		Update("key_hash", apiKeyHashStr)
 	if updateResult.Error != nil {
-		return tokenValue, err
+		return tokenValue, updateResult.Error
 	}
 
 	return apiKey, nil
