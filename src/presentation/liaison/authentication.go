@@ -54,7 +54,7 @@ func (liaison *AuthenticationLiaison) Login(
 	dto := dto.NewCreateSessionToken(username, password, operatorIpAddress)
 
 	authQueryRepo := authInfra.NewAuthQueryRepo(liaison.persistentDbSvc)
-	authCmdRepo := authInfra.AuthCmdRepo{}
+	authCmdRepo := authInfra.NewAuthCmdRepo()
 	accountQueryRepo := accountInfra.NewAccountQueryRepo(liaison.persistentDbSvc)
 	activityRecordQueryRepo := activityRecordInfra.NewActivityRecordQueryRepo(
 		liaison.trailDbSvc,
