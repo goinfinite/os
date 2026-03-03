@@ -10,10 +10,10 @@ import (
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type VirtualHostQueryRepo struct {
@@ -80,7 +80,7 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 			requestDto.Pagination.SortBy = &sortBy
 		}
 	}
-	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
 		dbQuery, requestDto.Pagination,
 	)
 	if err != nil {

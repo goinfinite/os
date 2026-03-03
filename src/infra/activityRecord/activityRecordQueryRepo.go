@@ -6,10 +6,10 @@ import (
 
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkEntity "github.com/goinfinite/tk/src/domain/entity"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	tkInfraDbModel "github.com/goinfinite/tk/src/infra/db/model"
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	"gorm.io/gorm"
 )
 
@@ -78,7 +78,7 @@ func (repo *ActivityRecordQueryRepo) Read(
 ) (responseDto tkDto.ReadActivityRecordsResponse, err error) {
 	dbQuery := repo.buildBaseQuery(readDto)
 
-	dbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+	dbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
 		dbQuery, readDto.Pagination,
 	)
 	if err != nil {

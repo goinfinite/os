@@ -7,10 +7,10 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type MappingQueryRepo struct {
@@ -82,7 +82,7 @@ func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
 			requestDto.Pagination.SortBy = &sortBy
 		}
 	}
-	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
 		dbQuery, requestDto.Pagination,
 	)
 	if err != nil {
@@ -161,7 +161,7 @@ func (repo *MappingQueryRepo) ReadSecurityRule(
 		dbQuery = dbQuery.Where("created_at > ?", requestDto.CreatedAfterAt.ReadAsGoTime())
 	}
 
-	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
 		dbQuery, requestDto.Pagination,
 	)
 	if err != nil {

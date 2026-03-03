@@ -15,11 +15,11 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 
 	"github.com/shirou/gopsutil/process"
 )
@@ -261,7 +261,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		dbQuery = dbQuery.Where("name LIKE ?", serviceNameLike)
 	}
 
-	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
 		dbQuery, requestDto.Pagination,
 	)
 	if err != nil {
