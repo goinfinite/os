@@ -315,6 +315,7 @@ location {{ locationUriConfigFactory .MatchPattern .Path }} {
 	{{- end }}
 	{{- if eq .TargetType "inline-html" }}
 	add_header Content-Type text/html;
+	default_type text/html;
 	return {{ .TargetHttpResponseCode }} "{{ .TargetValue }}";
 	{{- end }}
 	{{- if eq .TargetType "service" }}
