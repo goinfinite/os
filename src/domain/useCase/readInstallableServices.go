@@ -7,12 +7,17 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-var ServicesDefaultPagination tkDto.Pagination = tkDto.Pagination{
-	PageNumber:   0,
-	ItemsPerPage: 10,
-}
+var (
+	servicesSortByName          tkValueObject.PaginationSortBy = "name"
+	ServicesDefaultPagination   tkDto.Pagination               = tkDto.Pagination{
+		PageNumber:   0,
+		ItemsPerPage: 10,
+		SortBy:       &servicesSortByName,
+	}
+)
 
 func ReadInstallableServices(
 	servicesQueryRepo repository.ServicesQueryRepo,
