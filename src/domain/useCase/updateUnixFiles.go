@@ -78,7 +78,7 @@ func (uc UpdateUnixFiles) updateFileOwnership(
 	sourcePath tkValueObject.UnixAbsoluteFilePath,
 	ownership tkValueObject.UnixFileOwnership,
 ) error {
-	updateOwnershipDto := dto.NewUpdateUnixFileOwnership(sourcePath, ownership)
+	updateOwnershipDto := dto.NewUpdateUnixFileOwnership(sourcePath, ownership, false)
 
 	err := uc.filesCmdRepo.UpdateOwnership(updateOwnershipDto)
 	if err != nil {

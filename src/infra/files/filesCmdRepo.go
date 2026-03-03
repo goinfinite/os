@@ -200,42 +200,32 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 		return errors.New("PathAlreadyExists")
 	}
 
-	unixUser, err := user.LookupId(createDto.OperatorAccountId.String())
-	if err != nil {
-		return errors.New("AccountNotFound")
-	}
-
-	fileOwnershipStr := unixUser.Username + ":" + unixUser.Username
-	fileOwner, err := tkValueObject.NewUnixFileOwnership(fileOwnershipStr)
-	if err != nil {
-		return err
-	}
-
-	updateFileOwnerDto := dto.NewUpdateUnixFileOwnership(createDto.FilePath, fileOwner)
-
 	if createDto.MimeType.IsDir() {
 		err := os.MkdirAll(filePathStr, createDto.Permissions.GetFileMode())
 		if err != nil {
 			return err
 		}
 
-		return repo.UpdateOwnership(updateFileOwnerDto)
+		return repo.filePrivilegesNormalizer(
+			createDto.FilePath, createDto.OperatorAccountId, false,
+		)
 	}
 
-	_, err = os.Create(filePathStr)
+	_, err := os.Create(filePathStr)
 	if err != nil {
 		return err
 	}
 
-	err = repo.UpdateOwnership(updateFileOwnerDto)
-	if err != nil {
-		return err
-	}
-
-	updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
-		createDto.FilePath, createDto.Permissions, nil,
+	err = repo.filePrivilegesNormalizer(
+		createDto.FilePath, createDto.OperatorAccountId, false,
 	)
-	return repo.UpdatePermissions(updatePermissionsDto)
+	if err != nil {
+		return err
+	}
+
+	return repo.UpdatePermissions(dto.NewUpdateUnixFilePermissions(
+		createDto.FilePath, createDto.Permissions, nil,
+	))
 }
 
 func (repo FilesCmdRepo) Delete(unixFilePath tkValueObject.UnixAbsoluteFilePath) error {
@@ -296,7 +286,36 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 		Command:          compressCmd,
 		ShouldUseSubShell: true,
 	}).Run()
-	return err
+	if err != nil {
+		return err
+	}
+
+	err = repo.filePrivilegesNormalizer(
+		destinationPath, extractDto.OperatorAccountId, true,
+	)
+	if err != nil {
+		slog.Debug(
+			"FilePrivilegesNormalizeFailed",
+			slog.String("destinationPath", destinationPath.String()),
+			slog.String("err", err.Error()),
+		)
+	}
+
+	defaultDirPermissions := valueObject.NewUnixDirDefaultPermissions()
+	err = repo.UpdatePermissions(dto.NewUpdateUnixFilePermissions(
+		destinationPath,
+		valueObject.NewUnixFileDefaultPermissions(),
+		&defaultDirPermissions,
+	))
+	if err != nil {
+		slog.Debug(
+			"FilePermissionsUpdateFailed",
+			slog.String("destinationPath", destinationPath.String()),
+			slog.String("err", err.Error()),
+		)
+	}
+
+	return nil
 }
 
 func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
@@ -374,15 +393,55 @@ func (repo FilesCmdRepo) UpdateOwnership(
 		return errors.New("FileNotFound")
 	}
 
+	args := []string{updateOwnershipDto.Ownership.String(), sourcePathStr}
+	if updateOwnershipDto.IsRecursive {
+		args = append([]string{"-R"}, args...)
+	}
+
 	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "chown",
-		Args:    []string{updateOwnershipDto.Ownership.String(), sourcePathStr},
+		Args:    args,
 	}).Run()
 	if err != nil {
 		return errors.New("UpdateFileOwnershipError: " + err.Error())
 	}
 
 	return nil
+}
+
+func (repo FilesCmdRepo) filePrivilegesNormalizer(
+	filePath tkValueObject.UnixAbsoluteFilePath,
+	operatorAccountId tkValueObject.AccountId,
+	isRecursive bool,
+) error {
+	filePathStr := filePath.String()
+
+	isAppHtmlPath := strings.HasPrefix(
+		filePathStr,
+		valueObject.UnixFilePathAppHtmlDir.String(),
+	)
+	if isAppHtmlPath {
+		return repo.UpdateOwnership(dto.NewUpdateUnixFileOwnership(
+			filePath,
+			valueObject.UnixFileOwnershipAppWorkingDir,
+			isRecursive,
+		))
+	}
+
+	unixUser, err := user.LookupId(operatorAccountId.String())
+	if err != nil {
+		return errors.New("AccountNotFound")
+	}
+
+	fileOwnershipStr := unixUser.Username + ":" + unixUser.Username
+	fileOwnership, err := tkValueObject.NewUnixFileOwnership(fileOwnershipStr)
+	if err != nil {
+		return err
+	}
+
+	return repo.UpdateOwnership(dto.NewUpdateUnixFileOwnership(
+		filePath, fileOwnership, isRecursive,
+	))
 }
 
 func (repo FilesCmdRepo) UpdatePermissions(
@@ -435,7 +494,6 @@ func (repo FilesCmdRepo) Upload(
 
 	for _, fileToUpload := range uploadDto.FileStreamHandlers {
 		err := repo.uploadSingleFile(uploadDto.DestinationPath, fileToUpload)
-
 		if err != nil {
 			uploadFailure, err := repo.uploadFailureFactory(err.Error(), fileToUpload)
 			if err != nil {
@@ -450,11 +508,30 @@ func (repo FilesCmdRepo) Upload(
 			continue
 		}
 
+		uploadedFilePathStr := uploadDto.DestinationPath.String() +
+			"/" + fileToUpload.Name.String()
+		uploadedFilePathVo, err := tkValueObject.NewUnixAbsoluteFilePath(
+			uploadedFilePathStr, false,
+		)
+		if err == nil {
+			err = repo.filePrivilegesNormalizer(
+				uploadedFilePathVo,
+				uploadDto.OperatorAccountId,
+				false,
+			)
+			if err != nil {
+				slog.Debug(
+					"FilePrivilegesNormalizeFailed",
+					slog.String("file", fileToUpload.Name.String()),
+					slog.String("err", err.Error()),
+				)
+			}
+		}
+
 		uploadProcessReport.FileNamesSuccessfullyUploaded = append(
 			uploadProcessReport.FileNamesSuccessfullyUploaded,
 			fileToUpload.Name,
 		)
-
 	}
 
 	return uploadProcessReport, nil

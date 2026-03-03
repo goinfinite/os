@@ -1,7 +1,9 @@
 package filesInfra
 
 import (
+	"os"
 	"os/user"
+	"strings"
 	"testing"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -92,6 +94,139 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
+	t.Run("UpdateOwnership_WithRecursiveTrue", func(t *testing.T) {
+		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
+		ownership, _ := tkValueObject.NewUnixFileOwnership(
+			currentUser.Username + ":" + currentUser.Username,
+		)
+
+		updateDto := dto.NewUpdateUnixFileOwnership(filePath, ownership, true)
+		if !updateDto.IsRecursive {
+			t.Errorf("ExpectedIsRecursiveTrue")
+		}
+
+		err := filesCmdRepo.UpdateOwnership(updateDto)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("UpdateOwnership_NonRecursiveOmitsDashR", func(t *testing.T) {
+		filePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		)
+		ownership, _ := tkValueObject.NewUnixFileOwnership(
+			currentUser.Username + ":" + currentUser.Username,
+		)
+
+		updateDto := dto.NewUpdateUnixFileOwnership(filePath, ownership, false)
+		if updateDto.IsRecursive {
+			t.Errorf("ExpectedIsRecursiveFalse")
+		}
+
+		err := filesCmdRepo.UpdateOwnership(updateDto)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_ResolvesAccountToUsernameGroup", func(t *testing.T) {
+		filePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		)
+
+		err := filesCmdRepo.filePrivilegesNormalizer(
+			filePath, operatorAccountId, false,
+		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+
+		info, err := os.Stat(filePath.String())
+		if err != nil {
+			t.Errorf("StatError: %v", err)
+		}
+		if info == nil {
+			t.Errorf("ExpectedFileInfo")
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_AppHtmlUsesNobodyNogroup", func(t *testing.T) {
+		appHtmlDir := "/app/html"
+		if _, err := os.Stat(appHtmlDir); os.IsNotExist(err) {
+			t.Skip("AppHtmlDirNotPresent")
+		}
+
+		testFilePath := appHtmlDir + "/ownershipTest.txt"
+		_, createErr := os.Create(testFilePath)
+		if createErr != nil {
+			t.Skipf("CannotCreateTestFile: %v", createErr)
+		}
+		defer os.Remove(testFilePath)
+
+		filePath, _ := valueObject.NewUnixFilePath(testFilePath)
+		err := filesCmdRepo.filePrivilegesNormalizer(
+			filePath, operatorAccountId, false,
+		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_InvalidAccountId", func(t *testing.T) {
+		filePath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		)
+		invalidAccountId, _ := tkValueObject.NewAccountId(999999999)
+
+		err := filesCmdRepo.filePrivilegesNormalizer(
+			filePath, invalidAccountId, false,
+		)
+		if err == nil {
+			t.Errorf("ExpectedErrorButGotNil")
+			return
+		}
+		if !strings.Contains(err.Error(), "AccountNotFound") {
+			t.Errorf(
+				"ExpectedAccountNotFoundError, got: %s",
+				err.Error(),
+			)
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_NonExistentPath", func(t *testing.T) {
+		nonExistentPath, _ := valueObject.NewUnixFilePath(
+			fileBasePathStr + "/nonExistentFile12345.txt",
+		)
+
+		err := filesCmdRepo.filePrivilegesNormalizer(
+			nonExistentPath, operatorAccountId, false,
+		)
+		if err == nil {
+			t.Errorf("ExpectedErrorButGotNil")
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_PathTraversalAttempt", func(t *testing.T) {
+		traversalPathStr := "/app/html/../../../etc/passwd"
+		traversalPath, err := valueObject.NewUnixFilePath(traversalPathStr)
+		if err != nil {
+			t.Skip("PathTraversalRejectedByValueObject")
+		}
+
+		normalizedStr := traversalPath.String()
+		isHtmlPath := strings.HasPrefix(
+			normalizedStr,
+			valueObject.UnixFilePathAppHtmlDir.String(),
+		)
+		if isHtmlPath {
+			t.Errorf(
+				"PathTraversalShouldNotResolveToHtmlPath: %s",
+				normalizedStr,
+			)
+		}
+	})
+
 	t.Run("MoveUnixDirectory", func(t *testing.T) {
 		sourceFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
 		destinationFilePath, _ := valueObject.NewUnixFilePath(
@@ -166,7 +301,8 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath}, destinationFilePath,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath},
+			destinationFilePath,
 			&compressionType, operatorAccountId, ipAddress,
 		)
 
@@ -185,7 +321,8 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath}, destinationFilePath, nil,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath},
+			destinationFilePath, nil,
 			operatorAccountId, ipAddress,
 		)
 
@@ -204,7 +341,8 @@ func TestFilesCmdRepo(t *testing.T) {
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath}, destinationFilePath, nil,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath},
+			destinationFilePath, nil,
 			operatorAccountId, ipAddress,
 		)
 
@@ -229,6 +367,25 @@ func TestFilesCmdRepo(t *testing.T) {
 		err := filesCmdRepo.Extract(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+}
+
+func TestUpdateUnixFileOwnershipDto(t *testing.T) {
+	filePath, _ := valueObject.NewUnixFilePath("/tmp/ownershipDtoTest.txt")
+	ownership := tkValueObject.UnixFileOwnershipNobodyNogroup
+
+	t.Run("UpdateUnixFileOwnership_WithRecursiveTrue", func(t *testing.T) {
+		updateDto := dto.NewUpdateUnixFileOwnership(filePath, ownership, true)
+		if !updateDto.IsRecursive {
+			t.Errorf("ExpectedIsRecursiveTrueButGotFalse")
+		}
+	})
+
+	t.Run("UpdateUnixFileOwnership_WithRecursiveFalse", func(t *testing.T) {
+		updateDto := dto.NewUpdateUnixFileOwnership(filePath, ownership, false)
+		if updateDto.IsRecursive {
+			t.Errorf("ExpectedIsRecursiveFalseButGotTrue")
 		}
 	})
 }

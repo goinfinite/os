@@ -25,7 +25,7 @@ func NormalizeKnownUnixFilePathPermissions(
 	}
 
 	err := filesCmdRepo.UpdateOwnership(dto.NewUpdateUnixFileOwnership(
-		filePath, valueObject.UnixFileOwnershipAppWorkingDir,
+		filePath, valueObject.UnixFileOwnershipAppWorkingDir, false,
 	))
 	if err != nil {
 		slog.Debug(
