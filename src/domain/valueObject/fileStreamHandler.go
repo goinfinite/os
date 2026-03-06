@@ -16,7 +16,7 @@ type FileStreamHandler struct {
 func NewFileStreamHandler(value *multipart.FileHeader) (
 	fileStreamHandler FileStreamHandler, err error,
 ) {
-	fileName, err := NewUnixFileName(value.Filename)
+	fileName, err := tkValueObject.NewUnixFileName(value.Filename, false)
 	if err != nil {
 		return fileStreamHandler, err
 	}

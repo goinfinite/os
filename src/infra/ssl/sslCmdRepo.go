@@ -388,7 +388,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) 
 		}
 	}
 
-	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if err != nil {
 		return errors.New("PkiConfDirError: " + err.Error())
 	}

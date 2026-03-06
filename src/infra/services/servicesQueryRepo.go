@@ -575,7 +575,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 			return installableService, errors.New("InvalidUninstallFilePathsStructure")
 		}
 		for _, rawFileName := range filesMap {
-			fileName, err := valueObject.NewUnixFilePath(rawFileName)
+			fileName, err := tkValueObject.NewUnixAbsoluteFilePath(rawFileName, false)
 			if err != nil {
 				slog.Debug(
 					"ParseInvalidUninstallFilePathError",
@@ -679,8 +679,8 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["workingDirectory"] != nil {
-		workingDirectory, err := valueObject.NewUnixFilePath(
-			serviceMap["workingDirectory"],
+		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
+			serviceMap["workingDirectory"], false,
 		)
 		if err != nil {
 			return installableService, err
@@ -690,7 +690,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["startupFile"] != nil {
-		startupFile, err := valueObject.NewUnixFilePath(serviceMap["startupFile"])
+		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(serviceMap["startupFile"], false)
 		if err != nil {
 			return installableService, err
 		}
@@ -699,7 +699,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	var logOutputPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["logOutputPath"] != nil {
-		logOutputPath, err := valueObject.NewUnixFilePath(serviceMap["logOutputPath"])
+		logOutputPath, err := tkValueObject.NewUnixAbsoluteFilePath(serviceMap["logOutputPath"], false)
 		if err != nil {
 			return installableService, err
 		}
@@ -708,7 +708,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	var logErrorPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["logErrorPath"] != nil {
-		logErrorPath, err := valueObject.NewUnixFilePath(serviceMap["logErrorPath"])
+		logErrorPath, err := tkValueObject.NewUnixAbsoluteFilePath(serviceMap["logErrorPath"], false)
 		if err != nil {
 			return installableService, err
 		}
@@ -781,7 +781,7 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 
 	installableServices := []entity.InstallableService{}
 	for _, rawFilePath := range rawInstallableFilesListParts {
-		itemFilePath, err := valueObject.NewUnixFilePath(rawFilePath)
+		itemFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawFilePath, false)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("filePath", rawFilePath))
 			continue

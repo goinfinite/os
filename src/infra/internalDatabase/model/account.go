@@ -52,8 +52,8 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 		return accountEntity, err
 	}
 
-	homeDirectory, err := valueObject.NewUnixFilePath(
-		infraEnvs.UserDataBaseDirectory + "/" + username.String(),
+	homeDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.UserDataBaseDirectory+"/"+username.String(), false,
 	)
 	if err != nil {
 		return accountEntity, err

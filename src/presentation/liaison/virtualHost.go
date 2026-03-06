@@ -65,7 +65,7 @@ func (liaison *VirtualHostLiaison) VirtualHostReadRequestFactory(
 
 	var rootDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["rootDirectory"] != nil {
-		rootDirectory, err := valueObject.NewUnixFilePath(untrustedInput["rootDirectory"])
+		rootDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["rootDirectory"], false)
 		if err != nil {
 			return readRequestDto, err
 		}

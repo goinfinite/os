@@ -270,7 +270,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["startupFile"] != nil {
-		startupFile, err := valueObject.NewUnixFilePath(untrustedInput["startupFile"])
+		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["startupFile"], false)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -279,7 +279,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 
 	var workingDirPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["workingDir"] != nil {
-		workingDir, err := valueObject.NewUnixFilePath(untrustedInput["workingDir"])
+		workingDir, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["workingDir"], false)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -605,7 +605,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 
 	var logOutputPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["logOutputPath"] != nil {
-		logOutputPath, err := valueObject.NewUnixFilePath(untrustedInput["logOutputPath"])
+		logOutputPath, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["logOutputPath"], false)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -614,7 +614,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 
 	var logErrorPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["logErrorPath"] != nil {
-		logErrorPath, err := valueObject.NewUnixFilePath(untrustedInput["logErrorPath"])
+		logErrorPath, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["logErrorPath"], false)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -792,7 +792,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["startupFile"] != nil {
-		startupFile, err := valueObject.NewUnixFilePath(untrustedInput["startupFile"])
+		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["startupFile"], false)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -837,7 +837,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 
 	var logOutputPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["logOutputPath"] != nil {
-		logOutputPath, err := valueObject.NewUnixFilePath(untrustedInput["logOutputPath"])
+		logOutputPath, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["logOutputPath"], false)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}
@@ -846,7 +846,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 
 	var logErrorPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["logErrorPath"] != nil {
-		logErrorPath, err := valueObject.NewUnixFilePath(untrustedInput["logErrorPath"])
+		logErrorPath, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["logErrorPath"], false)
 		if err != nil {
 			return NewLiaisonOutput(UserError, err.Error())
 		}

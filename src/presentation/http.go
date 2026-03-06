@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/goinfinite/os/src/domain/valueObject"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
@@ -40,20 +39,20 @@ func initialSslSetup() (
 	err error,
 ) {
 	rawOsPkiDir := "/infinite/pki"
-	pkiDir, err := valueObject.NewUnixFilePath(rawOsPkiDir)
+	pkiDir, err := tkValueObject.NewUnixAbsoluteFilePath(rawOsPkiDir, false)
 	if err != nil {
 		return certFilePath, keyFilePath, errors.New("InvalidPkiDir")
 	}
 	osPkiDirStr := pkiDir.String()
 
 	rawCertFilePath := osPkiDirStr + "/os.crt"
-	certFilePath, err = valueObject.NewUnixFilePath(rawCertFilePath)
+	certFilePath, err = tkValueObject.NewUnixAbsoluteFilePath(rawCertFilePath, false)
 	if err != nil {
 		return certFilePath, keyFilePath, errors.New("InvalidCertFilePath")
 	}
 
 	rawKeyFilePath := osPkiDirStr + "/os.key"
-	keyFilePath, err = valueObject.NewUnixFilePath(rawKeyFilePath)
+	keyFilePath, err = tkValueObject.NewUnixAbsoluteFilePath(rawKeyFilePath, false)
 	if err != nil {
 		return certFilePath, keyFilePath, errors.New("InvalidKeyFilePath")
 	}

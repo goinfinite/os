@@ -125,8 +125,8 @@ func (repo *AccountCmdRepo) Create(
 	}
 
 	usernameStr := createDto.Username.String()
-	homeDirectory, err := valueObject.NewUnixFilePath(
-		infraEnvs.UserDataBaseDirectory + "/" + usernameStr,
+	homeDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.UserDataBaseDirectory+"/"+usernameStr, false,
 	)
 	if err != nil {
 		return accountId, errors.New("DefineHomeDirectoryError: " + err.Error())

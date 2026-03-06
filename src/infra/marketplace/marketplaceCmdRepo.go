@@ -448,7 +448,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	installDirStr := vhostEntity.RootDirectory.String() + installUrlPath.GetWithoutTrailingSlash()
-	installDir, err := valueObject.NewUnixFilePath(installDirStr)
+	installDir, err := tkValueObject.NewUnixAbsoluteFilePath(installDirStr, false)
 	if err != nil {
 		return errors.New("DefineInstallDirectoryError: " + err.Error())
 	}
@@ -590,8 +590,8 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 	softDeleteDestDirPath tkValueObject.UnixAbsoluteFilePath,
 ) error {
 	itemHostnameStr := installedItem.Hostname.String()
-	unfamiliarFilesBackupDir, err := valueObject.NewUnixFilePath(
-		"/app/" + itemHostnameStr + "-unfamiliar-files-backup",
+	unfamiliarFilesBackupDir, err := tkValueObject.NewUnixAbsoluteFilePath(
+		"/app/"+itemHostnameStr+"-unfamiliar-files-backup", false,
 	)
 	if err != nil {
 		return err
@@ -616,8 +616,8 @@ func (repo *MarketplaceCmdRepo) uninstallSymlinkFilesDelete(
 		"/app/%s-%s-%s",
 		installedItem.Slug.String(), itemHostnameStr, installedItem.InstallUuid.String(),
 	)
-	installedItemRealRootDirPath, err := valueObject.NewUnixFilePath(
-		rawInstalledItemRealRootDirPath,
+	installedItemRealRootDirPath, err := tkValueObject.NewUnixAbsoluteFilePath(
+		rawInstalledItemRealRootDirPath, false,
 	)
 	if err != nil {
 		return err
@@ -693,7 +693,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 		valueObject.UnixFilePathTrashDir.String(), installedItem.Slug.String(),
 		installedItem.Hostname.String(), installedItem.InstallUuid.String(),
 	)
-	softDeleteDestDirPath, err := valueObject.NewUnixFilePath(rawSoftDeleteDestDirPath)
+	softDeleteDestDirPath, err := tkValueObject.NewUnixAbsoluteFilePath(rawSoftDeleteDestDirPath, false)
 	if err != nil {
 		return err
 	}

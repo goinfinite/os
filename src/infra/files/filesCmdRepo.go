@@ -127,8 +127,8 @@ func (repo FilesCmdRepo) Compress(
 
 	destinationPathWithoutExt := compressDto.DestinationPath.ReadWithoutExtension(false)
 	compressionTypeAsExt := compressionTypeStr
-	newDestinationPath, err := valueObject.NewUnixFilePath(
-		destinationPathWithoutExt.String() + "." + compressionTypeAsExt,
+	newDestinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(
+		destinationPathWithoutExt.String()+"."+compressionTypeAsExt, false,
 	)
 	if err != nil {
 		return compressionProcessReport, errors.New(
@@ -328,7 +328,7 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 		fileNameStr := moveDto.SourcePath.ReadFileName(false).String()
 		destinationPathStr := moveDto.DestinationPath.String()
 		rawTrashFilePath := destinationPathStr + "/" + fileNameStr
-		trashFilePath, err := valueObject.NewUnixFilePath(rawTrashFilePath)
+		trashFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawTrashFilePath, false)
 		if err != nil {
 			return errors.New("DefineTrashFilePathError: " + err.Error())
 		}
@@ -336,7 +336,7 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 		trashFilePathStr := trashFilePath.String()
 		if repo.fileClerk.FileExists(trashFilePathStr) {
 			uniqueTrashPathStr := trashFilePathStr + "-" + tkValueObject.NewUnixTimeNow().String()
-			uniqueTrashFilePath, err := valueObject.NewUnixFilePath(uniqueTrashPathStr)
+			uniqueTrashFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(uniqueTrashPathStr, false)
 			if err != nil {
 				return errors.New("DefineUniqueTrashFilePathError: " + err.Error())
 			}

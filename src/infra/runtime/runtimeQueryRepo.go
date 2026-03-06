@@ -38,7 +38,7 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 		vhostPhpConfFilePathStr = primaryVhostPhpConfFilePathStr
 	}
 
-	vhostPhpConfFilePath, err = valueObject.NewUnixFilePath(vhostPhpConfFilePathStr)
+	vhostPhpConfFilePath, err = tkValueObject.NewUnixAbsoluteFilePath(vhostPhpConfFilePathStr, false)
 	if err != nil {
 		return vhostPhpConfFilePath, err
 	}

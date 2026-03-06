@@ -42,9 +42,9 @@ func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
 		rawWorkingDirPath = valueObject.UnixFilePathAppWorkingDir.String()
 	}
 
-	workingDirPath, err := valueObject.NewUnixFilePath(rawWorkingDirPath)
+	workingDirPath, err := tkValueObject.NewUnixAbsoluteFilePath(rawWorkingDirPath, false)
 	if err != nil {
-		workingDirPath, _ = valueObject.NewUnixFilePath("/invalid/path")
+		workingDirPath, _ = tkValueObject.NewUnixAbsoluteFilePath("/invalid/path", false)
 	}
 
 	readFilesResponseDto := presenter.readUnixFilesByWorkingDir(workingDirPath)

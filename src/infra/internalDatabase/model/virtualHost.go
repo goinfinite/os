@@ -52,7 +52,7 @@ func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {
 		return vhost, err
 	}
 
-	rootDir, err := valueObject.NewUnixFilePath(model.RootDirectory)
+	rootDir, err := tkValueObject.NewUnixAbsoluteFilePath(model.RootDirectory, false)
 	if err != nil {
 		return vhost, err
 	}

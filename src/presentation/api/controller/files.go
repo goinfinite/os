@@ -62,7 +62,7 @@ func (controller *FilesController) Read(echoContext echo.Context) error {
 		)
 	}
 
-	sourcePath, err := valueObject.NewUnixFilePath(requestData["sourcePath"])
+	sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["sourcePath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
@@ -116,7 +116,7 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 		)
 	}
 
-	filePath, err := valueObject.NewUnixFilePath(requestData["filePath"])
+	filePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["filePath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
@@ -204,7 +204,7 @@ func (controller *FilesController) parseSourcePaths(
 	}
 
 	for _, rawSourcePath := range rawSourcePathsStrSlice {
-		sourcePath, err := valueObject.NewUnixFilePath(rawSourcePath)
+		sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawSourcePath, false)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("rawSourcePath", rawSourcePath))
 			continue
@@ -257,8 +257,8 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 
 	var destinationPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if requestData["destinationPath"] != nil {
-		destinationPath, err := valueObject.NewUnixFilePath(
-			requestData["destinationPath"],
+		destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(
+			requestData["destinationPath"], false,
 		)
 		if err != nil {
 			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
@@ -376,12 +376,12 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 		)
 	}
 
-	sourcePath, err := valueObject.NewUnixFilePath(requestData["sourcePath"])
+	sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["sourcePath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	destinationPath, err := valueObject.NewUnixFilePath(requestData["destinationPath"])
+	destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["destinationPath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
@@ -546,7 +546,7 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	destinationPath, err := valueObject.NewUnixFilePath(requestData["destinationPath"])
+	destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["destinationPath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
@@ -627,12 +627,12 @@ func (controller *FilesController) Extract(echoContext echo.Context) error {
 		)
 	}
 
-	sourcePath, err := valueObject.NewUnixFilePath(requestData["sourcePath"])
+	sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["sourcePath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
 
-	destinationPath, err := valueObject.NewUnixFilePath(requestData["destinationPath"])
+	destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["destinationPath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
@@ -695,7 +695,7 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 		)
 	}
 
-	destinationPath, err := valueObject.NewUnixFilePath(requestData["destinationPath"])
+	destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["destinationPath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}
@@ -765,7 +765,7 @@ func (controller *FilesController) Download(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	sourcePath, err := valueObject.NewUnixFilePath(requestData["sourcePath"])
+	sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["sourcePath"], false)
 	if err != nil {
 		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
 	}

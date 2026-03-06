@@ -106,7 +106,7 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if err != nil {
 		log.Fatal("PkiConfDirNotFound")
 	}

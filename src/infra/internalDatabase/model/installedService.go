@@ -349,7 +349,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 
 	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if model.WorkingDirectory != nil {
-		workingDirectory, err := valueObject.NewUnixFilePath(*model.WorkingDirectory)
+		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(*model.WorkingDirectory, false)
 		if err != nil {
 			return serviceEntity, err
 		}
@@ -358,7 +358,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if model.StartupFile != nil {
-		startupFile, err := valueObject.NewUnixFilePath(*model.StartupFile)
+		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(*model.StartupFile, false)
 		if err != nil {
 			return serviceEntity, err
 		}
@@ -387,7 +387,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 
 	var logOutputPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if model.LogOutputPath != nil {
-		logOutputPath, err := valueObject.NewUnixFilePath(*model.LogOutputPath)
+		logOutputPath, err := tkValueObject.NewUnixAbsoluteFilePath(*model.LogOutputPath, false)
 		if err != nil {
 			return serviceEntity, err
 		}
@@ -396,7 +396,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 
 	var logErrorPathPtr *tkValueObject.UnixAbsoluteFilePath
 	if model.LogErrorPath != nil {
-		logErrorPath, err := valueObject.NewUnixFilePath(*model.LogErrorPath)
+		logErrorPath, err := tkValueObject.NewUnixAbsoluteFilePath(*model.LogErrorPath, false)
 		if err != nil {
 			return serviceEntity, err
 		}

@@ -1,7 +1,6 @@
 package cliController
 
 import (
-	"github.com/goinfinite/os/src/domain/valueObject"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -100,7 +99,7 @@ func (controller *SslController) Create() *cobra.Command {
 			)
 			requestBody["virtualHostsHostnames"] = vhostHostnames
 
-			certFilePath, err := valueObject.NewUnixFilePath(certFilePathStr)
+			certFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(certFilePathStr, false)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidCertificateFilePath")
 			}
@@ -112,7 +111,7 @@ func (controller *SslController) Create() *cobra.Command {
 			}
 			requestBody["certificate"] = certContentStr
 
-			privateKeyFilePath, err := valueObject.NewUnixFilePath(keyFilePathStr)
+			privateKeyFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(keyFilePathStr, false)
 			if err != nil {
 				cliHelper.ResponseWrapper(false, "InvalidSslPrivateKeyFilePath")
 			}

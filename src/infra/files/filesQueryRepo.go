@@ -74,7 +74,7 @@ func (repo *FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	unixFilePath, err := valueObject.NewUnixFilePath(unixFileAbsPath)
+	unixFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(unixFileAbsPath, false)
 	if err != nil {
 		return unixFile, err
 	}
@@ -189,7 +189,7 @@ func (repo *FilesQueryRepo) unixFileBranchFactory(
 			continue
 		}
 
-		twigPath, err := valueObject.NewUnixFilePath(rawFilePath)
+		twigPath, err := tkValueObject.NewUnixAbsoluteFilePath(rawFilePath, false)
 		if err != nil {
 			slog.Error(
 				err.Error(),
@@ -225,7 +225,7 @@ func (repo *FilesQueryRepo) unixFileTreeFactory(
 		isTreeTrunk := rawBranchName == ""
 
 		iterationBranchPath += rawBranchName + "/"
-		branchFilePath, err := valueObject.NewUnixFilePath(iterationBranchPath)
+		branchFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(iterationBranchPath, false)
 		if err != nil {
 			slog.Debug(
 				err.Error(),
@@ -289,7 +289,7 @@ func (repo *FilesQueryRepo) Read(
 
 		rawDirectoryFilesList := strings.SplitSeq(rawDirectoryFiles, "\n")
 		for fileToFactoryStr := range rawDirectoryFilesList {
-			filePath, err := valueObject.NewUnixFilePath(fileToFactoryStr)
+			filePath, err := tkValueObject.NewUnixAbsoluteFilePath(fileToFactoryStr, false)
 			if err != nil {
 				slog.Error(
 					"FactoryFileError",

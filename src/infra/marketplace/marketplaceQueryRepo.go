@@ -354,8 +354,8 @@ func (repo *MarketplaceQueryRepo) catalogItemUninstallFileNamesFactory(
 	}
 
 	for _, rawItemUninstallFileName := range rawItemUninstallFileNames {
-		itemUninstallUninstallFileNames, err := valueObject.NewUnixFileName(
-			rawItemUninstallFileName,
+		itemUninstallUninstallFileNames, err := tkValueObject.NewUnixFileName(
+			rawItemUninstallFileName, false,
 		)
 		if err != nil {
 			slog.Debug(err.Error(), slog.Any("fileName", rawItemUninstallFileName))
@@ -609,7 +609,7 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	catalogItems := []entity.MarketplaceCatalogItem{}
 	catalogItemsIdsMap := map[uint16]struct{}{}
 	for _, rawFilePath := range rawCatalogFilesListParts {
-		itemFilePath, err := valueObject.NewUnixFilePath(rawFilePath)
+		itemFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawFilePath, false)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("filePath", rawFilePath))
 			continue

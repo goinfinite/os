@@ -103,7 +103,7 @@ func (repo *VirtualHostCmdRepo) ReadVirtualHostWebServerUnitFileFilePath(
 
 	mappingsFileNameStr := mappingsFilePath.ReadFileName(false).String()
 	rawUnitConfFilePath := infraEnvs.VirtualHostsConfDir + "/" + mappingsFileNameStr
-	return valueObject.NewUnixFilePath(rawUnitConfFilePath)
+	return tkValueObject.NewUnixAbsoluteFilePath(rawUnitConfFilePath, false)
 }
 
 func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
@@ -179,7 +179,7 @@ func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
 
 	rawPublicDir := infraEnvs.PrimaryPublicDir + "/" + createDto.Hostname.String()
 
-	publicDir, err = valueObject.NewUnixFilePath(rawPublicDir)
+	publicDir, err = tkValueObject.NewUnixAbsoluteFilePath(rawPublicDir, false)
 	if err != nil {
 		return publicDir, errors.New("InvalidVirtualHostPublicDir")
 	}
@@ -198,7 +198,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("CreateVirtualHostPublicDirFailed: " + err.Error())
 	}
 
-	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if err != nil {
 		return errors.New("InvalidPkiConfDir")
 	}
@@ -211,7 +211,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		}
 	}
 
-	webServerConfDir, err := valueObject.NewUnixFilePath(infraEnvs.VirtualHostsConfDir)
+	webServerConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.VirtualHostsConfDir, false)
 	if err != nil {
 		return errors.New("InvalidWebServerConfDir")
 	}
@@ -333,7 +333,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname tkValueObject.Fqdn) error {
 		return repo.createWebServerUnitFile(parentVirtualHostEntity.Hostname)
 	}
 
-	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if err != nil {
 		return errors.New("InvalidPkiConfDir")
 	}

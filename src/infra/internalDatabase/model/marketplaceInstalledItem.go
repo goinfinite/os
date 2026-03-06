@@ -60,7 +60,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	installDirectory, err := valueObject.NewUnixFilePath(model.InstallDirectory)
+	installDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(model.InstallDirectory, false)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}

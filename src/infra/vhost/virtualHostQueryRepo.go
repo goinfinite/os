@@ -221,7 +221,7 @@ func (repo *VirtualHostQueryRepo) ReadVirtualHostMappingsFilePath(
 		vhostFileNameStr = "primary.conf"
 	}
 
-	return valueObject.NewUnixFilePath(
-		infraEnvs.MappingsConfDir + "/" + vhostFileNameStr,
+	return tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.MappingsConfDir+"/"+vhostFileNameStr, false,
 	)
 }

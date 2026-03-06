@@ -142,7 +142,7 @@ func (repo *SslQueryRepo) Read(
 	}
 
 	for rawCertFilePath := range strings.SplitSeq(rawCertFilePaths, "\n") {
-		crtFilePath, err := valueObject.NewUnixFilePath(rawCertFilePath)
+		crtFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawCertFilePath, false)
 		if err != nil {
 			slog.Debug("InvalidCertFilePath", slog.String("rawCertFilePath", rawCertFilePath))
 			continue
