@@ -343,17 +343,27 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 }
 
 func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
-	readFirstRequestDto dto.ReadFirstInstalledServiceItemsRequest,
+	requestDto dto.ReadFirstInstalledServiceItemsRequest,
 ) (installedItem entity.InstalledService, err error) {
 	shouldIncludeMetrics := false
+
+	sortBy, err := tkValueObject.NewPaginationSortBy("name")
+	if err != nil {
+		return installedItem, err
+	}
+	if requestDto.Pagination.SortBy != nil {
+		sortBy = *requestDto.Pagination.SortBy
+	}
+
 	readRequestDto := dto.ReadInstalledServicesItemsRequest{
 		Pagination: tkDto.Pagination{
 			PageNumber:   0,
 			ItemsPerPage: 1,
+			SortBy:       &sortBy,
 		},
-		ServiceName:          readFirstRequestDto.ServiceName,
-		ServiceNature:        readFirstRequestDto.ServiceNature,
-		ServiceType:          readFirstRequestDto.ServiceType,
+		ServiceName:          requestDto.ServiceName,
+		ServiceNature:        requestDto.ServiceNature,
+		ServiceType:          requestDto.ServiceType,
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
 	}
 	responseDto, err := repo.ReadInstalledItems(readRequestDto)
@@ -878,9 +888,18 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 func (repo *ServicesQueryRepo) ReadFirstInstallableItem(
 	requestDto dto.ReadInstallableServicesItemsRequest,
 ) (installableService entity.InstallableService, err error) {
+	sortBy, err := tkValueObject.NewPaginationSortBy("name")
+	if err != nil {
+		return installableService, err
+	}
+	if requestDto.Pagination.SortBy != nil {
+		sortBy = *requestDto.Pagination.SortBy
+	}
+
 	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
+		SortBy:       &sortBy,
 	}
 	responseDto, err := repo.ReadInstallableItems(requestDto)
 	if err != nil {
