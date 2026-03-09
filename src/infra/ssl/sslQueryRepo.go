@@ -150,7 +150,11 @@ func (repo *SslQueryRepo) Read(
 
 		sslPairEntity, err := repo.sslPairFactory(crtFilePath)
 		if err != nil {
-			slog.Debug("SslPairFactoryError", slog.String("crtFilePath", crtFilePath.String()))
+			slog.Debug(
+				"SslPairFactoryError",
+				slog.String("error", err.Error()),
+				slog.String("crtFilePath", crtFilePath.String()),
+			)
 			continue
 		}
 
