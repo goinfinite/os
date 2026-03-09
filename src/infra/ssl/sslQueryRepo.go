@@ -67,7 +67,7 @@ func (repo *SslQueryRepo) sslCertificatesFactory(
 func (repo *SslQueryRepo) sslPairFactory(
 	crtFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (sslPairEntity entity.SslPair, err error) {
-	crtKeyFilePath := crtFilePath.ReadWithoutExtension(false).String() + ".key"
+	crtKeyFilePath := strings.Replace(crtFilePath.String(), ".crt", ".key", 1)
 	crtKeyContentStr, err := repo.fileClerk.ReadFileContent(crtKeyFilePath, nil)
 	if err != nil {
 		return sslPairEntity, errors.New("OpenCertKeyFileError: " + err.Error())
