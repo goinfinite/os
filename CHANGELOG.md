@@ -1,12 +1,13 @@
 # Changelog
 
 ```log
-0.2.8 - 2026/02/XX
+0.2.8 - 2026/03/XX
 fix: use installedServiceName for update dir
 fix: use tk input reader for api
 chore: update go and deps
 chore: add context to every src/ dir
 refactor: use goinfinite/tk and add context files
+fix: sort services by name in ReadFirstInstalledItem
 
 0.2.7.1 - 2025/10/31
 fix: remove / from database and runtime hx-get/post to respect base href
