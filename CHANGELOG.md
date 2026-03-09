@@ -7,6 +7,7 @@ fix: use tk input reader for api
 chore: update go and deps
 chore: add context to every src/ dir
 refactor: use goinfinite/tk and add context files
+fix: add primaryKeyColumn to PaginationQueryBuilder calls
 fix: sort services by name in ReadFirstInstalledItem
 
 0.2.7.1 - 2025/10/31

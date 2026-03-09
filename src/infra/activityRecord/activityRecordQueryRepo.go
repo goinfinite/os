@@ -79,7 +79,7 @@ func (repo *ActivityRecordQueryRepo) Read(
 	dbQuery := repo.buildBaseQuery(readDto)
 
 	dbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
-		dbQuery, readDto.Pagination,
+		dbQuery, readDto.Pagination, "id",
 	)
 	if err != nil {
 		return responseDto, err

@@ -262,7 +262,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	}
 
 	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
-		dbQuery, requestDto.Pagination,
+		dbQuery, requestDto.Pagination, "name",
 	)
 	if err != nil {
 		return installedItemsDto, errors.New(

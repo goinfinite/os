@@ -81,7 +81,7 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 		}
 	}
 	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
-		dbQuery, requestDto.Pagination,
+		dbQuery, requestDto.Pagination, "hostname",
 	)
 	if err != nil {
 		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())

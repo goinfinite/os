@@ -83,7 +83,7 @@ func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
 		}
 	}
 	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
-		dbQuery, requestDto.Pagination,
+		dbQuery, requestDto.Pagination, "id",
 	)
 	if err != nil {
 		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
@@ -162,7 +162,7 @@ func (repo *MappingQueryRepo) ReadSecurityRule(
 	}
 
 	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
-		dbQuery, requestDto.Pagination,
+		dbQuery, requestDto.Pagination, "id",
 	)
 	if err != nil {
 		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
