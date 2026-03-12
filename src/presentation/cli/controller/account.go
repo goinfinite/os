@@ -2,8 +2,8 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -63,7 +63,7 @@ func (controller *AccountController) Read() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.accountLiaison.Read(requestBody),
 			)
 		},
@@ -112,7 +112,7 @@ func (controller *AccountController) Create() *cobra.Command {
 				"isSuperAdmin": isSuperAdminStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.accountLiaison.Create(requestBody),
 			)
 		},
@@ -156,7 +156,7 @@ func (controller *AccountController) Update() *cobra.Command {
 				requestBody["isSuperAdmin"] = isSuperAdminStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.accountLiaison.Update(requestBody),
 			)
 		},
@@ -183,7 +183,7 @@ func (controller *AccountController) Delete() *cobra.Command {
 				"accountId": accountIdUint64,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.accountLiaison.Delete(requestBody),
 			)
 		},
@@ -211,7 +211,7 @@ func (controller *AccountController) CreateSecureAccessPublicKey() *cobra.Comman
 				requestBody["name"] = keyNameStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.accountLiaison.CreateSecureAccessPublicKey(requestBody),
 			)
 		},
@@ -242,7 +242,7 @@ func (controller *AccountController) DeleteSecureAccessPublicKey() *cobra.Comman
 				"id":        keyIdUint16,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.accountLiaison.DeleteSecureAccessPublicKey(requestBody),
 			)
 		},

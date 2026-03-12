@@ -7,8 +7,8 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -48,14 +48,14 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 			}
 
 			requestBody := map[string]interface{}{
 				"hostname": hostname.String(),
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.runtimeLiaison.ReadPhpConfigs(requestBody),
 			)
 		},
@@ -75,7 +75,7 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 			}
 
 			requestBody := map[string]interface{}{
@@ -107,7 +107,7 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 				requestBody["settings"] = settings
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
 			)
 		},
@@ -134,7 +134,7 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 			}
 			requestBody := map[string]interface{}{
 				"hostname": hostname.String(),
@@ -144,11 +144,11 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 			rawPhpModuleParam := moduleNameStr + ":" + moduleStatusStr
 			module, err := entity.NewPhpModuleFromString(rawPhpModuleParam)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 			}
 			requestBody["modules"] = []entity.PhpModule{module}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
 			)
 		},
@@ -173,7 +173,7 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 			}
 			requestBody := map[string]interface{}{
 				"hostname": hostname.String(),
@@ -183,11 +183,11 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 			rawPhpSettingParam := settingNameStr + ":" + settingValueStr
 			setting, err := entity.NewPhpSettingFromString(rawPhpSettingParam)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err)
+				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 			}
 			requestBody["settings"] = []entity.PhpSetting{setting}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
 			)
 		},
@@ -212,14 +212,14 @@ func (controller *RuntimeController) RunPhpCommand() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, err.Error())
+				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 			}
 			requestBody := map[string]interface{}{
 				"hostname": hostname.String(),
 				"command":  commandStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.runtimeLiaison.RunPhpCommand(requestBody),
 			)
 		},

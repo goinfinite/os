@@ -33,7 +33,7 @@ func CliInit() {
 	cliMiddleware.PreventRootless()
 
 	cliMiddleware.CheckEnvs()
-	cliMiddleware.LogHandler()
+	tkPresentationMiddleware.LogHandler{}.Init()
 
 	transientDbSvc := cliInit.TransientDatabaseService()
 	persistentDbSvc := cliInit.PersistentDatabaseService()
