@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -63,7 +64,7 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 		responseOutput := presenter.marketplaceLiaison.ReadInstalledItems(
 			map[string]interface{}{},
 		)
-		if responseOutput.Status != liaison.Success {
+		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 			return overview, errors.New("FailedToReadInstalledItems")
 		}
 
@@ -79,7 +80,7 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 		responseOutput := presenter.marketplaceLiaison.ReadCatalog(
 			map[string]interface{}{},
 		)
-		if responseOutput.Status != liaison.Success {
+		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 			return overview, errors.New("FailedToReadCatalogItems")
 		}
 

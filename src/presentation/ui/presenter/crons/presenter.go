@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"net/http"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -24,7 +25,7 @@ func NewCronsPresenter(
 
 func (presenter *CronsPresenter) Handler(c echo.Context) error {
 	responseOutput := presenter.cronLiaison.Read(map[string]interface{}{})
-	if responseOutput.Status != liaison.Success {
+	if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return nil
 	}
 

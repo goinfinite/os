@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
 
@@ -46,7 +47,7 @@ func (presenter *RuntimesPresenter) runtimeOverviewFactory(
 
 		isInstalled = true
 		isVirtualHostUsingRuntime = true
-		if responseOutput.Status != liaison.Success {
+		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 			isVirtualHostUsingRuntime = false
 			responseOutputBodyStr, assertOk := responseOutput.Body.(string)
 			if assertOk {

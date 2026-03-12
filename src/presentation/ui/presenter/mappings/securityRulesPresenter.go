@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
 
@@ -30,7 +31,7 @@ func (presenter *MappingSecurityRulesPresenter) Handler(c echo.Context) error {
 	}
 
 	secRulesServiceResponse := presenter.virtualHostLiaison.ReadMappingSecurityRules(requestBody)
-	if secRulesServiceResponse.Status != liaison.Success {
+	if secRulesServiceResponse.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		slog.Debug("SecRulesServiceBadOutput", slog.Any("output", secRulesServiceResponse))
 		return nil
 	}

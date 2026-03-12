@@ -1,6 +1,7 @@
 package liaison
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -9,7 +10,6 @@ import (
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	authInfra "github.com/goinfinite/os/src/infra/auth"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 )
 
 type AuthenticationLiaison struct {
@@ -29,26 +29,26 @@ func NewAuthenticationLiaison(
 
 func (liaison *AuthenticationLiaison) Login(
 	untrustedInput map[string]any,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"username", "password", "operatorIpAddress"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	username, err := valueObject.NewUsername(untrustedInput["username"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	password, err := tkValueObject.NewWeakPassword(untrustedInput["password"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	dto := dto.NewCreateSessionToken(username, password, operatorIpAddress)
@@ -68,8 +68,8 @@ func (liaison *AuthenticationLiaison) Login(
 		activityRecordCmdRepo, dto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Success, accessToken)
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, accessToken)
 }

@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
 	"net/http"
@@ -119,7 +120,7 @@ func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 	installedItemsResponseOutput := presenter.servicesLiaison.ReadInstalledItems(
 		readInstalledServicesRequestBody,
 	)
-	if installedItemsResponseOutput.Status != liaison.Success {
+	if installedItemsResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return responseDto, errors.New("FailedToReadInstalledServices")
 	}
 
@@ -142,7 +143,7 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 	installableItemsResponseOutput := presenter.servicesLiaison.ReadInstallableItems(
 		map[string]interface{}{},
 	)
-	if installableItemsResponseOutput.Status != liaison.Success {
+	if installableItemsResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return overview, errors.New("FailedToReadInstallableServices")
 	}
 

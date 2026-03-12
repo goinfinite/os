@@ -1,6 +1,7 @@
 package uiPresenterHelper
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -20,7 +21,7 @@ func ReadVirtualHostHostnames(
 		"itemsPerPage": 1000,
 		"withMappings": false,
 	})
-	if vhostResponseLiaisonOutput.Status != liaison.Success {
+	if vhostResponseLiaisonOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return vhostHostnames, errors.New("ReadVirtualHostLiaisonBadResponse")
 	}
 
