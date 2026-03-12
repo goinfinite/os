@@ -1,7 +1,6 @@
 package apiController
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"strings"
 	"time"
@@ -10,8 +9,8 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	marketplaceInfra "github.com/goinfinite/os/src/infra/marketplace"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -55,7 +54,7 @@ func (controller *MarketplaceController) ReadCatalog(echoContext echo.Context) e
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.marketplaceLiaison.ReadCatalog(requestData),
 	)
 }
@@ -171,7 +170,7 @@ func (controller *MarketplaceController) InstallCatalogItem(echoContext echo.Con
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.marketplaceLiaison.InstallCatalogItem(requestData, true),
 	)
 }
@@ -201,7 +200,7 @@ func (controller *MarketplaceController) ReadInstalledItems(echoContext echo.Con
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.marketplaceLiaison.ReadInstalledItems(requestData),
 	)
 }
@@ -224,7 +223,7 @@ func (controller *MarketplaceController) DeleteInstalledItem(echoContext echo.Co
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.marketplaceLiaison.DeleteInstalledItem(requestData, true),
 	)
 }

@@ -1,8 +1,6 @@
 package apiController
 
 import (
-	"net/http"
-
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -10,8 +8,8 @@ import (
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -40,7 +38,7 @@ func NewSetupController(
 // @Success      201 {object} object{} "FirstAccountCreated"
 // @Router       /v1/setup/ [post]
 func (controller *SetupController) Setup(echoContext echo.Context) error {
-	requestBody, err := apiHelper.ReadRequestInputData(echoContext)
+	requestBody, err := tkPresentation.ApiRequestInputReader{}.Reader(echoContext)
 	if err != nil {
 		return err
 	}
@@ -53,12 +51,12 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 
 	username, err := valueObject.NewUsername(requestBody["username"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	password, err := tkValueObject.NewPassword(requestBody["password"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	isSuperAdmin := false
@@ -69,7 +67,7 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 			requestBody["operatorIpAddress"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 	}
 
@@ -82,8 +80,8 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 		accountQueryRepo, accountCmdRepo, activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, http.StatusCreated, "FirstAccountCreated")
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "FirstAccountCreated"))
 }

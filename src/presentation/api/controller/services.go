@@ -1,10 +1,8 @@
 package apiController
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
-	"net/http"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/useCase"
@@ -12,9 +10,8 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
-	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -58,7 +55,7 @@ func (controller *ServicesController) ReadInstalledItems(echoContext echo.Contex
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.servicesLiaison.ReadInstalledItems(requestData),
 	)
 }
@@ -88,7 +85,7 @@ func (controller *ServicesController) ReadInstallablesItems(echoContext echo.Con
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.servicesLiaison.ReadInstallableItems(requestData),
 	)
 }
@@ -124,7 +121,7 @@ func (controller *ServicesController) parseRawEnvs(
 	rawEnvsMap := map[string]interface{}{}
 	switch rawEnvsValues := rawEnvsUnknownType.(type) {
 	case string, []string:
-		return sharedHelper.StringSliceValueObjectParser(
+		return tkPresentation.StringSliceValueObjectParser(
 			rawEnvsValues, valueObject.NewServiceEnv,
 		), nil
 	case []interface{}:
@@ -192,7 +189,7 @@ func (controller *ServicesController) parseRawPortBindings(
 	rawPortBindingsInterfaceSlice := []interface{}{}
 	switch rawPortBindingsValues := rawPortBindingsUnknownType.(type) {
 	case string, []string:
-		return sharedHelper.StringSliceValueObjectParser(
+		return tkPresentation.StringSliceValueObjectParser(
 			rawPortBindingsValues, valueObject.NewPortBinding,
 		), nil
 	case []interface{}:
@@ -258,7 +255,7 @@ func (controller *ServicesController) CreateInstallable(echoContext echo.Context
 	if requestData["envs"] != nil {
 		envs, err = controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 	}
 	requestData["envs"] = envs
@@ -269,12 +266,12 @@ func (controller *ServicesController) CreateInstallable(echoContext echo.Context
 			requestData["portBindings"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 	}
 	requestData["portBindings"] = portBindings
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.servicesLiaison.CreateInstallable(requestData, true),
 	)
 }
@@ -302,7 +299,7 @@ func (controller *ServicesController) CreateCustom(echoContext echo.Context) err
 	if requestData["envs"] != nil {
 		envs, err = controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 	}
 	requestData["envs"] = envs
@@ -313,12 +310,12 @@ func (controller *ServicesController) CreateCustom(echoContext echo.Context) err
 			requestData["portBindings"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 	}
 	requestData["portBindings"] = portBindings
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.servicesLiaison.CreateCustom(requestData),
 	)
 }
@@ -343,7 +340,7 @@ func (controller *ServicesController) Update(echoContext echo.Context) error {
 	if requestData["envs"] != nil {
 		rawEnvs, err := controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		requestData["envs"] = rawEnvs
 	}
@@ -353,12 +350,12 @@ func (controller *ServicesController) Update(echoContext echo.Context) error {
 			requestData["portBindings"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		requestData["portBindings"] = rawPortBindings
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.servicesLiaison.Update(requestData),
 	)
 }
@@ -381,7 +378,7 @@ func (controller *ServicesController) Delete(echoContext echo.Context) error {
 	}
 	requestData["name"] = requestData["svcName"]
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.servicesLiaison.Delete(requestData),
 	)
 }

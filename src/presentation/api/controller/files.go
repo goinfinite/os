@@ -1,11 +1,9 @@
 package apiController
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
 	"mime/multipart"
-	"net/http"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
@@ -15,7 +13,7 @@ import (
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	filesInfra "github.com/goinfinite/os/src/infra/files"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -57,14 +55,14 @@ func (controller *FilesController) Read(echoContext echo.Context) error {
 		requestData, requiredParams,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(
-			echoContext, http.StatusBadRequest, err.Error(),
-		)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		))
 	}
 
 	sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["sourcePath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	shouldIncludeFileTree := false
@@ -73,7 +71,7 @@ func (controller *FilesController) Read(echoContext echo.Context) error {
 			requestData["shouldIncludeFileTree"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 	}
 
@@ -84,10 +82,10 @@ func (controller *FilesController) Read(echoContext echo.Context) error {
 
 	filesList, err := useCase.ReadFiles(controller.filesQueryRepo, readFilesRequestDto)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, http.StatusOK, filesList)
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, filesList))
 }
 
 // CreateFile    godoc
@@ -111,21 +109,21 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 		requestData, requiredParams,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(
-			echoContext, http.StatusBadRequest, err.Error(),
-		)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		))
 	}
 
 	filePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["filePath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	fileType := tkValueObject.MimeTypeGeneric
 	if requestData["mimeType"] != nil {
 		fileType, err = tkValueObject.NewMimeType(requestData["mimeType"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 
 		if fileType != tkValueObject.MimeTypeDirectory {
@@ -146,7 +144,7 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 			requestData["permissions"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 	}
 
@@ -154,14 +152,14 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	createDto := dto.NewCreateUnixFile(
@@ -173,10 +171,10 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 		controller.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, http.StatusCreated, successResponse)
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, successResponse))
 }
 
 func (controller *FilesController) parseSourcePaths(
@@ -245,14 +243,14 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 		requestData, requiredParams,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(
-			echoContext, http.StatusBadRequest, err.Error(),
-		)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		))
 	}
 
 	sourcePaths, err := controller.parseSourcePaths(requestData["sourcePaths"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	var destinationPathPtr *tkValueObject.UnixAbsoluteFilePath
@@ -261,7 +259,7 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 			requestData["destinationPath"], false,
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		destinationPathPtr = &destinationPath
 	}
@@ -272,7 +270,7 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 			requestData["permissions"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		permissionsPtr = &permissions
 	}
@@ -283,7 +281,7 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 			requestData["encodedContent"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		encodedContentPtr = &encodedContent
 	}
@@ -294,7 +292,7 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 			requestData["ownership"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		ownershipPtr = &ownership
 	}
@@ -305,7 +303,7 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 			requestData["shouldFixPermissions"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		shouldFixPermissionsPtr = &shouldFixPermissions
 	}
@@ -314,14 +312,14 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	updateUnixFileDto := dto.NewUpdateUnixFiles(
@@ -334,20 +332,20 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 	)
 	updateProcessInfo, err := updateUnixFileUc.Execute(updateUnixFileDto)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
 	hasSuccess := len(updateProcessInfo.FilePathsSuccessfullyUpdated) > 0
 	hasFailures := len(updateProcessInfo.FailedPathsWithReason) > 0
 	if !hasSuccess && hasFailures {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, updateProcessInfo)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, updateProcessInfo))
 	}
 	wasPartiallySuccessful := hasSuccess && hasFailures
 	if wasPartiallySuccessful {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusMultiStatus, updateProcessInfo)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusMultiStatus, updateProcessInfo))
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, http.StatusOK, updateProcessInfo)
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, updateProcessInfo))
 }
 
 // CopyFile    godoc
@@ -371,19 +369,19 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 		requestData, requiredParams,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(
-			echoContext, http.StatusBadRequest, err.Error(),
-		)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		))
 	}
 
 	sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["sourcePath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["destinationPath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	shouldOverwrite := false
@@ -391,9 +389,9 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 		var err error
 		shouldOverwrite, err = tkVoUtil.InterfaceToBool(requestData["shouldOverwrite"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(
-				echoContext, http.StatusBadRequest, "InvalidShouldOverwrite",
-			)
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, "InvalidShouldOverwrite",
+			))
 		}
 	}
 
@@ -401,14 +399,14 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	copyDto := dto.NewCopyUnixFile(
@@ -421,10 +419,10 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 		controller.activityRecordCmdRepo, copyDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, http.StatusCreated, "FileCopied")
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "FileCopied"))
 }
 
 // DeleteFiles godoc
@@ -455,14 +453,14 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 		requestData, requiredParams,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(
-			echoContext, http.StatusBadRequest, err.Error(),
-		)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		))
 	}
 
 	sourcePaths, err := controller.parseSourcePaths(requestData["sourcePaths"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	hardDelete := false
@@ -470,9 +468,9 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 		var err error
 		hardDelete, err = tkVoUtil.InterfaceToBool(requestData["hardDelete"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(
-				echoContext, http.StatusBadRequest, "InvalidHardDelete",
-			)
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, "InvalidHardDelete",
+			))
 		}
 	}
 
@@ -480,14 +478,14 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	deleteDto := dto.NewDeleteUnixFiles(
@@ -501,10 +499,10 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 
 	err = deleteUnixFiles.Execute(deleteDto)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, http.StatusOK, "FilesDeleted")
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, "FilesDeleted"))
 }
 
 // CompressFiles    godoc
@@ -536,19 +534,19 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 		requestData, requiredParams,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(
-			echoContext, http.StatusBadRequest, err.Error(),
-		)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		))
 	}
 
 	sourcePaths, err := controller.parseSourcePaths(requestData["sourcePaths"])
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["destinationPath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	var compressionUnixTypePtr *valueObject.UnixCompressionType
@@ -557,7 +555,7 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 			requestData["compressionType"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		compressionUnixTypePtr = &compressionUnixType
 	}
@@ -566,14 +564,14 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	compressDto := dto.NewCompressUnixFiles(
@@ -586,19 +584,19 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 		controller.activityRecordCmdRepo, compressDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
-	httpStatus := http.StatusCreated
+	liaisonStatus := tkPresentation.LiaisonResponseStatusCreated
 
 	hasSuccess := len(compressionProcessInfo.FilePathsSuccessfullyCompressed) > 0
 	hasFailures := len(compressionProcessInfo.FailedPathsWithReason) > 0
 	wasPartiallySuccessful := hasSuccess && hasFailures
 	if wasPartiallySuccessful {
-		httpStatus = http.StatusMultiStatus
+		liaisonStatus = tkPresentation.LiaisonResponseStatusMultiStatus
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, httpStatus, compressionProcessInfo)
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(liaisonStatus, compressionProcessInfo))
 }
 
 // ExtractFiles godoc
@@ -622,33 +620,33 @@ func (controller *FilesController) Extract(echoContext echo.Context) error {
 		requestData, requiredParams,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(
-			echoContext, http.StatusBadRequest, err.Error(),
-		)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		))
 	}
 
 	sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["sourcePath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["destinationPath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	operatorAccountId, err := tkValueObject.NewAccountId(
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	extractDto := dto.NewExtractUnixFiles(
@@ -660,10 +658,10 @@ func (controller *FilesController) Extract(echoContext echo.Context) error {
 		controller.activityRecordCmdRepo, extractDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, http.StatusCreated, "FilesExtracted")
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "FilesExtracted"))
 }
 
 // UploadFiles    godoc
@@ -690,21 +688,21 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 		requestData, requiredParams,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(
-			echoContext, http.StatusBadRequest, err.Error(),
-		)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		))
 	}
 
 	destinationPath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["destinationPath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	var filesToUpload []valueObject.FileStreamHandler
 	for _, requestDataFile := range requestData["files"].(map[string]*multipart.FileHeader) {
 		fileStreamHandler, err := valueObject.NewFileStreamHandler(requestDataFile)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		filesToUpload = append(filesToUpload, fileStreamHandler)
 	}
@@ -713,14 +711,14 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 		requestData["operatorAccountId"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(
 		requestData["operatorIpAddress"],
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	uploadDto := dto.NewUploadUnixFiles(
@@ -732,20 +730,20 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 		controller.activityRecordCmdRepo, uploadDto,
 	)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
 	}
 
 	hasSuccess := len(uploadProcessInfo.FileNamesSuccessfullyUploaded) > 0
 	hasFailures := len(uploadProcessInfo.FailedNamesWithReason) > 0
 	if !hasSuccess && hasFailures {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusInternalServerError, uploadProcessInfo)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, uploadProcessInfo))
 	}
 	wasPartiallySuccessful := hasSuccess && hasFailures
 	if wasPartiallySuccessful {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusMultiStatus, uploadProcessInfo)
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusMultiStatus, uploadProcessInfo))
 	}
 
-	return apiHelper.ResponseWrapper(echoContext, http.StatusOK, uploadProcessInfo)
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, uploadProcessInfo))
 }
 
 // DownloadFile    godoc
@@ -767,7 +765,7 @@ func (controller *FilesController) Download(echoContext echo.Context) error {
 
 	sourcePath, err := tkValueObject.NewUnixAbsoluteFilePath(requestData["sourcePath"], false)
 	if err != nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 	}
 
 	return echoContext.Attachment(sourcePath.String(), sourcePath.ReadFileName(false).String())

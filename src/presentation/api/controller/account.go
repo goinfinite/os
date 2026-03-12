@@ -2,7 +2,6 @@ package apiController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
@@ -45,7 +44,7 @@ func (controller *AccountController) Read(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.accountLiaison.Read(requestData),
 	)
 }
@@ -67,7 +66,7 @@ func (controller *AccountController) Create(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.accountLiaison.Create(requestData),
 	)
 }
@@ -89,7 +88,7 @@ func (controller *AccountController) Update(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.accountLiaison.Update(requestData),
 	)
 }
@@ -111,7 +110,7 @@ func (controller *AccountController) Delete(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.accountLiaison.Delete(requestData),
 	)
 }
@@ -133,7 +132,7 @@ func (controller *AccountController) CreateSecureAccessPublicKey(echoContext ech
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.accountLiaison.CreateSecureAccessPublicKey(requestData),
 	)
 }
@@ -155,7 +154,7 @@ func (controller *AccountController) DeleteSecureAccessPublicKey(echoContext ech
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.accountLiaison.DeleteSecureAccessPublicKey(requestData),
 	)
 }

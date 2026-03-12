@@ -1,13 +1,11 @@
 package apiController
 
 import (
-	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/liaison"
-	"github.com/labstack/echo/v4"
-
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
+	"github.com/labstack/echo/v4"
 )
 
 type VirtualHostController struct {
@@ -51,7 +49,7 @@ func (controller *VirtualHostController) Read(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.Read(requestData),
 	)
 }
@@ -73,7 +71,7 @@ func (controller *VirtualHostController) Create(echoContext echo.Context) error 
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.Create(requestData),
 	)
 }
@@ -95,7 +93,7 @@ func (controller *VirtualHostController) Update(echoContext echo.Context) error 
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.Update(requestData),
 	)
 }
@@ -117,7 +115,7 @@ func (controller *VirtualHostController) Delete(echoContext echo.Context) error 
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.Delete(requestData),
 	)
 }
@@ -150,7 +148,7 @@ func (controller *VirtualHostController) ReadWithMappings(echoContext echo.Conte
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.ReadWithMappings(requestData),
 	)
 }
@@ -172,7 +170,7 @@ func (controller *VirtualHostController) CreateMapping(echoContext echo.Context)
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.CreateMapping(requestData),
 	)
 }
@@ -194,7 +192,7 @@ func (controller *VirtualHostController) UpdateMapping(echoContext echo.Context)
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.UpdateMapping(requestData),
 	)
 }
@@ -216,7 +214,7 @@ func (controller *VirtualHostController) DeleteMapping(echoContext echo.Context)
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.DeleteMapping(requestData),
 	)
 }
@@ -248,7 +246,7 @@ func (controller *VirtualHostController) ReadMappingSecurityRules(echoContext ec
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.ReadMappingSecurityRules(
 			requestData,
 		),
@@ -284,7 +282,7 @@ func (controller *VirtualHostController) CreateMappingSecurityRule(echoContext e
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.CreateMappingSecurityRule(requestData),
 	)
 }
@@ -318,7 +316,7 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule(echoContext e
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.UpdateMappingSecurityRule(requestData),
 	)
 }
@@ -340,7 +338,7 @@ func (controller *VirtualHostController) DeleteMappingSecurityRule(echoContext e
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.virtualHostLiaison.DeleteMappingSecurityRule(requestData),
 	)
 }

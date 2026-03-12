@@ -1,9 +1,7 @@
 package apiController
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
-	"net/http"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/useCase"
@@ -12,9 +10,8 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
-	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -67,12 +64,12 @@ func (controller *SslController) Read(echoContext echo.Context) error {
 	}
 
 	if requestData["altNames"] != nil {
-		requestData["altNames"] = sharedHelper.StringSliceValueObjectParser(
+		requestData["altNames"] = tkPresentation.StringSliceValueObjectParser(
 			requestData["altNames"], valueObject.NewSslHostname,
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.sslLiaison.Read(requestData),
 	)
 }
@@ -110,10 +107,10 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 	}
 
 	if requestData["virtualHostsHostnames"] == nil {
-		return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, "VirtualHostHostnameIsRequired")
+		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "VirtualHostHostnameIsRequired"))
 	}
 
-	requestData["virtualHostsHostnames"] = sharedHelper.StringSliceValueObjectParser(
+	requestData["virtualHostsHostnames"] = tkPresentation.StringSliceValueObjectParser(
 		requestData["virtualHostsHostnames"], tkValueObject.NewFqdn,
 	)
 
@@ -124,7 +121,7 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 			requestData["encodedCertificate"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, "CannotDecodeSslCertificateContent")
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "CannotDecodeSslCertificateContent"))
 		}
 	}
 
@@ -133,7 +130,7 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 			requestData["encodedKey"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, "CannotDecodeSslKeyContent")
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "CannotDecodeSslKeyContent"))
 		}
 	}
 
@@ -142,7 +139,7 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 			requestData["encodedChainCertificates"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, "CannotDecodeSslChainCertificatesContent")
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "CannotDecodeSslChainCertificatesContent"))
 		}
 	}
 
@@ -150,7 +147,7 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 		requestData["chainCertificates"] = nil
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.sslLiaison.Create(requestData),
 	)
 }
@@ -172,7 +169,7 @@ func (controller *SslController) CreatePubliclyTrusted(echoContext echo.Context)
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.sslLiaison.CreatePubliclyTrusted(requestData, true),
 	)
 }
@@ -194,7 +191,7 @@ func (controller *SslController) Delete(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.sslLiaison.Delete(requestData),
 	)
 }

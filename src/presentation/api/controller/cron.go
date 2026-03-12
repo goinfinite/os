@@ -1,10 +1,9 @@
 package apiController
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -43,7 +42,7 @@ func (controller *CronController) Read(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(echoContext, controller.cronLiaison.Read(requestData))
+	return tkPresentation.LiaisonApiResponseEmitter(echoContext, controller.cronLiaison.Read(requestData))
 }
 
 // CreateCron    godoc
@@ -63,7 +62,7 @@ func (controller *CronController) Create(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.cronLiaison.Create(requestData),
 	)
 }
@@ -85,7 +84,7 @@ func (controller *CronController) Update(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.cronLiaison.Update(requestData),
 	)
 }
@@ -107,7 +106,7 @@ func (controller *CronController) Delete(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.cronLiaison.Delete(requestData),
 	)
 }

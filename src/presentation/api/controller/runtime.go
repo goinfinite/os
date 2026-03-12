@@ -1,17 +1,15 @@
 package apiController
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
-	"net/http"
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -45,7 +43,7 @@ func (controller *RuntimeController) ReadPhpConfigs(echoContext echo.Context) er
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.runtimeLiaison.ReadPhpConfigs(requestData),
 	)
 }
@@ -160,7 +158,7 @@ func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) 
 	if _, exists := requestData["modules"]; exists {
 		phpModules, err := controller.parsePhpModules(requestData["modules"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err)
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err))
 		}
 		requestData["modules"] = phpModules
 	}
@@ -168,12 +166,12 @@ func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) 
 	if _, exists := requestData["settings"]; exists {
 		phpSettings, err := controller.parsePhpSettings(requestData["settings"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err)
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err))
 		}
 		requestData["settings"] = phpSettings
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.runtimeLiaison.UpdatePhpConfigs(requestData),
 	)
 }
@@ -189,12 +187,12 @@ func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) 
 // @Success      200 {object} dto.RunPhpCommandResponse
 // @Router       /v1/runtime/php/run/ [post]
 func (controller *RuntimeController) RunPhpCommand(echoContext echo.Context) error {
-	requestData, err := apiHelper.ReadRequestInputData(echoContext)
+	requestData, err := tkPresentation.ApiRequestInputReader{}.Reader(echoContext)
 	if err != nil {
 		return err
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.runtimeLiaison.RunPhpCommand(requestData),
 	)
 }

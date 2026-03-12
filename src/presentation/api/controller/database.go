@@ -3,11 +3,9 @@ package apiController
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
-	"github.com/labstack/echo/v4"
-
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
+	"github.com/labstack/echo/v4"
 )
 
 type DatabaseController struct {
@@ -51,7 +49,7 @@ func (controller *DatabaseController) Read(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.databaseLiaison.Read(requestData),
 	)
 }
@@ -74,7 +72,7 @@ func (controller *DatabaseController) Create(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.databaseLiaison.Create(requestData),
 	)
 }
@@ -97,7 +95,7 @@ func (controller *DatabaseController) Delete(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.databaseLiaison.Delete(requestData),
 	)
 }
@@ -131,7 +129,7 @@ func (controller *DatabaseController) CreateUser(echoContext echo.Context) error
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.databaseLiaison.CreateUser(requestData),
 	)
 }
@@ -155,7 +153,7 @@ func (controller *DatabaseController) DeleteUser(echoContext echo.Context) error
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.databaseLiaison.DeleteUser(requestData),
 	)
 }

@@ -1,10 +1,8 @@
 package apiController
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
-	"net/http"
 	"strings"
 	"time"
 
@@ -12,8 +10,8 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -87,12 +85,12 @@ func (controller *ScheduledTaskController) Read(echoContext echo.Context) error 
 	if _, exists := requestData["taskTags"]; exists {
 		taskTags, err := controller.parseTaskTags(requestData["taskTags"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(echoContext, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
 		}
 		requestData["taskTags"] = taskTags
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.scheduledTaskLiaison.Read(requestData),
 	)
 }
@@ -114,7 +112,7 @@ func (controller *ScheduledTaskController) Update(echoContext echo.Context) erro
 		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
+	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.scheduledTaskLiaison.Update(requestData),
 	)
 }
