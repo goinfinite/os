@@ -1,7 +1,7 @@
 package liaison
 
 import (
-	"errors"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"strconv"
 	"strings"
@@ -18,7 +18,6 @@ import (
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 )
 
 type ServicesLiaison struct {
@@ -46,12 +45,12 @@ func NewServicesLiaison(
 
 func (liaison *ServicesLiaison) ReadInstalledItems(
 	untrustedInput map[string]any,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	var namePtr *valueObject.ServiceName
 	if untrustedInput["name"] != nil {
 		name, err := valueObject.NewServiceName(untrustedInput["name"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		namePtr = &name
 	}
@@ -60,7 +59,7 @@ func (liaison *ServicesLiaison) ReadInstalledItems(
 	if untrustedInput["nature"] != nil {
 		nature, err := valueObject.NewServiceNature(untrustedInput["nature"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		naturePtr = &nature
 	}
@@ -69,7 +68,7 @@ func (liaison *ServicesLiaison) ReadInstalledItems(
 	if untrustedInput["status"] != nil {
 		status, err := valueObject.NewServiceStatus(untrustedInput["status"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		statusPtr = &status
 	}
@@ -78,7 +77,7 @@ func (liaison *ServicesLiaison) ReadInstalledItems(
 	if untrustedInput["type"] != nil {
 		itemType, err := valueObject.NewServiceType(untrustedInput["type"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		typePtr = &itemType
 	}
@@ -88,55 +87,19 @@ func (liaison *ServicesLiaison) ReadInstalledItems(
 		var err error
 		shouldIncludeMetrics, err = tkVoUtil.InterfaceToBool(untrustedInput["shouldIncludeMetrics"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 	}
 
-	paginationDto := useCase.ServicesDefaultPagination
-	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := tkVoUtil.InterfaceToUint32(untrustedInput["pageNumber"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
-		}
-		paginationDto.PageNumber = pageNumber
-	}
-
-	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := tkVoUtil.InterfaceToUint16(untrustedInput["itemsPerPage"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
-		}
-		paginationDto.ItemsPerPage = itemsPerPage
-	}
-
-	if untrustedInput["sortBy"] != nil {
-		sortBy, err := tkValueObject.NewPaginationSortBy(untrustedInput["sortBy"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortBy = &sortBy
-	}
-
-	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := tkValueObject.NewPaginationSortDirection(
-			untrustedInput["sortDirection"],
-		)
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortDirection = &sortDirection
-	}
-
-	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := tkValueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.LastSeenId = &lastSeenId
+	requestPagination, err := tkPresentation.PaginationParser(
+		useCase.ServicesDefaultPagination, untrustedInput,
+	)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	readDto := dto.ReadInstalledServicesItemsRequest{
-		Pagination:           paginationDto,
+		Pagination:           requestPagination,
 		ServiceName:          namePtr,
 		ServiceNature:        naturePtr,
 		ServiceType:          typePtr,
@@ -148,20 +111,20 @@ func (liaison *ServicesLiaison) ReadInstalledItems(
 		liaison.servicesQueryRepo, readDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Success, servicesList)
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, servicesList)
 }
 
 func (liaison *ServicesLiaison) ReadInstallableItems(
 	untrustedInput map[string]any,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	var namePtr *valueObject.ServiceName
 	if untrustedInput["name"] != nil {
 		name, err := valueObject.NewServiceName(untrustedInput["name"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		namePtr = &name
 	}
@@ -170,7 +133,7 @@ func (liaison *ServicesLiaison) ReadInstallableItems(
 	if untrustedInput["nature"] != nil {
 		nature, err := valueObject.NewServiceNature(untrustedInput["nature"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		naturePtr = &nature
 	}
@@ -179,56 +142,20 @@ func (liaison *ServicesLiaison) ReadInstallableItems(
 	if untrustedInput["type"] != nil {
 		itemType, err := valueObject.NewServiceType(untrustedInput["type"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		typePtr = &itemType
 	}
 
-	paginationDto := useCase.ServicesDefaultPagination
-	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := tkVoUtil.InterfaceToUint32(untrustedInput["pageNumber"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
-		}
-		paginationDto.PageNumber = pageNumber
-	}
-
-	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := tkVoUtil.InterfaceToUint16(untrustedInput["itemsPerPage"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
-		}
-		paginationDto.ItemsPerPage = itemsPerPage
-	}
-
-	if untrustedInput["sortBy"] != nil {
-		sortBy, err := tkValueObject.NewPaginationSortBy(untrustedInput["sortBy"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortBy = &sortBy
-	}
-
-	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := tkValueObject.NewPaginationSortDirection(
-			untrustedInput["sortDirection"],
-		)
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortDirection = &sortDirection
-	}
-
-	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := tkValueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.LastSeenId = &lastSeenId
+	requestPagination, err := tkPresentation.PaginationParser(
+		useCase.ServicesDefaultPagination, untrustedInput,
+	)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	readDto := dto.ReadInstallableServicesItemsRequest{
-		Pagination:    paginationDto,
+		Pagination:    requestPagination,
 		ServiceName:   namePtr,
 		ServiceNature: naturePtr,
 		ServiceType:   typePtr,
@@ -238,32 +165,32 @@ func (liaison *ServicesLiaison) ReadInstallableItems(
 		liaison.servicesQueryRepo, readDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Success, servicesList)
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, servicesList)
 }
 
 func (liaison *ServicesLiaison) CreateInstallable(
 	untrustedInput map[string]any,
 	shouldSchedule bool,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"name"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	name, err := valueObject.NewServiceName(untrustedInput["name"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	var versionPtr *valueObject.ServiceVersion
 	if untrustedInput["version"] != nil {
 		version, err := valueObject.NewServiceVersion(untrustedInput["version"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		versionPtr = &version
 	}
@@ -272,7 +199,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["startupFile"] != nil {
 		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["startupFile"], false)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		startupFilePtr = &startupFile
 	}
@@ -281,7 +208,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["workingDir"] != nil {
 		workingDir, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["workingDir"], false)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		workingDirPtr = &workingDir
 	}
@@ -291,7 +218,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 		var assertOk bool
 		envs, assertOk = untrustedInput["envs"].([]valueObject.ServiceEnv)
 		if !assertOk {
-			return NewLiaisonOutput(UserError, "InvalidServiceEnvs")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "InvalidServiceEnvs")
 		}
 	}
 
@@ -300,7 +227,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 		var assertOk bool
 		portBindings, assertOk = untrustedInput["portBindings"].([]valueObject.PortBinding)
 		if !assertOk {
-			return NewLiaisonOutput(UserError, "InvalidPortBindings")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "InvalidPortBindings")
 		}
 	}
 
@@ -308,7 +235,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["autoStart"] != nil {
 		autoStart, err := tkVoUtil.InterfaceToBool(untrustedInput["autoStart"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, "AutoStartMustBeBool")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "AutoStartMustBeBool")
 		}
 		autoStartPtr = &autoStart
 	}
@@ -317,7 +244,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["timeoutStartSecs"] != nil {
 		timeoutStartSecs, err := tkVoUtil.InterfaceToUint(untrustedInput["timeoutStartSecs"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, "TimeoutStartSecsMustBeUint")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "TimeoutStartSecsMustBeUint")
 		}
 		timeoutStartSecsPtr = &timeoutStartSecs
 	}
@@ -328,7 +255,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 			untrustedInput["autoRestart"],
 		)
 		if err != nil {
-			return NewLiaisonOutput(UserError, "AutoRestartMustBeBool")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "AutoRestartMustBeBool")
 		}
 		autoRestartPtr = &autoRestart
 	}
@@ -337,7 +264,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["maxStartRetries"] != nil {
 		maxStartRetries, err := tkVoUtil.InterfaceToUint(untrustedInput["maxStartRetries"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, "MaxStartRetriesMustBeUint")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "MaxStartRetriesMustBeUint")
 		}
 		maxStartRetriesPtr = &maxStartRetries
 	}
@@ -346,7 +273,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["autoCreateMapping"] != nil {
 		autoCreateMapping, err = tkVoUtil.InterfaceToBool(untrustedInput["autoCreateMapping"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, "AutoCreateMappingMustBeBool")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "AutoCreateMappingMustBeBool")
 		}
 	}
 
@@ -354,7 +281,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["mappingHostname"] != nil {
 		mappingHostname, err := tkValueObject.NewFqdn(untrustedInput["mappingHostname"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		mappingHostnamePtr = &mappingHostname
 	}
@@ -363,7 +290,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["mappingPath"] != nil {
 		mappingPath, err := valueObject.NewMappingPath(untrustedInput["mappingPath"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		mappingPathPtr = &mappingPath
 	}
@@ -374,7 +301,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 			untrustedInput["mappingUpgradeInsecureRequests"],
 		)
 		if err != nil {
-			return NewLiaisonOutput(UserError, "InvalidMappingUpgradeInsecureRequests")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "InvalidMappingUpgradeInsecureRequests")
 		}
 		mappingUpgradeInsecureRequestsPtr = &mappingUpgradeInsecureRequests
 	}
@@ -383,7 +310,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -391,7 +318,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -479,10 +406,10 @@ func (liaison *ServicesLiaison) CreateInstallable(
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
-			return NewLiaisonOutput(InfraError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 		}
 
-		return NewLiaisonOutput(Created, "CreateInstallableServiceScheduled")
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "CreateInstallableServiceScheduled")
 	}
 
 	createDto := dto.NewCreateInstallableService(
@@ -499,41 +426,41 @@ func (liaison *ServicesLiaison) CreateInstallable(
 		liaison.mappingCmdRepo, liaison.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Created, "InstallableServiceCreated")
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "InstallableServiceCreated")
 }
 
 func (liaison *ServicesLiaison) CreateCustom(
 	untrustedInput map[string]any,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"name", "type", "startCmd"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	name, err := valueObject.NewServiceName(untrustedInput["name"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	svcType, err := valueObject.NewServiceType(untrustedInput["type"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	startCmd, err := tkValueObject.NewUnixCommand(untrustedInput["startCmd"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	var versionPtr *valueObject.ServiceVersion
 	if untrustedInput["version"] != nil {
 		version, err := valueObject.NewServiceVersion(untrustedInput["version"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		versionPtr = &version
 	}
@@ -542,7 +469,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["execUser"] != nil {
 		execUser, err := tkValueObject.NewUnixUsername(untrustedInput["execUser"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		execUserPtr = &execUser
 	}
@@ -552,7 +479,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 		var assertOk bool
 		envs, assertOk = untrustedInput["envs"].([]valueObject.ServiceEnv)
 		if !assertOk {
-			return NewLiaisonOutput(UserError, "InvalidServiceEnvs")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "InvalidServiceEnvs")
 		}
 	}
 
@@ -561,7 +488,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 		var assertOk bool
 		portBindings, assertOk = untrustedInput["portBindings"].([]valueObject.PortBinding)
 		if !assertOk {
-			return NewLiaisonOutput(UserError, "InvalidPortBindings")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "InvalidPortBindings")
 		}
 	}
 
@@ -569,7 +496,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["autoStart"] != nil {
 		autoStart, err := tkVoUtil.InterfaceToBool(untrustedInput["autoStart"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, "AutoStartMustBeBool")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "AutoStartMustBeBool")
 		}
 		autoStartPtr = &autoStart
 	}
@@ -578,7 +505,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["timeoutStartSecs"] != nil {
 		timeoutStartSecs, err := tkVoUtil.InterfaceToUint(untrustedInput["timeoutStartSecs"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, "TimeoutStartSecsMustBeUint")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "TimeoutStartSecsMustBeUint")
 		}
 		timeoutStartSecsPtr = &timeoutStartSecs
 	}
@@ -589,7 +516,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 			untrustedInput["autoRestart"],
 		)
 		if err != nil {
-			return NewLiaisonOutput(UserError, "AutoRestartMustBeBool")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "AutoRestartMustBeBool")
 		}
 		autoRestartPtr = &autoRestart
 	}
@@ -598,7 +525,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["maxStartRetries"] != nil {
 		maxStartRetries, err := tkVoUtil.InterfaceToUint(untrustedInput["maxStartRetries"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, "MaxStartRetriesMustBeUint")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "MaxStartRetriesMustBeUint")
 		}
 		maxStartRetriesPtr = &maxStartRetries
 	}
@@ -607,7 +534,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["logOutputPath"] != nil {
 		logOutputPath, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["logOutputPath"], false)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		logOutputPathPtr = &logOutputPath
 	}
@@ -616,7 +543,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["logErrorPath"] != nil {
 		logErrorPath, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["logErrorPath"], false)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		logErrorPathPtr = &logErrorPath
 	}
@@ -625,7 +552,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["avatarUrl"] != nil {
 		avatarUrl, err := tkValueObject.NewUrl(untrustedInput["avatarUrl"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		avatarUrlPtr = &avatarUrl
 	}
@@ -634,7 +561,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["autoCreateMapping"] != nil {
 		autoCreateMapping, err = tkVoUtil.InterfaceToBool(untrustedInput["autoCreateMapping"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, "AutoCreateMappingMustBeBool")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "AutoCreateMappingMustBeBool")
 		}
 	}
 
@@ -642,7 +569,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["mappingHostname"] != nil {
 		mappingHostname, err := tkValueObject.NewFqdn(untrustedInput["mappingHostname"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		mappingHostnamePtr = &mappingHostname
 	}
@@ -651,7 +578,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["mappingPath"] != nil {
 		mappingPath, err := valueObject.NewMappingPath(untrustedInput["mappingPath"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		mappingPathPtr = &mappingPath
 	}
@@ -662,7 +589,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 			untrustedInput["mappingUpgradeInsecureRequests"],
 		)
 		if err != nil {
-			return NewLiaisonOutput(UserError, "InvalidMappingUpgradeInsecureRequests")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "InvalidMappingUpgradeInsecureRequests")
 		}
 		mappingUpgradeInsecureRequestsPtr = &mappingUpgradeInsecureRequests
 	}
@@ -671,7 +598,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -679,7 +606,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -698,29 +625,29 @@ func (liaison *ServicesLiaison) CreateCustom(
 		liaison.mappingCmdRepo, liaison.activityRecordCmdRepo, createCustomDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Created, "CustomServiceCreated")
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "CustomServiceCreated")
 }
 
-func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"name"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	name, err := valueObject.NewServiceName(untrustedInput["name"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	var typePtr *valueObject.ServiceType
 	if untrustedInput["type"] != nil {
 		svcType, err := valueObject.NewServiceType(untrustedInput["type"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		typePtr = &svcType
 	}
@@ -729,7 +656,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["startCmd"] != nil {
 		startCmd, err := tkValueObject.NewUnixCommand(untrustedInput["startCmd"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		startCmdPtr = &startCmd
 	}
@@ -738,7 +665,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["status"] != nil {
 		status, err := valueObject.NewServiceStatus(untrustedInput["status"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		statusPtr = &status
 	}
@@ -747,7 +674,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["version"] != nil {
 		version, err := valueObject.NewServiceVersion(untrustedInput["version"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		versionPtr = &version
 	}
@@ -756,7 +683,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["envs"] != nil {
 		rawEnvs, assertOk := untrustedInput["envs"].([]string)
 		if !assertOk {
-			return NewLiaisonOutput(UserError, "EnvsMustBeStringArray")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "EnvsMustBeStringArray")
 		}
 
 		for _, rawEnv := range rawEnvs {
@@ -773,7 +700,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if _, exists := untrustedInput["portBindings"]; exists {
 		rawPortBindings, assertOk := untrustedInput["portBindings"].([]string)
 		if !assertOk {
-			return NewLiaisonOutput(UserError, "PortBindingsMustBeStringArray")
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "PortBindingsMustBeStringArray")
 		}
 
 		for _, rawPortBinding := range rawPortBindings {
@@ -794,7 +721,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["startupFile"] != nil {
 		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["startupFile"], false)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		startupFilePtr = &startupFile
 	}
@@ -803,7 +730,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["autoStart"] != nil {
 		autoStart, err := tkVoUtil.InterfaceToBool(untrustedInput["autoStart"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		autoStartPtr = &autoStart
 	}
@@ -812,7 +739,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["autoRestart"] != nil {
 		autoRestart, err := tkVoUtil.InterfaceToBool(untrustedInput["autoRestart"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		autoRestartPtr = &autoRestart
 	}
@@ -821,7 +748,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["timeoutStartSecs"] != nil {
 		timeoutStartSecs, err := tkVoUtil.InterfaceToUint(untrustedInput["timeoutStartSecs"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		timeoutStartSecsPtr = &timeoutStartSecs
 	}
@@ -830,7 +757,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["maxStartRetries"] != nil {
 		maxStartRetries, err := tkVoUtil.InterfaceToUint(untrustedInput["maxStartRetries"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		maxStartRetriesPtr = &maxStartRetries
 	}
@@ -839,7 +766,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["logOutputPath"] != nil {
 		logOutputPath, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["logOutputPath"], false)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		logOutputPathPtr = &logOutputPath
 	}
@@ -848,7 +775,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["logErrorPath"] != nil {
 		logErrorPath, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["logErrorPath"], false)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		logErrorPathPtr = &logErrorPath
 	}
@@ -857,7 +784,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["avatarUrl"] != nil {
 		avatarUrl, err := tkValueObject.NewUrl(untrustedInput["avatarUrl"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		avatarUrlPtr = &avatarUrl
 	}
@@ -866,7 +793,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -874,7 +801,7 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -890,29 +817,29 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) LiaisonOut
 		liaison.mappingCmdRepo, liaison.activityRecordCmdRepo, updateDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Success, "ServiceUpdated")
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, "ServiceUpdated")
 }
 
-func (liaison *ServicesLiaison) Delete(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *ServicesLiaison) Delete(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"name"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	name, err := valueObject.NewServiceName(untrustedInput["name"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -920,7 +847,7 @@ func (liaison *ServicesLiaison) Delete(untrustedInput map[string]any) LiaisonOut
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -931,8 +858,8 @@ func (liaison *ServicesLiaison) Delete(untrustedInput map[string]any) LiaisonOut
 		liaison.mappingCmdRepo, liaison.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Success, "ServiceDeleted")
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, "ServiceDeleted")
 }

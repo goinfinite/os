@@ -1,17 +1,15 @@
 package liaison
 
 import (
-	"errors"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	cronInfra "github.com/goinfinite/os/src/infra/cron"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 )
 
 type CronLiaison struct {
@@ -30,12 +28,12 @@ func NewCronLiaison(
 	}
 }
 
-func (liaison *CronLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *CronLiaison) Read(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	var idPtr *valueObject.CronId
 	if untrustedInput["id"] != nil {
 		id, err := valueObject.NewCronId(untrustedInput["id"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		idPtr = &id
 	}
@@ -44,90 +42,54 @@ func (liaison *CronLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
 	if untrustedInput["comment"] != nil {
 		slug, err := valueObject.NewCronComment(untrustedInput["comment"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
 		}
 		commentPtr = &slug
 	}
 
-	paginationDto := useCase.CronsDefaultPagination
-	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := tkVoUtil.InterfaceToUint32(untrustedInput["pageNumber"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
-		}
-		paginationDto.PageNumber = pageNumber
-	}
-
-	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := tkVoUtil.InterfaceToUint16(untrustedInput["itemsPerPage"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
-		}
-		paginationDto.ItemsPerPage = itemsPerPage
-	}
-
-	if untrustedInput["sortBy"] != nil {
-		sortBy, err := tkValueObject.NewPaginationSortBy(untrustedInput["sortBy"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortBy = &sortBy
-	}
-
-	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := tkValueObject.NewPaginationSortDirection(
-			untrustedInput["sortDirection"],
-		)
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortDirection = &sortDirection
-	}
-
-	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := tkValueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.LastSeenId = &lastSeenId
+	requestPagination, err := tkPresentation.PaginationParser(
+		useCase.CronsDefaultPagination, untrustedInput,
+	)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	readDto := dto.ReadCronsRequest{
-		Pagination:  paginationDto,
+		Pagination:  requestPagination,
 		CronId:      idPtr,
 		CronComment: commentPtr,
 	}
 
 	cronsList, err := useCase.ReadCrons(liaison.cronQueryRepo, readDto)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Success, cronsList)
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, cronsList)
 }
 
-func (liaison *CronLiaison) Create(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *CronLiaison) Create(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"schedule", "command"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	schedule, err := valueObject.NewCronSchedule(untrustedInput["schedule"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	command, err := tkValueObject.NewUnixCommand(untrustedInput["command"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	var commentPtr *valueObject.CronComment
 	if untrustedInput["comment"] != nil && untrustedInput["comment"] != "" {
 		comment, err := valueObject.NewCronComment(untrustedInput["comment"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		commentPtr = &comment
 	}
@@ -136,7 +98,7 @@ func (liaison *CronLiaison) Create(untrustedInput map[string]any) LiaisonOutput 
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -144,7 +106,7 @@ func (liaison *CronLiaison) Create(untrustedInput map[string]any) LiaisonOutput 
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -156,29 +118,29 @@ func (liaison *CronLiaison) Create(untrustedInput map[string]any) LiaisonOutput 
 		liaison.cronCmdRepo, liaison.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Created, "CronCreated")
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "CronCreated")
 }
 
-func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *CronLiaison) Update(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"id"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	id, err := valueObject.NewCronId(untrustedInput["id"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 	}
 
 	var schedulePtr *valueObject.CronSchedule
 	if untrustedInput["schedule"] != nil {
 		schedule, err := valueObject.NewCronSchedule(untrustedInput["schedule"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		schedulePtr = &schedule
 	}
@@ -187,7 +149,7 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 	if untrustedInput["command"] != nil {
 		command, err := tkValueObject.NewUnixCommand(untrustedInput["command"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		commandPtr = &command
 	}
@@ -202,7 +164,7 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 	default:
 		comment, err := valueObject.NewCronComment(commentValue)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		commentPtr = &comment
 	}
@@ -211,7 +173,7 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -219,7 +181,7 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -233,18 +195,18 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) LiaisonOutput 
 		updateDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Success, "CronUpdated")
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, "CronUpdated")
 }
 
-func (liaison *CronLiaison) Delete(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *CronLiaison) Delete(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	var idPtr *valueObject.CronId
 	if untrustedInput["cronId"] != nil {
 		id, err := valueObject.NewCronId(untrustedInput["cronId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		idPtr = &id
 	}
@@ -253,7 +215,7 @@ func (liaison *CronLiaison) Delete(untrustedInput map[string]any) LiaisonOutput 
 	if untrustedInput["comment"] != nil {
 		comment, err := valueObject.NewCronComment(untrustedInput["comment"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 		commentPtr = &comment
 	}
@@ -264,7 +226,7 @@ func (liaison *CronLiaison) Delete(untrustedInput map[string]any) LiaisonOutput 
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -272,7 +234,7 @@ func (liaison *CronLiaison) Delete(untrustedInput map[string]any) LiaisonOutput 
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
 		}
 	}
 
@@ -285,8 +247,8 @@ func (liaison *CronLiaison) Delete(untrustedInput map[string]any) LiaisonOutput 
 		deleteDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
 	}
 
-	return NewLiaisonOutput(Success, "CronDeleted")
+	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, "CronDeleted")
 }
