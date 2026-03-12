@@ -2,13 +2,30 @@
 
 ```log
 0.2.8 - 2026/03/XX
-fix: use installedServiceName for update dir
-fix: use tk input reader for api
-chore: update go and deps
-chore: add context to every src/ dir
-refactor: use goinfinite/tk and add context files
+refactor(liaison): migrate manual pagination to tk PaginationParser
+refactor(cli): migrate to tk SimpleCliResponseRenderer
+refactor(api): migrate to tk LiaisonApiResponseEmitter
+refactor(liaison): migrate LiaisonOutput to tk LiaisonResponse
+fix: get key path via replace
+fix: show error on ssl list error
 fix: add primaryKeyColumn to PaginationQueryBuilder calls
 fix: sort services by name in ReadFirstInstalledItem
+refactor(valueObject): eliminate pure alias files with direct tk usage
+feat(files): add file privileges normalizer with ownership resolution
+fix(services): use name sort for installable services pagination
+refactor(infra): replace PaginationQueryBuilder alias with tk direct usage
+test(auth): add security tests with repo constructors
+feat(auth): add jwt v5 algorithm validation and api key hash security
+refactor: remove obsolete migrateOperatorAccountIdToSri
+refactor: use ActivityRecordLevelSecurity const and inline NewSriAccount
+refactor: delete presentation wrappers and use tk directly
+refactor: migrate infra consumers from wrappers to tk directly
+fix: replace panic with ResponseWrapper in files API controller
+refactor: add fileClerk field to repo structs for locality of behavior
+refactor: eliminate tk type aliases from all layers
+chore: add context to every src/ dir
+fix: use tk input reader for api
+chore: update go and deps
 
 0.2.7.1 - 2025/10/31
 fix: remove / from database and runtime hx-get/post to respect base href
