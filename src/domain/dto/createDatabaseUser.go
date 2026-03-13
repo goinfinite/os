@@ -8,7 +8,7 @@ import (
 type CreateDatabaseUser struct {
 	DatabaseName      valueObject.DatabaseName        `json:"dbName"`
 	Username          valueObject.DatabaseUsername     `json:"username"`
-	Password          tkValueObject.Password          `json:"password"`
+	Password          tkValueObject.WeakPassword      `json:"password"`
 	Privileges        []valueObject.DatabasePrivilege `json:"privileges"`
 	OperatorAccountId tkValueObject.AccountId         `json:"-"`
 	OperatorIpAddress tkValueObject.IpAddress         `json:"-"`
@@ -17,7 +17,7 @@ type CreateDatabaseUser struct {
 func NewCreateDatabaseUser(
 	dbName valueObject.DatabaseName,
 	username valueObject.DatabaseUsername,
-	password tkValueObject.Password,
+	password tkValueObject.WeakPassword,
 	privileges []valueObject.DatabasePrivilege,
 	operatorAccountId tkValueObject.AccountId,
 	operatorIpAddress tkValueObject.IpAddress,

@@ -24,7 +24,7 @@ func TestMysqlDatabaseCmdRepo(t *testing.T) {
 
 	dbName, _ := valueObject.NewDatabaseName("testing")
 	dbUsername, _ := valueObject.NewDatabaseUsername("testing")
-	dbPassword, _ := tkValueObject.NewPassword("Testing@1")
+	dbPassword, _ := tkValueObject.NewWeakPassword("Testing@1")
 	dbPrivilege, _ := valueObject.NewDatabasePrivilege("ALL")
 	dbPrivileges := []valueObject.DatabasePrivilege{dbPrivilege}
 

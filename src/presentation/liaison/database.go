@@ -336,7 +336,7 @@ func (liaison *DatabaseLiaison) CreateUser(
 		)
 	}
 
-	dbPassword, err := tkValueObject.NewPassword(untrustedInput["password"])
+	dbPassword, err := tkValueObject.NewWeakPassword(untrustedInput["password"])
 	if err != nil {
 		return tkPresentation.NewLiaisonResponseNoMessage(
 			tkPresentation.LiaisonResponseStatusUserError,
