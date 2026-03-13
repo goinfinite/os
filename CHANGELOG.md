@@ -2,6 +2,8 @@
 
 ```log
 0.2.8 - 2026/03/XX
+fix(database): use WeakPassword for database user creation
+fix(api): read operatorAccountId from echo context in file endpoints
 refactor(liaison): migrate manual pagination to tk PaginationParser
 refactor(cli): migrate to tk SimpleCliResponseRenderer
 refactor(api): migrate to tk LiaisonApiResponseEmitter
