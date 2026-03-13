@@ -189,9 +189,11 @@ func (controller *FilesController) Create(echoContext echo.Context) error {
 		}
 	}
 
-	operatorAccountId, err := tkValueObject.NewAccountId(
-		requestData["operatorAccountId"],
-	)
+	rawAccountId := requestData["operatorAccountId"]
+	if rawAccountId == nil {
+		rawAccountId = echoContext.Get("operatorAccountId")
+	}
+	operatorAccountId, err := tkValueObject.NewAccountId(rawAccountId)
 	if err != nil {
 		return tkPresentation.LiaisonApiResponseEmitter(
 			echoContext,
@@ -402,9 +404,11 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 		shouldFixPermissionsPtr = &shouldFixPermissions
 	}
 
-	operatorAccountId, err := tkValueObject.NewAccountId(
-		requestData["operatorAccountId"],
-	)
+	rawAccountId := requestData["operatorAccountId"]
+	if rawAccountId == nil {
+		rawAccountId = echoContext.Get("operatorAccountId")
+	}
+	operatorAccountId, err := tkValueObject.NewAccountId(rawAccountId)
 	if err != nil {
 		return tkPresentation.LiaisonApiResponseEmitter(
 			echoContext,
@@ -536,9 +540,11 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 		}
 	}
 
-	operatorAccountId, err := tkValueObject.NewAccountId(
-		requestData["operatorAccountId"],
-	)
+	rawAccountId := requestData["operatorAccountId"]
+	if rawAccountId == nil {
+		rawAccountId = echoContext.Get("operatorAccountId")
+	}
+	operatorAccountId, err := tkValueObject.NewAccountId(rawAccountId)
 	if err != nil {
 		return tkPresentation.LiaisonApiResponseEmitter(
 			echoContext,
@@ -646,9 +652,11 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 		}
 	}
 
-	operatorAccountId, err := tkValueObject.NewAccountId(
-		requestData["operatorAccountId"],
-	)
+	rawAccountId := requestData["operatorAccountId"]
+	if rawAccountId == nil {
+		rawAccountId = echoContext.Get("operatorAccountId")
+	}
+	operatorAccountId, err := tkValueObject.NewAccountId(rawAccountId)
 	if err != nil {
 		return tkPresentation.LiaisonApiResponseEmitter(
 			echoContext,
@@ -770,9 +778,11 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 		compressionUnixTypePtr = &compressionUnixType
 	}
 
-	operatorAccountId, err := tkValueObject.NewAccountId(
-		requestData["operatorAccountId"],
-	)
+	rawAccountId := requestData["operatorAccountId"]
+	if rawAccountId == nil {
+		rawAccountId = echoContext.Get("operatorAccountId")
+	}
+	operatorAccountId, err := tkValueObject.NewAccountId(rawAccountId)
 	if err != nil {
 		return tkPresentation.LiaisonApiResponseEmitter(
 			echoContext,
@@ -876,9 +886,11 @@ func (controller *FilesController) Extract(echoContext echo.Context) error {
 		)
 	}
 
-	operatorAccountId, err := tkValueObject.NewAccountId(
-		requestData["operatorAccountId"],
-	)
+	rawAccountId := requestData["operatorAccountId"]
+	if rawAccountId == nil {
+		rawAccountId = echoContext.Get("operatorAccountId")
+	}
+	operatorAccountId, err := tkValueObject.NewAccountId(rawAccountId)
 	if err != nil {
 		return tkPresentation.LiaisonApiResponseEmitter(
 			echoContext,
@@ -981,9 +993,11 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 		filesToUpload = append(filesToUpload, fileStreamHandler)
 	}
 
-	operatorAccountId, err := tkValueObject.NewAccountId(
-		requestData["operatorAccountId"],
-	)
+	rawAccountId := requestData["operatorAccountId"]
+	if rawAccountId == nil {
+		rawAccountId = echoContext.Get("operatorAccountId")
+	}
+	operatorAccountId, err := tkValueObject.NewAccountId(rawAccountId)
 	if err != nil {
 		return tkPresentation.LiaisonApiResponseEmitter(
 			echoContext,
