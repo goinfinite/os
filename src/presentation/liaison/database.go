@@ -35,34 +35,52 @@ func (liaison *DatabaseLiaison) Read(untrustedInput map[string]any) tkPresentati
 	requiredParams := []string{"dbType"}
 	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbType, err := valueObject.NewDatabaseType(untrustedInput["dbType"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	serviceName, err := valueObject.NewServiceName(dbType.String())
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, sharedHelper.ServiceUnavailableError)
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			sharedHelper.ServiceUnavailableError,
+		)
 	}
 
 	requestPagination, err := tkPresentation.PaginationParser(
 		useCase.DatabasesDefaultPagination, untrustedInput,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	var databaseNamePtr *valueObject.DatabaseName
 	if untrustedInput["name"] != nil {
 		databaseName, err := valueObject.NewDatabaseName(untrustedInput["name"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 		databaseNamePtr = &databaseName
 	}
@@ -71,7 +89,10 @@ func (liaison *DatabaseLiaison) Read(untrustedInput map[string]any) tkPresentati
 	if untrustedInput["username"] != nil {
 		username, err := valueObject.NewDatabaseUsername(untrustedInput["username"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 		usernamePtr = &username
 	}
@@ -87,42 +108,66 @@ func (liaison *DatabaseLiaison) Read(untrustedInput map[string]any) tkPresentati
 
 	responseDto, err := useCase.ReadDatabases(databaseQueryRepo, requestDto)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, responseDto)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess,
+		responseDto,
+	)
 }
 
 func (liaison *DatabaseLiaison) Create(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"dbType", "dbName"}
 	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbType, err := valueObject.NewDatabaseType(untrustedInput["dbType"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbName, err := valueObject.NewDatabaseName(untrustedInput["dbName"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	serviceName, err := valueObject.NewServiceName(dbType.String())
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, sharedHelper.ServiceUnavailableError)
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			sharedHelper.ServiceUnavailableError,
+		)
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 	}
 
@@ -130,7 +175,10 @@ func (liaison *DatabaseLiaison) Create(untrustedInput map[string]any) tkPresenta
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 	}
 
@@ -143,42 +191,66 @@ func (liaison *DatabaseLiaison) Create(untrustedInput map[string]any) tkPresenta
 		databaseQueryRepo, databaseCmdRepo, liaison.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "DatabaseCreated")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusCreated,
+		"DatabaseCreated",
+	)
 }
 
 func (liaison *DatabaseLiaison) Delete(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"dbType", "dbName"}
 	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbType, err := valueObject.NewDatabaseType(untrustedInput["dbType"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	serviceName, err := valueObject.NewServiceName(dbType.String())
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, sharedHelper.ServiceUnavailableError)
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			sharedHelper.ServiceUnavailableError,
+		)
 	}
 
 	dbName, err := valueObject.NewDatabaseName(untrustedInput["dbName"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 	}
 
@@ -186,7 +258,10 @@ func (liaison *DatabaseLiaison) Delete(untrustedInput map[string]any) tkPresenta
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 	}
 
@@ -199,10 +274,16 @@ func (liaison *DatabaseLiaison) Delete(untrustedInput map[string]any) tkPresenta
 		databaseQueryRepo, databaseCmdRepo, liaison.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, "DatabaseDeleted")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess,
+		"DatabaseDeleted",
+	)
 }
 
 func (liaison *DatabaseLiaison) CreateUser(
@@ -211,35 +292,56 @@ func (liaison *DatabaseLiaison) CreateUser(
 	requiredParams := []string{"dbType", "dbName", "username", "password"}
 	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbType, err := valueObject.NewDatabaseType(untrustedInput["dbType"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	serviceName, err := valueObject.NewServiceName(dbType.String())
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, sharedHelper.ServiceUnavailableError)
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			sharedHelper.ServiceUnavailableError,
+		)
 	}
 
 	dbName, err := valueObject.NewDatabaseName(untrustedInput["dbName"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbUsername, err := valueObject.NewDatabaseUsername(untrustedInput["username"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbPassword, err := tkValueObject.NewPassword(untrustedInput["password"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbPrivileges := []valueObject.DatabasePrivilege{
@@ -249,7 +351,10 @@ func (liaison *DatabaseLiaison) CreateUser(
 		var assertOk bool
 		dbPrivileges, assertOk = untrustedInput["privileges"].([]valueObject.DatabasePrivilege)
 		if !assertOk {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "InvalidDatabasePrivileges")
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				"InvalidDatabasePrivileges",
+			)
 		}
 	}
 
@@ -257,7 +362,10 @@ func (liaison *DatabaseLiaison) CreateUser(
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 	}
 
@@ -265,7 +373,10 @@ func (liaison *DatabaseLiaison) CreateUser(
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 	}
 
@@ -281,10 +392,16 @@ func (liaison *DatabaseLiaison) CreateUser(
 		databaseQueryRepo, databaseCmdRepo, liaison.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "DatabaseUserCreated")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusCreated,
+		"DatabaseUserCreated",
+	)
 }
 
 func (liaison *DatabaseLiaison) DeleteUser(
@@ -293,37 +410,58 @@ func (liaison *DatabaseLiaison) DeleteUser(
 	requiredParams := []string{"dbType", "dbName", "dbUser"}
 	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbType, err := valueObject.NewDatabaseType(untrustedInput["dbType"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	serviceName, err := valueObject.NewServiceName(dbType.String())
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, sharedHelper.ServiceUnavailableError)
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			sharedHelper.ServiceUnavailableError,
+		)
 	}
 
 	dbName, err := valueObject.NewDatabaseName(untrustedInput["dbName"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	dbUsername, err := valueObject.NewDatabaseUsername(untrustedInput["dbUser"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			err.Error(),
+		)
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 	}
 
@@ -331,7 +469,10 @@ func (liaison *DatabaseLiaison) DeleteUser(
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
 		}
 	}
 
@@ -346,8 +487,14 @@ func (liaison *DatabaseLiaison) DeleteUser(
 		databaseQueryRepo, databaseCmdRepo, liaison.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError,
+			err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, "DatabaseUserDeleted")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess,
+		"DatabaseUserDeleted",
+	)
 }

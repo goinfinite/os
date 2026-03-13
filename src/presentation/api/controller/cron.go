@@ -42,7 +42,9 @@ func (controller *CronController) Read(echoContext echo.Context) error {
 		return requestParsingErr
 	}
 
-	return tkPresentation.LiaisonApiResponseEmitter(echoContext, controller.cronLiaison.Read(requestData))
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.cronLiaison.Read(requestData),
+	)
 }
 
 // CreateCron    godoc

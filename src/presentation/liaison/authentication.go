@@ -33,22 +33,30 @@ func (liaison *AuthenticationLiaison) Login(
 	requiredParams := []string{"username", "password", "operatorIpAddress"}
 	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	username, err := valueObject.NewUsername(untrustedInput["username"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	password, err := tkValueObject.NewWeakPassword(untrustedInput["password"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	operatorIpAddress, err := tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	dto := dto.NewCreateSessionToken(username, password, operatorIpAddress)
@@ -68,8 +76,12 @@ func (liaison *AuthenticationLiaison) Login(
 		activityRecordCmdRepo, dto,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, accessToken)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, accessToken,
+	)
 }

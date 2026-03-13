@@ -107,7 +107,13 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 	}
 
 	if requestData["virtualHostsHostnames"] == nil {
-		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "VirtualHostHostnameIsRequired"))
+		return tkPresentation.LiaisonApiResponseEmitter(
+			echoContext,
+			tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				"VirtualHostHostnameIsRequired",
+			),
+		)
 	}
 
 	requestData["virtualHostsHostnames"] = tkPresentation.StringSliceValueObjectParser(
@@ -121,7 +127,13 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 			requestData["encodedCertificate"],
 		)
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "CannotDecodeSslCertificateContent"))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError,
+					"CannotDecodeSslCertificateContent",
+				),
+			)
 		}
 	}
 
@@ -130,7 +142,13 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 			requestData["encodedKey"],
 		)
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "CannotDecodeSslKeyContent"))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError,
+					"CannotDecodeSslKeyContent",
+				),
+			)
 		}
 	}
 
@@ -139,7 +157,13 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 			requestData["encodedChainCertificates"],
 		)
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "CannotDecodeSslChainCertificatesContent"))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError,
+					"CannotDecodeSslChainCertificatesContent",
+				),
+			)
 		}
 	}
 

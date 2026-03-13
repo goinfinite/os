@@ -47,7 +47,9 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	if untrustedInput["id"] != nil {
 		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		idPtr = &id
 	}
@@ -56,7 +58,9 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	if untrustedInput["slug"] != nil {
 		slug, err := valueObject.NewMarketplaceItemSlug(untrustedInput["slug"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		slugPtr = &slug
 	}
@@ -65,7 +69,9 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	if untrustedInput["name"] != nil {
 		name, err := valueObject.NewMarketplaceItemName(untrustedInput["name"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		namePtr = &name
 	}
@@ -74,7 +80,9 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	if untrustedInput["type"] != nil {
 		itemType, err := valueObject.NewMarketplaceItemType(untrustedInput["type"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		typePtr = &itemType
 	}
@@ -83,7 +91,9 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 		useCase.MarketplaceDefaultPagination, untrustedInput,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	readDto := dto.ReadMarketplaceCatalogItemsRequest{
@@ -96,10 +106,14 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 
 	itemsList, err := useCase.ReadMarketplaceCatalogItems(liaison.marketplaceQueryRepo, readDto)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, itemsList)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, itemsList,
+	)
 }
 
 func (liaison *MarketplaceLiaison) InstallCatalogItem(
@@ -108,13 +122,17 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 ) tkPresentation.LiaisonResponse {
 	hostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
 	if untrustedInput["hostname"] != nil {
 		hostname, err = tkValueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -122,7 +140,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	if untrustedInput["id"] != nil {
 		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 		idPtr = &id
 	}
@@ -131,7 +151,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	if untrustedInput["slug"] != nil {
 		slug, err := valueObject.NewMarketplaceItemSlug(untrustedInput["slug"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 		slugPtr = &slug
 	}
@@ -140,7 +162,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	if untrustedInput["urlPath"] != nil {
 		urlPath, err := valueObject.NewUrlPath(untrustedInput["urlPath"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 		urlPathPtr = &urlPath
 	}
@@ -150,7 +174,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 		var assertOk bool
 		dataFields, assertOk = untrustedInput["dataFields"].([]valueObject.MarketplaceInstallableItemDataField)
 		if !assertOk {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, "InvalidDataFields")
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, "InvalidDataFields",
+			)
 		}
 	}
 
@@ -192,17 +218,24 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+			)
 		}
 
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "MarketplaceCatalogItemInstallationScheduled")
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusCreated,
+			"MarketplaceCatalogItemInstallationScheduled",
+		)
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -210,7 +243,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -226,10 +261,14 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 		liaison.activityRecordCmdRepo, installDto,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "MarketplaceCatalogItemInstalled")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusCreated, "MarketplaceCatalogItemInstalled",
+	)
 }
 
 func (liaison *MarketplaceLiaison) ReadInstalledItems(
@@ -239,7 +278,9 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	if untrustedInput["id"] != nil {
 		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		idPtr = &id
 	}
@@ -248,7 +289,9 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	if untrustedInput["hostname"] != nil {
 		hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		hostnamePtr = &hostname
 	}
@@ -257,7 +300,9 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	if untrustedInput["type"] != nil {
 		itemType, err := valueObject.NewMarketplaceItemType(untrustedInput["type"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		typePtr = &itemType
 	}
@@ -268,7 +313,9 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 			untrustedInput["installationUuid"],
 		)
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		installationUuidPtr = &installationUuid
 	}
@@ -277,7 +324,9 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 		useCase.MarketplaceDefaultPagination, untrustedInput,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	readDto := dto.ReadMarketplaceInstalledItemsRequest{
@@ -292,10 +341,14 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 		liaison.marketplaceQueryRepo, readDto,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, itemsList)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, itemsList,
+	)
 }
 
 func (liaison *MarketplaceLiaison) DeleteInstalledItem(
@@ -306,12 +359,16 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 
 	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	installedId, err := valueObject.NewMarketplaceItemId(untrustedInput["installedId"])
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	shouldUninstallServices := true
@@ -328,7 +385,9 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 	if untrustedInput["operatorAccountId"] != nil {
 		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -336,7 +395,9 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 	if untrustedInput["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -364,10 +425,15 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+			)
 		}
 
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "MarketplaceCatalogItemDeletionScheduled")
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusCreated,
+			"MarketplaceCatalogItemDeletionScheduled",
+		)
 	}
 
 	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
@@ -385,8 +451,12 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 		liaison.activityRecordCmdRepo, deleteMarketplaceInstalledItem,
 	)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, "MarketplaceInstalledItemDeleted")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, "MarketplaceInstalledItemDeleted",
+	)
 }

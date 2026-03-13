@@ -255,7 +255,12 @@ func (controller *ServicesController) CreateInstallable(echoContext echo.Context
 	if requestData["envs"] != nil {
 		envs, err = controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
 	requestData["envs"] = envs
@@ -266,7 +271,12 @@ func (controller *ServicesController) CreateInstallable(echoContext echo.Context
 			requestData["portBindings"],
 		)
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
 	requestData["portBindings"] = portBindings
@@ -299,7 +309,12 @@ func (controller *ServicesController) CreateCustom(echoContext echo.Context) err
 	if requestData["envs"] != nil {
 		envs, err = controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
 	requestData["envs"] = envs
@@ -310,7 +325,12 @@ func (controller *ServicesController) CreateCustom(echoContext echo.Context) err
 			requestData["portBindings"],
 		)
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
 	requestData["portBindings"] = portBindings
@@ -340,7 +360,12 @@ func (controller *ServicesController) Update(echoContext echo.Context) error {
 	if requestData["envs"] != nil {
 		rawEnvs, err := controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 		requestData["envs"] = rawEnvs
 	}
@@ -350,7 +375,12 @@ func (controller *ServicesController) Update(echoContext echo.Context) error {
 			requestData["portBindings"],
 		)
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 		requestData["portBindings"] = rawPortBindings
 	}

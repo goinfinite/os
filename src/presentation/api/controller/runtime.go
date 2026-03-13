@@ -158,7 +158,12 @@ func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) 
 	if _, exists := requestData["modules"]; exists {
 		phpModules, err := controller.parsePhpModules(requestData["modules"])
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err,
+				),
+			)
 		}
 		requestData["modules"] = phpModules
 	}
@@ -166,7 +171,12 @@ func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) 
 	if _, exists := requestData["settings"]; exists {
 		phpSettings, err := controller.parsePhpSettings(requestData["settings"])
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err,
+				),
+			)
 		}
 		requestData["settings"] = phpSettings
 	}

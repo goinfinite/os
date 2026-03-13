@@ -24,8 +24,12 @@ func (liaison *O11yLiaison) ReadOverview() tkPresentation.LiaisonResponse {
 
 	o11yOverview, err := useCase.ReadO11yOverview(o11yQueryRepo, true)
 	if err != nil {
-		return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusSuccess, o11yOverview)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, o11yOverview,
+	)
 }

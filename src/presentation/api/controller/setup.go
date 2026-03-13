@@ -51,12 +51,22 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 
 	username, err := valueObject.NewUsername(requestBody["username"])
 	if err != nil {
-		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+		return tkPresentation.LiaisonApiResponseEmitter(
+			echoContext,
+			tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			),
+		)
 	}
 
 	password, err := tkValueObject.NewPassword(requestBody["password"])
 	if err != nil {
-		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+		return tkPresentation.LiaisonApiResponseEmitter(
+			echoContext,
+			tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			),
+		)
 	}
 
 	isSuperAdmin := false
@@ -67,7 +77,12 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 			requestBody["operatorIpAddress"],
 		)
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
 
@@ -80,8 +95,18 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 		accountQueryRepo, accountCmdRepo, activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusInfraError, err.Error()))
+		return tkPresentation.LiaisonApiResponseEmitter(
+			echoContext,
+			tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+			),
+		)
 	}
 
-	return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusCreated, "FirstAccountCreated"))
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext,
+		tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusCreated, "FirstAccountCreated",
+		),
+	)
 }

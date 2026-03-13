@@ -85,7 +85,12 @@ func (controller *ScheduledTaskController) Read(echoContext echo.Context) error 
 	if _, exists := requestData["taskTags"]; exists {
 		taskTags, err := controller.parseTaskTags(requestData["taskTags"])
 		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(echoContext, tkPresentation.NewLiaisonResponseNoMessage(tkPresentation.LiaisonResponseStatusUserError, err.Error()))
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 		requestData["taskTags"] = taskTags
 	}
