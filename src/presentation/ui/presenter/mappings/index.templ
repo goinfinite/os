@@ -154,9 +154,9 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 							InnerLabel:           vhostType,
 						})
 					</div>
-					if len(vhostWithMappings.AliasesHostnames) > 0 {
-						<div>
-							<p class="text-uppercase ml-1 text-[0.75rem] font-bold text-neutral-300/50">ALIASES</p>
+					<div>
+						<p class="text-uppercase ml-1 text-[0.75rem] font-bold text-neutral-300/50">ALIASES</p>
+						if len(vhostWithMappings.AliasesHostnames) > 0 {
 							<div class="mt-0.5 flex flex-col items-center rounded-lg bg-neutral-500/5 text-xs">
 								for _, aliasHostname := range vhostWithMappings.AliasesHostnames {
 									<div class="flex w-full items-center justify-between border-t-2 border-neutral-500/20 p-3 first:border-t-0">
@@ -170,8 +170,21 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 									</div>
 								}
 							</div>
+						}
+						<div class="mt-1.5 flex justify-center">
+							@uiControl.Button(uiControl.ButtonSettings{
+								IconLeft:               "ph-plus",
+								Shape:                  uiControl.ButtonShapeCircular,
+								Size:                   uiControl.ButtonSizeXs,
+								BackgroundColor:        "neutral-50/10",
+								BackgroundColorHover:   "neutral-50/30",
+								OnClickFunc:            "openCreateVirtualHostModalForAlias('" + vhostWithMappings.Hostname.String() + "')",
+								TooltipContent:         "add alias",
+								TooltipBackgroundColor: "neutral-50/10",
+								TooltipPosition:        uiControl.ButtonTooltipPositionBottom,
+							})
 						</div>
-					}
+					</div>
 				</div>
 				<!-- Mappings Column -->
 				<div class="flex w-3/4 flex-col gap-3">

@@ -70,6 +70,13 @@ UiToolset.RegisterAlpineState(() => {
     closeCreateVirtualHostModal() {
       this.isCreateVirtualHostModalOpen = false;
     },
+    openCreateVirtualHostModalForAlias(parentHostname) {
+      this.resetPrimaryStates();
+
+      this.virtualHost.type = "alias";
+      this.virtualHost.parentHostname = parentHostname;
+      this.isCreateVirtualHostModalOpen = true;
+    },
     isUpdateVirtualHostModalOpen: false,
     openUpdateVirtualHostModal(vhostHostname) {
       this.resetPrimaryStates();
