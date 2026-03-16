@@ -2,6 +2,9 @@
 
 ```log
 0.2.8 - 2026/03/XX
+fix(ssl): repair altnames filter and add pagination to ssl listing
+feat(api): add swagger dto import for account endpoint
+feat(ui): add database user and alias shortcut buttons
 fix(files): handle root directory in file tree builder
 fix(database): use WeakPassword for database user creation
 fix(api): read operatorAccountId from echo context in file endpoints

@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"log/slog"
+	"math"
 	"slices"
 	"strings"
 
@@ -170,10 +171,15 @@ func (repo *SslQueryRepo) Read(
 			}
 		}
 
+		altNamesMissing := false
 		for _, altName := range requestDto.AltNames {
 			if !slices.Contains(sslPairEntity.Certificate.AltNames, altName) {
-				continue
+				altNamesMissing = true
+				break
 			}
+		}
+		if altNamesMissing {
+			continue
 		}
 
 		if requestDto.IssuedBeforeAt != nil {
@@ -237,8 +243,23 @@ func (repo *SslQueryRepo) Read(
 		})
 	}
 
+	paginatedSslPairs := []entity.SslPair{}
+	paginationStartIndex := int(requestDto.Pagination.PageNumber) *
+		int(requestDto.Pagination.ItemsPerPage)
+	paginationEndIndex := paginationStartIndex +
+		int(requestDto.Pagination.ItemsPerPage)
+
+	if paginationStartIndex < len(sslPairEntities) {
+		if paginationEndIndex > len(sslPairEntities) {
+			paginationEndIndex = len(sslPairEntities)
+		}
+		paginatedSslPairs = sslPairEntities[paginationStartIndex:paginationEndIndex]
+	}
+
 	itemsTotal := uint64(len(sslPairEntities))
-	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+	pagesTotal := uint32(math.Ceil(
+		float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage),
+	))
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal
@@ -246,7 +267,7 @@ func (repo *SslQueryRepo) Read(
 
 	return dto.ReadSslPairsResponse{
 		Pagination: paginationDto,
-		SslPairs:   sslPairEntities,
+		SslPairs:   paginatedSslPairs,
 	}, nil
 }
 
