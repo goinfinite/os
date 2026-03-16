@@ -215,14 +215,35 @@ func (repo *FilesQueryRepo) unixFileBranchFactory(
 func (repo *FilesQueryRepo) unixFileTreeFactory(
 	leafAbsolutePath tkValueObject.UnixAbsoluteFilePath,
 ) (treeTrunk dto.UnixFileBranch, err error) {
+	shouldIncludeFiles := false
+
+	fallbackBranchFilePath, err := tkValueObject.NewUnixAbsoluteFilePath("/", false)
+	if err != nil {
+		slog.Debug(
+			err.Error(),
+			slog.String("rawBranchPath", "/"),
+		)
+		return treeTrunk, err
+	}
+
+	treeTrunk, err = repo.unixFileBranchFactory(fallbackBranchFilePath, shouldIncludeFiles)
+	if err != nil {
+		slog.Error(
+			err.Error(),
+			slog.String("branchFilePath", fallbackBranchFilePath.String()),
+		)
+		return treeTrunk, err
+	}
+
 	rawTreeBranches := strings.SplitSeq(leafAbsolutePath.String(), "/")
 
-	shouldIncludeFiles := false
 	iterationBranch := treeTrunk
 	iterationBranchPath := ""
 	for rawBranchName := range rawTreeBranches {
 		rawBranchName = strings.TrimSpace(rawBranchName)
-		isTreeTrunk := rawBranchName == ""
+		if rawBranchName == "" {
+			continue
+		}
 
 		iterationBranchPath += rawBranchName + "/"
 		branchFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(iterationBranchPath, false)
@@ -240,11 +261,6 @@ func (repo *FilesQueryRepo) unixFileTreeFactory(
 				err.Error(),
 				slog.String("branchFilePath", branchFilePath.String()),
 			)
-			continue
-		}
-		if isTreeTrunk {
-			treeTrunk = treeBranch
-			iterationBranch = treeTrunk
 			continue
 		}
 
