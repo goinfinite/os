@@ -1,37 +1,28 @@
 package valueObject
 
 import (
-	"crypto/x509"
 	"encoding/base64"
 	"encoding/json"
-	"encoding/pem"
 	"errors"
 
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-type SslPrivateKey string
+type SslPrivateKey tkValueObject.EnvelopedPrivateKey
 
-func NewSslPrivateKey(value interface{}) (privateKey SslPrivateKey, err error) {
-	stringValue, err := tkVoUtil.InterfaceToString(value)
+func NewSslPrivateKey(
+	value interface{},
+) (privateKey SslPrivateKey, err error) {
+	envelopedKey, err := tkValueObject.NewEnvelopedPrivateKey(
+		value,
+	)
 	if err != nil {
-		return privateKey, errors.New("SslPrivateKeyMustBeString")
+		return privateKey, errors.New(
+			"InvalidSslPrivateKey",
+		)
 	}
 
-	pemBlock, _ := pem.Decode([]byte(stringValue))
-	if pemBlock == nil {
-		return privateKey, errors.New("InvalidSslPrivateKey")
-	}
-
-	_, err = x509.ParsePKCS8PrivateKey(pemBlock.Bytes)
-	if err != nil {
-		_, err = x509.ParsePKCS1PrivateKey(pemBlock.Bytes)
-		if err != nil {
-			return privateKey, errors.New("InvalidSslPrivateKey")
-		}
-	}
-
-	return SslPrivateKey(stringValue), nil
+	return SslPrivateKey(envelopedKey), nil
 }
 
 func (vo SslPrivateKey) String() string {
@@ -39,6 +30,8 @@ func (vo SslPrivateKey) String() string {
 }
 
 func (vo SslPrivateKey) MarshalJSON() ([]byte, error) {
-	voBytes := []byte(string(vo))
-	return json.Marshal(base64.StdEncoding.EncodeToString(voBytes))
+	encodedContent := base64.StdEncoding.EncodeToString(
+		[]byte(string(vo)),
+	)
+	return json.Marshal(encodedContent)
 }

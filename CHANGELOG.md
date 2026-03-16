@@ -2,6 +2,7 @@
 
 ```log
 0.2.8 - 2026/03/XX
+fix(ssl): wrap SslPrivateKey around tk EnvelopedPrivateKey
 fix(ssl): repair altnames filter and add pagination to ssl listing
 feat(api): add swagger dto import for account endpoint
 feat(ui): add database user and alias shortcut buttons
