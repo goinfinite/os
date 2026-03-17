@@ -1,6 +1,6 @@
 function devWsHotReload() {
   hotReloadWs = new WebSocket(
-    "wss://" + document.location.host + "/dev/hot-reload"
+    "wss://" + document.location.host + "/dev/hot-reload",
   );
   hotReloadWs.onclose = () => {
     setTimeout(() => {
@@ -51,7 +51,7 @@ document.addEventListener("alpine:initializing", () => {
     // FooterState
     refreshFooter() {
       htmx
-        .ajax("GET", document.baseURI + "fragment/footer", {
+        .ajax("GET", document.baseURI + "fragment/footer/", {
           select: "#footer",
           target: "#footer",
           swap: "outerHTML transition:true",
@@ -63,7 +63,7 @@ document.addEventListener("alpine:initializing", () => {
     },
     // - ScheduledTasksState
     displayScheduledTasksPopover: Alpine.$persist(false).as(
-      "osDash.displayScheduledTasksPopover"
+      "osDash.displayScheduledTasksPopover",
     ),
     toggleScheduledTasksPopover() {
       this.displayScheduledTasksPopover = !this.displayScheduledTasksPopover;
