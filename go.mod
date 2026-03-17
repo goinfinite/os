@@ -2,8 +2,6 @@ module github.com/goinfinite/os
 
 go 1.26.1
 
-replace github.com/swaggo/echo-swagger => github.com/swaggo/echo-swagger v1.4.1
-
 require (
 	github.com/a-h/templ v0.3.1001
 	github.com/dustin/go-humanize v1.0.1
@@ -30,7 +28,6 @@ require (
 	github.com/alecthomas/chroma v0.10.0 // indirect
 	github.com/dlclark/regexp2 v1.11.5 // indirect
 	github.com/evanw/esbuild v0.27.4 // indirect
-	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/glebarez/go-sqlite v1.22.0 // indirect
 	github.com/go-ole/go-ole v1.3.0 // indirect
 	github.com/go-openapi/jsonpointer v0.22.5 // indirect
@@ -58,12 +55,15 @@ require (
 	github.com/samber/slog-common v0.20.0 // indirect
 	github.com/samber/slog-zerolog/v2 v2.9.1 // indirect
 	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/sv-tools/openapi v0.4.0 // indirect
 	github.com/swaggo/files/v2 v2.0.2 // indirect
+	github.com/swaggo/swag/v2 v2.0.0-rc5 // indirect
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
 	github.com/tklauser/numcpus v0.11.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
+	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/mod v0.34.0 // indirect
 	golang.org/x/sync v0.20.0 // indirect
@@ -71,9 +71,10 @@ require (
 	golang.org/x/term v0.41.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	golang.org/x/tools v0.43.0 // indirect
-	gopkg.in/yaml.v2 v2.4.0 // indirect
+	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.70.0 // indirect
 	modernc.org/mathutil v1.7.1 // indirect
 	modernc.org/memory v1.11.0 // indirect
-	modernc.org/sqlite v1.46.2 // indirect
+	modernc.org/sqlite v1.47.0 // indirect
+	sigs.k8s.io/yaml v1.6.0 // indirect
 )
