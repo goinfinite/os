@@ -1,22 +1,23 @@
 package uiPresenter
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"log/slog"
 	"net/http"
+
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	"github.com/labstack/echo/v4"
 )
 
@@ -91,7 +92,7 @@ func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 		itemsPerPage, _ = tkVoUtil.InterfaceToUint16(itemsPerPageQueryParam)
 	}
 
-	readInstalledServicesRequestBody := map[string]interface{}{
+	readInstalledServicesRequestBody := map[string]any{
 		"pageNumber":           pageNumber,
 		"itemsPerPage":         itemsPerPage,
 		"shouldIncludeMetrics": true,
@@ -141,7 +142,9 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 	}
 
 	installableItemsResponseOutput := presenter.servicesLiaison.ReadInstallableItems(
-		map[string]interface{}{},
+		map[string]any{
+			"itemsPerPage": 50,
+		},
 	)
 	if installableItemsResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return overview, errors.New("FailedToReadInstallableServices")
