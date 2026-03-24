@@ -1,15 +1,15 @@
 package liaison
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
-	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -26,7 +26,7 @@ func NewScheduledTaskLiaison(
 	}
 }
 
-func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	var taskIdPtr *valueObject.ScheduledTaskId
 	if untrustedInput["id"] != nil {
 		untrustedInput["taskId"] = untrustedInput["id"]
@@ -34,7 +34,9 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 	if untrustedInput["taskId"] != nil {
 		taskId, err := valueObject.NewScheduledTaskId(untrustedInput["taskId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		taskIdPtr = &taskId
 	}
@@ -43,7 +45,9 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 	if untrustedInput["taskName"] != nil {
 		taskName, err := valueObject.NewScheduledTaskName(untrustedInput["taskName"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		taskNamePtr = &taskName
 	}
@@ -52,7 +56,9 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 	if untrustedInput["taskStatus"] != nil {
 		taskStatus, err := valueObject.NewScheduledTaskStatus(untrustedInput["taskStatus"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		taskStatusPtr = &taskStatus
 	}
@@ -62,13 +68,16 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 		var assertOk bool
 		taskTags, assertOk = untrustedInput["taskTags"].([]valueObject.ScheduledTaskTag)
 		if !assertOk {
-			return NewLiaisonOutput(UserError, errors.New("InvalidTaskTags"))
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				errors.New("InvalidTaskTags"),
+			)
 		}
 	}
 
-	var startedBeforeAtPtr, startedAfterAtPtr *valueObject.UnixTime
-	var finishedBeforeAtPtr, finishedAfterAtPtr *valueObject.UnixTime
-	var createdBeforeAtPtr, createdAfterAtPtr *valueObject.UnixTime
+	var startedBeforeAtPtr, startedAfterAtPtr *tkValueObject.UnixTime
+	var finishedBeforeAtPtr, finishedAfterAtPtr *tkValueObject.UnixTime
+	var createdBeforeAtPtr, createdAfterAtPtr *tkValueObject.UnixTime
 
 	timeParamNames := []string{
 		"startedBeforeAt", "startedAfterAt",
@@ -80,10 +89,13 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 			continue
 		}
 
-		timeParam, err := valueObject.NewUnixTime(untrustedInput[timeParamName])
+		timeParam, err := tkValueObject.NewUnixTime(untrustedInput[timeParamName])
 		if err != nil {
 			capitalParamName := cases.Title(language.English).String(timeParamName)
-			return NewLiaisonOutput(UserError, errors.New("Invalid"+capitalParamName))
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				errors.New("Invalid"+capitalParamName),
+			)
 		}
 
 		switch timeParamName {
@@ -102,49 +114,17 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 		}
 	}
 
-	paginationDto := useCase.ScheduledTasksDefaultPagination
-	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
-		}
-		paginationDto.PageNumber = pageNumber
-	}
-
-	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
-		}
-		paginationDto.ItemsPerPage = itemsPerPage
-	}
-
-	if untrustedInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortBy = &sortBy
-	}
-
-	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(untrustedInput["sortDirection"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortDirection = &sortDirection
-	}
-
-	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.LastSeenId = &lastSeenId
+	requestPagination, err := tkPresentation.PaginationParser(
+		useCase.ScheduledTasksDefaultPagination, untrustedInput,
+	)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	readDto := dto.ReadScheduledTasksRequest{
-		Pagination:       paginationDto,
+		Pagination:       requestPagination,
 		TaskId:           taskIdPtr,
 		TaskName:         taskNamePtr,
 		TaskStatus:       taskStatusPtr,
@@ -160,43 +140,55 @@ func (liaison *ScheduledTaskLiaison) Read(untrustedInput map[string]any) Liaison
 	scheduledTaskQueryRepo := scheduledTaskInfra.NewScheduledTaskQueryRepo(liaison.persistentDbSvc)
 	scheduledTasksList, err := useCase.ReadScheduledTasks(scheduledTaskQueryRepo, readDto)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Success, scheduledTasksList)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, scheduledTasksList,
+	)
 }
 
-func (liaison *ScheduledTaskLiaison) Update(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *ScheduledTaskLiaison) Update(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	if untrustedInput["id"] != nil {
 		untrustedInput["taskId"] = untrustedInput["id"]
 	}
 
 	requiredParams := []string{"taskId"}
 
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	taskId, err := valueObject.NewScheduledTaskId(untrustedInput["taskId"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	var taskStatusPtr *valueObject.ScheduledTaskStatus
 	if untrustedInput["status"] != nil {
 		taskStatus, err := valueObject.NewScheduledTaskStatus(untrustedInput["status"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 		taskStatusPtr = &taskStatus
 	}
 
-	var runAtPtr *valueObject.UnixTime
+	var runAtPtr *tkValueObject.UnixTime
 	if untrustedInput["runAt"] != nil {
-		runAt, err := valueObject.NewUnixTime(untrustedInput["runAt"])
+		runAt, err := tkValueObject.NewUnixTime(untrustedInput["runAt"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 		runAtPtr = &runAt
 	}
@@ -212,8 +204,12 @@ func (liaison *ScheduledTaskLiaison) Update(untrustedInput map[string]any) Liais
 		scheduledTaskQueryRepo, scheduledTaskCmdRepo, updateDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Success, "ScheduledTaskUpdated")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, "ScheduledTaskUpdated",
+	)
 }

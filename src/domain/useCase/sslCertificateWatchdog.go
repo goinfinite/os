@@ -8,6 +8,8 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 const SslValidationsPerHour int = 4
@@ -44,7 +46,7 @@ func (uc *SslCertificateWatchdog) shouldRenewCert(
 	}
 
 	skipSubdomainRegex := regexp.MustCompile(`^[^\.]+\.`)
-	missingAltNames := []valueObject.Fqdn{}
+	missingAltNames := []tkValueObject.Fqdn{}
 	for _, aliasHostname := range vhostEntity.AliasesHostnames {
 		aliasHostnameStr := aliasHostname.String()
 		if _, altNameExists := certAltNamesStrMap[aliasHostnameStr]; altNameExists {
@@ -78,7 +80,7 @@ func (uc *SslCertificateWatchdog) shouldRenewCert(
 
 func (uc *SslCertificateWatchdog) Execute() {
 	vhostReadResponse, err := uc.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination: dto.PaginationUnpaginated,
+		Pagination: tkDto.PaginationUnpaginated,
 	})
 	if err != nil {
 		slog.Error(
@@ -112,7 +114,7 @@ func (uc *SslCertificateWatchdog) Execute() {
 		}
 
 		_, err = uc.sslCmdRepo.CreatePubliclyTrusted(dto.NewCreatePubliclyTrustedSslPair(
-			vhostEntity.Hostname, valueObject.AccountIdSystem, valueObject.IpAddressSystem,
+			vhostEntity.Hostname, tkValueObject.AccountIdSystem, tkValueObject.IpAddressLocal,
 		))
 		if err != nil {
 			slog.Debug(

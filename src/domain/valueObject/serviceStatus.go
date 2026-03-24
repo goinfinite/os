@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type ServiceStatus string
@@ -30,7 +30,7 @@ var ServiceStatusesWithAliases = map[string][]string{
 }
 
 func NewServiceStatus(value interface{}) (status ServiceStatus, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return status, errors.New("ServiceStatusMustBeString")
 	}

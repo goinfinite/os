@@ -6,22 +6,29 @@ import (
 	"time"
 
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
-	"github.com/golang-jwt/jwt"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type AuthCmdRepo struct {
+	sessionTokenSecretBytes []byte
 }
 
-func (repo AuthCmdRepo) CreateSessionToken(
-	accountId valueObject.AccountId,
-	expiresIn valueObject.UnixTime,
-	ipAddress valueObject.IpAddress,
+func NewAuthCmdRepo() *AuthCmdRepo {
+	sessionTokenSecret := os.Getenv("JWT_SECRET")
+	return &AuthCmdRepo{
+		sessionTokenSecretBytes: []byte(sessionTokenSecret),
+	}
+}
+
+func (repo *AuthCmdRepo) CreateSessionToken(
+	accountId tkValueObject.AccountId,
+	expiresIn tkValueObject.UnixTime,
+	ipAddress tkValueObject.IpAddress,
 ) (entity.AccessToken, error) {
 	var accessToken entity.AccessToken
 
-	jwtSecret := os.Getenv("JWT_SECRET")
 	apiURL, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return accessToken, errors.New("PrimaryVirtualHostNotFound")
@@ -40,17 +47,17 @@ func (repo AuthCmdRepo) CreateSessionToken(
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenStrUnparsed, err := token.SignedString([]byte(jwtSecret))
+	tokenStrUnparsed, err := token.SignedString(repo.sessionTokenSecretBytes)
 	if err != nil {
 		return accessToken, errors.New("SessionTokenGenerationError")
 	}
 
-	tokenType, err := valueObject.NewAccessTokenType("sessionToken")
+	tokenType, err := tkValueObject.NewAccessTokenType("sessionToken")
 	if err != nil {
 		return accessToken, err
 	}
 
-	tokenStr, err := valueObject.NewAccessTokenStr(tokenStrUnparsed)
+	tokenStr, err := tkValueObject.NewAccessTokenValue(tokenStrUnparsed)
 	if err != nil {
 		return accessToken, err
 	}

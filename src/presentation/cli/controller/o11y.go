@@ -2,8 +2,8 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +24,7 @@ func (controller *O11yController) ReadOverview() *cobra.Command {
 		Use:   "overview",
 		Short: "ReadO11yOverview",
 		Run: func(cmd *cobra.Command, args []string) {
-			cliHelper.LiaisonResponseWrapper(controller.o11yLiaison.ReadOverview())
+			tkPresentation.LiaisonCliResponseRenderer(controller.o11yLiaison.ReadOverview())
 		},
 	}
 

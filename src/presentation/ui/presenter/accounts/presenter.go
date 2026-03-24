@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"net/http"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -29,7 +30,7 @@ func (presenter *AccountsPresenter) Handler(c echo.Context) error {
 			"shouldIncludeSecureAccessPublicKeys": true,
 		},
 	)
-	if responseOutput.Status != liaison.Success {
+	if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return nil
 	}
 

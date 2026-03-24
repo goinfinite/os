@@ -2,13 +2,13 @@ package repository
 
 import (
 	"github.com/goinfinite/os/src/domain/entity"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type AuthCmdRepo interface {
 	CreateSessionToken(
-		accountId valueObject.AccountId,
-		expiresIn valueObject.UnixTime,
-		ipAddress valueObject.IpAddress,
+		accountId tkValueObject.AccountId,
+		expiresIn tkValueObject.UnixTime,
+		ipAddress tkValueObject.IpAddress,
 	) (entity.AccessToken, error)
 }

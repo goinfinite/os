@@ -7,6 +7,7 @@ import (
 	componentDatabases "github.com/goinfinite/os/src/presentation/ui/component/databases"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	"github.com/goinfinite/ui/src/control"
 	"github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/toolset"
 )
@@ -78,14 +79,14 @@ templ DatabasesTabs(selectedDbOverview DatabaseOverview) {
 							<th scope="col" class="w-1/6 px-5 py-3 text-left">Name</th>
 							<th scope="col" class="w-2/6 px-5 py-3 text-center">User(s)</th>
 							<th scope="col" class="w-1/6 px-5 py-3 text-center">Size</th>
-							<th scope="col" class="flex justify-end space-x-2 px-5 py-3">
+							<th scope="col" class="flex justify-end space-x-2 py-3">
 								@componentForm.SubmitButton(
-									"create-user-button", "Create user", "ph-user-plus",
-									"openCreateDatabaseUserModal()", true,
+									"create-database-button", "create database", "ph-database",
+									"openCreateDatabaseModal()", true,
 								)
 								@componentForm.SubmitButton(
-									"create-database-button", "Create database", "ph-database",
-									"openCreateDatabaseModal()", true,
+									"create-user-button", "create user", "ph-user-plus",
+									"openCreateDatabaseUserModal()", true,
 								)
 							</th>
 						</tr>
@@ -104,11 +105,23 @@ templ DatabasesTabs(selectedDbOverview DatabaseOverview) {
 													@componentStructural.CircularIconButtonWithTooltip(
 														"ph-trash", "red-800", "red-600",
 														"openDeleteDatabaseUserModal('"+database.Name.String()+"', '"+user.Username.String()+"')",
-														"Delete user", "red-500",
+														"delete user", "red-500",
 													)
 												</div>
 											</div>
 										}
+										<div class="my-1.5 flex justify-center">
+											@uiControl.Button(uiControl.ButtonSettings{
+												IconLeft:               "ph-user-plus",
+												Shape:                  uiControl.ButtonShapeCircular,
+												Size:                   uiControl.ButtonSizeXs,
+												BackgroundColor:        "neutral-50/10",
+												BackgroundColorHover:   "neutral-50/30",
+												OnClickFunc:            "openCreateDatabaseUserModal('" + database.Name.String() + "')",
+												TooltipContent:         "create user",
+												TooltipBackgroundColor: "neutral-50/10",
+											})
+										</div>
 									</div>
 								</td>
 								<td scope="row" class="w-1/6 px-5 py-3 text-center font-normal">
@@ -118,7 +131,7 @@ templ DatabasesTabs(selectedDbOverview DatabaseOverview) {
 									<div class="inline-flex">
 										@componentStructural.CircularIconButtonWithTooltip(
 											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')",
-											"Delete database", "red-500",
+											"delete database", "red-500",
 										)
 									</div>
 								</td>

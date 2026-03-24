@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	"golang.org/x/crypto/ssh"
 )
 
@@ -13,7 +13,7 @@ type SecureAccessPublicKeyContent string
 func NewSecureAccessPublicKeyContent(
 	value interface{},
 ) (keyContent SecureAccessPublicKeyContent, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return keyContent, errors.New("SecureAccessPublicKeyContentMustBeString")
 	}

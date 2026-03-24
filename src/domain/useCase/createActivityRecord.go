@@ -4,19 +4,21 @@ import (
 	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type CreateSecurityActivityRecord struct {
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo
-	recordLevel           valueObject.ActivityRecordLevel
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo
+	recordLevel           tkValueObject.ActivityRecordLevel
 }
 
 func NewCreateSecurityActivityRecord(
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 ) *CreateSecurityActivityRecord {
-	recordLevel, _ := valueObject.NewActivityRecordLevel("SEC")
+	recordLevel := tkValueObject.ActivityRecordLevelSecurity
 	return &CreateSecurityActivityRecord{
 		activityRecordCmdRepo: activityRecordCmdRepo,
 		recordLevel:           recordLevel,
@@ -24,7 +26,7 @@ func NewCreateSecurityActivityRecord(
 }
 
 func (uc *CreateSecurityActivityRecord) createActivityRecord(
-	createDto dto.CreateActivityRecord,
+	createDto tkDto.CreateActivityRecord,
 ) {
 	err := uc.activityRecordCmdRepo.Create(createDto)
 	if err != nil {
@@ -37,10 +39,10 @@ func (uc *CreateSecurityActivityRecord) createActivityRecord(
 }
 
 func (uc *CreateSecurityActivityRecord) CreateSessionToken(
-	recordCode valueObject.ActivityRecordCode,
+	recordCode tkValueObject.ActivityRecordCode,
 	createDto dto.CreateSessionToken,
 ) {
-	createRecordDto := dto.CreateActivityRecord{
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
 		RecordDetails:     createDto.Username,
@@ -52,17 +54,18 @@ func (uc *CreateSecurityActivityRecord) CreateSessionToken(
 
 func (uc *CreateSecurityActivityRecord) CreateAccount(
 	createDto dto.CreateAccount,
-	accountId valueObject.AccountId,
+	accountId tkValueObject.AccountId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("AccountCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("AccountCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewAccountSri(accountId),
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			tkValueObject.NewSriAccount(accountId),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -70,16 +73,17 @@ func (uc *CreateSecurityActivityRecord) CreateAccount(
 }
 
 func (uc *CreateSecurityActivityRecord) UpdateAccount(
-	accountId valueObject.AccountId,
+	accountId tkValueObject.AccountId,
 	updateDto dto.UpdateAccount,
 ) {
-	createRecordDto := dto.CreateActivityRecord{
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewAccountSri(accountId),
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			tkValueObject.NewSriAccount(accountId),
 		},
 		RecordDetails:     updateDto,
-		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
@@ -94,21 +98,22 @@ func (uc *CreateSecurityActivityRecord) UpdateAccount(
 		createRecordDto.RecordDetails = nil
 	}
 
-	recordCode, _ := valueObject.NewActivityRecordCode(codeStr)
+	recordCode, _ := tkValueObject.NewActivityRecordCode(codeStr)
 	createRecordDto.RecordCode = recordCode
 
 	uc.createActivityRecord(createRecordDto)
 }
 
 func (uc *CreateSecurityActivityRecord) DeleteAccount(deleteDto dto.DeleteAccount) {
-	recordCode, _ := valueObject.NewActivityRecordCode("AccountDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("AccountDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
-			valueObject.NewAccountSri(deleteDto.AccountId),
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			tkValueObject.NewSriAccount(deleteDto.AccountId),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -119,14 +124,15 @@ func (uc *CreateSecurityActivityRecord) CreateSecureAccessPublicKey(
 	createDto dto.CreateSecureAccessPublicKey,
 	keyId valueObject.SecureAccessPublicKeyId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessPublicKeyCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("SecureAccessPublicKeyCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSecureAccessPublicKeySri(createDto.AccountId, keyId),
 		},
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -135,16 +141,17 @@ func (uc *CreateSecurityActivityRecord) CreateSecureAccessPublicKey(
 
 func (uc *CreateSecurityActivityRecord) DeleteSecureAccessPublicKey(
 	deleteDto dto.DeleteSecureAccessPublicKey,
-	accountId valueObject.AccountId,
+	accountId tkValueObject.AccountId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("SecureAccessPublicKeyDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("SecureAccessPublicKeyDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSecureAccessPublicKeySri(accountId, deleteDto.Id),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -155,15 +162,16 @@ func (uc *CreateSecurityActivityRecord) CreateCron(
 	createDto dto.CreateCron,
 	cronId valueObject.CronId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("CronCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("CronCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewCronSri(createDto.OperatorAccountId, cronId),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -171,15 +179,16 @@ func (uc *CreateSecurityActivityRecord) CreateCron(
 }
 
 func (uc *CreateSecurityActivityRecord) UpdateCron(updateDto dto.UpdateCron) {
-	recordCode, _ := valueObject.NewActivityRecordCode("CronUpdated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("CronUpdated")
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewCronSri(updateDto.OperatorAccountId, updateDto.Id),
 		},
 		RecordDetails:     updateDto,
-		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
@@ -187,14 +196,15 @@ func (uc *CreateSecurityActivityRecord) UpdateCron(updateDto dto.UpdateCron) {
 }
 
 func (uc *CreateSecurityActivityRecord) DeleteCron(deleteDto dto.DeleteCron) {
-	recordCode, _ := valueObject.NewActivityRecordCode("CronDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("CronDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewCronSri(deleteDto.OperatorAccountId, *deleteDto.Id),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -202,15 +212,16 @@ func (uc *CreateSecurityActivityRecord) DeleteCron(deleteDto dto.DeleteCron) {
 }
 
 func (uc *CreateSecurityActivityRecord) CreateDatabase(createDto dto.CreateDatabase) {
-	recordCode, _ := valueObject.NewActivityRecordCode("DatabaseCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("DatabaseCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewDatabaseSri(createDto.OperatorAccountId, createDto.DatabaseName),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -218,14 +229,15 @@ func (uc *CreateSecurityActivityRecord) CreateDatabase(createDto dto.CreateDatab
 }
 
 func (uc *CreateSecurityActivityRecord) DeleteDatabase(deleteDto dto.DeleteDatabase) {
-	recordCode, _ := valueObject.NewActivityRecordCode("DatabaseDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("DatabaseDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewDatabaseSri(deleteDto.OperatorAccountId, deleteDto.DatabaseName),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -235,15 +247,16 @@ func (uc *CreateSecurityActivityRecord) DeleteDatabase(deleteDto dto.DeleteDatab
 func (uc *CreateSecurityActivityRecord) CreateDatabaseUser(
 	createDto dto.CreateDatabaseUser,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("DatabaseUserCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("DatabaseUserCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewDatabaseSri(createDto.OperatorAccountId, createDto.DatabaseName),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -253,15 +266,16 @@ func (uc *CreateSecurityActivityRecord) CreateDatabaseUser(
 func (uc *CreateSecurityActivityRecord) DeleteDatabaseUser(
 	deleteDto dto.DeleteDatabaseUser,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("DatabaseUserDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("DatabaseUserDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewDatabaseSri(deleteDto.OperatorAccountId, deleteDto.DatabaseName),
 			valueObject.NewDatabaseUserSri(deleteDto.OperatorAccountId, deleteDto.Username),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -271,17 +285,18 @@ func (uc *CreateSecurityActivityRecord) DeleteDatabaseUser(
 func (uc *CreateSecurityActivityRecord) InstallMarketplaceCatalogItem(
 	installDto dto.InstallMarketplaceCatalogItem,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("MarketplaceCatalogItemInstalled")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("MarketplaceCatalogItemInstalled")
+	operatorSri := tkValueObject.NewSriAccount(installDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewMarketplaceCatalogItemSri(
 				installDto.OperatorAccountId, installDto.Id, installDto.Slug,
 			),
 		},
 		RecordDetails:     installDto,
-		OperatorAccountId: &installDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &installDto.OperatorIpAddress,
 	}
 
@@ -291,16 +306,17 @@ func (uc *CreateSecurityActivityRecord) InstallMarketplaceCatalogItem(
 func (uc *CreateSecurityActivityRecord) DeleteMarketplaceInstalledItem(
 	installDto dto.DeleteMarketplaceInstalledItem,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("MarketplaceInstalledItemDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("MarketplaceInstalledItemDeleted")
+	operatorSri := tkValueObject.NewSriAccount(installDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewMarketplaceInstalledItemSri(
 				installDto.OperatorAccountId, installDto.InstalledId,
 			),
 		},
-		OperatorAccountId: &installDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &installDto.OperatorIpAddress,
 	}
 
@@ -311,12 +327,13 @@ func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
 	updateDto dto.UpdatePhpConfigs,
 	configType string,
 ) {
-	createRecordDto := dto.CreateActivityRecord{
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewPhpRuntimeSri(updateDto.OperatorAccountId, updateDto.Hostname),
 		},
-		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
@@ -334,7 +351,7 @@ func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
 		details = updateDto.PhpSettings
 	}
 
-	recordCode, _ := valueObject.NewActivityRecordCode(codeStr)
+	recordCode, _ := tkValueObject.NewActivityRecordCode(codeStr)
 	createRecordDto.RecordCode = recordCode
 	createRecordDto.RecordDetails = details
 
@@ -344,15 +361,16 @@ func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
 func (uc *CreateSecurityActivityRecord) CreateInstallableService(
 	createDto dto.CreateInstallableService,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("InstallableServiceCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("InstallableServiceCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewInstallableServiceSri(createDto.OperatorAccountId, createDto.Name),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -362,15 +380,16 @@ func (uc *CreateSecurityActivityRecord) CreateInstallableService(
 func (uc *CreateSecurityActivityRecord) CreateCustomService(
 	createDto dto.CreateCustomService,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("CustomServiceCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("CustomServiceCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewCustomServiceSri(createDto.OperatorAccountId, createDto.Name),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -378,15 +397,16 @@ func (uc *CreateSecurityActivityRecord) CreateCustomService(
 }
 
 func (uc *CreateSecurityActivityRecord) UpdateService(updateDto dto.UpdateService) {
-	recordCode, _ := valueObject.NewActivityRecordCode("ServiceUpdated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("ServiceUpdated")
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewInstalledServiceSri(updateDto.OperatorAccountId, updateDto.Name),
 		},
 		RecordDetails:     updateDto,
-		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
@@ -394,14 +414,15 @@ func (uc *CreateSecurityActivityRecord) UpdateService(updateDto dto.UpdateServic
 }
 
 func (uc *CreateSecurityActivityRecord) DeleteService(deleteDto dto.DeleteService) {
-	recordCode, _ := valueObject.NewActivityRecordCode("ServiceDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("ServiceDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewInstalledServiceSri(deleteDto.OperatorAccountId, deleteDto.Name),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -412,11 +433,12 @@ func (uc *CreateSecurityActivityRecord) CreateSslPair(
 	createDto dto.CreateSslPair,
 	sslPairId valueObject.SslPairId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("SslPairCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("SslPairCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSslSri(createDto.OperatorAccountId, sslPairId),
 		},
 		RecordDetails: map[string]interface{}{
@@ -429,7 +451,7 @@ func (uc *CreateSecurityActivityRecord) CreateSslPair(
 				"expiresAt":  createDto.Certificate.ExpiresAt,
 			},
 		},
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -440,15 +462,16 @@ func (uc *CreateSecurityActivityRecord) CreatePubliclyTrustedSslPair(
 	createDto dto.CreatePubliclyTrustedSslPair,
 	sslPairId valueObject.SslPairId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("PubliclyTrustedSslPairCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("PubliclyTrustedSslPairCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSslSri(createDto.OperatorAccountId, sslPairId),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -456,14 +479,15 @@ func (uc *CreateSecurityActivityRecord) CreatePubliclyTrustedSslPair(
 }
 
 func (uc *CreateSecurityActivityRecord) DeleteSslPair(deleteDto dto.DeleteSslPair) {
-	recordCode, _ := valueObject.NewActivityRecordCode("SslPairDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("SslPairDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSslSri(deleteDto.OperatorAccountId, deleteDto.SslPairId),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -473,17 +497,18 @@ func (uc *CreateSecurityActivityRecord) DeleteSslPair(deleteDto dto.DeleteSslPai
 func (uc *CreateSecurityActivityRecord) DeleteSslPairVhosts(
 	deleteDto dto.DeleteSslPairVhosts,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("SslPairVhostsDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("SslPairVhostsDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSslSri(deleteDto.OperatorAccountId, deleteDto.SslPairId),
 		},
 		RecordDetails: map[string]interface{}{
 			"sslPairVhosts": deleteDto.VirtualHostsHostnames,
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -493,15 +518,16 @@ func (uc *CreateSecurityActivityRecord) DeleteSslPairVhosts(
 func (uc *CreateSecurityActivityRecord) CreateVirtualHost(
 	createDto dto.CreateVirtualHost,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("VirtualHostCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("VirtualHostCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewVirtualHostSri(createDto.OperatorAccountId, createDto.Hostname),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -511,15 +537,16 @@ func (uc *CreateSecurityActivityRecord) CreateVirtualHost(
 func (uc *CreateSecurityActivityRecord) UpdateVirtualHost(
 	updateDto dto.UpdateVirtualHost,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("VirtualHostUpdated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("VirtualHostUpdated")
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewVirtualHostSri(updateDto.OperatorAccountId, updateDto.Hostname),
 		},
 		RecordDetails:     updateDto,
-		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
@@ -529,14 +556,15 @@ func (uc *CreateSecurityActivityRecord) UpdateVirtualHost(
 func (uc *CreateSecurityActivityRecord) DeleteVirtualHost(
 	deleteDto dto.DeleteVirtualHost,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("VirtualHostDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("VirtualHostDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewVirtualHostSri(deleteDto.OperatorAccountId, deleteDto.Hostname),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -547,15 +575,16 @@ func (uc *CreateSecurityActivityRecord) CreateMapping(
 	createDto dto.CreateMapping,
 	mappingId valueObject.MappingId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("MappingCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("MappingCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewMappingSri(createDto.OperatorAccountId, mappingId),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -563,15 +592,16 @@ func (uc *CreateSecurityActivityRecord) CreateMapping(
 }
 
 func (uc *CreateSecurityActivityRecord) UpdateMapping(updateDto dto.UpdateMapping) {
-	recordCode, _ := valueObject.NewActivityRecordCode("MappingUpdated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("MappingUpdated")
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewMappingSri(updateDto.OperatorAccountId, updateDto.Id),
 		},
 		RecordDetails:     updateDto,
-		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
@@ -579,14 +609,15 @@ func (uc *CreateSecurityActivityRecord) UpdateMapping(updateDto dto.UpdateMappin
 }
 
 func (uc *CreateSecurityActivityRecord) DeleteMapping(deleteDto dto.DeleteMapping) {
-	recordCode, _ := valueObject.NewActivityRecordCode("MappingDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("MappingDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewMappingSri(deleteDto.OperatorAccountId, deleteDto.MappingId),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -594,13 +625,14 @@ func (uc *CreateSecurityActivityRecord) DeleteMapping(deleteDto dto.DeleteMappin
 }
 
 func (uc *CreateSecurityActivityRecord) CreateUnixFile(createDto dto.CreateUnixFile) {
-	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("UnixFileCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -608,13 +640,14 @@ func (uc *CreateSecurityActivityRecord) CreateUnixFile(createDto dto.CreateUnixF
 }
 
 func (uc *CreateSecurityActivityRecord) DeleteUnixFiles(deleteDto dto.DeleteUnixFiles) {
-	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("UnixFileDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{},
 		RecordDetails:     deleteDto,
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 
@@ -622,13 +655,14 @@ func (uc *CreateSecurityActivityRecord) DeleteUnixFiles(deleteDto dto.DeleteUnix
 }
 
 func (uc *CreateSecurityActivityRecord) UpdateUnixFiles(updateDto dto.UpdateUnixFiles) {
-	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileUpdated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("UnixFileUpdated")
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{},
 		RecordDetails:     updateDto,
-		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
@@ -650,13 +684,14 @@ func (uc *CreateSecurityActivityRecord) UpdateUnixFiles(updateDto dto.UpdateUnix
 }
 
 func (uc *CreateSecurityActivityRecord) CopyUnixFile(copyDto dto.CopyUnixFile) {
-	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileCopied")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("UnixFileCopied")
+	operatorSri := tkValueObject.NewSriAccount(copyDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{},
 		RecordDetails:     copyDto,
-		OperatorAccountId: &copyDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &copyDto.OperatorIpAddress,
 	}
 
@@ -666,13 +701,14 @@ func (uc *CreateSecurityActivityRecord) CopyUnixFile(copyDto dto.CopyUnixFile) {
 func (uc *CreateSecurityActivityRecord) CompressUnixFile(
 	compressDto dto.CompressUnixFiles,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("UnixFilesCompressed")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("UnixFilesCompressed")
+	operatorSri := tkValueObject.NewSriAccount(compressDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{},
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{},
 		RecordDetails:     compressDto,
-		OperatorAccountId: &compressDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &compressDto.OperatorIpAddress,
 	}
 
@@ -682,12 +718,13 @@ func (uc *CreateSecurityActivityRecord) CompressUnixFile(
 func (uc *CreateSecurityActivityRecord) ExtractUnixFile(
 	extractDto dto.ExtractUnixFiles,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("UnixFileExtracted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("UnixFileExtracted")
+	operatorSri := tkValueObject.NewSriAccount(extractDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
 		RecordDetails:     extractDto,
-		OperatorAccountId: &extractDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &extractDto.OperatorIpAddress,
 	}
 
@@ -697,17 +734,18 @@ func (uc *CreateSecurityActivityRecord) ExtractUnixFile(
 func (uc *CreateSecurityActivityRecord) UploadUnixFiles(
 	uploadDto dto.UploadUnixFiles,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("UnixFilesUploaded")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("UnixFilesUploaded")
+	operatorSri := tkValueObject.NewSriAccount(uploadDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel:       uc.recordLevel,
 		RecordCode:        recordCode,
-		OperatorAccountId: &uploadDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &uploadDto.OperatorIpAddress,
 	}
 
 	details := map[string]interface{}{"destinationPath": uploadDto.DestinationPath}
 
-	fileNames := []valueObject.UnixFileName{}
+	fileNames := []tkValueObject.UnixFileName{}
 	for _, fileStreamHandler := range uploadDto.FileStreamHandlers {
 		fileNames = append(fileNames, fileStreamHandler.Name)
 	}
@@ -722,15 +760,16 @@ func (uc *CreateSecurityActivityRecord) CreateMappingSecurityRule(
 	createDto dto.CreateMappingSecurityRule,
 	mappingSecurityRuleId valueObject.MappingSecurityRuleId,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("MappingSecurityRuleCreated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("MappingSecurityRuleCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewMappingSecurityRuleSri(createDto.OperatorAccountId, mappingSecurityRuleId),
 		},
 		RecordDetails:     createDto,
-		OperatorAccountId: &createDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &createDto.OperatorIpAddress,
 	}
 
@@ -740,15 +779,16 @@ func (uc *CreateSecurityActivityRecord) CreateMappingSecurityRule(
 func (uc *CreateSecurityActivityRecord) UpdateMappingSecurityRule(
 	updateDto dto.UpdateMappingSecurityRule,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("MappingSecurityRuleUpdated")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("MappingSecurityRuleUpdated")
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewMappingSecurityRuleSri(updateDto.OperatorAccountId, updateDto.Id),
 		},
 		RecordDetails:     updateDto,
-		OperatorAccountId: &updateDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
@@ -758,14 +798,15 @@ func (uc *CreateSecurityActivityRecord) UpdateMappingSecurityRule(
 func (uc *CreateSecurityActivityRecord) DeleteMappingSecurityRule(
 	deleteDto dto.DeleteMappingSecurityRule,
 ) {
-	recordCode, _ := valueObject.NewActivityRecordCode("MappingSecurityRuleDeleted")
-	createRecordDto := dto.CreateActivityRecord{
+	recordCode, _ := tkValueObject.NewActivityRecordCode("MappingSecurityRuleDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		RecordCode:  recordCode,
-		AffectedResources: []valueObject.SystemResourceIdentifier{
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewMappingSecurityRuleSri(deleteDto.OperatorAccountId, deleteDto.SecurityRuleId),
 		},
-		OperatorAccountId: &deleteDto.OperatorAccountId,
+		OperatorSri:       &operatorSri,
 		OperatorIpAddress: &deleteDto.OperatorIpAddress,
 	}
 

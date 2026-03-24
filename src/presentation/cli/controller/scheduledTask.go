@@ -2,8 +2,8 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -85,7 +85,7 @@ func (controller *ScheduledTaskController) Read() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.scheduledTaskLiaison.Read(requestBody),
 			)
 		},
@@ -152,7 +152,7 @@ func (controller *ScheduledTaskController) Update() *cobra.Command {
 				requestBody["runAt"] = runAtInt64
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.scheduledTaskLiaison.Update(requestBody),
 			)
 		},

@@ -8,7 +8,8 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type PostgresDatabaseQueryRepo struct {
@@ -20,10 +21,10 @@ func PostgresqlCmd(cmd string, dbName *valueObject.DatabaseName) (string, error)
 		cmdArgs = append(cmdArgs, "-d", dbName.String())
 	}
 
-	return infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	return tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "psql",
 		Args:    cmdArgs,
-	})
+	}).Run()
 }
 
 func (repo PostgresDatabaseQueryRepo) readDatabaseNames() ([]valueObject.DatabaseName, error) {
@@ -59,7 +60,7 @@ func (repo PostgresDatabaseQueryRepo) readDatabaseNames() ([]valueObject.Databas
 
 func (repo PostgresDatabaseQueryRepo) readDatabaseSize(
 	dbName valueObject.DatabaseName,
-) (valueObject.Byte, error) {
+) (tkValueObject.Byte, error) {
 	rawDatabaseSize, err := PostgresqlCmd(
 		"SELECT pg_database_size('"+dbName.String()+"')",
 		nil,
@@ -68,7 +69,7 @@ func (repo PostgresDatabaseQueryRepo) readDatabaseSize(
 		return 0, errors.New("ReadDatabaseSizeError: " + err.Error())
 	}
 
-	return valueObject.NewByte(rawDatabaseSize)
+	return tkValueObject.NewByte(rawDatabaseSize)
 }
 
 func (repo PostgresDatabaseQueryRepo) readDatabaseUsernames(
@@ -174,7 +175,7 @@ func (repo PostgresDatabaseQueryRepo) readAllDatabases() ([]entity.Database, err
 	for _, dbName := range databaseNames {
 		dbSize, err := repo.readDatabaseSize(dbName)
 		if err != nil {
-			dbSize, _ = valueObject.NewByte(0)
+			dbSize, _ = tkValueObject.NewByte(0)
 		}
 
 		dbUsernames, err := repo.readDatabaseUsernames(dbName)

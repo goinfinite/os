@@ -5,7 +5,7 @@ import (
 	"os"
 	"os/user"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 func PreventRootless() {
@@ -15,7 +15,7 @@ func PreventRootless() {
 		os.Exit(1)
 	}
 
-	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+	if isDevMode, _ := tkVoUtil.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 		fmt.Println("BinaryCompiledSuccessfully")
 		os.Exit(0)
 	}

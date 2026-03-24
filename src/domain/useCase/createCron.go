@@ -6,11 +6,12 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func CreateCron(
 	cronCmdRepo repository.CronCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateCron,
 ) error {
 	cronId, err := cronCmdRepo.Create(createDto)

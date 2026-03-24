@@ -3,9 +3,8 @@ package cliController
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
-	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -69,7 +68,7 @@ func (controller *ServicesController) ReadInstalledItems() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.servicesLiaison.ReadInstalledItems(requestBody),
 			)
 		},
@@ -154,7 +153,7 @@ func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.servicesLiaison.ReadInstallableItems(requestBody),
 			)
 		},
@@ -213,7 +212,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			}
 
 			if len(envsSlice) > 0 {
-				requestBody["envs"] = sharedHelper.StringSliceValueObjectParser(
+				requestBody["envs"] = tkPresentation.StringSliceValueObjectParser(
 					envsSlice, valueObject.NewServiceEnv,
 				)
 			}
@@ -227,7 +226,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 				requestBody["workingDir"] = workingDirStr
 			}
 			if len(portBindingsSlice) > 0 {
-				requestBody["portBindings"] = sharedHelper.StringSliceValueObjectParser(
+				requestBody["portBindings"] = tkPresentation.StringSliceValueObjectParser(
 					portBindingsSlice, valueObject.NewPortBinding,
 				)
 			}
@@ -244,7 +243,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 				requestBody["mappingPath"] = mappingPath
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.servicesLiaison.CreateInstallable(requestBody, false),
 			)
 		},
@@ -316,7 +315,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			}
 
 			if len(envsSlice) > 0 {
-				requestBody["envs"] = sharedHelper.StringSliceValueObjectParser(
+				requestBody["envs"] = tkPresentation.StringSliceValueObjectParser(
 					envsSlice, valueObject.NewServiceEnv,
 				)
 			}
@@ -324,7 +323,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				requestBody["version"] = versionStr
 			}
 			if len(portBindingsSlice) > 0 {
-				requestBody["portBindings"] = sharedHelper.StringSliceValueObjectParser(
+				requestBody["portBindings"] = tkPresentation.StringSliceValueObjectParser(
 					portBindingsSlice, valueObject.NewPortBinding,
 				)
 			}
@@ -341,7 +340,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 				requestBody["mappingPath"] = mappingPath
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.servicesLiaison.CreateCustom(requestBody),
 			)
 		},
@@ -428,7 +427,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 				requestBody["portBindings"] = portBindingsSlice
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.servicesLiaison.Update(requestBody),
 			)
 		},
@@ -459,7 +458,7 @@ func (controller *ServicesController) Delete() *cobra.Command {
 				"name": nameStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.servicesLiaison.Delete(requestBody),
 			)
 		},

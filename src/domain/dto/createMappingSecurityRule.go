@@ -14,11 +14,11 @@ type CreateMappingSecurityRule struct {
 	RpsHardLimitPerIp              *uint                                       `json:"rpsHardLimitPerIp"`
 	ResponseCodeOnMaxRequests      *uint                                       `json:"responseCodeOnMaxRequests"`
 	MaxConnectionsPerIp            *uint                                       `json:"maxConnectionsPerIp"`
-	BandwidthBpsLimitPerConnection *valueObject.Byte                           `json:"bandwidthBpsLimitPerConnection"`
-	BandwidthLimitOnlyAfterBytes   *valueObject.Byte                           `json:"bandwidthLimitOnlyAfterBytes"`
+	BandwidthBpsLimitPerConnection *tkValueObject.Byte                         `json:"bandwidthBpsLimitPerConnection"`
+	BandwidthLimitOnlyAfterBytes   *tkValueObject.Byte                         `json:"bandwidthLimitOnlyAfterBytes"`
 	ResponseCodeOnMaxConnections   *uint                                       `json:"responseCodeOnMaxConnections"`
-	OperatorAccountId              valueObject.AccountId                       `json:"-"`
-	OperatorIpAddress              valueObject.IpAddress                       `json:"-"`
+	OperatorAccountId              tkValueObject.AccountId                     `json:"-"`
+	OperatorIpAddress              tkValueObject.IpAddress                     `json:"-"`
 }
 
 func NewCreateMappingSecurityRule(
@@ -26,10 +26,10 @@ func NewCreateMappingSecurityRule(
 	description *valueObject.MappingSecurityRuleDescription,
 	allowedIps, blockedIps []tkValueObject.CidrBlock,
 	rpsSoftLimitPerIp, rpsHardLimitPerIp, responseCodeOnMaxRequests, maxConnectionsPerIp *uint,
-	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *valueObject.Byte,
+	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *tkValueObject.Byte,
 	responseCodeOnMaxConnections *uint,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CreateMappingSecurityRule {
 	return CreateMappingSecurityRule{
 		Name:                           name,

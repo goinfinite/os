@@ -1,27 +1,30 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type UpdateUnixFiles struct {
-	SourcePaths          []valueObject.UnixFilePath       `json:"sourcePaths"`
-	DestinationPath      *valueObject.UnixFilePath        `json:"destinationPath"`
-	Permissions          *valueObject.UnixFilePermissions `json:"permissions"`
-	EncodedContent       *valueObject.EncodedContent      `json:"encodedContent"`
-	Ownership            *valueObject.UnixFileOwnership   `json:"ownership"`
-	ShouldFixPermissions *bool                            `json:"shouldFixPermissions"`
-	OperatorAccountId    valueObject.AccountId            `json:"-"`
-	OperatorIpAddress    valueObject.IpAddress            `json:"-"`
+	SourcePaths          []tkValueObject.UnixAbsoluteFilePath `json:"sourcePaths"`
+	DestinationPath      *tkValueObject.UnixAbsoluteFilePath  `json:"destinationPath"`
+	Permissions          *valueObject.UnixFilePermissions     `json:"permissions"`
+	EncodedContent       *valueObject.EncodedContent          `json:"encodedContent"`
+	Ownership            *tkValueObject.UnixFileOwnership     `json:"ownership"`
+	ShouldFixPermissions *bool                                `json:"shouldFixPermissions"`
+	OperatorAccountId    tkValueObject.AccountId              `json:"-"`
+	OperatorIpAddress    tkValueObject.IpAddress              `json:"-"`
 }
 
 func NewUpdateUnixFiles(
-	sourcePaths []valueObject.UnixFilePath,
-	destinationPath *valueObject.UnixFilePath,
+	sourcePaths []tkValueObject.UnixAbsoluteFilePath,
+	destinationPath *tkValueObject.UnixAbsoluteFilePath,
 	permissions *valueObject.UnixFilePermissions,
 	encodedContent *valueObject.EncodedContent,
-	ownership *valueObject.UnixFileOwnership,
+	ownership *tkValueObject.UnixFileOwnership,
 	shouldFixPermissions *bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) UpdateUnixFiles {
 	return UpdateUnixFiles{
 		SourcePaths:          sourcePaths,

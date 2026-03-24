@@ -8,12 +8,13 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func CreateMappingSecurityRule(
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateMappingSecurityRule,
 ) (mappingSecurityRuleId valueObject.MappingSecurityRuleId, err error) {
 	if createDto.ResponseCodeOnMaxRequests == nil {

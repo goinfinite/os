@@ -1,23 +1,26 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CreateVirtualHost struct {
-	Hostname          valueObject.Fqdn            `json:"hostname"`
+	Hostname          tkValueObject.Fqdn          `json:"hostname"`
 	Type              valueObject.VirtualHostType `json:"type"`
 	IsWildcard        *bool                       `json:"isWildcard"`
-	ParentHostname    *valueObject.Fqdn           `json:"parentHostname"`
-	OperatorAccountId valueObject.AccountId       `json:"-"`
-	OperatorIpAddress valueObject.IpAddress       `json:"-"`
+	ParentHostname    *tkValueObject.Fqdn         `json:"parentHostname"`
+	OperatorAccountId tkValueObject.AccountId     `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress     `json:"-"`
 }
 
 func NewCreateVirtualHost(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	vhostType valueObject.VirtualHostType,
 	isWildcard *bool,
-	parentHostname *valueObject.Fqdn,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	parentHostname *tkValueObject.Fqdn,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CreateVirtualHost {
 	return CreateVirtualHost{
 		Hostname:          hostname,

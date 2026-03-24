@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"github.com/goinfinite/ui/src/toolset"
@@ -145,7 +146,7 @@ templ FunctionalPhpRuntimeContent(
 	</div>
 }
 
-templ CreatePhpMappingForm(selectedVhostHostname valueObject.Fqdn) {
+templ CreatePhpMappingForm(selectedVhostHostname tkValueObject.Fqdn) {
 	<!-- CreatePhpMappingForm -->
 	<form
 		id="create-php-mapping-form"

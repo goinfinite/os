@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type ServiceNature string
@@ -22,7 +22,7 @@ var ValidServiceNatures = []string{
 }
 
 func NewServiceNature(value interface{}) (serviceNature ServiceNature, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceNature, errors.New("ServiceNatureValueMustBeString")
 	}

@@ -6,6 +6,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 const ScheduledTasksRunIntervalSecs uint8 = 90
@@ -34,7 +35,7 @@ func RunScheduledTasks(
 
 	for _, pendingTask := range responseDto.Tasks {
 		if pendingTask.RunAt != nil {
-			nowUnixTime := valueObject.NewUnixTimeNow()
+			nowUnixTime := tkValueObject.NewUnixTimeNow()
 			if nowUnixTime.Int64() < pendingTask.RunAt.Int64() {
 				continue
 			}

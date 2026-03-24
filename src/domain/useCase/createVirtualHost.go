@@ -8,12 +8,14 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func CreateVirtualHost(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateVirtualHost,
 ) error {
 	_, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
@@ -30,7 +32,7 @@ func CreateVirtualHost(
 	isWildcardHostname := strings.HasPrefix(createDto.Hostname.String(), "*.")
 	if isWildcardHostname {
 		hostnameWithoutWildcardStr := strings.Replace(createDto.Hostname.String(), "*.", "", 1)
-		hostnameWithoutWildcard, err := valueObject.NewFqdn(hostnameWithoutWildcardStr)
+		hostnameWithoutWildcard, err := tkValueObject.NewFqdn(hostnameWithoutWildcardStr)
 		if err != nil {
 			return errors.New("RemoveWildcardFromHostnameError")
 		}

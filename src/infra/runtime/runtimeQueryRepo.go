@@ -11,14 +11,21 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type RuntimeQueryRepo struct {
+	fileClerk tkInfra.FileClerk
+}
+
+func NewRuntimeQueryRepo() *RuntimeQueryRepo {
+	return &RuntimeQueryRepo{fileClerk: tkInfra.FileClerk{}}
 }
 
 func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
-	hostname valueObject.Fqdn,
-) (vhostPhpConfFilePath valueObject.UnixFilePath, err error) {
+	hostname tkValueObject.Fqdn,
+) (vhostPhpConfFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
 	primaryVhostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
 	vhostPhpConfFilePathStr := "/app/conf/php-webserver/" + hostname.String() + ".conf"
 
@@ -31,12 +38,12 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 		vhostPhpConfFilePathStr = primaryVhostPhpConfFilePathStr
 	}
 
-	vhostPhpConfFilePath, err = valueObject.NewUnixFilePath(vhostPhpConfFilePathStr)
+	vhostPhpConfFilePath, err = tkValueObject.NewUnixAbsoluteFilePath(vhostPhpConfFilePathStr, false)
 	if err != nil {
 		return vhostPhpConfFilePath, err
 	}
 
-	if !infraHelper.FileExists(vhostPhpConfFilePathStr) {
+	if !repo.fileClerk.FileExists(vhostPhpConfFilePathStr) {
 		return vhostPhpConfFilePath, errors.New("VirtualHostNotFound")
 	}
 
@@ -46,12 +53,12 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	phpVersions []valueObject.PhpVersion, err error,
 ) {
-	output, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	output, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "awk",
 		Args: []string{
 			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebserverMainConfFilePath,
 		},
-	})
+	}).Run()
 	if err != nil {
 		return phpVersions, errors.New("GetPhpVersionFromFileFailed: " + err.Error())
 	}
@@ -74,20 +81,20 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 }
 
 func (repo RuntimeQueryRepo) ReadPhpVersion(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 ) (phpVersion entity.PhpVersion, err error) {
 	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return phpVersion, err
 	}
 
-	currentPhpVersionStr, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	currentPhpVersionStr, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "awk",
 		Args: []string{
 			"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
 			vhostPhpConfFilePath.String(),
 		},
-	})
+	}).Run()
 	if err != nil {
 		return phpVersion, errors.New("GetCurrentPhpVersionFromFileFailed: " + err.Error())
 	}
@@ -107,10 +114,10 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 }
 
 func (repo RuntimeQueryRepo) getPhpTimezones() (timezones []string, err error) {
-	timezonesRaw, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	timezonesRaw, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "php",
 		Args:    []string{"-r", "echo json_encode(DateTimeZone::listIdentifiers());"},
-	})
+	}).Run()
 	if err != nil {
 		return timezones, errors.New("GetPhpTimezonesFailed: " + err.Error())
 	}
@@ -209,14 +216,14 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 }
 
 func (repo RuntimeQueryRepo) ReadPhpSettings(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 ) (phpSettings []entity.PhpSetting, err error) {
 	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return phpSettings, err
 	}
 
-	output, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	output, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
 			"-n",
@@ -224,7 +231,7 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 				"s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
 			vhostPhpConfFilePath.String(),
 		},
-	})
+	}).Run()
 	if err != nil || output == "" {
 		return phpSettings, errors.New("GetPhpSettingsFailed: " + err.Error())
 	}
@@ -244,10 +251,10 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 func (repo RuntimeQueryRepo) ReadPhpModules(
 	version valueObject.PhpVersion,
 ) (phpModules []entity.PhpModule, err error) {
-	activeModuleList, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	activeModuleList, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php",
 		Args:    []string{"-m"},
-	})
+	}).Run()
 	if err != nil {
 		return phpModules, errors.New("GetActivePhpModulesFailed: " + err.Error())
 	}
@@ -289,7 +296,7 @@ func (repo RuntimeQueryRepo) ReadPhpModules(
 }
 
 func (repo RuntimeQueryRepo) ReadPhpConfigs(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 ) (phpConfigs entity.PhpConfigs, err error) {
 	phpVersion, err := repo.ReadPhpVersion(hostname)
 	if err != nil {

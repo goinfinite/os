@@ -1,14 +1,16 @@
 package liaison
 
 import (
-	"errors"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"strconv"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -17,7 +19,6 @@ import (
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 )
 
 type MarketplaceLiaison struct {
@@ -41,12 +42,14 @@ func NewMarketplaceLiaison(
 
 func (liaison *MarketplaceLiaison) ReadCatalog(
 	untrustedInput map[string]any,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	var idPtr *valueObject.MarketplaceItemId
 	if untrustedInput["id"] != nil {
 		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		idPtr = &id
 	}
@@ -55,7 +58,9 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	if untrustedInput["slug"] != nil {
 		slug, err := valueObject.NewMarketplaceItemSlug(untrustedInput["slug"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		slugPtr = &slug
 	}
@@ -64,7 +69,9 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	if untrustedInput["name"] != nil {
 		name, err := valueObject.NewMarketplaceItemName(untrustedInput["name"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		namePtr = &name
 	}
@@ -73,56 +80,24 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	if untrustedInput["type"] != nil {
 		itemType, err := valueObject.NewMarketplaceItemType(untrustedInput["type"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		typePtr = &itemType
 	}
 
-	paginationDto := useCase.MarketplaceDefaultPagination
-	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
-		}
-		paginationDto.PageNumber = pageNumber
-	}
-
-	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
-		}
-		paginationDto.ItemsPerPage = itemsPerPage
-	}
-
-	if untrustedInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortBy = &sortBy
-	}
-
-	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(
-			untrustedInput["sortDirection"],
+	requestPagination, err := tkPresentation.PaginationParser(
+		useCase.MarketplaceDefaultPagination, untrustedInput,
+	)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
 		)
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortDirection = &sortDirection
-	}
-
-	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.LastSeenId = &lastSeenId
 	}
 
 	readDto := dto.ReadMarketplaceCatalogItemsRequest{
-		Pagination:                 paginationDto,
+		Pagination:                 requestPagination,
 		MarketplaceCatalogItemId:   idPtr,
 		MarketplaceCatalogItemSlug: slugPtr,
 		MarketplaceCatalogItemName: namePtr,
@@ -131,25 +106,33 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 
 	itemsList, err := useCase.ReadMarketplaceCatalogItems(liaison.marketplaceQueryRepo, readDto)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Success, itemsList)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, itemsList,
+	)
 }
 
 func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	untrustedInput map[string]any,
 	shouldSchedule bool,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	hostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
 	if untrustedInput["hostname"] != nil {
-		hostname, err = valueObject.NewFqdn(untrustedInput["hostname"])
+		hostname, err = tkValueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -157,7 +140,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	if untrustedInput["id"] != nil {
 		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 		idPtr = &id
 	}
@@ -166,7 +151,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	if untrustedInput["slug"] != nil {
 		slug, err := valueObject.NewMarketplaceItemSlug(untrustedInput["slug"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 		slugPtr = &slug
 	}
@@ -175,7 +162,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	if untrustedInput["urlPath"] != nil {
 		urlPath, err := valueObject.NewUrlPath(untrustedInput["urlPath"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 		urlPathPtr = &urlPath
 	}
@@ -185,7 +174,9 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 		var assertOk bool
 		dataFields, assertOk = untrustedInput["dataFields"].([]valueObject.MarketplaceInstallableItemDataField)
 		if !assertOk {
-			return NewLiaisonOutput(UserError, "InvalidDataFields")
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, "InvalidDataFields",
+			)
 		}
 	}
 
@@ -208,7 +199,7 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 		}
 
 		for _, dataField := range dataFields {
-			escapedField := infraHelper.ShellEscape{}.Quote(dataField.String())
+			escapedField := tkInfra.ShellEscape{}.Quote(dataField.String())
 			installParams = append(installParams, "--data-fields", escapedField)
 		}
 
@@ -216,7 +207,7 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 
 		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(liaison.persistentDbSvc)
 		taskName, _ := valueObject.NewScheduledTaskName("InstallMarketplaceCatalogItem")
-		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskCmd, _ := tkValueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
 		timeoutSecs := uint16(1800)
@@ -227,25 +218,34 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
-			return NewLiaisonOutput(InfraError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+			)
 		}
 
-		return NewLiaisonOutput(Created, "MarketplaceCatalogItemInstallationScheduled")
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusCreated,
+			"MarketplaceCatalogItemInstallationScheduled",
+		)
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -261,29 +261,37 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 		liaison.activityRecordCmdRepo, installDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Created, "MarketplaceCatalogItemInstalled")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusCreated, "MarketplaceCatalogItemInstalled",
+	)
 }
 
 func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	untrustedInput map[string]any,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	var idPtr *valueObject.MarketplaceItemId
 	if untrustedInput["id"] != nil {
 		id, err := valueObject.NewMarketplaceItemId(untrustedInput["id"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		idPtr = &id
 	}
 
-	var hostnamePtr *valueObject.Fqdn
+	var hostnamePtr *tkValueObject.Fqdn
 	if untrustedInput["hostname"] != nil {
-		hostname, err := valueObject.NewFqdn(untrustedInput["hostname"])
+		hostname, err := tkValueObject.NewFqdn(untrustedInput["hostname"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		hostnamePtr = &hostname
 	}
@@ -292,7 +300,9 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	if untrustedInput["type"] != nil {
 		itemType, err := valueObject.NewMarketplaceItemType(untrustedInput["type"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		typePtr = &itemType
 	}
@@ -303,56 +313,24 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 			untrustedInput["installationUuid"],
 		)
 		if err != nil {
-			return NewLiaisonOutput(UserError, err)
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err,
+			)
 		}
 		installationUuidPtr = &installationUuid
 	}
 
-	paginationDto := useCase.MarketplaceDefaultPagination
-	if untrustedInput["pageNumber"] != nil {
-		pageNumber, err := voHelper.InterfaceToUint32(untrustedInput["pageNumber"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidPageNumber"))
-		}
-		paginationDto.PageNumber = pageNumber
-	}
-
-	if untrustedInput["itemsPerPage"] != nil {
-		itemsPerPage, err := voHelper.InterfaceToUint16(untrustedInput["itemsPerPage"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("InvalidItemsPerPage"))
-		}
-		paginationDto.ItemsPerPage = itemsPerPage
-	}
-
-	if untrustedInput["sortBy"] != nil {
-		sortBy, err := valueObject.NewPaginationSortBy(untrustedInput["sortBy"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortBy = &sortBy
-	}
-
-	if untrustedInput["sortDirection"] != nil {
-		sortDirection, err := valueObject.NewPaginationSortDirection(
-			untrustedInput["sortDirection"],
+	requestPagination, err := tkPresentation.PaginationParser(
+		useCase.MarketplaceDefaultPagination, untrustedInput,
+	)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
 		)
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.SortDirection = &sortDirection
-	}
-
-	if untrustedInput["lastSeenId"] != nil {
-		lastSeenId, err := valueObject.NewPaginationLastSeenId(untrustedInput["lastSeenId"])
-		if err != nil {
-			return NewLiaisonOutput(UserError, err)
-		}
-		paginationDto.LastSeenId = &lastSeenId
 	}
 
 	readDto := dto.ReadMarketplaceInstalledItemsRequest{
-		Pagination:                       paginationDto,
+		Pagination:                       requestPagination,
 		MarketplaceInstalledItemId:       idPtr,
 		MarketplaceInstalledItemHostname: hostnamePtr,
 		MarketplaceInstalledItemType:     typePtr,
@@ -363,31 +341,39 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 		liaison.marketplaceQueryRepo, readDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Success, itemsList)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, itemsList,
+	)
 }
 
 func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 	untrustedInput map[string]any,
 	shouldSchedule bool,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"installedId"}
 
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	installedId, err := valueObject.NewMarketplaceItemId(untrustedInput["installedId"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	shouldUninstallServices := true
 	if untrustedInput["shouldUninstallServices"] != nil {
-		shouldUninstallServices, err = voHelper.InterfaceToBool(
+		shouldUninstallServices, err = tkVoUtil.InterfaceToBool(
 			untrustedInput["shouldUninstallServices"],
 		)
 		if err != nil {
@@ -397,17 +383,21 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -424,7 +414,7 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 			liaison.persistentDbSvc,
 		)
 		taskName, _ := valueObject.NewScheduledTaskName("DeleteMarketplaceCatalogItem")
-		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskCmd, _ := tkValueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("marketplace")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
 		timeoutSeconds := uint16(600)
@@ -435,10 +425,15 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
-			return NewLiaisonOutput(InfraError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+			)
 		}
 
-		return NewLiaisonOutput(Created, "MarketplaceCatalogItemDeletionScheduled")
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusCreated,
+			"MarketplaceCatalogItemDeletionScheduled",
+		)
 	}
 
 	deleteMarketplaceInstalledItem := dto.NewDeleteMarketplaceInstalledItem(
@@ -456,8 +451,12 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 		liaison.activityRecordCmdRepo, deleteMarketplaceInstalledItem,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Success, "MarketplaceInstalledItemDeleted")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, "MarketplaceInstalledItemDeleted",
+	)
 }

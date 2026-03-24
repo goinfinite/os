@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type MarketplaceItemManifestVersion string
@@ -17,7 +17,7 @@ var validMarketplaceItemManifestVersions = []string{
 func NewMarketplaceItemManifestVersion(value interface{}) (
 	version MarketplaceItemManifestVersion, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return version, errors.New("MarketplaceItemManifestVersionMustBeString")
 	}

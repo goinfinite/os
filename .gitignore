@@ -5,3 +5,5 @@ logs/
 TODO.md
 *.db
 *_templ.go
+.agents/
+.memory/

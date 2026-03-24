@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
@@ -13,7 +13,7 @@ const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
 type MappingPath string
 
 func NewMappingPath(value interface{}) (mappingPath MappingPath, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return mappingPath, errors.New("MappingPathMustBeString")
 	}

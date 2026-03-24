@@ -5,14 +5,14 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func ReadAccessTokenDetails(
 	authQueryRepo repository.AuthQueryRepo,
-	accessToken valueObject.AccessTokenStr,
-	trustedIpAddress []valueObject.IpAddress,
-	ipAddress valueObject.IpAddress,
+	accessToken tkValueObject.AccessTokenValue,
+	trustedIpAddress []tkValueObject.IpAddress,
+	ipAddress tkValueObject.IpAddress,
 ) (dto.AccessTokenDetails, error) {
 	accessTokenDetails, err := authQueryRepo.ReadAccessTokenDetails(accessToken)
 	if err != nil {

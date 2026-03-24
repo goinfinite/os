@@ -6,29 +6,30 @@ import (
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestMysqlDatabaseCmdRepo(t *testing.T) {
 	t.Skip("SkipMysqlDatabaseCmdRepoTest")
 	testHelpers.LoadEnvVars()
 
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "mysqld_safe",
 		Args:    []string{"&"},
-	})
+	}).Run()
 	if err != nil {
 		t.Error("Error starting command")
 	}
 
 	dbName, _ := valueObject.NewDatabaseName("testing")
 	dbUsername, _ := valueObject.NewDatabaseUsername("testing")
-	dbPassword, _ := valueObject.NewPassword("testing")
+	dbPassword, _ := tkValueObject.NewWeakPassword("Testing@1")
 	dbPrivilege, _ := valueObject.NewDatabasePrivilege("ALL")
 	dbPrivileges := []valueObject.DatabasePrivilege{dbPrivilege}
 
-	ipAddress := valueObject.IpAddressSystem
-	operatorAccountId, _ := valueObject.NewAccountId(0)
+	ipAddress := tkValueObject.IpAddressLocal
+	operatorAccountId, _ := tkValueObject.NewAccountId(0)
 
 	mysqlDatabaseCmdRepo := MysqlDatabaseCmdRepo{}
 

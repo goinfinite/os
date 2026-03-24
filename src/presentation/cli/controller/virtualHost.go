@@ -2,7 +2,6 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
@@ -50,12 +49,23 @@ func (controller *VirtualHostController) Read() *cobra.Command {
 				requestBody["withMappings"] = withMappingsBoolStr
 			}
 
-			requestBody = cliHelper.PaginationParser(
-				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
-				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
-			)
+			if paginationPageNumberUint32 != 0 {
+				requestBody["pageNumber"] = paginationPageNumberUint32
+			}
+			if paginationItemsPerPageUint16 != 0 {
+				requestBody["itemsPerPage"] = paginationItemsPerPageUint16
+			}
+			if paginationSortByStr != "" {
+				requestBody["sortBy"] = paginationSortByStr
+			}
+			if paginationSortDirectionStr != "" {
+				requestBody["sortDirection"] = paginationSortDirectionStr
+			}
+			if paginationLastSeenIdStr != "" {
+				requestBody["lastSeenId"] = paginationLastSeenIdStr
+			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.Read(requestBody),
 			)
 		},
@@ -106,7 +116,7 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 				requestBody["parentHostname"] = parentHostnameStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.Create(requestBody),
 			)
 		},
@@ -136,7 +146,7 @@ func (controller *VirtualHostController) Update() *cobra.Command {
 				"isWildcard": isWildcardBoolStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.Update(requestBody),
 			)
 		},
@@ -161,7 +171,7 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 				"hostname": hostnameStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.Delete(requestBody),
 			)
 		},
@@ -199,12 +209,23 @@ func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
 				requestBody["parentHostname"] = parentHostnameStr
 			}
 
-			requestBody = cliHelper.PaginationParser(
-				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
-				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
-			)
+			if paginationPageNumberUint32 != 0 {
+				requestBody["pageNumber"] = paginationPageNumberUint32
+			}
+			if paginationItemsPerPageUint16 != 0 {
+				requestBody["itemsPerPage"] = paginationItemsPerPageUint16
+			}
+			if paginationSortByStr != "" {
+				requestBody["sortBy"] = paginationSortByStr
+			}
+			if paginationSortDirectionStr != "" {
+				requestBody["sortDirection"] = paginationSortDirectionStr
+			}
+			if paginationLastSeenIdStr != "" {
+				requestBody["lastSeenId"] = paginationLastSeenIdStr
+			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.Read(requestBody),
 			)
 		},
@@ -266,7 +287,7 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 				requestBody["mappingSecurityRuleId"] = mappingSecurityRuleIdUint
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.CreateMapping(requestBody),
 			)
 		},
@@ -343,7 +364,7 @@ func (controller *VirtualHostController) UpdateMapping() *cobra.Command {
 				requestBody["mappingSecurityRuleId"] = mappingSecurityRuleIdUint
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.UpdateMapping(requestBody),
 			)
 		},
@@ -385,7 +406,7 @@ func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 				"id": mappingIdUint,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.DeleteMapping(requestBody),
 			)
 		},
@@ -429,12 +450,23 @@ func (controller *VirtualHostController) ReadMappingSecurityRules() *cobra.Comma
 				requestBody["createdAfterAt"] = createdAfterAtInt
 			}
 
-			requestBody = cliHelper.PaginationParser(
-				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
-				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
-			)
+			if paginationPageNumberUint32 != 0 {
+				requestBody["pageNumber"] = paginationPageNumberUint32
+			}
+			if paginationItemsPerPageUint16 != 0 {
+				requestBody["itemsPerPage"] = paginationItemsPerPageUint16
+			}
+			if paginationSortByStr != "" {
+				requestBody["sortBy"] = paginationSortByStr
+			}
+			if paginationSortDirectionStr != "" {
+				requestBody["sortDirection"] = paginationSortDirectionStr
+			}
+			if paginationLastSeenIdStr != "" {
+				requestBody["lastSeenId"] = paginationLastSeenIdStr
+			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.ReadMappingSecurityRules(requestBody),
 			)
 		},
@@ -528,7 +560,7 @@ func (controller *VirtualHostController) CreateMappingSecurityRule() *cobra.Comm
 				requestBody["responseCodeOnMaxConnections"] = responseCodeOnMaxConnectionsUint
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.CreateMappingSecurityRule(requestBody),
 			)
 		},
@@ -640,7 +672,7 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule() *cobra.Comm
 				requestBody["responseCodeOnMaxConnections"] = responseCodeOnMaxConnectionsUint
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.UpdateMappingSecurityRule(requestBody),
 			)
 		},
@@ -699,7 +731,7 @@ func (controller *VirtualHostController) DeleteMappingSecurityRule() *cobra.Comm
 				"id": ruleIdUint,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.virtualHostLiaison.DeleteMappingSecurityRule(requestBody),
 			)
 		},

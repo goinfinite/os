@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
 
@@ -45,7 +46,7 @@ func (presenter *DatabasesPresenter) databaseOverviewFactory(
 		"itemsPerPage": 1000,
 	}
 	responseOutput := presenter.databaseLiaison.Read(requestBody)
-	if responseOutput.Status != liaison.Success {
+	if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return databaseOverview, err
 	}
 

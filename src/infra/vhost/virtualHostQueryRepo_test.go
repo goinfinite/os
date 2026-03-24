@@ -6,6 +6,7 @@ import (
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 )
 
 func TestVirtualHostQueryRepo(t *testing.T) {
@@ -17,7 +18,7 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 	t.Run("Read", func(t *testing.T) {
 		withMappings := true
 		_, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-			Pagination:   dto.PaginationUnpaginated,
+			Pagination:   tkDto.PaginationUnpaginated,
 			WithMappings: &withMappings,
 		})
 		if err != nil {

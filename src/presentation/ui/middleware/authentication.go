@@ -9,8 +9,8 @@ import (
 
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/useCase"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	authInfra "github.com/goinfinite/os/src/infra/auth"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/labstack/echo/v4"
@@ -18,13 +18,13 @@ import (
 
 func extractAccountIdFromAccessToken(
 	authQueryRepo repository.AuthQueryRepo,
-	accessTokenStr valueObject.AccessTokenStr,
-	userIpAddress valueObject.IpAddress,
-) (accountId valueObject.AccountId, err error) {
-	var trustedIps []valueObject.IpAddress
+	accessTokenStr tkValueObject.AccessTokenValue,
+	userIpAddress tkValueObject.IpAddress,
+) (accountId tkValueObject.AccountId, err error) {
+	var trustedIps []tkValueObject.IpAddress
 	rawTrustedIps := strings.SplitSeq(os.Getenv("TRUSTED_IPS"), ",")
 	for rawTrustedIp := range rawTrustedIps {
-		trustedIp, err := valueObject.NewIpAddress(rawTrustedIp)
+		trustedIp, err := tkValueObject.NewIpAddress(rawTrustedIp)
 		if err != nil {
 			continue
 		}
@@ -101,13 +101,13 @@ func Authentication(
 				rawAccessToken = strings.TrimPrefix(rawAccessToken, bearerPrefix)
 			}
 
-			accessTokenStr, err := valueObject.NewAccessTokenStr(rawAccessToken)
+			accessTokenStr, err := tkValueObject.NewAccessTokenValue(rawAccessToken)
 			if err != nil {
 				slog.Debug("InvalidAccessToken", slog.String("rawAccessToken", rawAccessToken))
 				return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
 
-			userIpAddress, err := valueObject.NewIpAddress(echoContext.RealIP())
+			userIpAddress, err := tkValueObject.NewIpAddress(echoContext.RealIP())
 			if err != nil {
 				slog.Debug("InvalidUserIpAddress", slog.String("ipAddress", echoContext.RealIP()))
 				return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)

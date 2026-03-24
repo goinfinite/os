@@ -5,17 +5,19 @@ import (
 	"log/slog"
 	"net/http"
 
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
+
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	"github.com/labstack/echo/v4"
 )
 
@@ -81,16 +83,16 @@ func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 	pageNumber := uint16(0)
 	pageNumberQueryParam := c.QueryParam("pageNumber")
 	if pageNumberQueryParam != "" {
-		pageNumber, _ = voHelper.InterfaceToUint16(pageNumberQueryParam)
+		pageNumber, _ = tkVoUtil.InterfaceToUint16(pageNumberQueryParam)
 	}
 
 	itemsPerPage := uint16(5)
 	itemsPerPageQueryParam := c.QueryParam("itemsPerPage")
 	if itemsPerPageQueryParam != "" {
-		itemsPerPage, _ = voHelper.InterfaceToUint16(itemsPerPageQueryParam)
+		itemsPerPage, _ = tkVoUtil.InterfaceToUint16(itemsPerPageQueryParam)
 	}
 
-	readInstalledServicesRequestBody := map[string]interface{}{
+	readInstalledServicesRequestBody := map[string]any{
 		"pageNumber":           pageNumber,
 		"itemsPerPage":         itemsPerPage,
 		"shouldIncludeMetrics": true,
@@ -119,7 +121,7 @@ func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 	installedItemsResponseOutput := presenter.servicesLiaison.ReadInstalledItems(
 		readInstalledServicesRequestBody,
 	)
-	if installedItemsResponseOutput.Status != liaison.Success {
+	if installedItemsResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return responseDto, errors.New("FailedToReadInstalledServices")
 	}
 
@@ -140,9 +142,11 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 	}
 
 	installableItemsResponseOutput := presenter.servicesLiaison.ReadInstallableItems(
-		map[string]interface{}{},
+		map[string]any{
+			"itemsPerPage": 50,
+		},
 	)
-	if installableItemsResponseOutput.Status != liaison.Success {
+	if installableItemsResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return overview, errors.New("FailedToReadInstallableServices")
 	}
 

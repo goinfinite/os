@@ -3,7 +3,6 @@ package cliController
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -50,12 +49,23 @@ func (controller *DatabaseController) Read() *cobra.Command {
 				requestBody["username"] = usernameStr
 			}
 
-			requestBody = cliHelper.PaginationParser(
-				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
-				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
-			)
+			if paginationPageNumberUint32 != 0 {
+				requestBody["pageNumber"] = paginationPageNumberUint32
+			}
+			if paginationItemsPerPageUint16 != 0 {
+				requestBody["itemsPerPage"] = paginationItemsPerPageUint16
+			}
+			if paginationSortByStr != "" {
+				requestBody["sortBy"] = paginationSortByStr
+			}
+			if paginationSortDirectionStr != "" {
+				requestBody["sortDirection"] = paginationSortDirectionStr
+			}
+			if paginationLastSeenIdStr != "" {
+				requestBody["lastSeenId"] = paginationLastSeenIdStr
+			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.databaseLiaison.Read(requestBody),
 			)
 		},
@@ -95,7 +105,7 @@ func (controller *DatabaseController) Create() *cobra.Command {
 				"dbName": dbNameStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.databaseLiaison.Create(requestBody),
 			)
 		},
@@ -120,7 +130,7 @@ func (controller *DatabaseController) Delete() *cobra.Command {
 				"dbName": dbNameStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.databaseLiaison.Delete(requestBody),
 			)
 		},
@@ -154,7 +164,7 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 				)
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.databaseLiaison.CreateUser(requestBody),
 			)
 		},
@@ -189,7 +199,7 @@ func (controller *DatabaseController) DeleteUser() *cobra.Command {
 				"dbUser": dbUsernameStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.databaseLiaison.DeleteUser(requestBody),
 			)
 		},

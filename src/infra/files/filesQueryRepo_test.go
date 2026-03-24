@@ -5,17 +5,18 @@ import (
 	"testing"
 
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 func TestFilesQueryRepo(t *testing.T) {
-	filesQueryRepo := FilesQueryRepo{}
+	filesQueryRepo := NewFilesQueryRepo()
+	fileClerk := tkInfra.FileClerk{}
 	currentUser, _ := user.Current()
 	userHomeDir := "/home/" + currentUser.Username
 
 	t.Run("Read", func(t *testing.T) {
-		unixDirPath, _ := valueObject.NewUnixFilePath(userHomeDir)
+		unixDirPath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir, false)
 		requestDto := dto.ReadFilesRequest{
 			SourcePath: unixDirPath,
 		}
@@ -27,7 +28,7 @@ func TestFilesQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReadWithInvalidDirectory", func(t *testing.T) {
-		invalidUnixPath, _ := valueObject.NewUnixFilePath("/aaa/bbb/ccc")
+		invalidUnixPath, _ := tkValueObject.NewUnixAbsoluteFilePath("/aaa/bbb/ccc", false)
 		requestDto := dto.ReadFilesRequest{
 			SourcePath: invalidUnixPath,
 		}
@@ -39,13 +40,13 @@ func TestFilesQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReadFollowingSymlink", func(t *testing.T) {
-		downloadsDirPath, _ := valueObject.NewUnixFilePath(userHomeDir + "/Downloads")
-		tmpSymlinkPath, _ := valueObject.NewUnixFilePath(userHomeDir + "/tmpSymlink")
+		downloadsDirPath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir+"/Downloads", false)
+		tmpSymlinkPath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir+"/tmpSymlink", false)
 		requestDto := dto.ReadFilesRequest{
 			SourcePath: tmpSymlinkPath,
 		}
 
-		err := infraHelper.CreateSymlink(
+		err := fileClerk.CreateSymlink(
 			downloadsDirPath.String(), tmpSymlinkPath.String(), false,
 		)
 		if err != nil {
@@ -60,11 +61,11 @@ func TestFilesQueryRepo(t *testing.T) {
 			t.Errorf("ExpectedNonEmptyFilesButGotEmpty")
 		}
 
-		_ = infraHelper.RemoveSymlink(tmpSymlinkPath.String())
+		_ = fileClerk.RemoveSymlink(tmpSymlinkPath.String())
 	})
 
 	t.Run("ReadFirstFile", func(t *testing.T) {
-		unixFilePath, _ := valueObject.NewUnixFilePath(userHomeDir + "/.bashrc")
+		unixFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir+"/.bashrc", false)
 		_, err := filesQueryRepo.ReadFirst(unixFilePath)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())

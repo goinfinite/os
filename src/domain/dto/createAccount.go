@@ -1,21 +1,24 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CreateAccount struct {
-	Username          valueObject.Username  `json:"username"`
-	Password          valueObject.Password  `json:"password"`
-	IsSuperAdmin      bool                  `json:"isSuperAdmin"`
-	OperatorAccountId valueObject.AccountId `json:"-"`
-	OperatorIpAddress valueObject.IpAddress `json:"-"`
+	Username          valueObject.Username    `json:"username"`
+	Password          tkValueObject.Password  `json:"password"`
+	IsSuperAdmin      bool                    `json:"isSuperAdmin"`
+	OperatorAccountId tkValueObject.AccountId `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress `json:"-"`
 }
 
 func NewCreateAccount(
 	username valueObject.Username,
-	password valueObject.Password,
+	password tkValueObject.Password,
 	isSuperAdmin bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CreateAccount {
 	return CreateAccount{
 		Username:          username,

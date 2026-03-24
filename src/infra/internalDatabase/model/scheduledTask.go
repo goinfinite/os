@@ -5,6 +5,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type ScheduledTask struct {
@@ -75,7 +76,7 @@ func (model ScheduledTask) ToEntity() (taskEntity entity.ScheduledTask, err erro
 		return taskEntity, err
 	}
 
-	command, err := valueObject.NewUnixCommand(model.Command)
+	command, err := tkValueObject.NewUnixCommand(model.Command)
 	if err != nil {
 		return taskEntity, err
 	}
@@ -89,9 +90,9 @@ func (model ScheduledTask) ToEntity() (taskEntity entity.ScheduledTask, err erro
 		tags = append(tags, tag)
 	}
 
-	var runAtPtr *valueObject.UnixTime
+	var runAtPtr *tkValueObject.UnixTime
 	if model.RunAt != nil {
-		runAt := valueObject.NewUnixTimeWithGoTime(*model.RunAt)
+		runAt := tkValueObject.NewUnixTimeWithGoTime(*model.RunAt)
 		runAtPtr = &runAt
 	}
 
@@ -113,20 +114,20 @@ func (model ScheduledTask) ToEntity() (taskEntity entity.ScheduledTask, err erro
 		taskErrorPtr = &taskError
 	}
 
-	var startedAtPtr *valueObject.UnixTime
+	var startedAtPtr *tkValueObject.UnixTime
 	if model.StartedAt != nil {
-		startedAt := valueObject.NewUnixTimeWithGoTime(*model.StartedAt)
+		startedAt := tkValueObject.NewUnixTimeWithGoTime(*model.StartedAt)
 		startedAtPtr = &startedAt
 	}
 
-	var finishedAtPtr *valueObject.UnixTime
+	var finishedAtPtr *tkValueObject.UnixTime
 	if model.FinishedAt != nil {
-		finishedAt := valueObject.NewUnixTimeWithGoTime(*model.FinishedAt)
+		finishedAt := tkValueObject.NewUnixTimeWithGoTime(*model.FinishedAt)
 		finishedAtPtr = &finishedAt
 	}
 
-	createdAt := valueObject.NewUnixTimeWithGoTime(model.CreatedAt)
-	updatedAt := valueObject.NewUnixTimeWithGoTime(model.UpdatedAt)
+	createdAt := tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt)
+	updatedAt := tkValueObject.NewUnixTimeWithGoTime(model.UpdatedAt)
 
 	return entity.NewScheduledTask(
 		id, name, status, command, tags, model.TimeoutSecs, runAtPtr, outputPtr,

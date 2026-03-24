@@ -2,14 +2,14 @@ package repository
 
 import (
 	"github.com/goinfinite/os/src/domain/dto"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type FilesCmdRepo interface {
 	Copy(dto.CopyUnixFile) error
 	Compress(dto.CompressUnixFiles) (dto.CompressionProcessReport, error)
 	Create(dto.CreateUnixFile) error
-	Delete(valueObject.UnixFilePath) error
+	Delete(tkValueObject.UnixAbsoluteFilePath) error
 	Extract(dto.ExtractUnixFiles) error
 	Move(dto.MoveUnixFile) error
 	UpdateContent(dto.UpdateUnixFileContent) error

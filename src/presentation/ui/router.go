@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	presenterAccounts "github.com/goinfinite/os/src/presentation/ui/presenter/accounts"
 	presenterCrons "github.com/goinfinite/os/src/presentation/ui/presenter/crons"
@@ -217,7 +217,7 @@ func (router *Router) RegisterRoutes() {
 	router.setupRoutes()
 	router.sslsRoutes()
 
-	if isDevMode, _ := voHelper.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+	if isDevMode, _ := tkVoUtil.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
 		router.devRoutes()
 	}
 

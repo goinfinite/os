@@ -10,8 +10,10 @@ import (
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type VirtualHostQueryRepo struct {
@@ -73,13 +75,13 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 			sortByStr = "Type"
 		}
 
-		sortBy, err := valueObject.NewPaginationSortBy(sortByStr)
+		sortBy, err := tkValueObject.NewPaginationSortBy(sortByStr)
 		if err == nil {
 			requestDto.Pagination.SortBy = &sortBy
 		}
 	}
-	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
-		dbQuery, requestDto.Pagination,
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination, "hostname",
 	)
 	if err != nil {
 		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
@@ -119,14 +121,14 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 
 	mappingQueryRepo := NewMappingQueryRepo(repo.persistentDbSvc)
 	readMappingsResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		Pagination: dto.PaginationUnpaginated,
+		Pagination: tkDto.PaginationUnpaginated,
 		Hostname:   requestDto.Hostname,
 	})
 	if err != nil {
 		return responseDto, errors.New("ReadMappingsError: " + err.Error())
 	}
 
-	hostnameMappingEntitiesMap := map[valueObject.Fqdn][]entity.Mapping{}
+	hostnameMappingEntitiesMap := map[tkValueObject.Fqdn][]entity.Mapping{}
 	for _, mappingEntity := range readMappingsResponse.Mappings {
 		hostnameMappingEntitiesMap[mappingEntity.Hostname] = append(
 			hostnameMappingEntitiesMap[mappingEntity.Hostname], mappingEntity,
@@ -156,7 +158,7 @@ func (repo *VirtualHostQueryRepo) ReadFirst(
 	requestDto dto.ReadVirtualHostsRequest,
 ) (vhostEntity entity.VirtualHost, err error) {
 	requestDto.WithMappings = nil
-	requestDto.Pagination = dto.PaginationSingleItem
+	requestDto.Pagination = tkDto.PaginationSingleItem
 	responseDto, err := repo.Read(requestDto)
 	if err != nil {
 		return vhostEntity, err
@@ -174,7 +176,7 @@ func (repo *VirtualHostQueryRepo) ReadFirstWithMappings(
 ) (vhostWithMappingsDto dto.VirtualHostWithMappings, err error) {
 	withMappings := true
 	requestDto.WithMappings = &withMappings
-	requestDto.Pagination = dto.PaginationSingleItem
+	requestDto.Pagination = tkDto.PaginationSingleItem
 
 	responseDto, err := repo.Read(requestDto)
 	if err != nil {
@@ -189,8 +191,8 @@ func (repo *VirtualHostQueryRepo) ReadFirstWithMappings(
 }
 
 func (repo *VirtualHostQueryRepo) ReadVirtualHostMappingsFilePath(
-	vhostHostname valueObject.Fqdn,
-) (mappingsFilePath valueObject.UnixFilePath, err error) {
+	vhostHostname tkValueObject.Fqdn,
+) (mappingsFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
 	vhostEntity, err := repo.ReadFirst(dto.ReadVirtualHostsRequest{
 		Hostname: &vhostHostname,
 	})
@@ -219,7 +221,7 @@ func (repo *VirtualHostQueryRepo) ReadVirtualHostMappingsFilePath(
 		vhostFileNameStr = "primary.conf"
 	}
 
-	return valueObject.NewUnixFilePath(
-		infraEnvs.MappingsConfDir + "/" + vhostFileNameStr,
+	return tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.MappingsConfDir+"/"+vhostFileNameStr, false,
 	)
 }

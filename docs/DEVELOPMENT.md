@@ -138,3 +138,13 @@ When the project is running, you can access the documentation at [`https://local
 The `src/devUtils` folder is not a Clean Architecture layer, it's there to help you during development. You can add any file you want there, but it's not recommended to add any file that is not related to development since the code there is meant to be ignored by the build process.
 
 For instance there you'll find a `testHelpers.go` file that is used to read the `.env` during tests.
+
+## Context Files
+
+Every directory under `src/` contains a `.context.md` file, and there is a `docs/FEATURE-MAP.md` at the project level. These files exist to orient anyone — human or AI agent — on what a given directory contains, what constraints apply there, and how features flow end-to-end through the codebase.
+
+All `.context.md` files follow a standard schema: a short prose summary, a `Constraints` block, and a `Guidance` block. When you make a structural change — moving files, adding a layer, renaming a package — update the relevant `.context.md` files in the same commit. Letting them drift defeats their purpose.
+
+## AI-Assisted Development
+
+If you are using an AI toolkit to assist with development, clone it into the project root as `.agents/`. That directory is already gitignored, so nothing in it will affect the repository.

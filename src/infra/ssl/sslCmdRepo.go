@@ -8,6 +8,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
@@ -22,6 +24,7 @@ type SslCmdRepo struct {
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
 	sslQueryRepo    *SslQueryRepo
 	vhostQueryRepo  *vhostInfra.VirtualHostQueryRepo
+	fileClerk       tkInfra.FileClerk
 }
 
 func NewSslCmdRepo(
@@ -31,19 +34,20 @@ func NewSslCmdRepo(
 	return &SslCmdRepo{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
-		sslQueryRepo:    &SslQueryRepo{},
+		sslQueryRepo:    NewSslQueryRepo(),
 		vhostQueryRepo:  vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
+		fileClerk:       tkInfra.FileClerk{},
 	}
 }
 
 func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
-	vhostHostnames []valueObject.Fqdn,
-	serverPublicIpAddress valueObject.IpAddress,
-) []valueObject.Fqdn {
-	functionalHostnames := []valueObject.Fqdn{}
+	vhostHostnames []tkValueObject.Fqdn,
+	serverPublicIpAddress tkValueObject.IpAddress,
+) []tkValueObject.Fqdn {
+	functionalHostnames := []tkValueObject.Fqdn{}
 
 	for _, vhostHostname := range vhostHostnames {
-		wwwVirtualHostHostname, err := valueObject.NewFqdn("www." + vhostHostname.String())
+		wwwVirtualHostHostname, err := tkValueObject.NewFqdn("www." + vhostHostname.String())
 		if err != nil {
 			slog.Debug(
 				"InvalidWwwVirtualHostHostname",
@@ -95,15 +99,15 @@ func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
 
 func (repo *SslCmdRepo) createOwnershipValidationMapping(
 	mappingCmdRepo *vhostInfra.MappingCmdRepo,
-	targetVirtualHostHostname valueObject.Fqdn,
-	expectedOwnershipHash valueObject.Hash,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	targetVirtualHostHostname tkValueObject.Fqdn,
+	expectedOwnershipHash tkValueObject.Hash,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) (mappingId valueObject.MappingId, err error) {
 	path, _ := valueObject.NewMappingPath(DomainOwnershipValidationUrlPath)
 	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
 	targetType, _ := valueObject.NewMappingTargetType("inline-html")
-	httpResponseCode, _ := valueObject.NewHttpResponseCode(200)
+	httpResponseCode, _ := tkValueObject.NewHttpStatusCode(200)
 	targetValue, _ := valueObject.NewMappingTargetValue(
 		expectedOwnershipHash.String(), targetType,
 	)
@@ -119,13 +123,13 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 }
 
 func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
-	vhostHostnames []valueObject.Fqdn,
-	expectedOwnershipHash valueObject.Hash,
-	serverPublicIpAddress valueObject.IpAddress,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
-) []valueObject.Fqdn {
-	functionalHostnames := []valueObject.Fqdn{}
+	vhostHostnames []tkValueObject.Fqdn,
+	expectedOwnershipHash tkValueObject.Hash,
+	serverPublicIpAddress tkValueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
+) []tkValueObject.Fqdn {
+	functionalHostnames := []tkValueObject.Fqdn{}
 
 	serverPublicIpAddressStr := serverPublicIpAddress.String()
 	expectedHashStr := expectedOwnershipHash.String()
@@ -145,16 +149,17 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 		hashUrlFull := "https://" + vhostHostnameStr + hashUrlPath
 		curlBaseCmd := "curl -skLm 10 "
 		sniFlag := "--resolve " + vhostHostnameStr + ":443:" + serverPublicIpAddressStr
-		ownershipHashFound, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-			Command:               curlBaseCmd + sniFlag + " " + hashUrlFull,
-			ShouldRunWithSubShell: true,
-		})
+		ownershipHashFound, err := tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:           curlBaseCmd + sniFlag + " " + hashUrlFull,
+			ShouldUseSubShell: true,
+		}).Run()
 		if err != nil {
 			hashUrlFull = "https://" + serverPublicIpAddressStr + hashUrlPath
-			ownershipHashFound, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-				Command:               curlBaseCmd + "-H \"Host: " + vhostHostnameStr + "\" " + hashUrlFull,
-				ShouldRunWithSubShell: true,
-			})
+			ownershipHashFound, err = tkInfra.NewShell(tkInfra.ShellSettings{
+				Command: curlBaseCmd + "-H \"Host: " + vhostHostnameStr +
+					"\" " + hashUrlFull,
+				ShouldUseSubShell: true,
+			}).Run()
 			if err != nil {
 				continue
 			}
@@ -176,8 +181,8 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 }
 
 func (repo *SslCmdRepo) issueValidSsl(
-	mainHostname valueObject.Fqdn,
-	functionalHostnames []valueObject.Fqdn,
+	mainHostname tkValueObject.Fqdn,
+	functionalHostnames []tkValueObject.Fqdn,
 ) error {
 	mainHostnameStr := mainHostname.String()
 	vhostRootDir := infraEnvs.PrimaryPublicDir
@@ -185,7 +190,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 		vhostRootDir += "/" + mainHostnameStr
 	}
 
-	if !infraHelper.FileExists(vhostRootDir) {
+	if !repo.fileClerk.FileExists(vhostRootDir) {
 		return errors.New("VirtualHostRootDirNotFound")
 	}
 
@@ -195,10 +200,10 @@ func (repo *SslCmdRepo) issueValidSsl(
 		certbotCmd += " -d " + functionalHostname.String()
 	}
 
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               certbotCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           certbotCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("GenerateValidSslCertError: " + err.Error())
 	}
@@ -208,14 +213,18 @@ func (repo *SslCmdRepo) issueValidSsl(
 
 	certbotCrtFilePath := certbotDirPath + "/" + mainHostnameStr + "/fullchain.pem"
 	vhostCrtFilePath := infraEnvs.PkiConfDir + "/" + mainHostnameStr + ".crt"
-	err = infraHelper.CreateSymlink(certbotCrtFilePath, vhostCrtFilePath, shouldOverwrite)
+	err = repo.fileClerk.CreateSymlink(
+		certbotCrtFilePath, vhostCrtFilePath, shouldOverwrite,
+	)
 	if err != nil {
 		return errors.New("CreateSslCertSymlinkError: " + err.Error())
 	}
 
 	certbotKeyFilePath := certbotDirPath + "/" + mainHostnameStr + "/privkey.pem"
 	vhostKeyFilePath := infraEnvs.PkiConfDir + "/" + mainHostnameStr + ".key"
-	err = infraHelper.CreateSymlink(certbotKeyFilePath, vhostKeyFilePath, shouldOverwrite)
+	err = repo.fileClerk.CreateSymlink(
+		certbotKeyFilePath, vhostKeyFilePath, shouldOverwrite,
+	)
 	if err != nil {
 		return errors.New("CreateSslKeySymlinkError: " + err.Error())
 	}
@@ -233,7 +242,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 	}
 
 	vhostReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination: dto.PaginationSingleItem,
+		Pagination: tkDto.PaginationSingleItem,
 		Hostname:   &createDto.VirtualHostHostname,
 	})
 	if err != nil {
@@ -244,7 +253,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 		return sslPairId, errors.New("VirtualHostNotFound")
 	}
 
-	virtualHostsHostnames := []valueObject.Fqdn{createDto.VirtualHostHostname}
+	virtualHostsHostnames := []tkValueObject.Fqdn{createDto.VirtualHostHostname}
 	virtualHostsHostnames = append(
 		virtualHostsHostnames, vhostReadResponse.VirtualHosts[0].AliasesHostnames...,
 	)
@@ -260,7 +269,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 	dummyValue := synthesizer.PasswordFactory(32, false)
 	dummyHash := infraHelper.GenStrongHash(dummyValue)
 
-	expectedOwnershipHash, err := valueObject.NewHash(dummyHash)
+	expectedOwnershipHash, err := tkValueObject.NewHash(dummyHash)
 	if err != nil {
 		return sslPairId, errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
@@ -306,12 +315,14 @@ func (repo *SslCmdRepo) Create(
 		}
 
 		shouldOverwrite := true
-		err := infraHelper.UpdateFile(vhostCertFilePath, certContentStr, shouldOverwrite)
+		err := repo.fileClerk.UpdateFileContent(
+			vhostCertFilePath, certContentStr, shouldOverwrite,
+		)
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertFileError: " + err.Error())
 		}
 
-		err = infraHelper.UpdateFile(
+		err = repo.fileClerk.UpdateFileContent(
 			vhostCertKeyFilePath, createDto.Key.String(), shouldOverwrite,
 		)
 		if err != nil {
@@ -334,7 +345,7 @@ func (repo *SslCmdRepo) Create(
 	return sslPairEntity.Id, nil
 }
 
-func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) error {
+func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) error {
 	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 		Hostname: &vhostHostname,
 	})
@@ -346,21 +357,21 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 	}
 
 	aliasesVirtualHostsReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination:     dto.PaginationUnpaginated,
+		Pagination:     tkDto.PaginationUnpaginated,
 		ParentHostname: &vhostHostname,
 	})
 	if err != nil {
 		return errors.New("ReadAliasesError: " + err.Error())
 	}
 
-	aliasesHostnames := []valueObject.Fqdn{}
+	aliasesHostnames := []tkValueObject.Fqdn{}
 	for _, aliasVirtualHostEntity := range aliasesVirtualHostsReadResponse.VirtualHosts {
 		aliasesHostnames = append(aliasesHostnames, aliasVirtualHostEntity.Hostname)
 	}
 
 	vhostHostnameStr := vhostHostname.String()
 	vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
-	vhostCertFileExists := infraHelper.FileExists(vhostCertFilePath)
+	vhostCertFileExists := repo.fileClerk.FileExists(vhostCertFilePath)
 	if vhostCertFileExists {
 		err := os.Remove(vhostCertFilePath)
 		if err != nil {
@@ -369,7 +380,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 	}
 
 	vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
-	vhostCertKeyFileExists := infraHelper.FileExists(vhostCertKeyFilePath)
+	vhostCertKeyFileExists := repo.fileClerk.FileExists(vhostCertKeyFilePath)
 	if vhostCertKeyFileExists {
 		err := os.Remove(vhostCertKeyFilePath)
 		if err != nil {
@@ -377,7 +388,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname valueObject.Fqdn) er
 		}
 	}
 
-	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if err != nil {
 		return errors.New("PkiConfDirError: " + err.Error())
 	}

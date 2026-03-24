@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestSslPair(t *testing.T) {
@@ -80,7 +81,7 @@ ZrBUC3x7Z1Ex9qgz3p/Y/WxHDRrHDuuByGazDVhyDyXECWxpDYEK3g==
 
 		chainCertificates := []SslCertificate{}
 
-		testHostname, err := valueObject.NewFqdn("test.example.com")
+		testHostname, err := tkValueObject.NewFqdn("test.example.com")
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
@@ -219,7 +220,7 @@ KPpdzvvtTnOPlC7SQZSYmdunr3Bf9b77AiC/ZidstK36dRILKz7OA54=
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}
 
-		demoHostname, err := valueObject.NewFqdn("os.demo.goinfinite.net")
+		demoHostname, err := tkValueObject.NewFqdn("os.demo.goinfinite.net")
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
 		}

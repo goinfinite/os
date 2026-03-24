@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type DatabasePrivilege string
@@ -39,7 +39,7 @@ var AvailableDatabasePrivileges = []string{
 func NewDatabasePrivilege(value interface{}) (
 	dbPrivilege DatabasePrivilege, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return dbPrivilege, errors.New("DatabasePrivilegeMustBeString")
 	}

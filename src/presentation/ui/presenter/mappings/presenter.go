@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
 	"slices"
@@ -37,7 +38,7 @@ func (presenter *MappingsPresenter) readVirtualHostWithMappings() []dto.VirtualH
 	readVirtualHostsLiaisonOutput := virtualHostLiaison.ReadWithMappings(map[string]interface{}{
 		"itemsPerPage": 1000,
 	})
-	if readVirtualHostsLiaisonOutput.Status != liaison.Success {
+	if readVirtualHostsLiaisonOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		slog.Debug("ReadMappingsLiaisonOutputBadStatus")
 		return nil
 	}
@@ -69,7 +70,7 @@ func (presenter *MappingsPresenter) readInstalledServiceNames() []string {
 	installedServicesResponseOutput := servicesLiaison.ReadInstalledItems(
 		map[string]interface{}{"itemsPerPage": 1000},
 	)
-	if installedServicesResponseOutput.Status != liaison.Success {
+	if installedServicesResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		slog.Debug("ReadInstalledItemsFailed", slog.Any("output", installedServicesResponseOutput))
 		return nil
 	}
@@ -104,7 +105,7 @@ func (presenter *MappingsPresenter) readSecRulesLabelValueOptions() []uiForm.Sel
 		"itemsPerPage": 1000,
 	})
 
-	if readSecRulesLiaisonOutput.Status != liaison.Success {
+	if readSecRulesLiaisonOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		slog.Debug("ReadSecRulesLiaisonOutputBadStatus")
 		return nil
 	}

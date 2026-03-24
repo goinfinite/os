@@ -4,16 +4,17 @@ import (
 	"errors"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type PortBinding struct {
-	Port     NetworkPort     `json:"port"`
-	Protocol NetworkProtocol `json:"protocol"`
+	Port     tkValueObject.NetworkPort     `json:"port"`
+	Protocol tkValueObject.NetworkProtocol `json:"protocol"`
 }
 
 func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return portBinding, errors.New("PortBindingValueMustBeString")
 	}
@@ -32,12 +33,12 @@ func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
 		return portBinding, errors.New("InvalidPortBinding")
 	}
 
-	port, err := NewNetworkPort(bindingParts[0])
+	port, err := tkValueObject.NewNetworkPort(bindingParts[0])
 	if err != nil {
 		return portBinding, err
 	}
 
-	protocol, err := NewNetworkProtocol(bindingParts[1])
+	protocol, err := tkValueObject.NewNetworkProtocol(bindingParts[1])
 	if err != nil {
 		return portBinding, err
 	}
@@ -47,11 +48,11 @@ func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
 	}, nil
 }
 
-func (vo PortBinding) GetPort() NetworkPort {
+func (vo PortBinding) GetPort() tkValueObject.NetworkPort {
 	return vo.Port
 }
 
-func (vo PortBinding) GetProtocol() NetworkProtocol {
+func (vo PortBinding) GetProtocol() tkValueObject.NetworkProtocol {
 	return vo.Protocol
 }
 

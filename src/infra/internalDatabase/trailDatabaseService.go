@@ -4,8 +4,9 @@ import (
 	"errors"
 
 	"github.com/glebarez/sqlite"
+	tkInfraDbModel "github.com/goinfinite/tk/src/infra/db/model"
+
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	"gorm.io/gorm"
 )
 
@@ -36,8 +37,8 @@ func NewTrailDatabaseService() (*TrailDatabaseService, error) {
 
 func (service *TrailDatabaseService) dbMigrate() error {
 	err := service.Handler.AutoMigrate(
-		&dbModel.ActivityRecord{},
-		&dbModel.ActivityRecordAffectedResource{},
+		&tkInfraDbModel.ActivityRecord{},
+		&tkInfraDbModel.ActivityRecordAffectedResource{},
 	)
 	if err != nil {
 		return errors.New("TrailDatabaseMigrationError: " + err.Error())

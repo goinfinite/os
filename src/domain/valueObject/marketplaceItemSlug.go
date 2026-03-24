@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type MarketplaceItemSlug string
@@ -15,7 +15,7 @@ const marketplaceItemSlugRegexExpression = `^[a-z0-9\_\-]{2,64}$`
 func NewMarketplaceItemSlug(value interface{}) (
 	marketplaceItemSlug MarketplaceItemSlug, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return marketplaceItemSlug, errors.New("MarketplaceItemSlugValueMustBeString")
 	}

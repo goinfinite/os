@@ -122,18 +122,18 @@ func (model MappingSecurityRule) ToEntity() (ruleEntity entity.MappingSecurityRu
 		blockedIps = append(blockedIps, ipAddress)
 	}
 
-	var bandwidthBpsLimitPerConnectionPtr *valueObject.Byte
+	var bandwidthBpsLimitPerConnectionPtr *tkValueObject.Byte
 	if model.BandwidthBpsLimitPerConnection != nil {
-		bandwidthBpsLimit, err := valueObject.NewByte(*model.BandwidthBpsLimitPerConnection)
+		bandwidthBpsLimit, err := tkValueObject.NewByte(*model.BandwidthBpsLimitPerConnection)
 		if err != nil {
 			return ruleEntity, err
 		}
 		bandwidthBpsLimitPerConnectionPtr = &bandwidthBpsLimit
 	}
 
-	var bandwidthLimitOnlyAfterBytesPtr *valueObject.Byte
+	var bandwidthLimitOnlyAfterBytesPtr *tkValueObject.Byte
 	if model.BandwidthLimitOnlyAfterBytes != nil {
-		afterBytes, err := valueObject.NewByte(*model.BandwidthLimitOnlyAfterBytes)
+		afterBytes, err := tkValueObject.NewByte(*model.BandwidthLimitOnlyAfterBytes)
 		if err != nil {
 			return ruleEntity, err
 		}
@@ -144,7 +144,7 @@ func (model MappingSecurityRule) ToEntity() (ruleEntity entity.MappingSecurityRu
 		id, name, descriptionPtr, allowedIps, blockedIps, model.RpsSoftLimitPerIp,
 		model.RpsHardLimitPerIp, model.ResponseCodeOnMaxRequests, model.MaxConnectionsPerIp,
 		bandwidthBpsLimitPerConnectionPtr, bandwidthLimitOnlyAfterBytesPtr,
-		model.ResponseCodeOnMaxConnections, valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
-		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
+		model.ResponseCodeOnMaxConnections, tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }

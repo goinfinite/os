@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type RuntimeType string
@@ -13,7 +13,7 @@ type RuntimeType string
 var runtimeTypes = []string{"php"}
 
 func NewRuntimeType(value interface{}) (runtimeType RuntimeType, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return runtimeType, errors.New("RuntimeTypeMustBeString")
 	}

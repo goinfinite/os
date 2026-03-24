@@ -3,17 +3,15 @@ package apiController
 import (
 	"errors"
 	"log/slog"
-	"net/http"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
-	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -50,14 +48,15 @@ func NewServicesController(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadInstalledServicesItemsResponse
 // @Router       /v1/services/ [get]
-func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ServicesController) ReadInstalledItems(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.servicesLiaison.ReadInstalledItems(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.servicesLiaison.ReadInstalledItems(requestData),
 	)
 }
 
@@ -79,14 +78,15 @@ func (controller *ServicesController) ReadInstalledItems(c echo.Context) error {
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadInstallableServicesItemsResponse
 // @Router       /v1/services/installables/ [get]
-func (controller *ServicesController) ReadInstallablesItems(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ServicesController) ReadInstallablesItems(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.servicesLiaison.ReadInstallableItems(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.servicesLiaison.ReadInstallableItems(requestData),
 	)
 }
 
@@ -102,7 +102,7 @@ func (controller *ServicesController) transformRawEnvsInterfaceSliceToMap(
 			continue
 		}
 
-		envVarNameStr, err := voHelper.InterfaceToString(rawEnvMap["name"])
+		envVarNameStr, err := tkVoUtil.InterfaceToString(rawEnvMap["name"])
 		if err != nil {
 			slog.Debug("EnvVarNameMustBeString", slog.Int("envIndex", rawEnvIndex))
 			continue
@@ -121,7 +121,7 @@ func (controller *ServicesController) parseRawEnvs(
 	rawEnvsMap := map[string]interface{}{}
 	switch rawEnvsValues := rawEnvsUnknownType.(type) {
 	case string, []string:
-		return sharedHelper.StringSliceValueObjectParser(
+		return tkPresentation.StringSliceValueObjectParser(
 			rawEnvsValues, valueObject.NewServiceEnv,
 		), nil
 	case []interface{}:
@@ -133,7 +133,7 @@ func (controller *ServicesController) parseRawEnvs(
 	}
 
 	for envVarName, envVarValue := range rawEnvsMap {
-		envValueStr, err := voHelper.InterfaceToString(envVarValue)
+		envValueStr, err := tkVoUtil.InterfaceToString(envVarValue)
 		if err != nil {
 			slog.Debug("InvalidServiceEnvValue", slog.Any("envVarName", envVarName))
 			continue
@@ -167,7 +167,7 @@ func (controller *ServicesController) transformRawPortBindingsInterfaceSliceToMa
 			continue
 		}
 
-		portStr, err := voHelper.InterfaceToString(rawPortBindingMap["port"])
+		portStr, err := tkVoUtil.InterfaceToString(rawPortBindingMap["port"])
 		if err != nil {
 			slog.Debug(
 				"PortBindingPortBeString",
@@ -189,7 +189,7 @@ func (controller *ServicesController) parseRawPortBindings(
 	rawPortBindingsInterfaceSlice := []interface{}{}
 	switch rawPortBindingsValues := rawPortBindingsUnknownType.(type) {
 	case string, []string:
-		return sharedHelper.StringSliceValueObjectParser(
+		return tkPresentation.StringSliceValueObjectParser(
 			rawPortBindingsValues, valueObject.NewPortBinding,
 		), nil
 	case []interface{}:
@@ -210,7 +210,7 @@ func (controller *ServicesController) parseRawPortBindings(
 	for port, protocol := range rawPortBindingsMap {
 		rawPortBindingIndex++
 
-		protocolStr, err := voHelper.InterfaceToString(protocol)
+		protocolStr, err := tkVoUtil.InterfaceToString(protocol)
 		if err != nil {
 			slog.Debug(
 				"InvalidPortBindingProtocol",
@@ -242,34 +242,47 @@ func (controller *ServicesController) parseRawPortBindings(
 // @Param        createInstallableServiceDto	body dto.CreateInstallableService	true	"Only name is required.<br />If version is not provided, it will be 'lts'.<br />If portBindings is not provided, it wil be default service port bindings.<br />If autoCreateMapping is not provided, it will be 'true'."
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /v1/services/installables/ [post]
-func (controller *ServicesController) CreateInstallable(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ServicesController) CreateInstallable(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
+
+	var err error
 
 	envs := []valueObject.ServiceEnv{}
-	if requestInputData["envs"] != nil {
-		envs, err = controller.parseRawEnvs(requestInputData["envs"])
+	if requestData["envs"] != nil {
+		envs, err = controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
-	requestInputData["envs"] = envs
+	requestData["envs"] = envs
 
 	portBindings := []valueObject.PortBinding{}
-	if requestInputData["portBindings"] != nil {
+	if requestData["portBindings"] != nil {
 		portBindings, err = controller.parseRawPortBindings(
-			requestInputData["portBindings"],
+			requestData["portBindings"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
-	requestInputData["portBindings"] = portBindings
+	requestData["portBindings"] = portBindings
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.servicesLiaison.CreateInstallable(requestInputData, true),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.servicesLiaison.CreateInstallable(requestData, true),
 	)
 }
 
@@ -283,34 +296,47 @@ func (controller *ServicesController) CreateInstallable(c echo.Context) error {
 // @Param        createCustomServiceDto	body dto.CreateCustomService	true	"name, type and startCmd is required.<br />If version is not provided, it will be 'lts'.<br />If portBindings is not provided, it wil be default service port bindings.<br />If autoCreateMapping is not provided, it will be 'true'."
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /v1/services/custom/ [post]
-func (controller *ServicesController) CreateCustom(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ServicesController) CreateCustom(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
+
+	var err error
 
 	envs := []valueObject.ServiceEnv{}
-	if requestInputData["envs"] != nil {
-		envs, err = controller.parseRawEnvs(requestInputData["envs"])
+	if requestData["envs"] != nil {
+		envs, err = controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
-	requestInputData["envs"] = envs
+	requestData["envs"] = envs
 
 	portBindings := []valueObject.PortBinding{}
-	if requestInputData["portBindings"] != nil {
+	if requestData["portBindings"] != nil {
 		portBindings, err = controller.parseRawPortBindings(
-			requestInputData["portBindings"],
+			requestData["portBindings"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
 	}
-	requestInputData["portBindings"] = portBindings
+	requestData["portBindings"] = portBindings
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.servicesLiaison.CreateCustom(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.servicesLiaison.CreateCustom(requestData),
 	)
 }
 
@@ -324,32 +350,43 @@ func (controller *ServicesController) CreateCustom(c echo.Context) error {
 // @Param        updateServiceDto	body dto.UpdateService	true	"Only name is required.<br />Solo services can only change status.<br />status may be 'running', 'stopped', 'uninstalled' or 'restarting'."
 // @Success      200 {object} object{} "ServiceUpdated"
 // @Router       /v1/services/ [put]
-func (controller *ServicesController) Update(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ServicesController) Update(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if requestInputData["envs"] != nil {
-		rawEnvs, err := controller.parseRawEnvs(requestInputData["envs"])
+	if requestData["envs"] != nil {
+		rawEnvs, err := controller.parseRawEnvs(requestData["envs"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
-		requestInputData["envs"] = rawEnvs
+		requestData["envs"] = rawEnvs
 	}
 
-	if requestInputData["portBindings"] != nil {
+	if requestData["portBindings"] != nil {
 		rawPortBindings, err := controller.parseRawPortBindings(
-			requestInputData["portBindings"],
+			requestData["portBindings"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
-		requestInputData["portBindings"] = rawPortBindings
+		requestData["portBindings"] = rawPortBindings
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.servicesLiaison.Update(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.servicesLiaison.Update(requestData),
 	)
 }
 
@@ -363,15 +400,16 @@ func (controller *ServicesController) Update(c echo.Context) error {
 // @Param        svcName path string true "ServiceName to delete"
 // @Success      200 {object} object{} "ServiceDeleted"
 // @Router       /v1/services/{svcName}/ [delete]
-func (controller *ServicesController) Delete(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ServicesController) Delete(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
-	requestInputData["name"] = requestInputData["svcName"]
+	requestData["name"] = requestData["svcName"]
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.servicesLiaison.Delete(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.servicesLiaison.Delete(requestData),
 	)
 }
 

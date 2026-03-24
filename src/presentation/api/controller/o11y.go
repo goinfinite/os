@@ -2,8 +2,8 @@ package apiController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -29,5 +29,7 @@ func NewO11yController(
 // @Success      200 {object} entity.O11yOverview
 // @Router       /v1/o11y/overview/ [get]
 func (controller *O11yController) ReadOverview(c echo.Context) error {
-	return apiHelper.LiaisonResponseWrapper(c, controller.o11yLiaison.ReadOverview())
+	return tkPresentation.LiaisonApiResponseEmitter(
+		c, controller.o11yLiaison.ReadOverview(),
+	)
 }

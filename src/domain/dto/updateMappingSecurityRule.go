@@ -15,12 +15,12 @@ type UpdateMappingSecurityRule struct {
 	RpsHardLimitPerIp              *uint                                       `json:"rpsHardLimitPerIp"`
 	ResponseCodeOnMaxRequests      *uint                                       `json:"responseCodeOnMaxRequests"`
 	MaxConnectionsPerIp            *uint                                       `json:"maxConnectionsPerIp"`
-	BandwidthBpsLimitPerConnection *valueObject.Byte                           `json:"bandwidthBpsLimitPerConnection"`
-	BandwidthLimitOnlyAfterBytes   *valueObject.Byte                           `json:"bandwidthLimitOnlyAfterBytes"`
+	BandwidthBpsLimitPerConnection *tkValueObject.Byte                         `json:"bandwidthBpsLimitPerConnection"`
+	BandwidthLimitOnlyAfterBytes   *tkValueObject.Byte                         `json:"bandwidthLimitOnlyAfterBytes"`
 	ResponseCodeOnMaxConnections   *uint                                       `json:"responseCodeOnMaxConnections"`
 	ClearableFields                []string                                    `json:"-"`
-	OperatorAccountId              valueObject.AccountId                       `json:"-"`
-	OperatorIpAddress              valueObject.IpAddress                       `json:"-"`
+	OperatorAccountId              tkValueObject.AccountId                     `json:"-"`
+	OperatorIpAddress              tkValueObject.IpAddress                     `json:"-"`
 }
 
 func NewUpdateMappingSecurityRule(
@@ -29,11 +29,11 @@ func NewUpdateMappingSecurityRule(
 	description *valueObject.MappingSecurityRuleDescription,
 	allowedIps, blockedIps []tkValueObject.CidrBlock,
 	rpsSoftLimitPerIp, rpsHardLimitPerIp, responseCodeOnMaxRequests, maxConnectionsPerIp *uint,
-	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *valueObject.Byte,
+	bandwidthBpsLimitPerConnection, bandwidthLimitOnlyAfterBytes *tkValueObject.Byte,
 	responseCodeOnMaxConnections *uint,
 	clearableFields []string,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) UpdateMappingSecurityRule {
 	return UpdateMappingSecurityRule{
 		Id:                             id,

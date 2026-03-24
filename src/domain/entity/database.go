@@ -1,18 +1,21 @@
 package entity
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type Database struct {
 	Name  valueObject.DatabaseName `json:"name"`
 	Type  valueObject.DatabaseType `json:"type"`
-	Size  valueObject.Byte         `json:"size"`
+	Size  tkValueObject.Byte       `json:"size"`
 	Users []DatabaseUser           `json:"users"`
 }
 
 func NewDatabase(
 	name valueObject.DatabaseName,
 	dbType valueObject.DatabaseType,
-	size valueObject.Byte,
+	size tkValueObject.Byte,
 	users []DatabaseUser,
 ) Database {
 	return Database{

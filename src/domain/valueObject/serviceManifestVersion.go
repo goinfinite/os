@@ -5,7 +5,7 @@ import (
 	"slices"
 	"strings"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type ServiceManifestVersion string
@@ -17,7 +17,7 @@ var validServiceManifestVersions = []string{
 func NewServiceManifestVersion(value interface{}) (
 	version ServiceManifestVersion, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return version, errors.New("ServiceManifestVersionMustBeString")
 	}

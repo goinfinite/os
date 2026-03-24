@@ -1,6 +1,10 @@
 package infraHelper
 
-import "strings"
+import (
+	"strings"
+
+	tkInfra "github.com/goinfinite/tk/src/infra"
+)
 
 func UpdateOwnershipForWebServerUse(
 	filePath string, isRecursive bool, shouldIncludeSymlink bool,
@@ -23,10 +27,10 @@ func UpdateOwnershipForWebServerUse(
 	params = append(params, filePath)
 
 	paramsStr := strings.Join(params, " ")
-	_, err := RunCmd(RunCmdSettings{
-		Command:               "chown " + flagsStr + " " + paramsStr,
-		ShouldRunWithSubShell: true,
-	})
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           "chown " + flagsStr + " " + paramsStr,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return err
 	}

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const SecureAccessPublicKeyNameRegex string = `^[A-Za-z0-9][\w@\-_]{5,32}$`
@@ -14,7 +14,7 @@ type SecureAccessPublicKeyName string
 func NewSecureAccessPublicKeyName(
 	value interface{},
 ) (keyName SecureAccessPublicKeyName, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return keyName, errors.New("SecureAccessPublicKeyNameMustBeString")
 	}

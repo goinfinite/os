@@ -8,6 +8,8 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func UninstallMarketplaceInstalledItemServices(
@@ -56,7 +58,7 @@ func UninstallMarketplaceInstalledItemServices(
 		}
 
 		mappingReadResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
-			Pagination:  dto.PaginationUnpaginated,
+			Pagination:  tkDto.PaginationUnpaginated,
 			TargetValue: &targetValue,
 		})
 		if err != nil {
@@ -99,7 +101,7 @@ func DeleteMarketplaceInstalledItem(
 	mappingCmdRepo repository.MappingCmdRepo,
 	servicesQueryRepo repository.ServicesQueryRepo,
 	servicesCmdRepo repository.ServicesCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteMarketplaceInstalledItem,
 ) error {
 	installedItemEntity, err := marketplaceQueryRepo.ReadFirstInstalledItem(

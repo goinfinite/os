@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const dataFieldNameRegex string = `^\w[\w-]{1,128}\w$`
@@ -14,7 +14,7 @@ type DataFieldName string
 func NewDataFieldName(value interface{}) (
 	dataFieldName DataFieldName, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return dataFieldName, errors.New("DataFieldNameMustBeString")
 	}

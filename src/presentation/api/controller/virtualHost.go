@@ -1,13 +1,11 @@
 package apiController
 
 import (
-	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
-	"github.com/goinfinite/os/src/presentation/liaison"
-	"github.com/labstack/echo/v4"
-
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
+	"github.com/labstack/echo/v4"
 )
 
 type VirtualHostController struct {
@@ -44,14 +42,15 @@ func NewVirtualHostController(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadVirtualHostsResponse
 // @Router       /v1/vhost/ [get]
-func (controller *VirtualHostController) Read(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) Read(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.Read(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.Read(requestData),
 	)
 }
 
@@ -65,14 +64,15 @@ func (controller *VirtualHostController) Read(c echo.Context) error {
 // @Param        createVirtualHostDto 	  body    dto.CreateVirtualHost  true  "Only hostname is required.<br />type may be 'top-level', 'subdomain', 'wildcard' or 'alias'. If is not provided, it will be 'top-level'. If type is 'alias', 'parentHostname' will be required."
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /v1/vhost/ [post]
-func (controller *VirtualHostController) Create(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) Create(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.Create(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.Create(requestData),
 	)
 }
 
@@ -86,14 +86,15 @@ func (controller *VirtualHostController) Create(c echo.Context) error {
 // @Param        updateVirtualHostDto 	  body    dto.UpdateVirtualHost  true  "Only hostname is required."
 // @Success      200 {object} object{} "VirtualHostUpdated"
 // @Router       /v1/vhost/ [put]
-func (controller *VirtualHostController) Update(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) Update(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.Update(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.Update(requestData),
 	)
 }
 
@@ -107,14 +108,15 @@ func (controller *VirtualHostController) Update(c echo.Context) error {
 // @Param        hostname path string true "Hostname to delete"
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /v1/vhost/{hostname}/ [delete]
-func (controller *VirtualHostController) Delete(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) Delete(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.Delete(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.Delete(requestData),
 	)
 }
 
@@ -139,14 +141,15 @@ func (controller *VirtualHostController) Delete(c echo.Context) error {
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.VirtualHostWithMappings
 // @Router       /v1/vhost/mapping/ [get]
-func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) ReadWithMappings(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.ReadWithMappings(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.ReadWithMappings(requestData),
 	)
 }
 
@@ -160,14 +163,15 @@ func (controller *VirtualHostController) ReadWithMappings(c echo.Context) error 
 // @Param        createMappingDto	body dto.CreateMapping	true	"hostname, path and targetType are required.<br />matchPattern may be 'begins-with', 'contains', 'equals' or 'ends-with'. If is not provided, it will be 'begins-with'.<br />targetType may be 'url', 'service', 'response-code', 'inline-html' or 'static-files'. If targetType is 'url', targetHttpResponseCode may be provided. If is not provided, targetHttpResponseCode will be '200'. If targetType is 'response-code', targetHttpResponseCode may be provided. If is not provided, targetValue will be required. If both were provided, targetValue will have priority.<br />targetValue must have the same value as the targetType requires."
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /v1/vhost/mapping/ [post]
-func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) CreateMapping(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.CreateMapping(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.CreateMapping(requestData),
 	)
 }
 
@@ -181,14 +185,15 @@ func (controller *VirtualHostController) CreateMapping(c echo.Context) error {
 // @Param        updateMappingDto body dto.UpdateMapping true "Only id is required. Other fields are optional and will only be updated if provided."
 // @Success      200 {object} object{} "MappingUpdated"
 // @Router       /v1/vhost/mapping/ [put]
-func (controller *VirtualHostController) UpdateMapping(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) UpdateMapping(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.UpdateMapping(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.UpdateMapping(requestData),
 	)
 }
 
@@ -202,14 +207,15 @@ func (controller *VirtualHostController) UpdateMapping(c echo.Context) error {
 // @Param        mappingId path uint true "MappingId to delete."
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /v1/vhost/mapping/{mappingId}/ [delete]
-func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) DeleteMapping(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.DeleteMapping(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.DeleteMapping(requestData),
 	)
 }
 
@@ -233,15 +239,16 @@ func (controller *VirtualHostController) DeleteMapping(c echo.Context) error {
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadMappingSecurityRulesResponse
 // @Router       /v1/vhost/mapping/security-rule/ [get]
-func (controller *VirtualHostController) ReadMappingSecurityRules(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) ReadMappingSecurityRules(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.ReadMappingSecurityRules(
-			requestInputData,
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.ReadMappingSecurityRules(
+			requestData,
 		),
 	)
 }
@@ -256,26 +263,27 @@ func (controller *VirtualHostController) ReadMappingSecurityRules(c echo.Context
 // @Param        createMappingSecurityRuleDto body dto.CreateMappingSecurityRule true "Only name is required."
 // @Success      201 {object} object{} "MappingSecurityRuleCreated"
 // @Router       /v1/vhost/mapping/security-rule/ [post]
-func (controller *VirtualHostController) CreateMappingSecurityRule(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) CreateMappingSecurityRule(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if requestInputData["allowedIps"] != nil {
-		requestInputData["allowedIps"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["allowedIps"], tkValueObject.NewCidrBlock,
+	if requestData["allowedIps"] != nil {
+		requestData["allowedIps"] = tkPresentation.StringSliceValueObjectParser(
+			requestData["allowedIps"], tkValueObject.NewCidrBlock,
 		)
 	}
 
-	if requestInputData["blockedIps"] != nil {
-		requestInputData["blockedIps"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["blockedIps"], tkValueObject.NewCidrBlock,
+	if requestData["blockedIps"] != nil {
+		requestData["blockedIps"] = tkPresentation.StringSliceValueObjectParser(
+			requestData["blockedIps"], tkValueObject.NewCidrBlock,
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.CreateMappingSecurityRule(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.CreateMappingSecurityRule(requestData),
 	)
 }
 
@@ -289,26 +297,27 @@ func (controller *VirtualHostController) CreateMappingSecurityRule(c echo.Contex
 // @Param        updateMappingSecurityRuleDto body dto.UpdateMappingSecurityRule true "Only id is required."
 // @Success      200 {object} object{} "MappingSecurityRuleUpdated"
 // @Router       /v1/vhost/mapping/security-rule/ [put]
-func (controller *VirtualHostController) UpdateMappingSecurityRule(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) UpdateMappingSecurityRule(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if requestInputData["allowedIps"] != nil {
-		requestInputData["allowedIps"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["allowedIps"], tkValueObject.NewCidrBlock,
+	if requestData["allowedIps"] != nil {
+		requestData["allowedIps"] = tkPresentation.StringSliceValueObjectParser(
+			requestData["allowedIps"], tkValueObject.NewCidrBlock,
 		)
 	}
 
-	if requestInputData["blockedIps"] != nil {
-		requestInputData["blockedIps"] = tkPresentation.StringSliceValueObjectParser(
-			requestInputData["blockedIps"], tkValueObject.NewCidrBlock,
+	if requestData["blockedIps"] != nil {
+		requestData["blockedIps"] = tkPresentation.StringSliceValueObjectParser(
+			requestData["blockedIps"], tkValueObject.NewCidrBlock,
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.UpdateMappingSecurityRule(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.UpdateMappingSecurityRule(requestData),
 	)
 }
 
@@ -322,13 +331,14 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule(c echo.Contex
 // @Param        id path uint true "MappingSecurityRuleId to delete."
 // @Success      200 {object} object{} "MappingSecurityRuleDeleted"
 // @Router       /v1/vhost/mapping/security-rule/{id}/ [delete]
-func (controller *VirtualHostController) DeleteMappingSecurityRule(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *VirtualHostController) DeleteMappingSecurityRule(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.virtualHostLiaison.DeleteMappingSecurityRule(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.virtualHostLiaison.DeleteMappingSecurityRule(requestData),
 	)
 }

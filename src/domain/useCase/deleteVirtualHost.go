@@ -6,12 +6,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func DeleteVirtualHost(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteVirtualHost,
 ) error {
 	isPrimary := true

@@ -80,9 +80,12 @@ UiToolset.RegisterAlpineState(() => {
         });
     },
     isCreateDatabaseUserModalOpen: false,
-    openCreateDatabaseUserModal() {
+    openCreateDatabaseUserModal(databaseName = "") {
       this.resetPrimaryStates();
 
+      if (databaseName !== "") {
+        this.database.name = databaseName;
+      }
       this.isCreateDatabaseUserModalOpen = true;
     },
     closeCreateDatabaseUserModal() {

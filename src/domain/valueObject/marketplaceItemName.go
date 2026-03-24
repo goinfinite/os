@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type MarketplaceItemName string
@@ -14,7 +14,7 @@ const marketplaceItemNameRegexExpression = `^[A-z0-9][\p{L}0-9\'\ \-]{1,30}$`
 func NewMarketplaceItemName(value interface{}) (
 	marketplaceItemName MarketplaceItemName, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return marketplaceItemName, errors.New("MarketplaceItemNameMustBeString")
 	}

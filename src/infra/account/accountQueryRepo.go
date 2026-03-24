@@ -7,8 +7,9 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	dbHelper "github.com/goinfinite/os/src/infra/internalDatabase/helper"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type AccountQueryRepo struct {
@@ -59,8 +60,8 @@ func (repo *AccountQueryRepo) Read(
 		dbQuery = dbQuery.Preload("SecureAccessPublicKeys")
 	}
 
-	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
-		dbQuery, requestDto.Pagination,
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination, "id",
 	)
 	if err != nil {
 		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
@@ -96,7 +97,7 @@ func (repo *AccountQueryRepo) Read(
 func (repo *AccountQueryRepo) ReadFirst(
 	requestDto dto.ReadAccountsRequest,
 ) (account entity.Account, err error) {
-	requestDto.Pagination = dto.Pagination{
+	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}
@@ -127,8 +128,8 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 
 	dbQuery := repo.persistentDbSvc.Handler.Model(&publicKeyModel).Where(&publicKeyModel)
 
-	paginatedDbQuery, responsePagination, err := dbHelper.PaginationQueryBuilder(
-		dbQuery, requestDto.Pagination,
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination, "id",
 	)
 	if err != nil {
 		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
@@ -166,7 +167,7 @@ func (repo *AccountQueryRepo) ReadSecureAccessPublicKeys(
 func (repo *AccountQueryRepo) ReadFirstSecureAccessPublicKey(
 	requestDto dto.ReadSecureAccessPublicKeysRequest,
 ) (secureAccessPublicKey entity.SecureAccessPublicKey, err error) {
-	requestDto.Pagination = dto.Pagination{
+	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}

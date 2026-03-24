@@ -3,14 +3,17 @@ package cronInfra
 import (
 	"errors"
 	"log/slog"
+	"regexp"
 	"slices"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type CronQueryRepo struct {
@@ -24,8 +27,8 @@ func (repo *CronQueryRepo) cronFactory(
 	cronIndex int,
 	cronLine string,
 ) (cron entity.Cron, err error) {
-	cronRegex := `^(?P<frequency>(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+) ?){5,7}))(?P<command>[^#\r\n]{1,1000})(?P<comment>#(.*)){0,1000}$`
-	cronNamedGroupMap := voHelper.FindNamedGroupsMatches(cronRegex, cronLine)
+	cronRegex := regexp.MustCompile(`^(?P<frequency>(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)|((((\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+) ?){5,7}))(?P<command>[^#\r\n]{1,1000})(?P<comment>#(.*)){0,1000}$`)
+	cronNamedGroupMap := tkVoUtil.NamedGroupsExtractor(cronRegex, cronLine)
 
 	rawId := cronIndex + 1
 	id, err := valueObject.NewCronId(rawId)
@@ -41,9 +44,9 @@ func (repo *CronQueryRepo) cronFactory(
 		}
 	}
 
-	var command valueObject.UnixCommand
+	var command tkValueObject.UnixCommand
 	if _, exists := cronNamedGroupMap["command"]; exists {
-		command, err = valueObject.NewUnixCommand(cronNamedGroupMap["command"])
+		command, err = tkValueObject.NewUnixCommand(cronNamedGroupMap["command"])
 		if err != nil {
 			return cron, err
 		}
@@ -65,10 +68,10 @@ func (repo *CronQueryRepo) cronFactory(
 func (repo *CronQueryRepo) readCronsFromCrontab() ([]entity.Cron, error) {
 	crons := []entity.Cron{}
 
-	rawCronOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawCronOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "crontab",
 		Args:    []string{"-l"},
-	})
+	}).Run()
 	if err != nil {
 		if strings.Contains(err.Error(), "no crontab") {
 			return crons, nil
@@ -177,7 +180,7 @@ func (repo *CronQueryRepo) Read(
 func (repo *CronQueryRepo) ReadFirst(
 	requestDto dto.ReadCronsRequest,
 ) (cron entity.Cron, err error) {
-	requestDto.Pagination = dto.Pagination{
+	requestDto.Pagination = tkDto.Pagination{
 		PageNumber:   0,
 		ItemsPerPage: 1,
 	}

@@ -3,10 +3,11 @@ package dto
 import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 )
 
 type ReadMarketplaceCatalogItemsRequest struct {
-	Pagination                 Pagination                       `json:"pagination"`
+	Pagination                 tkDto.Pagination                 `json:"pagination"`
 	MarketplaceCatalogItemId   *valueObject.MarketplaceItemId   `json:"marketplaceCatalogItemId,omitempty"`
 	MarketplaceCatalogItemSlug *valueObject.MarketplaceItemSlug `json:"marketplaceCatalogItemSlug,omitempty"`
 	MarketplaceCatalogItemName *valueObject.MarketplaceItemName `json:"marketplaceCatalogItemName,omitempty"`
@@ -14,6 +15,6 @@ type ReadMarketplaceCatalogItemsRequest struct {
 }
 
 type ReadMarketplaceCatalogItemsResponse struct {
-	Pagination              Pagination                      `json:"pagination"`
+	Pagination              tkDto.Pagination                `json:"pagination"`
 	MarketplaceCatalogItems []entity.MarketplaceCatalogItem `json:"marketplaceCatalogItems"`
 }

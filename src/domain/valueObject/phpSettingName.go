@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const phpSettingNameRegex string = `^\w[\w\.-]{1,62}\w$`
@@ -12,7 +12,7 @@ const phpSettingNameRegex string = `^\w[\w\.-]{1,62}\w$`
 type PhpSettingName string
 
 func NewPhpSettingName(value interface{}) (settingName PhpSettingName, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return settingName, errors.New("PhpSettingNameMustBeString")
 	}

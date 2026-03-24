@@ -6,12 +6,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func DeleteSslPair(
 	sslQueryRepo repository.SslQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteSslPair,
 ) error {
 	_, err := sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{

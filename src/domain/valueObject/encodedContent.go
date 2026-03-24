@@ -5,7 +5,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const encodedContentRegex = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$`
@@ -13,7 +13,7 @@ const encodedContentRegex = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z
 type EncodedContent string
 
 func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return encodedContent, errors.New("EncodedContentMustBeString")
 	}

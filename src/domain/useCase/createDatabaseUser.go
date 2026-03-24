@@ -7,12 +7,13 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func CreateDatabaseUser(
 	dbQueryRepo repository.DatabaseQueryRepo,
 	dbCmdRepo repository.DatabaseCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateDatabaseUser,
 ) error {
 	_, err := dbQueryRepo.ReadFirst(dto.ReadDatabasesRequest{

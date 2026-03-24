@@ -1,15 +1,18 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type UpdateUnixFilePermissions struct {
-	SourcePath           valueObject.UnixFilePath         `json:"sourcePath"`
-	FilePermissions      valueObject.UnixFilePermissions  `json:"filePermissions"`
-	DirectoryPermissions *valueObject.UnixFilePermissions `json:"directoryPermissions"`
+	SourcePath           tkValueObject.UnixAbsoluteFilePath `json:"sourcePath"`
+	FilePermissions      valueObject.UnixFilePermissions    `json:"filePermissions"`
+	DirectoryPermissions *valueObject.UnixFilePermissions   `json:"directoryPermissions"`
 }
 
 func NewUpdateUnixFilePermissions(
-	sourcePath valueObject.UnixFilePath,
+	sourcePath tkValueObject.UnixAbsoluteFilePath,
 	filePermissions valueObject.UnixFilePermissions,
 	directoryPermissions *valueObject.UnixFilePermissions,
 ) UpdateUnixFilePermissions {

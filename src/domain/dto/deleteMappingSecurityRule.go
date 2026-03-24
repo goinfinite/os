@@ -1,17 +1,20 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type DeleteMappingSecurityRule struct {
 	SecurityRuleId    valueObject.MappingSecurityRuleId `json:"securityRuleId"`
-	OperatorAccountId valueObject.AccountId             `json:"-"`
-	OperatorIpAddress valueObject.IpAddress             `json:"-"`
+	OperatorAccountId tkValueObject.AccountId           `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress           `json:"-"`
 }
 
 func NewDeleteMappingSecurityRule(
 	securityRuleId valueObject.MappingSecurityRuleId,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) DeleteMappingSecurityRule {
 	return DeleteMappingSecurityRule{
 		SecurityRuleId:    securityRuleId,

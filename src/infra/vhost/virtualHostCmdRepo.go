@@ -14,11 +14,15 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type VirtualHostCmdRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	vhostQueryRepo  *VirtualHostQueryRepo
+	fileClerk       tkInfra.FileClerk
 }
 
 func NewVirtualHostCmdRepo(
@@ -27,12 +31,13 @@ func NewVirtualHostCmdRepo(
 	return &VirtualHostCmdRepo{
 		persistentDbSvc: persistentDbSvc,
 		vhostQueryRepo:  NewVirtualHostQueryRepo(persistentDbSvc),
+		fileClerk:       tkInfra.FileClerk{},
 	}
 }
 
 func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 	vhostEntity entity.VirtualHost,
-	mappingFilePath valueObject.UnixFilePath,
+	mappingFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (string, error) {
 	vhostHostnameStr := vhostEntity.Hostname.String()
 
@@ -89,20 +94,20 @@ func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
 }
 
 func (repo *VirtualHostCmdRepo) ReadVirtualHostWebServerUnitFileFilePath(
-	vhostHostname valueObject.Fqdn,
-) (unitFilePath valueObject.UnixFilePath, err error) {
+	vhostHostname tkValueObject.Fqdn,
+) (unitFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
 	mappingsFilePath, err := repo.vhostQueryRepo.ReadVirtualHostMappingsFilePath(vhostHostname)
 	if err != nil {
 		return unitFilePath, errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
 	}
 
-	mappingsFileNameStr := mappingsFilePath.ReadFileName().String()
+	mappingsFileNameStr := mappingsFilePath.ReadFileName(false).String()
 	rawUnitConfFilePath := infraEnvs.VirtualHostsConfDir + "/" + mappingsFileNameStr
-	return valueObject.NewUnixFilePath(rawUnitConfFilePath)
+	return tkValueObject.NewUnixAbsoluteFilePath(rawUnitConfFilePath, false)
 }
 
 func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
-	vhostHostname valueObject.Fqdn,
+	vhostHostname tkValueObject.Fqdn,
 ) error {
 	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 		Hostname: &vhostHostname,
@@ -142,7 +147,9 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("ReadWebServerUnitConfFilePathError: " + err.Error())
 	}
 
-	err = infraHelper.UpdateFile(unitConfFilePath.String(), unitConfFileContent, true)
+	err = repo.fileClerk.UpdateFileContent(
+		unitConfFilePath.String(), unitConfFileContent, true,
+	)
 	if err != nil {
 		return errors.New("CreateWebServerConfUnitFileFailed: " + err.Error())
 	}
@@ -158,7 +165,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 
 func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
 	createDto dto.CreateVirtualHost,
-) (publicDir valueObject.UnixFilePath, err error) {
+) (publicDir tkValueObject.UnixAbsoluteFilePath, err error) {
 	if createDto.Type == valueObject.VirtualHostTypeAlias {
 		parentVirtualHostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 			Hostname: createDto.ParentHostname,
@@ -172,12 +179,12 @@ func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
 
 	rawPublicDir := infraEnvs.PrimaryPublicDir + "/" + createDto.Hostname.String()
 
-	publicDir, err = valueObject.NewUnixFilePath(rawPublicDir)
+	publicDir, err = tkValueObject.NewUnixAbsoluteFilePath(rawPublicDir, false)
 	if err != nil {
 		return publicDir, errors.New("InvalidVirtualHostPublicDir")
 	}
 
-	err = infraHelper.MakeDir(publicDir.String())
+	err = repo.fileClerk.CreateDir(publicDir.String())
 	if err != nil {
 		return publicDir, errors.New("CreateVirtualHostPublicDirFailed")
 	}
@@ -191,25 +198,25 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		return errors.New("CreateVirtualHostPublicDirFailed: " + err.Error())
 	}
 
-	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if err != nil {
 		return errors.New("InvalidPkiConfDir")
 	}
 
 	if createDto.Type != valueObject.VirtualHostTypeAlias {
-		aliasHostnames := []valueObject.Fqdn{}
+		aliasHostnames := []tkValueObject.Fqdn{}
 		err = infraHelper.CreateSelfSignedSsl(pkiConfDir, createDto.Hostname, aliasHostnames)
 		if err != nil {
 			return errors.New("CreateSelfSignedSslFailed: " + err.Error())
 		}
 	}
 
-	webServerConfDir, err := valueObject.NewUnixFilePath(infraEnvs.VirtualHostsConfDir)
+	webServerConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.VirtualHostsConfDir, false)
 	if err != nil {
 		return errors.New("InvalidWebServerConfDir")
 	}
 
-	vhostRelatedDirectories := []valueObject.UnixFilePath{
+	vhostRelatedDirectories := []tkValueObject.UnixAbsoluteFilePath{
 		publicDir, pkiConfDir, webServerConfDir,
 	}
 	for _, directory := range vhostRelatedDirectories {
@@ -268,10 +275,10 @@ func (repo *VirtualHostCmdRepo) Update(updateDto dto.UpdateVirtualHost) error {
 	return repo.createWebServerUnitFile(updateDto.Hostname)
 }
 
-func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
+func (repo *VirtualHostCmdRepo) Delete(vhostHostname tkValueObject.Fqdn) error {
 	withMappings := true
 	vhostReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-		Pagination:   dto.PaginationSingleItem,
+		Pagination:   tkDto.PaginationSingleItem,
 		Hostname:     &vhostHostname,
 		WithMappings: &withMappings,
 	})
@@ -326,7 +333,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname valueObject.Fqdn) error {
 		return repo.createWebServerUnitFile(parentVirtualHostEntity.Hostname)
 	}
 
-	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if err != nil {
 		return errors.New("InvalidPkiConfDir")
 	}

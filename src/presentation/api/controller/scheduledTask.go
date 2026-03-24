@@ -3,7 +3,6 @@ package apiController
 import (
 	"errors"
 	"log/slog"
-	"net/http"
 	"strings"
 	"time"
 
@@ -11,8 +10,8 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -76,22 +75,28 @@ func (controller *ScheduledTaskController) parseTaskTags(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadScheduledTasksResponse
 // @Router       /v1/scheduled-task/ [get]
-func (controller *ScheduledTaskController) Read(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ScheduledTaskController) Read(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if _, exists := requestInputData["taskTags"]; exists {
-		taskTags, err := controller.parseTaskTags(requestInputData["taskTags"])
+	if _, exists := requestData["taskTags"]; exists {
+		taskTags, err := controller.parseTaskTags(requestData["taskTags"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err.Error())
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				),
+			)
 		}
-		requestInputData["taskTags"] = taskTags
+		requestData["taskTags"] = taskTags
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.scheduledTaskLiaison.Read(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.scheduledTaskLiaison.Read(requestData),
 	)
 }
 
@@ -105,14 +110,15 @@ func (controller *ScheduledTaskController) Read(c echo.Context) error {
 // @Param        updateScheduledTaskDto 	  body dto.UpdateScheduledTask  true  "UpdateScheduledTask (Only id is required.)"
 // @Success      200 {object} object{} "ScheduledTaskUpdated"
 // @Router       /v1/scheduled-task/ [put]
-func (controller *ScheduledTaskController) Update(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *ScheduledTaskController) Update(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.scheduledTaskLiaison.Update(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.scheduledTaskLiaison.Update(requestData),
 	)
 }
 

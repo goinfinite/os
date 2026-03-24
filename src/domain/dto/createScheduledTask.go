@@ -1,21 +1,24 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CreateScheduledTask struct {
 	Name        valueObject.ScheduledTaskName  `json:"name"`
-	Command     valueObject.UnixCommand        `json:"command"`
+	Command     tkValueObject.UnixCommand      `json:"command"`
 	Tags        []valueObject.ScheduledTaskTag `json:"tags"`
 	TimeoutSecs *uint16                        `json:"timeoutSecs,omitempty"`
-	RunAt       *valueObject.UnixTime          `json:"runAt,omitempty"`
+	RunAt       *tkValueObject.UnixTime        `json:"runAt,omitempty"`
 }
 
 func NewCreateScheduledTask(
 	name valueObject.ScheduledTaskName,
-	command valueObject.UnixCommand,
+	command tkValueObject.UnixCommand,
 	tags []valueObject.ScheduledTaskTag,
 	timeoutSecs *uint16,
-	runAt *valueObject.UnixTime,
+	runAt *tkValueObject.UnixTime,
 ) CreateScheduledTask {
 	return CreateScheduledTask{
 		Name:        name,

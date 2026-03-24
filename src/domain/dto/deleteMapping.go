@@ -1,17 +1,20 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type DeleteMapping struct {
-	MappingId         valueObject.MappingId `json:"mappingId"`
-	OperatorAccountId valueObject.AccountId `json:"-"`
-	OperatorIpAddress valueObject.IpAddress `json:"-"`
+	MappingId         valueObject.MappingId   `json:"mappingId"`
+	OperatorAccountId tkValueObject.AccountId `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress `json:"-"`
 }
 
 func NewDeleteMapping(
 	mappingId valueObject.MappingId,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) DeleteMapping {
 	return DeleteMapping{
 		MappingId:         mappingId,

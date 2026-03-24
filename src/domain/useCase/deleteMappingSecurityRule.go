@@ -6,16 +6,18 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func DeleteMappingSecurityRule(
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteMappingSecurityRule,
 ) error {
 	_, err := mappingQueryRepo.ReadFirstSecurityRule(dto.ReadMappingSecurityRulesRequest{
-		Pagination:            dto.PaginationUnpaginated,
+		Pagination:            tkDto.PaginationUnpaginated,
 		MappingSecurityRuleId: &deleteDto.SecurityRuleId,
 	})
 	if err != nil {
@@ -23,7 +25,7 @@ func DeleteMappingSecurityRule(
 	}
 
 	mappingsResponse, err := mappingQueryRepo.Read(dto.ReadMappingsRequest{
-		Pagination:            dto.PaginationUnpaginated,
+		Pagination:            tkDto.PaginationUnpaginated,
 		MappingSecurityRuleId: &deleteDto.SecurityRuleId,
 	})
 	if err == nil && len(mappingsResponse.Mappings) > 0 {

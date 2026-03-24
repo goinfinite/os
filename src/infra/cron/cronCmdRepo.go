@@ -8,23 +8,26 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type CronCmdRepo struct {
 	cronQueryRepo *CronQueryRepo
+	fileClerk     tkInfra.FileClerk
 }
 
 func NewCronCmdRepo() *CronCmdRepo {
 	return &CronCmdRepo{
 		cronQueryRepo: NewCronQueryRepo(),
+		fileClerk:     tkInfra.FileClerk{},
 	}
 }
 
 func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 	tmpCrontabFilePath := "/tmp/crontab"
 
-	if !infraHelper.FileExists(tmpCrontabFilePath) {
+	if !repo.fileClerk.FileExists(tmpCrontabFilePath) {
 		_, err := os.Create(tmpCrontabFilePath)
 		if err != nil {
 			return errors.New("CreateCrontabTempFileError: " + err.Error())
@@ -37,15 +40,17 @@ func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 	}
 
 	shouldOverwrite := true
-	err := infraHelper.UpdateFile(tmpCrontabFilePath, crontabContent, shouldOverwrite)
+	err := repo.fileClerk.UpdateFileContent(
+		tmpCrontabFilePath, crontabContent, shouldOverwrite,
+	)
 	if err != nil {
 		return errors.New("UpdateCrontabTempFileContentError: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               "crontab " + tmpCrontabFilePath,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           "crontab " + tmpCrontabFilePath,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return err
 	}
@@ -62,7 +67,7 @@ func (repo *CronCmdRepo) Create(
 	createDto dto.CreateCron,
 ) (cronId valueObject.CronId, err error) {
 	readRequestDto := dto.ReadCronsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 	}
@@ -88,7 +93,7 @@ func (repo *CronCmdRepo) Create(
 
 func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
 	readRequestDto := dto.ReadCronsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 	}
@@ -129,7 +134,7 @@ func (repo *CronCmdRepo) Update(updateDto dto.UpdateCron) error {
 
 func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
 	readRequestDto := dto.ReadCronsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 	}

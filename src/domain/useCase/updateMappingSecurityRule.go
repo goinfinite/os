@@ -6,12 +6,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func UpdateMappingSecurityRule(
 	mappingQueryRepo repository.MappingQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateMappingSecurityRule,
 ) error {
 	_, err := mappingQueryRepo.ReadFirstSecurityRule(

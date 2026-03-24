@@ -4,13 +4,15 @@ import (
 	"errors"
 	"log"
 	"os"
+
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 func InstallPkgs(packages []string) error {
-	_, err := RunCmd(RunCmdSettings{
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "apt-get",
 		Args:    []string{"update", "-qq"},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("UpdateRepositoriesFailed")
 	}
@@ -23,10 +25,10 @@ func InstallPkgs(packages []string) error {
 	var installErr error
 	nAttempts := 3
 	for i := 0; i < nAttempts; i++ {
-		_, err := RunCmd(RunCmdSettings{
+		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "apt-get",
 			Args:    installPackages,
-		})
+		}).Run()
 		if err == nil {
 			break
 		}

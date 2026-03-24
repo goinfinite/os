@@ -7,6 +7,7 @@ import (
 
 	cliInit "github.com/goinfinite/os/src/presentation/cli/init"
 	cliMiddleware "github.com/goinfinite/os/src/presentation/cli/middleware"
+	tkPresentationMiddleware "github.com/goinfinite/tk/src/presentation/middleware"
 	"github.com/spf13/cobra"
 )
 
@@ -28,11 +29,11 @@ func RunRootCmd() {
 }
 
 func CliInit() {
-	defer cliMiddleware.PanicHandler()
+	defer tkPresentationMiddleware.CliPanicHandler()
 	cliMiddleware.PreventRootless()
 
 	cliMiddleware.CheckEnvs()
-	cliMiddleware.LogHandler()
+	tkPresentationMiddleware.LogHandler{}.Init()
 
 	transientDbSvc := cliInit.TransientDatabaseService()
 	persistentDbSvc := cliInit.PersistentDatabaseService()

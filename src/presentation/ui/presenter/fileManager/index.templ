@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"github.com/goinfinite/ui/src/control"
@@ -20,7 +21,7 @@ import (
 var fileManagerIndexAlpineState string
 
 templ FileManagerIndex(
-	workingDirPath valueObject.UnixFilePath,
+	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 	readFilesResponseDto dto.ReadFilesResponse,
 ) {
 	<!-- FileManagerIndex JavaScript -->
@@ -259,7 +260,7 @@ templ FileExplorerToolbar() {
 }
 
 templ DirectoriesTreeItems(
-	workDirPath valueObject.UnixFilePath,
+	workDirPath tkValueObject.UnixAbsoluteFilePath,
 	unixFileTree dto.UnixFileBranch,
 ) {
 	{{ lexicalOrderBranchesNames := slices.Sorted(maps.Keys(unixFileTree.Branches)) }}
@@ -303,7 +304,7 @@ templ DirectoriesTreeItems(
 }
 
 templ DirectoriesTree(
-	workingDirPath valueObject.UnixFilePath,
+	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 	unixFileTree *dto.UnixFileBranch,
 ) {
 	<!-- FilesExplorerDirectoriesTree -->
@@ -402,7 +403,7 @@ templ FilesExplorer(unixFilesList []entity.UnixFile) {
 }
 
 templ CreateFileForm(
-	mimeType valueObject.MimeType,
+	mimeType tkValueObject.MimeType,
 	closeFunction string,
 ) {
 	<form
@@ -436,7 +437,7 @@ templ CreateFileModal() {
 	@componentStructural.RegularModal(
 		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()", "",
 	) {
-		@CreateFileForm(valueObject.MimeTypeGeneric, "closeCreateFileModal()")
+		@CreateFileForm(tkValueObject.MimeTypeGeneric, "closeCreateFileModal()")
 	}
 }
 
@@ -445,7 +446,7 @@ templ CreateDirectoryModal() {
 		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
 		"",
 	) {
-		@CreateFileForm(valueObject.MimeTypeDirectory, "closeCreateDirectoryModal()")
+		@CreateFileForm(tkValueObject.MimeTypeDirectory, "closeCreateDirectoryModal()")
 	}
 }
 
@@ -603,7 +604,7 @@ templ UpdateFileContentModal() {
 }
 
 templ MoveFilesForm(
-	workingDirPath valueObject.UnixFilePath,
+	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 	unixFileTree *dto.UnixFileBranch,
 ) {
 	<form
@@ -631,7 +632,7 @@ templ MoveFilesForm(
 }
 
 templ MoveFilesModal(
-	workingDirPath valueObject.UnixFilePath,
+	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 	unixFileTree *dto.UnixFileBranch,
 ) {
 	@componentStructural.RegularModal(
@@ -642,7 +643,7 @@ templ MoveFilesModal(
 }
 
 templ CopyFilesForm(
-	workingDirPath valueObject.UnixFilePath,
+	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 	unixFileTree *dto.UnixFileBranch,
 ) {
 	<form
@@ -670,7 +671,7 @@ templ CopyFilesForm(
 }
 
 templ CopyFilesModal(
-	workingDirPath valueObject.UnixFilePath,
+	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 	unixFileTree *dto.UnixFileBranch,
 ) {
 	@componentStructural.RegularModal(

@@ -7,6 +7,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type MarketplaceInstalledItem struct {
@@ -44,7 +45,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	hostname, err := valueObject.NewFqdn(model.Hostname)
+	hostname, err := tkValueObject.NewFqdn(model.Hostname)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
@@ -59,7 +60,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		return marketplaceInstalledItem, err
 	}
 
-	installDirectory, err := valueObject.NewUnixFilePath(model.InstallDirectory)
+	installDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(model.InstallDirectory, false)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
@@ -96,7 +97,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 		}
 	}
 
-	avatarUrl, err := valueObject.NewUrl(model.AvatarUrl)
+	avatarUrl, err := tkValueObject.NewUrl(model.AvatarUrl)
 	if err != nil {
 		return marketplaceInstalledItem, err
 	}
@@ -109,7 +110,7 @@ func (model MarketplaceInstalledItem) ToEntity() (
 	return entity.NewMarketplaceInstalledItem(
 		id, itemName, hostname, itemType, urlPath, installDirectory, installUuid,
 		serviceNamesWithVersion, mappings, avatarUrl, slug,
-		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
-		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }

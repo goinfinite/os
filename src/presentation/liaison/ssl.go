@@ -1,6 +1,7 @@
 package liaison
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"strings"
 
@@ -8,13 +9,13 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 )
 
 type SslLiaison struct {
@@ -58,9 +59,9 @@ func (liaison *SslLiaison) SslPairReadRequestFactory(
 		untrustedInput["virtualHostHostname"] = untrustedInput["hostname"]
 	}
 
-	var vhostHostnamePtr *valueObject.Fqdn
+	var vhostHostnamePtr *tkValueObject.Fqdn
 	if untrustedInput["virtualHostHostname"] != nil {
-		vhostHostname, err := valueObject.NewFqdn(untrustedInput["virtualHostHostname"])
+		vhostHostname, err := tkValueObject.NewFqdn(untrustedInput["virtualHostHostname"])
 		if err != nil {
 			return readRequestDto, err
 		}
@@ -79,10 +80,10 @@ func (liaison *SslLiaison) SslPairReadRequestFactory(
 	timeParamNames := []string{
 		"issuedBeforeAt", "issuedAfterAt", "expiresBeforeAt", "expiresAfterAt",
 	}
-	timeParamPtrs := liaisonHelper.TimeParamsParser(timeParamNames, untrustedInput)
+	timeParamPtrs := tkPresentation.TimeParamsParser(timeParamNames, untrustedInput)
 
-	requestPagination, err := liaisonHelper.PaginationParser(
-		untrustedInput, useCase.SslPairsDefaultPagination,
+	requestPagination, err := tkPresentation.PaginationParser(
+		useCase.SslPairsDefaultPagination, untrustedInput,
 	)
 	if err != nil {
 		return readRequestDto, err
@@ -102,72 +103,99 @@ func (liaison *SslLiaison) SslPairReadRequestFactory(
 
 func (liaison *SslLiaison) Read(
 	untrustedInput map[string]any,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	readRequestDto, err := liaison.SslPairReadRequestFactory(untrustedInput, false)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	readResponseDto, err := useCase.ReadSslPairs(liaison.sslQueryRepo, readRequestDto)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Success, readResponseDto)
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, readResponseDto,
+	)
 }
 
-func (liaison *SslLiaison) Create(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *SslLiaison) Create(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	requiredParams := []string{"virtualHostsHostnames", "certificate", "key"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
-	vhostHostnames, assertOk := untrustedInput["virtualHostsHostnames"].([]valueObject.Fqdn)
+	vhostHostnames, assertOk := untrustedInput["virtualHostsHostnames"].([]tkValueObject.Fqdn)
 	if !assertOk {
-		return NewLiaisonOutput(UserError, errors.New("InvalidVirtualHostsStructure"))
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError,
+			errors.New("InvalidVirtualHostsStructure"),
+		)
 	}
 
 	certContent, err := valueObject.NewSslCertificateContent(untrustedInput["certificate"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 	certEntity, err := entity.NewSslCertificate(certContent)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	var chainCertsPtr *entity.SslCertificate
 	if untrustedInput["chainCertificates"] != nil {
 		chainCertContent, err := valueObject.NewSslCertificateContent(untrustedInput["chainCertificates"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("SslCertificateChainContentError"))
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				errors.New("SslCertificateChainContentError"),
+			)
 		}
 		chainCertEntity, err := entity.NewSslCertificate(chainCertContent)
 		if err != nil {
-			return NewLiaisonOutput(UserError, errors.New("SslCertificateChainParseError"))
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				errors.New("SslCertificateChainParseError"),
+			)
 		}
 		chainCertsPtr = &chainCertEntity
 	}
 
 	privateKeyContent, err := valueObject.NewSslPrivateKey(untrustedInput["key"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -182,16 +210,20 @@ func (liaison *SslLiaison) Create(untrustedInput map[string]any) LiaisonOutput {
 		vhostQueryRepo, liaison.sslCmdRepo, liaison.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Created, "SslPairCreated")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusCreated, "SslPairCreated",
+	)
 }
 
 func (liaison *SslLiaison) CreatePubliclyTrusted(
 	untrustedInput map[string]any,
 	shouldSchedule bool,
-) LiaisonOutput {
+) tkPresentation.LiaisonResponse {
 	if untrustedInput["hostname"] != nil && untrustedInput["virtualHostHostname"] == nil {
 		untrustedInput["virtualHostHostname"] = untrustedInput["hostname"]
 	}
@@ -201,29 +233,37 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 	}
 
 	requiredParams := []string{"virtualHostHostname"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
-	vhostHostname, err := valueObject.NewFqdn(untrustedInput["virtualHostHostname"])
+	vhostHostname, err := tkValueObject.NewFqdn(untrustedInput["virtualHostHostname"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -236,7 +276,7 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 
 		scheduledTaskCmdRepo := scheduledTaskInfra.NewScheduledTaskCmdRepo(liaison.persistentDbSvc)
 		taskName, _ := valueObject.NewScheduledTaskName("CreatePubliclyTrustedSslPair")
-		taskCmd, _ := valueObject.NewUnixCommand(cliCmd)
+		taskCmd, _ := tkValueObject.NewUnixCommand(cliCmd)
 		taskTag, _ := valueObject.NewScheduledTaskTag("ssl")
 		taskTags := []valueObject.ScheduledTaskTag{taskTag}
 		timeoutSecs := uint16(1800)
@@ -247,10 +287,15 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 
 		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
-			return NewLiaisonOutput(InfraError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+			)
 		}
 
-		return NewLiaisonOutput(Created, "PubliclyTrustedSslPairCreationScheduled")
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusCreated,
+			"PubliclyTrustedSslPairCreationScheduled",
+		)
 	}
 
 	createDto := dto.NewCreatePubliclyTrustedSslPair(
@@ -263,41 +308,53 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 		vhostQueryRepo, liaison.sslCmdRepo, liaison.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Created, "PubliclyTrustedSslPairCreated")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusCreated, "PubliclyTrustedSslPairCreated",
+	)
 }
 
-func (liaison *SslLiaison) Delete(untrustedInput map[string]any) LiaisonOutput {
+func (liaison *SslLiaison) Delete(untrustedInput map[string]any) tkPresentation.LiaisonResponse {
 	if untrustedInput["id"] == nil && untrustedInput["sslPairId"] != nil {
 		untrustedInput["id"] = untrustedInput["sslPairId"]
 	}
 
 	requiredParams := []string{"id"}
-	err := liaisonHelper.RequiredParamsInspector(untrustedInput, requiredParams)
+	err := tkPresentation.RequiredParamsInspector(untrustedInput, requiredParams)
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	pairId, err := valueObject.NewSslPairId(untrustedInput["id"])
 	if err != nil {
-		return NewLiaisonOutput(UserError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	operatorAccountId := LocalOperatorAccountId
 	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = valueObject.NewAccountId(untrustedInput["operatorAccountId"])
+		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
 	operatorIpAddress := LocalOperatorIpAddress
 	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = valueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
+		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
 		if err != nil {
-			return NewLiaisonOutput(UserError, err.Error())
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
 		}
 	}
 
@@ -306,8 +363,12 @@ func (liaison *SslLiaison) Delete(untrustedInput map[string]any) LiaisonOutput {
 		dto.NewDeleteSslPair(pairId, operatorAccountId, operatorIpAddress),
 	)
 	if err != nil {
-		return NewLiaisonOutput(InfraError, err.Error())
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
 	}
 
-	return NewLiaisonOutput(Success, "SslPairDeleted")
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, "SslPairDeleted",
+	)
 }

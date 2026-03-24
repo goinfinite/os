@@ -6,6 +6,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type Account struct {
@@ -36,12 +37,12 @@ func (Account) ToModel(entity entity.Account) (model Account, err error) {
 }
 
 func (model Account) ToEntity() (accountEntity entity.Account, err error) {
-	accountId, err := valueObject.NewAccountId(model.ID)
+	accountId, err := tkValueObject.NewAccountId(model.ID)
 	if err != nil {
 		return accountEntity, err
 	}
 
-	groupId, err := valueObject.NewGroupId(model.GroupId)
+	groupId, err := tkValueObject.NewUnixGroupId(model.GroupId)
 	if err != nil {
 		return accountEntity, err
 	}
@@ -51,8 +52,8 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 		return accountEntity, err
 	}
 
-	homeDirectory, err := valueObject.NewUnixFilePath(
-		infraEnvs.UserDataBaseDirectory + "/" + username.String(),
+	homeDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.UserDataBaseDirectory+"/"+username.String(), false,
 	)
 	if err != nil {
 		return accountEntity, err
@@ -71,7 +72,7 @@ func (model Account) ToEntity() (accountEntity entity.Account, err error) {
 
 	return entity.NewAccount(
 		accountId, groupId, username, homeDirectory, model.IsSuperAdmin,
-		secureAccessPublicKeys, valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
-		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
+		secureAccessPublicKeys, tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }

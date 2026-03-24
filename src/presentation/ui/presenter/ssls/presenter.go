@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
 
@@ -34,7 +35,7 @@ func (presenter *SslsPresenter) Handler(c echo.Context) error {
 	sslPairsReadResponseLiaisonOutput := presenter.sslLiaison.Read(map[string]interface{}{
 		"itemsPerPage": 1000,
 	})
-	if sslPairsReadResponseLiaisonOutput.Status != liaison.Success {
+	if sslPairsReadResponseLiaisonOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		slog.Debug("SslPairsServiceBadOutput")
 		return nil
 	}

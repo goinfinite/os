@@ -9,8 +9,8 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	marketplaceInfra "github.com/goinfinite/os/src/infra/marketplace"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -47,14 +47,15 @@ func NewMarketplaceController(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
 // @Router       /v1/marketplace/catalog/ [get]
-func (controller *MarketplaceController) ReadCatalog(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *MarketplaceController) ReadCatalog(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.marketplaceLiaison.ReadCatalog(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.marketplaceLiaison.ReadCatalog(requestData),
 	)
 }
 
@@ -146,30 +147,31 @@ func (controller *MarketplaceController) parseDataFields(
 // @Param        InstallMarketplaceCatalogItem 	  body    dto.InstallMarketplaceCatalogItem  true  "urlPath is both the install directory and HTTP sub-directory."
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstallationScheduled"
 // @Router       /v1/marketplace/catalog/ [post]
-func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *MarketplaceController) InstallCatalogItem(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
 	possibleUrlPathKeys := []string{"urlPath", "directory", "installDirectory"}
 	for _, key := range possibleUrlPathKeys {
-		if requestInputData[key] == nil {
+		if requestData[key] == nil {
 			continue
 		}
 
-		requestInputData["urlPath"] = requestInputData[key]
+		requestData["urlPath"] = requestData[key]
 		break
 	}
 
-	if requestInputData["dataFields"] != nil {
-		requestInputData["dataFields"] = controller.parseDataFields(
-			requestInputData["dataFields"],
+	if requestData["dataFields"] != nil {
+		requestData["dataFields"] = controller.parseDataFields(
+			requestData["dataFields"],
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.marketplaceLiaison.InstallCatalogItem(requestInputData, true),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.marketplaceLiaison.InstallCatalogItem(requestData, true),
 	)
 }
 
@@ -191,14 +193,15 @@ func (controller *MarketplaceController) InstallCatalogItem(c echo.Context) erro
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadMarketplaceInstalledItemsResponse
 // @Router       /v1/marketplace/installed/ [get]
-func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *MarketplaceController) ReadInstalledItems(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.marketplaceLiaison.ReadInstalledItems(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.marketplaceLiaison.ReadInstalledItems(requestData),
 	)
 }
 
@@ -213,14 +216,15 @@ func (controller *MarketplaceController) ReadInstalledItems(c echo.Context) erro
 // @Param        shouldUninstallServices query boolean false "Should uninstall all services not being used? Default is 'true'."
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /v1/marketplace/installed/{installedId}/ [delete]
-func (controller *MarketplaceController) DeleteInstalledItem(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *MarketplaceController) DeleteInstalledItem(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.marketplaceLiaison.DeleteInstalledItem(requestInputData, true),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.marketplaceLiaison.DeleteInstalledItem(requestData, true),
 	)
 }
 

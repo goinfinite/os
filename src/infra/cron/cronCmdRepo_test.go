@@ -6,6 +6,7 @@ import (
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestCronCmdRepo(t *testing.T) {
@@ -14,10 +15,10 @@ func TestCronCmdRepo(t *testing.T) {
 
 	var id valueObject.CronId
 	schedule, _ := valueObject.NewCronSchedule("* * * * *")
-	command, _ := valueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
+	command, _ := tkValueObject.NewUnixCommand("echo \"cronTest\" >> crontab_log.txt")
 	comment, _ := valueObject.NewCronComment("Test cron job")
-	operatorAccountId := valueObject.AccountIdSystem
-	operatorIpAddress := valueObject.IpAddressSystem
+	operatorAccountId := tkValueObject.AccountIdSystem
+	operatorIpAddress := tkValueObject.IpAddressLocal
 
 	createCron := dto.NewCreateCron(
 		schedule, command, &comment, operatorAccountId, operatorIpAddress,

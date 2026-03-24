@@ -7,6 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func isPhpVersionInstalled(
@@ -31,7 +32,7 @@ func UpdatePhpConfigs(
 	runtimeQueryRepo repository.RuntimeQueryRepo,
 	runtimeCmdRepo repository.RuntimeCmdRepo,
 	vhostQueryRepo repository.VirtualHostQueryRepo,
-	activityCmdRepo repository.ActivityRecordCmdRepo,
+	activityCmdRepo tkRepository.ActivityRecordCmdRepo,
 	updateDto dto.UpdatePhpConfigs,
 ) error {
 	isPhpVersionInstalled := isPhpVersionInstalled(runtimeQueryRepo, updateDto.PhpVersion)

@@ -4,13 +4,13 @@ import (
 	"errors"
 	"strconv"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type SecureAccessPublicKeyId uint16
 
 func NewSecureAccessPublicKeyId(value interface{}) (keyId SecureAccessPublicKeyId, err error) {
-	uintValue, err := voHelper.InterfaceToUint(value)
+	uintValue, err := tkVoUtil.InterfaceToUint(value)
 	if err != nil {
 		return keyId, errors.New("SecureAccessPublicKeyIdMustBeUint")
 	}

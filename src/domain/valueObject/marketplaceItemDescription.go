@@ -3,7 +3,7 @@ package valueObject
 import (
 	"errors"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type MarketplaceItemDescription string
@@ -11,7 +11,7 @@ type MarketplaceItemDescription string
 func NewMarketplaceItemDescription(value interface{}) (
 	marketplaceItemDescription MarketplaceItemDescription, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return marketplaceItemDescription, errors.New(
 			"MarketplaceItemDescriptionMustBeString",

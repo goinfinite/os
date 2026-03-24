@@ -16,6 +16,8 @@ import (
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type WebServerSetup struct {
@@ -33,11 +35,11 @@ func NewWebServerSetup(
 	}
 }
 
-func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byte) error {
+func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal tkValueObject.Byte) error {
 	log.Print("UpdatingMaxPhpChildProcesses...")
 
-	maxChildProcesses := int64(300)
-	childProcessPerGb := int64(5)
+	maxChildProcesses := uint64(300)
+	childProcessPerGb := uint64(5)
 
 	memoryInGb := memoryTotal.ToGiB()
 	desiredChildProcesses := memoryInGb * childProcessPerGb
@@ -45,14 +47,15 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal valueObject.Byt
 		desiredChildProcesses = maxChildProcesses
 	}
 
-	desiredChildProcessesStr := strconv.FormatInt(desiredChildProcesses, 10)
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	desiredChildProcessesStr := strconv.FormatUint(desiredChildProcesses, 10)
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
-			"-i", "-e", "s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN=" + desiredChildProcessesStr + ";/g",
+			"-i", "-e",
+			"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN=" + desiredChildProcessesStr + ";/g",
 			infraEnvs.PhpWebserverMainConfFilePath,
 		},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("UpdateMaxChildProcessesFailed")
 	}
@@ -77,38 +80,38 @@ func (ws *WebServerSetup) FirstSetup() {
 	log.Print("UpdatingPrimaryVirtualHost...")
 
 	primaryConfFilePath := infraEnvs.VirtualHostsConfDir + "/primary.conf"
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
 			"-i",
 			"s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryHostnameStr + "/g",
 			primaryConfFilePath,
 		},
-	})
+	}).Run()
 	if err != nil {
 		log.Fatal("UpdatePrimaryVirtualHostFileFailed")
 	}
 
 	log.Print("GeneratingDhParams...")
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "openssl",
 		Args: []string{
 			"dhparam", "-dsaparam", "-out", "/etc/nginx/dhparam.pem", "2048",
 		},
-	})
+	}).Run()
 	if err != nil {
 		log.Fatal("GenerateDhparamFailed")
 	}
 
 	log.Print("GeneratingSelfSignedCert...")
 
-	pkiConfDir, err := valueObject.NewUnixFilePath(infraEnvs.PkiConfDir)
+	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if err != nil {
 		log.Fatal("PkiConfDirNotFound")
 	}
 
-	aliasesHostnames := []valueObject.Fqdn{}
+	aliasesHostnames := []tkValueObject.Fqdn{}
 	err = infraHelper.CreateSelfSignedSsl(
 		pkiConfDir, primaryVirtualHostHostname, aliasesHostnames,
 	)
@@ -137,7 +140,7 @@ func (ws *WebServerSetup) FirstSetup() {
 	updateServiceDto := dto.NewUpdateService(
 		nginxServiceName, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
 		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil, nil,
-		valueObject.AccountIdSystem, valueObject.IpAddressSystem,
+		tkValueObject.AccountIdSystem, tkValueObject.IpAddressLocal,
 	)
 	err = servicesCmdRepo.Update(updateServiceDto)
 	if err != nil {
@@ -150,10 +153,10 @@ func (ws *WebServerSetup) FirstSetup() {
 
 	// Do not write any code after this as supervisorctl reload will restart
 	// the OS API and any remaining code will not be executed.
-	_, _ = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, _ = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "supervisorctl",
 		Args:    []string{"-p", "replacedOnFirstBoot", "reload"},
-	})
+	}).Run()
 }
 
 func (ws *WebServerSetup) OnStartSetup() {
@@ -169,10 +172,12 @@ func (ws *WebServerSetup) OnStartSetup() {
 	cpuCoresStr := strconv.FormatInt(int64(math.Ceil(cpuCores)), 10)
 
 	nginxConfFilePath := "/etc/nginx/nginx.conf"
-	workerCount, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	workerCount, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "awk",
-		Args:    []string{"/worker_processes/{gsub(/[^0-9]+/, \"\"); print}", nginxConfFilePath},
-	})
+		Args: []string{
+			"/worker_processes/{gsub(/[^0-9]+/, \"\"); print}", nginxConfFilePath,
+		},
+	}).Run()
 	if err != nil {
 		log.Fatalf("%sGetNginxWorkersCountFailed", defaultLogPrefix)
 	}
@@ -204,13 +209,14 @@ func (ws *WebServerSetup) OnStartSetup() {
 
 	log.Print("UpdatingNginxWorkersCount...")
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
-			"-i", "-e", "s/^worker_processes.*/worker_processes " + cpuCoresStr + ";/g",
+			"-i", "-e",
+			"s/^worker_processes.*/worker_processes " + cpuCoresStr + ";/g",
 			nginxConfFilePath,
 		},
-	})
+	}).Run()
 	if err != nil {
 		log.Fatalf("%sUpdateNginxWorkersCountFailed", defaultLogPrefix)
 	}

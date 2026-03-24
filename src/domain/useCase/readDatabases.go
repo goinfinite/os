@@ -6,9 +6,10 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 )
 
-var DatabasesDefaultPagination dto.Pagination = dto.Pagination{
+var DatabasesDefaultPagination tkDto.Pagination = tkDto.Pagination{
 	PageNumber:   0,
 	ItemsPerPage: 10,
 }

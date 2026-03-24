@@ -2,110 +2,44 @@ package infraHelper
 
 import (
 	"errors"
-	"os"
-	"strconv"
-	"strings"
-	"text/template"
 
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-func altNamesConfFactory(
-	vhostHostname valueObject.Fqdn,
-	aliasesHostname []valueObject.Fqdn,
-) []string {
-	altNames := []string{vhostHostname.String(), "www." + vhostHostname.String()}
-	for _, aliasHostname := range aliasesHostname {
-		altNames = append(altNames, aliasHostname.String(), "www."+aliasHostname.String())
-	}
-
-	altNamesConfList := []string{}
-	for altNameIndex, altName := range altNames {
-		dnsIndex := strconv.Itoa(altNameIndex)
-		altNameConf := "DNS." + dnsIndex + " = " + altName
-
-		altNamesConfList = append(altNamesConfList, altNameConf)
-	}
-
-	return altNamesConfList
-}
-
-func selfSignedConfFileFactory(
-	vhostHostname valueObject.Fqdn,
-	aliasesHostname []valueObject.Fqdn,
-) (string, error) {
-	altNamesConf := altNamesConfFactory(vhostHostname, aliasesHostname)
-	valuesToInterpolate := map[string]interface{}{
-		"VirtualHostHostname": vhostHostname,
-		"AltNamesConf":        altNamesConf,
-	}
-
-	confFileTemplate := `[ req ]
-default_bits = 2048
-distinguished_name = req_distinguished_name
-x509_extensions = v3_req
-prompt = no
-
-[ req_distinguished_name ]
-C = US
-ST = California
-L = Los Angeles
-CN = {{ .VirtualHostHostname }}
-
-[ v3_req ]
-subjectAltName = @alt_names
-
-[ alt_names ]
-{{- range $altNameConf := .AltNamesConf }}
-{{ $altNameConf }}
-{{- end }}
-`
-
-	confFileTemplatePtr, err := template.New("selfSignedConfFile").Parse(confFileTemplate)
-	if err != nil {
-		return "", errors.New("TemplateParsingError: " + err.Error())
-	}
-
-	var confFileContent strings.Builder
-	err = confFileTemplatePtr.Execute(&confFileContent, valuesToInterpolate)
-	if err != nil {
-		return "", errors.New("TemplateExecutionError: " + err.Error())
-	}
-
-	return confFileContent.String(), nil
-}
-
 func CreateSelfSignedSsl(
-	dirPath valueObject.UnixFilePath,
-	vhostHostname valueObject.Fqdn,
-	aliasesHostname []valueObject.Fqdn,
+	dirPath tkValueObject.UnixAbsoluteFilePath,
+	vhostHostname tkValueObject.Fqdn,
+	aliasesHostname []tkValueObject.Fqdn,
 ) error {
-	confContent, err := selfSignedConfFileFactory(vhostHostname, aliasesHostname)
+	synth := &tkInfra.Synthesizer{}
+	certPem, keyPem, err := synth.SelfSignedCertificatePairPemFactory(
+		&vhostHostname, aliasesHostname,
+	)
 	if err != nil {
-		return errors.New("SelfSignedConfFactoryError: " + err.Error())
+		return errors.New("SelfSignedCertificateGenerationError: " + err.Error())
 	}
 
 	vhostHostnameStr := vhostHostname.String()
-	confTempFilePath := "/tmp/" + vhostHostnameStr + "_selfSignedSsl.conf"
-	shouldOverwrite := true
-	err = UpdateFile(confTempFilePath, confContent, shouldOverwrite)
-	if err != nil {
-		return errors.New("UpdateSelfSignedConfFileError: " + err.Error())
-	}
-
 	dirPathStr := dirPath.String()
-	vhostCertKeyFilePath := dirPathStr + "/" + vhostHostnameStr + ".key"
-	vhostCertFilePath := dirPathStr + "/" + vhostHostnameStr + ".crt"
 
-	createSslCmd := "openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout " +
-		vhostCertKeyFilePath + " -out " + vhostCertFilePath + " -config " + confTempFilePath
-	_, err = RunCmd(RunCmdSettings{
-		Command:               createSslCmd,
-		ShouldRunWithSubShell: true,
-	})
+	shouldOverwrite := true
+	sslFileClerk := tkInfra.FileClerk{}
+	err = sslFileClerk.UpdateFileContent(
+		dirPathStr+"/"+vhostHostnameStr+".key",
+		keyPem, shouldOverwrite,
+	)
 	if err != nil {
-		return errors.New("CreateSelfSignedSslCmdFailed: " + err.Error())
+		return errors.New("WritePrivateKeyError: " + err.Error())
 	}
 
-	return os.Remove(confTempFilePath)
+	err = sslFileClerk.UpdateFileContent(
+		dirPathStr+"/"+vhostHostnameStr+".crt",
+		certPem, shouldOverwrite,
+	)
+	if err != nil {
+		return errors.New("WriteCertificateError: " + err.Error())
+	}
+
+	return nil
 }

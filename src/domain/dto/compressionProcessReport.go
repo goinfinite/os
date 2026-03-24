@@ -1,17 +1,20 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CompressionProcessReport struct {
-	FilePathsSuccessfullyCompressed []valueObject.UnixFilePath              `json:"filePathsSuccessfullyCompressed"`
+	FilePathsSuccessfullyCompressed []tkValueObject.UnixAbsoluteFilePath    `json:"filePathsSuccessfullyCompressed"`
 	FailedPathsWithReason           []valueObject.CompressionProcessFailure `json:"failedPathsWithReason"`
-	DestinationPath                 valueObject.UnixFilePath                `json:"destinationPath"`
+	DestinationPath                 tkValueObject.UnixAbsoluteFilePath      `json:"destinationPath"`
 }
 
 func NewCompressionProcessReport(
-	filePathsSuccessfullyCompressed []valueObject.UnixFilePath,
+	filePathsSuccessfullyCompressed []tkValueObject.UnixAbsoluteFilePath,
 	failedPathsWithReason []valueObject.CompressionProcessFailure,
-	destinationPath valueObject.UnixFilePath,
+	destinationPath tkValueObject.UnixAbsoluteFilePath,
 ) CompressionProcessReport {
 	return CompressionProcessReport{
 		FilePathsSuccessfullyCompressed: filePathsSuccessfullyCompressed,

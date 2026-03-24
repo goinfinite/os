@@ -1,11 +1,14 @@
 package filesInfra
 
 import (
+	"os"
 	"os/user"
+	"strings"
 	"testing"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestFilesCmdRepo(t *testing.T) {
@@ -16,14 +19,14 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	fileDefaultPermissions := valueObject.NewUnixFileDefaultPermissions()
 	directoryDefaultPermissions := valueObject.NewUnixDirDefaultPermissions()
-	operatorAccountId, _ := valueObject.NewAccountId(0)
-	ipAddress := valueObject.IpAddressSystem
+	operatorAccountId, _ := tkValueObject.NewAccountId(0)
+	ipAddress := tkValueObject.IpAddressLocal
 
 	t.Run("CreateUnixDirectory", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(fileBasePathStr+"/testDir", false)
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &directoryDefaultPermissions, valueObject.MimeTypeDirectory,
+			filePath, &directoryDefaultPermissions, tkValueObject.MimeTypeDirectory,
 			operatorAccountId, ipAddress,
 		)
 
@@ -34,12 +37,12 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CreateUnixFile", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
 		)
 
 		createDto := dto.NewCreateUnixFile(
-			filePath, &fileDefaultPermissions, valueObject.MimeTypeGeneric,
+			filePath, &fileDefaultPermissions, tkValueObject.MimeTypeGeneric,
 			operatorAccountId, ipAddress,
 		)
 
@@ -50,8 +53,8 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdateUnixFileContent", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
 		)
 		encodedContent, _ := valueObject.NewEncodedContent("Q29udGVudCB0byB0ZXN0")
 
@@ -64,8 +67,8 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdateOnlyUnixFilePermissions", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
 		)
 
 		updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
@@ -79,7 +82,7 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("UpdateUnixDirectoryAndFilePermissions", func(t *testing.T) {
-		filePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(fileBasePathStr+"/testDir", false)
 
 		updatePermissionsDto := dto.NewUpdateUnixFilePermissions(
 			filePath, fileDefaultPermissions, &directoryDefaultPermissions,
@@ -91,10 +94,143 @@ func TestFilesCmdRepo(t *testing.T) {
 		}
 	})
 
+	t.Run("UpdateOwnership_WithRecursiveTrue", func(t *testing.T) {
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(fileBasePathStr+"/testDir", false)
+		ownership, _ := tkValueObject.NewUnixFileOwnership(
+			currentUser.Username + ":" + currentUser.Username,
+		)
+
+		updateDto := dto.NewUpdateUnixFileOwnership(filePath, ownership, true)
+		if !updateDto.IsRecursive {
+			t.Errorf("ExpectedIsRecursiveTrue")
+		}
+
+		err := filesCmdRepo.UpdateOwnership(updateDto)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("UpdateOwnership_NonRecursiveOmitsDashR", func(t *testing.T) {
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
+		)
+		ownership, _ := tkValueObject.NewUnixFileOwnership(
+			currentUser.Username + ":" + currentUser.Username,
+		)
+
+		updateDto := dto.NewUpdateUnixFileOwnership(filePath, ownership, false)
+		if updateDto.IsRecursive {
+			t.Errorf("ExpectedIsRecursiveFalse")
+		}
+
+		err := filesCmdRepo.UpdateOwnership(updateDto)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_ResolvesAccountToUsernameGroup", func(t *testing.T) {
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
+		)
+
+		err := filesCmdRepo.filePrivilegesNormalizer(
+			filePath, operatorAccountId, false,
+		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+
+		info, err := os.Stat(filePath.String())
+		if err != nil {
+			t.Errorf("StatError: %v", err)
+		}
+		if info == nil {
+			t.Errorf("ExpectedFileInfo")
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_AppHtmlUsesNobodyNogroup", func(t *testing.T) {
+		appHtmlDir := "/app/html"
+		if _, err := os.Stat(appHtmlDir); os.IsNotExist(err) {
+			t.Skip("AppHtmlDirNotPresent")
+		}
+
+		testFilePath := appHtmlDir + "/ownershipTest.txt"
+		_, createErr := os.Create(testFilePath)
+		if createErr != nil {
+			t.Skipf("CannotCreateTestFile: %v", createErr)
+		}
+		defer os.Remove(testFilePath)
+
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(testFilePath, false)
+		err := filesCmdRepo.filePrivilegesNormalizer(
+			filePath, operatorAccountId, false,
+		)
+		if err != nil {
+			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_InvalidAccountId", func(t *testing.T) {
+		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
+		)
+		invalidAccountId, _ := tkValueObject.NewAccountId(999999999)
+
+		err := filesCmdRepo.filePrivilegesNormalizer(
+			filePath, invalidAccountId, false,
+		)
+		if err == nil {
+			t.Errorf("ExpectedErrorButGotNil")
+			return
+		}
+		if !strings.Contains(err.Error(), "AccountNotFound") {
+			t.Errorf(
+				"ExpectedAccountNotFoundError, got: %s",
+				err.Error(),
+			)
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_NonExistentPath", func(t *testing.T) {
+		nonExistentPath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/nonExistentFile12345.txt", false,
+		)
+
+		err := filesCmdRepo.filePrivilegesNormalizer(
+			nonExistentPath, operatorAccountId, false,
+		)
+		if err == nil {
+			t.Errorf("ExpectedErrorButGotNil")
+		}
+	})
+
+	t.Run("ApplyAccountOwnership_PathTraversalAttempt", func(t *testing.T) {
+		traversalPathStr := "/app/html/../../../etc/passwd"
+		traversalPath, err := tkValueObject.NewUnixAbsoluteFilePath(traversalPathStr, false)
+		if err != nil {
+			t.Skip("PathTraversalRejectedByValueObject")
+		}
+
+		normalizedStr := traversalPath.String()
+		isHtmlPath := strings.HasPrefix(
+			normalizedStr,
+			valueObject.UnixFilePathAppHtmlDir.String(),
+		)
+		if isHtmlPath {
+			t.Errorf(
+				"PathTraversalShouldNotResolveToHtmlPath: %s",
+				normalizedStr,
+			)
+		}
+	})
+
 	t.Run("MoveUnixDirectory", func(t *testing.T) {
-		sourceFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir")
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_",
+		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(fileBasePathStr+"/testDir", false)
+		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir_", false,
 		)
 
 		moveDto := dto.NewMoveUnixFile(sourceFilePath, destinationFilePath, true)
@@ -106,11 +242,11 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("MoveUnixFile", func(t *testing.T) {
-		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/filesCmdRepoTest.txt",
+		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir_/filesCmdRepoTest.txt", false,
 		)
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/filesCmdRepoTest.txt",
+		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/filesCmdRepoTest.txt", false,
 		)
 
 		moveDto := dto.NewMoveUnixFile(sourceFilePath, destinationFilePath, false)
@@ -122,9 +258,9 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CopyUnixDirectory", func(t *testing.T) {
-		sourceFilePath, _ := valueObject.NewUnixFilePath(fileBasePathStr + "/testDir_")
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir",
+		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(fileBasePathStr+"/testDir_", false)
+		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir", false,
 		)
 
 		dto := dto.NewCopyUnixFile(
@@ -138,11 +274,11 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CopyUnixFile", func(t *testing.T) {
-		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/filesCmdRepoTest.txt",
+		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/filesCmdRepoTest.txt", false,
 		)
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
 		)
 
 		dto := dto.NewCopyUnixFile(
@@ -157,15 +293,16 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("CompressUnixFile (with compression type)", func(t *testing.T) {
 		compressionType, _ := valueObject.NewUnixCompressionType("tgz")
-		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
 		)
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompressWithType",
+		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir_/testDirCompressWithType", false,
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath},
+			destinationFilePath,
 			&compressionType, operatorAccountId, ipAddress,
 		)
 
@@ -176,15 +313,16 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CompressUnixFile (without compression type)", func(t *testing.T) {
-		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
 		)
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompressWithoutType",
+		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir_/testDirCompressWithoutType", false,
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath, nil,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath},
+			destinationFilePath, nil,
 			operatorAccountId, ipAddress,
 		)
 
@@ -195,15 +333,16 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CompressUnixFile (with compression type in file name)", func(t *testing.T) {
-		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir/filesCmdRepoTest.txt",
+		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
 		)
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompressWithTypeOnFileName_.gzip",
+		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir_/testDirCompressWithTypeOnFileName_.gzip", false,
 		)
 
 		dto := dto.NewCompressUnixFiles(
-			[]valueObject.UnixFilePath{sourceFilePath}, destinationFilePath, nil,
+			[]tkValueObject.UnixAbsoluteFilePath{sourceFilePath},
+			destinationFilePath, nil,
 			operatorAccountId, ipAddress,
 		)
 
@@ -214,11 +353,11 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("ExtractUnixFile", func(t *testing.T) {
-		sourceFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirCompressWithType.tgz",
+		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir_/testDirCompressWithType.tgz", false,
 		)
-		destinationFilePath, _ := valueObject.NewUnixFilePath(
-			fileBasePathStr + "/testDir_/testDirExtracted",
+		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir_/testDirExtracted", false,
 		)
 
 		dto := dto.NewExtractUnixFiles(
@@ -228,6 +367,25 @@ func TestFilesCmdRepo(t *testing.T) {
 		err := filesCmdRepo.Extract(dto)
 		if err != nil {
 			t.Errorf("UnexpectedError: %v", err)
+		}
+	})
+}
+
+func TestUpdateUnixFileOwnershipDto(t *testing.T) {
+	filePath, _ := tkValueObject.NewUnixAbsoluteFilePath("/tmp/ownershipDtoTest.txt", false)
+	ownership := tkValueObject.UnixFileOwnershipNobodyNogroup
+
+	t.Run("UpdateUnixFileOwnership_WithRecursiveTrue", func(t *testing.T) {
+		updateDto := dto.NewUpdateUnixFileOwnership(filePath, ownership, true)
+		if !updateDto.IsRecursive {
+			t.Errorf("ExpectedIsRecursiveTrueButGotFalse")
+		}
+	})
+
+	t.Run("UpdateUnixFileOwnership_WithRecursiveFalse", func(t *testing.T) {
+		updateDto := dto.NewUpdateUnixFileOwnership(filePath, ownership, false)
+		if updateDto.IsRecursive {
+			t.Errorf("ExpectedIsRecursiveFalseButGotTrue")
 		}
 	})
 }

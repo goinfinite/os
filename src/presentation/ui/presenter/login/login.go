@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	layoutLogin "github.com/goinfinite/os/src/presentation/ui/layout/login"
@@ -51,9 +52,9 @@ func (presenter *LoginPresenter) Handler(echoContext echo.Context) error {
 
 	rawAccessToken := echoContext.QueryParam("accessToken")
 	if rawAccessToken != "" {
-		accessToken, err := valueObject.NewAccessTokenStr(rawAccessToken)
+		accessToken, err := tkValueObject.NewAccessTokenValue(rawAccessToken)
 		if err == nil {
-			sessionCookieExpiresIn := valueObject.NewUnixTimeAfterNow(
+			sessionCookieExpiresIn := tkValueObject.NewUnixTimeAfterNow(
 				useCase.SessionTokenExpiresIn,
 			)
 			cookiePathStr := uiBasePath
@@ -88,7 +89,7 @@ func (presenter *LoginPresenter) Handler(echoContext echo.Context) error {
 
 	rawPrefilledPassword := echoContext.QueryParam("prefilledPassword")
 	if rawPrefilledPassword != "" {
-		password, err := valueObject.NewPassword(rawPrefilledPassword)
+		password, err := tkValueObject.NewWeakPassword(rawPrefilledPassword)
 		if err == nil {
 			loginLayoutSettings.PrefilledPassword = password.String()
 		}

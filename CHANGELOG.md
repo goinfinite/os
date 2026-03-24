@@ -1,6 +1,40 @@
 # Changelog
 
 ```log
+0.2.8 - 2026/03/XX
+chore: remove temporary echo-swagger replace directive and upgrade to v1.5.2
+fix(ssl): wrap SslPrivateKey around tk EnvelopedPrivateKey
+fix(ssl): repair altnames filter and add pagination to ssl listing
+feat(api): add swagger dto import for account endpoint
+feat(ui): add database user and alias shortcut buttons
+fix(files): handle root directory in file tree builder
+fix(database): use WeakPassword for database user creation
+fix(api): read operatorAccountId from echo context in file endpoints
+refactor(liaison): migrate manual pagination to tk PaginationParser
+refactor(cli): migrate to tk SimpleCliResponseRenderer
+refactor(api): migrate to tk LiaisonApiResponseEmitter
+refactor(liaison): migrate LiaisonOutput to tk LiaisonResponse
+fix: get key path via replace
+fix: show error on ssl list error
+fix: add primaryKeyColumn to PaginationQueryBuilder calls
+fix: sort services by name in ReadFirstInstalledItem
+refactor(valueObject): eliminate pure alias files with direct tk usage
+feat(files): add file privileges normalizer with ownership resolution
+fix(services): use name sort for installable services pagination
+refactor(infra): replace PaginationQueryBuilder alias with tk direct usage
+test(auth): add security tests with repo constructors
+feat(auth): add jwt v5 algorithm validation and api key hash security
+refactor: remove obsolete migrateOperatorAccountIdToSri
+refactor: use ActivityRecordLevelSecurity const and inline NewSriAccount
+refactor: delete presentation wrappers and use tk directly
+refactor: migrate infra consumers from wrappers to tk directly
+fix: replace panic with ResponseWrapper in files API controller
+refactor: add fileClerk field to repo structs for locality of behavior
+refactor: eliminate tk type aliases from all layers
+chore: add context to every src/ dir
+fix: use tk input reader for api
+chore: update go and deps
+
 0.2.7.1 - 2025/10/31
 fix: remove / from database and runtime hx-get/post to respect base href
 fix: add / to footer fragment

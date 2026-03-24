@@ -13,11 +13,14 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type RuntimeCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
-	runtimeQueryRepo RuntimeQueryRepo
+	runtimeQueryRepo *RuntimeQueryRepo
+	fileClerk        tkInfra.FileClerk
 }
 
 func NewRuntimeCmdRepo(
@@ -25,7 +28,8 @@ func NewRuntimeCmdRepo(
 ) *RuntimeCmdRepo {
 	return &RuntimeCmdRepo{
 		persistentDbSvc:  persistentDbSvc,
-		runtimeQueryRepo: RuntimeQueryRepo{},
+		runtimeQueryRepo: NewRuntimeQueryRepo(),
+		fileClerk:        tkInfra.FileClerk{},
 	}
 }
 
@@ -42,7 +46,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 	}
 
 	phpCli := "/usr/local/lsws/lsphp" + phpVersionWithoutDots + "/bin/php"
-	if !infraHelper.FileExists(phpCli) {
+	if !repo.fileClerk.FileExists(phpCli) {
 		return runResponse, errors.New("PhpCliNotFound")
 	}
 
@@ -54,24 +58,24 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 	if !infraHelper.IsPrimaryVirtualHost(runRequest.Hostname) {
 		workingDir += "/" + runRequest.Hostname.String()
 	}
-	if !infraHelper.FileExists(workingDir) {
+	if !repo.fileClerk.FileExists(workingDir) {
 		workingDir = infraEnvs.PrimaryPublicDir
 	}
 
-	cmdOutput, cmdErr := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               phpCli,
-		Args:                  []string{runRequest.Command.String()},
-		Username:              infraEnvs.PhpWebserverUsername,
-		WorkingDirectory:      workingDir,
-		ShouldRunWithSubShell: true,
-		ExecutionTimeoutSecs:  timeoutSecs,
-	})
+	cmdOutput, cmdErr := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           phpCli,
+		Args:              []string{runRequest.Command.String()},
+		Username:          infraEnvs.PhpWebserverUsername,
+		WorkingDirectory:  workingDir,
+		ShouldUseSubShell: true,
+		ExecutionTimeoutSecs: timeoutSecs,
+	}).Run()
 	stdOutput, err := valueObject.NewUnixCommandOutput(cmdOutput)
 	if err != nil {
 		return runResponse, err
 	}
 
-	if errorMessage, assertOk := cmdErr.(*infraHelper.CmdError); assertOk {
+	if errorMessage, assertOk := cmdErr.(*tkInfra.ShellError); assertOk {
 		stdError, err := valueObject.NewUnixCommandOutput(errorMessage.StdErr)
 		if err != nil {
 			return runResponse, err
@@ -103,7 +107,7 @@ func (repo *RuntimeCmdRepo) restartPhpWebserver() error {
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpVersion(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	version valueObject.PhpVersion,
 ) error {
 	phpVersion, err := repo.runtimeQueryRepo.ReadPhpVersion(hostname)
@@ -123,10 +127,10 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
 	updatePhpVersionCmd := "sed -i 's/lsapi:lsphp[0-9][0-9]/" + newLsapiLine +
 		"/g' " + phpConfFilePath.String()
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               updatePhpVersionCmd,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:          updatePhpVersionCmd,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("UpdatePhpVersionFailed: " + err.Error())
 	}
@@ -135,10 +139,10 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	if isPrimaryVirtualHost {
 		sourcePhpCliPath := "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php"
 		updatePhpCliVersionCmd := "unlink /usr/bin/php; ln -s " + sourcePhpCliPath + " /usr/bin/php"
-		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-			Command:               updatePhpCliVersionCmd,
-			ShouldRunWithSubShell: true,
-		})
+		_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:          updatePhpCliVersionCmd,
+			ShouldUseSubShell: true,
+		}).Run()
 		if err != nil {
 			return errors.New("UpdatePhpCliVersionError: " + err.Error())
 		}
@@ -148,7 +152,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpSettings(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
 	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
@@ -165,13 +169,13 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 			settingValue = strings.Replace(settingValue, "|", "\\|", -1)
 		}
 
-		_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "sed",
 			Args: []string{
 				"-i", "s|" + settingName + " .*|" + settingName + " " + settingValue + "|g",
 				phpConfigFilePathStr,
 			},
-		})
+		}).Run()
 		if err != nil {
 			slog.Debug(
 				"UpdatePhpSettingFailed",
@@ -241,17 +245,19 @@ func (repo *RuntimeCmdRepo) EnablePhpModule(
 		return errors.New("InstallModuleFailed: " + err.Error())
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               "echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
-		ShouldRunWithSubShell: true,
-	})
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:          "echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("InstallPeclModuleFailed: " + err.Error())
 	}
 
 	moduleConfigFilePath := modsAvailableDir + "/" + moduleNameStr + ".ini"
 	moduleConfigFileContent := "extension=" + moduleNameStr + ".so"
-	err = infraHelper.UpdateFile(moduleConfigFilePath, moduleConfigFileContent, true)
+	err = repo.fileClerk.UpdateFileContent(
+		moduleConfigFilePath, moduleConfigFileContent, true,
+	)
 	if err != nil {
 		return errors.New("CreatePhpModuleIniFileFailed: " + err.Error())
 	}
@@ -289,7 +295,7 @@ func (repo *RuntimeCmdRepo) DisablePhpModule(
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpModules(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	modules []entity.PhpModule,
 ) error {
 	phpVersion, err := repo.runtimeQueryRepo.ReadPhpVersion(hostname)
@@ -341,7 +347,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 	return repo.restartPhpWebserver()
 }
 
-func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) error {
+func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) error {
 	vhostExists := true
 
 	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
@@ -358,18 +364,20 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname valueObject.Fqdn) erro
 
 	phpConfFilePathStr := phpConfFilePath.String()
 	templatePhpVhostConfFilePath := "/app/conf/php-webserver/template"
-	err = infraHelper.CopyFile(templatePhpVhostConfFilePath, phpConfFilePathStr)
+	err = repo.fileClerk.CopyFile(templatePhpVhostConfFilePath, phpConfFilePathStr)
 	if err != nil {
 		return errors.New("CopyPhpConfTemplateError: " + err.Error())
 	}
 
 	hostnameStr := hostname.String()
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
-			"-ie", "s/" + infraEnvs.DefaultPrimaryVhost + "/" + hostnameStr + "/g", phpConfFilePathStr,
+			"-ie",
+			"s/" + infraEnvs.DefaultPrimaryVhost + "/" + hostnameStr + "/g",
+			phpConfFilePathStr,
 		},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
 	}
@@ -385,7 +393,7 @@ virtualhost ` + hostname.String() + ` {
 }
 `
 	shouldOverwrite := false
-	err = infraHelper.UpdateFile(
+	err = repo.fileClerk.UpdateFileContent(
 		infraEnvs.PhpWebserverMainConfFilePath, phpVhostHttpdConf, shouldOverwrite,
 	)
 	if err != nil {
@@ -394,13 +402,13 @@ virtualhost ` + hostname.String() + ` {
 
 	listenerMapRegex := `^[[:space:]]*map[[:space:]]\+[[:alnum:].-]\+[[:space:]]\+\*`
 	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
 			"-ie", "/" + listenerMapRegex + "/a" + newListenerMapLine,
 			infraEnvs.PhpWebserverMainConfFilePath,
 		},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("UpdateListenerMapLineError: " + err.Error())
 	}

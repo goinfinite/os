@@ -3,22 +3,23 @@ package infraHelper
 import (
 	"os"
 
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-func ReadPrimaryVirtualHostHostname() (primaryHostname valueObject.Fqdn, err error) {
+func ReadPrimaryVirtualHostHostname() (primaryHostname tkValueObject.Fqdn, err error) {
 	rawPrimaryHost := os.Getenv("PRIMARY_VHOST")
 	if rawPrimaryHost != "" {
-		return valueObject.NewFqdn(rawPrimaryHost)
+		return tkValueObject.NewFqdn(rawPrimaryHost)
 	}
 
-	rawPrimaryHost, err = RunCmd(RunCmdSettings{
+	rawPrimaryHost, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "hostname",
 		Args:    []string{"-f"},
-	})
+	}).Run()
 	if err != nil {
 		return primaryHostname, err
 	}
 
-	return valueObject.NewFqdn(rawPrimaryHost)
+	return tkValueObject.NewFqdn(rawPrimaryHost)
 }

@@ -1,21 +1,24 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CreateSecureAccessPublicKey struct {
-	AccountId         valueObject.AccountId                    `json:"accountId"`
+	AccountId         tkValueObject.AccountId                  `json:"accountId"`
 	Content           valueObject.SecureAccessPublicKeyContent `json:"content"`
 	Name              valueObject.SecureAccessPublicKeyName    `json:"name"`
-	OperatorAccountId valueObject.AccountId                    `json:"-"`
-	OperatorIpAddress valueObject.IpAddress                    `json:"-"`
+	OperatorAccountId tkValueObject.AccountId                  `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress                  `json:"-"`
 }
 
 func NewCreateSecureAccessPublicKey(
-	accountId valueObject.AccountId,
+	accountId tkValueObject.AccountId,
 	content valueObject.SecureAccessPublicKeyContent,
 	name valueObject.SecureAccessPublicKeyName,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CreateSecureAccessPublicKey {
 	return CreateSecureAccessPublicKey{
 		AccountId:         accountId,

@@ -1,21 +1,24 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CompressUnixFiles struct {
-	SourcePaths       []valueObject.UnixFilePath       `json:"sourcePaths"`
-	DestinationPath   valueObject.UnixFilePath         `json:"destinationPath"`
-	CompressionType   *valueObject.UnixCompressionType `json:"compressionType"`
-	OperatorAccountId valueObject.AccountId            `json:"-"`
-	OperatorIpAddress valueObject.IpAddress            `json:"-"`
+	SourcePaths       []tkValueObject.UnixAbsoluteFilePath `json:"sourcePaths"`
+	DestinationPath   tkValueObject.UnixAbsoluteFilePath   `json:"destinationPath"`
+	CompressionType   *valueObject.UnixCompressionType     `json:"compressionType"`
+	OperatorAccountId tkValueObject.AccountId              `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress              `json:"-"`
 }
 
 func NewCompressUnixFiles(
-	sourcePaths []valueObject.UnixFilePath,
-	destinationPath valueObject.UnixFilePath,
+	sourcePaths []tkValueObject.UnixAbsoluteFilePath,
+	destinationPath tkValueObject.UnixAbsoluteFilePath,
 	compressionType *valueObject.UnixCompressionType,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CompressUnixFiles {
 	return CompressUnixFiles{
 		SourcePaths:       sourcePaths,

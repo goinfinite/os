@@ -6,12 +6,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func UpdateCron(
 	cronQueryRepo repository.CronQueryRepo,
 	cronCmdRepo repository.CronCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateCron,
 ) error {
 	readFirstRequestDto := dto.ReadCronsRequest{

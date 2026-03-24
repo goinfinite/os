@@ -1,27 +1,30 @@
 package entity
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type VirtualHost struct {
-	Hostname         valueObject.Fqdn            `json:"hostname"`
-	Type             valueObject.VirtualHostType `json:"type"`
-	RootDirectory    valueObject.UnixFilePath    `json:"rootDirectory"`
-	ParentHostname   *valueObject.Fqdn           `json:"parentHostname"`
-	IsPrimary        bool                        `json:"isPrimary"`
-	IsWildcard       bool                        `json:"isWildcard"`
-	AliasesHostnames []valueObject.Fqdn          `json:"aliasesHostnames"`
-	CreatedAt        valueObject.UnixTime        `json:"createdAt"`
+	Hostname         tkValueObject.Fqdn                 `json:"hostname"`
+	Type             valueObject.VirtualHostType        `json:"type"`
+	RootDirectory    tkValueObject.UnixAbsoluteFilePath `json:"rootDirectory"`
+	ParentHostname   *tkValueObject.Fqdn                `json:"parentHostname"`
+	IsPrimary        bool                               `json:"isPrimary"`
+	IsWildcard       bool                               `json:"isWildcard"`
+	AliasesHostnames []tkValueObject.Fqdn               `json:"aliasesHostnames"`
+	CreatedAt        tkValueObject.UnixTime             `json:"createdAt"`
 }
 
 func NewVirtualHost(
-	hostname valueObject.Fqdn,
+	hostname tkValueObject.Fqdn,
 	vhostType valueObject.VirtualHostType,
-	rootDirectory valueObject.UnixFilePath,
-	parentHostname *valueObject.Fqdn,
+	rootDirectory tkValueObject.UnixAbsoluteFilePath,
+	parentHostname *tkValueObject.Fqdn,
 	isPrimary bool,
 	isWildcard bool,
-	aliasesHostnames []valueObject.Fqdn,
-	createdAt valueObject.UnixTime,
+	aliasesHostnames []tkValueObject.Fqdn,
+	createdAt tkValueObject.UnixTime,
 ) VirtualHost {
 	return VirtualHost{
 		Hostname:         hostname,

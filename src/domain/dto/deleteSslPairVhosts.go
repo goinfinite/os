@@ -1,19 +1,22 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type DeleteSslPairVhosts struct {
-	SslPairId             valueObject.SslPairId `json:"sslPairId"`
-	VirtualHostsHostnames []valueObject.Fqdn    `json:"virtualHostsHostnames"`
-	OperatorAccountId     valueObject.AccountId `json:"-"`
-	OperatorIpAddress     valueObject.IpAddress `json:"-"`
+	SslPairId             valueObject.SslPairId    `json:"sslPairId"`
+	VirtualHostsHostnames []tkValueObject.Fqdn     `json:"virtualHostsHostnames"`
+	OperatorAccountId     tkValueObject.AccountId  `json:"-"`
+	OperatorIpAddress     tkValueObject.IpAddress  `json:"-"`
 }
 
 func NewDeleteSslPairVhosts(
 	sslPairId valueObject.SslPairId,
-	virtualHostsHostnames []valueObject.Fqdn,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	virtualHostsHostnames []tkValueObject.Fqdn,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) DeleteSslPairVhosts {
 	return DeleteSslPairVhosts{
 		SslPairId:             sslPairId,

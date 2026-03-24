@@ -1,12 +1,12 @@
 package componentStructural
 
 import (
-	"github.com/goinfinite/os/src/domain/dto"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	"strconv"
 )
 
-func readPaginationPageNumbers(paginationDto dto.Pagination) []int {
+func readPaginationPageNumbers(paginationDto tkDto.Pagination) []int {
 	currentPageNumber := int(paginationDto.PageNumber)
 	sidePageCount := 2
 	countStart := currentPageNumber - sidePageCount
@@ -40,7 +40,7 @@ func readPaginationPageNumbers(paginationDto dto.Pagination) []int {
 
 templ Pagination(
 	componentId string,
-	paginationDto dto.Pagination,
+	paginationDto tkDto.Pagination,
 	selectedPageNumberBindValuePath, selectedItemsPerPageBindValuePath string,
 ) {
 	<!-- Pagination -->

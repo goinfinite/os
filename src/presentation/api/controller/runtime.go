@@ -3,14 +3,13 @@ package apiController
 import (
 	"errors"
 	"log/slog"
-	"net/http"
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -37,14 +36,15 @@ func NewRuntimeController(
 // @Param        hostname 	  path   string  true  "Hostname"
 // @Success      200 {object} entity.PhpConfigs
 // @Router       /v1/runtime/php/{hostname}/ [get]
-func (controller *RuntimeController) ReadPhpConfigs(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *RuntimeController) ReadPhpConfigs(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.runtimeLiaison.ReadPhpConfigs(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.runtimeLiaison.ReadPhpConfigs(requestData),
 	)
 }
 
@@ -75,7 +75,7 @@ func (controller *RuntimeController) parsePhpModules(rawPhpModules any) (
 			continue
 		}
 
-		moduleStatus, err := voHelper.InterfaceToBool(rawModuleMap["status"])
+		moduleStatus, err := tkVoUtil.InterfaceToBool(rawModuleMap["status"])
 		if err != nil {
 			slog.Debug(err.Error(), slog.Any("status", rawModuleMap["status"]))
 			continue
@@ -148,30 +148,41 @@ func (controller *RuntimeController) parsePhpSettings(rawPhpSettings any) (
 // @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"modules and settings are optional."
 // @Success      200 {object} object{} "PhpConfigsUpdated"
 // @Router       /v1/runtime/php/{hostname}/ [put]
-func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if _, exists := requestInputData["modules"]; exists {
-		phpModules, err := controller.parsePhpModules(requestInputData["modules"])
+	if _, exists := requestData["modules"]; exists {
+		phpModules, err := controller.parsePhpModules(requestData["modules"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err,
+				),
+			)
 		}
-		requestInputData["modules"] = phpModules
+		requestData["modules"] = phpModules
 	}
 
-	if _, exists := requestInputData["settings"]; exists {
-		phpSettings, err := controller.parsePhpSettings(requestInputData["settings"])
+	if _, exists := requestData["settings"]; exists {
+		phpSettings, err := controller.parsePhpSettings(requestData["settings"])
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, err)
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err,
+				),
+			)
 		}
-		requestInputData["settings"] = phpSettings
+		requestData["settings"] = phpSettings
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.runtimeLiaison.UpdatePhpConfigs(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.runtimeLiaison.UpdatePhpConfigs(requestData),
 	)
 }
 
@@ -186,12 +197,12 @@ func (controller *RuntimeController) UpdatePhpConfigs(c echo.Context) error {
 // @Success      200 {object} dto.RunPhpCommandResponse
 // @Router       /v1/runtime/php/run/ [post]
 func (controller *RuntimeController) RunPhpCommand(echoContext echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(echoContext)
+	requestData, err := tkPresentation.ApiRequestInputReader{}.Reader(echoContext)
 	if err != nil {
 		return err
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		echoContext, controller.runtimeLiaison.RunPhpCommand(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.runtimeLiaison.RunPhpCommand(requestData),
 	)
 }

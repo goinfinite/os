@@ -1,56 +1,59 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type CreateCustomService struct {
 	Name                           valueObject.ServiceName     `json:"name"`
 	Type                           valueObject.ServiceType     `json:"type"`
-	StartCmd                       valueObject.UnixCommand     `json:"startCmd"`
+	StartCmd                       tkValueObject.UnixCommand   `json:"startCmd"`
 	Envs                           []valueObject.ServiceEnv    `json:"envs"`
 	PortBindings                   []valueObject.PortBinding   `json:"portBindings"`
-	StopCmdSteps                   []valueObject.UnixCommand   `json:"stopCmdSteps"`
-	PreStartCmdSteps               []valueObject.UnixCommand   `json:"preStartCmdSteps"`
-	PostStartCmdSteps              []valueObject.UnixCommand   `json:"postStartCmdSteps"`
-	PreStopCmdSteps                []valueObject.UnixCommand   `json:"preStopCmdSteps"`
-	PostStopCmdSteps               []valueObject.UnixCommand   `json:"postStopCmdSteps"`
+	StopCmdSteps                   []tkValueObject.UnixCommand `json:"stopCmdSteps"`
+	PreStartCmdSteps               []tkValueObject.UnixCommand `json:"preStartCmdSteps"`
+	PostStartCmdSteps              []tkValueObject.UnixCommand `json:"postStartCmdSteps"`
+	PreStopCmdSteps                []tkValueObject.UnixCommand `json:"preStopCmdSteps"`
+	PostStopCmdSteps               []tkValueObject.UnixCommand `json:"postStopCmdSteps"`
 	Version                        *valueObject.ServiceVersion `json:"version"`
-	ExecUser                       *valueObject.UnixUsername   `json:"execUser"`
-	WorkingDirectory               *valueObject.UnixFilePath   `json:"workingDirectory"`
+	ExecUser                       *tkValueObject.UnixUsername                `json:"execUser"`
+	WorkingDirectory               *tkValueObject.UnixAbsoluteFilePath       `json:"workingDirectory"`
 	AutoStart                      *bool                       `json:"autoStart"`
 	AutoRestart                    *bool                       `json:"autoRestart"`
 	TimeoutStartSecs               *uint                       `json:"timeoutStartSecs"`
 	MaxStartRetries                *uint                       `json:"maxStartRetries"`
-	LogOutputPath                  *valueObject.UnixFilePath   `json:"logOutputPath"`
-	LogErrorPath                   *valueObject.UnixFilePath   `json:"logErrorPath"`
-	AvatarUrl                      *valueObject.Url            `json:"avatarUrl"`
+	LogOutputPath                  *tkValueObject.UnixAbsoluteFilePath       `json:"logOutputPath"`
+	LogErrorPath                   *tkValueObject.UnixAbsoluteFilePath       `json:"logErrorPath"`
+	AvatarUrl                      *tkValueObject.Url          `json:"avatarUrl"`
 	AutoCreateMapping              *bool                       `json:"autoCreateMapping"`
-	MappingHostname                *valueObject.Fqdn           `json:"mappingHostname"`
+	MappingHostname                *tkValueObject.Fqdn         `json:"mappingHostname"`
 	MappingPath                    *valueObject.MappingPath    `json:"mappingPath"`
 	MappingUpgradeInsecureRequests *bool                       `json:"mappingUpgradeInsecureRequests"`
-	OperatorAccountId              valueObject.AccountId       `json:"-"`
-	OperatorIpAddress              valueObject.IpAddress       `json:"-"`
+	OperatorAccountId              tkValueObject.AccountId     `json:"-"`
+	OperatorIpAddress              tkValueObject.IpAddress     `json:"-"`
 }
 
 func NewCreateCustomService(
 	name valueObject.ServiceName,
 	serviceType valueObject.ServiceType,
-	startCmd valueObject.UnixCommand,
+	startCmd tkValueObject.UnixCommand,
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
-	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []valueObject.UnixCommand,
+	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []tkValueObject.UnixCommand,
 	version *valueObject.ServiceVersion,
-	execUser *valueObject.UnixUsername,
-	workingDirectory *valueObject.UnixFilePath,
+	execUser *tkValueObject.UnixUsername,
+	workingDirectory *tkValueObject.UnixAbsoluteFilePath,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
-	logOutputPath, logErrorPath *valueObject.UnixFilePath,
-	avatarUrl *valueObject.Url,
+	logOutputPath, logErrorPath *tkValueObject.UnixAbsoluteFilePath,
+	avatarUrl *tkValueObject.Url,
 	autoCreateMapping *bool,
-	mappingHostname *valueObject.Fqdn,
+	mappingHostname *tkValueObject.Fqdn,
 	mappingPath *valueObject.MappingPath,
 	mappingUpgradeInsecureRequests *bool,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CreateCustomService {
 	return CreateCustomService{
 		Name:                           name,

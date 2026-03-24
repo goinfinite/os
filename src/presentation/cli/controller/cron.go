@@ -2,8 +2,8 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -60,7 +60,7 @@ func (controller *CronController) Read() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(controller.cronLiaison.Read(requestBody))
+			tkPresentation.LiaisonCliResponseRenderer(controller.cronLiaison.Read(requestBody))
 		},
 	}
 
@@ -103,7 +103,7 @@ func (controller *CronController) Create() *cobra.Command {
 				requestBody["comment"] = commentStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.cronLiaison.Create(requestBody),
 			)
 		},
@@ -140,7 +140,7 @@ func (controller *CronController) Update() *cobra.Command {
 				requestBody["comment"] = commentStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.cronLiaison.Update(requestBody),
 			)
 		},
@@ -171,7 +171,7 @@ func (controller *CronController) Delete() *cobra.Command {
 				requestBody["comment"] = commentStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.cronLiaison.Delete(requestBody),
 			)
 		},

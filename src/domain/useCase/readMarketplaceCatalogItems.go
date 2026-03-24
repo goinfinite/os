@@ -6,12 +6,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-var MarketplaceDefaultSortBy valueObject.PaginationSortBy = valueObject.PaginationSortBy("id")
+var MarketplaceDefaultSortBy tkValueObject.PaginationSortBy = tkValueObject.PaginationSortBy("id")
 
-var MarketplaceDefaultPagination dto.Pagination = dto.Pagination{
+var MarketplaceDefaultPagination tkDto.Pagination = tkDto.Pagination{
 	PageNumber:   0,
 	ItemsPerPage: 50,
 	SortBy:       &MarketplaceDefaultSortBy,

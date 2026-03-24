@@ -7,15 +7,17 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func UploadUnixFiles(
 	filesQueryRepo repository.FilesQueryRepo,
 	filesCmdRepo repository.FilesCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	uploadDto dto.UploadUnixFiles,
 ) (dto.UploadProcessReport, error) {
-	maxFileSizeInGb := int64(5)
+	maxFileSizeInGb := uint64(5)
 
 	tooBigFiles := []valueObject.UploadProcessFailure{}
 	filesToUpload := []valueObject.FileStreamHandler{}
@@ -53,8 +55,8 @@ func UploadUnixFiles(
 
 	destinationPathStr := uploadProcessReport.DestinationPath.String()
 	for _, fileName := range uploadProcessReport.FileNamesSuccessfullyUploaded {
-		filePath, err := valueObject.NewUnixFilePath(
-			destinationPathStr + "/" + fileName.String(),
+		filePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+			destinationPathStr+"/"+fileName.String(), false,
 		)
 		if err != nil {
 			continue

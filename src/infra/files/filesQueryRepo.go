@@ -14,13 +14,20 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-type FilesQueryRepo struct{}
+type FilesQueryRepo struct {
+	fileClerk tkInfra.FileClerk
+}
+
+func NewFilesQueryRepo() *FilesQueryRepo {
+	return &FilesQueryRepo{fileClerk: tkInfra.FileClerk{}}
+}
 
 func (repo *FilesQueryRepo) unixFileFactory(
-	filePath valueObject.UnixFilePath,
+	filePath tkValueObject.UnixAbsoluteFilePath,
 	shouldReturnContent bool,
 ) (entity.UnixFile, error) {
 	var unixFile entity.UnixFile
@@ -32,7 +39,7 @@ func (repo *FilesQueryRepo) unixFileFactory(
 
 	fileSysInfo := fileInfo.Sys().(*syscall.Stat_t)
 
-	unixFileUid, err := valueObject.NewUnixUid(fileSysInfo.Uid)
+	unixFileUid, err := tkValueObject.NewUnixUserId(fileSysInfo.Uid)
 	if err != nil {
 		return unixFile, err
 	}
@@ -47,7 +54,7 @@ func (repo *FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	unixFileGid, err := valueObject.NewGroupId(fileSysInfo.Gid)
+	unixFileGid, err := tkValueObject.NewUnixGroupId(fileSysInfo.Gid)
 	if err != nil {
 		return unixFile, err
 	}
@@ -57,7 +64,7 @@ func (repo *FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	unixFileGroup, err := valueObject.NewGroupName(fileGroupName.Name)
+	unixFileGroup, err := tkValueObject.NewUnixGroupName(fileGroupName.Name)
 	if err != nil {
 		return unixFile, err
 	}
@@ -67,20 +74,20 @@ func (repo *FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	unixFilePath, err := valueObject.NewUnixFilePath(unixFileAbsPath)
+	unixFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(unixFileAbsPath, false)
 	if err != nil {
 		return unixFile, err
 	}
 
-	var unixFileExtensionPtr *valueObject.UnixFileExtension
+	var unixFileExtensionPtr *tkValueObject.UnixFileExtension
 	unixFileExtension, err := unixFilePath.ReadFileExtension()
 	if err == nil {
 		unixFileExtensionPtr = &unixFileExtension
 	}
 
-	unixFileMimeType := unixFileExtension.GetMimeType()
+	unixFileMimeType := unixFileExtension.ReadMimeType()
 	if fileInfo.IsDir() {
-		unixFileMimeType = valueObject.MimeTypeDirectory
+		unixFileMimeType = tkValueObject.MimeTypeDirectory
 		unixFileExtensionPtr = nil
 	}
 
@@ -91,14 +98,14 @@ func (repo *FilesQueryRepo) unixFileFactory(
 		return unixFile, err
 	}
 
-	unixFileSize, err := valueObject.NewByte(fileInfo.Size())
+	unixFileSize, err := tkValueObject.NewByte(fileInfo.Size())
 	if err != nil {
 		return unixFile, err
 	}
 
 	var unixFileContentPtr *valueObject.UnixFileContent
 	if shouldReturnContent && unixFileSize.ToMiB() <= valueObject.FileContentMaxSizeInMb {
-		unixFileContentStr, err := infraHelper.ReadFileContent(filePath.String())
+		unixFileContentStr, err := repo.fileClerk.ReadFileContent(filePath.String(), nil)
 		if err != nil {
 			return unixFile, errors.New("FailedToReadFileContent: " + err.Error())
 		}
@@ -111,10 +118,10 @@ func (repo *FilesQueryRepo) unixFileFactory(
 		unixFileContentPtr = &unixFileContent
 	}
 
-	unixFileUpdatedAt := valueObject.NewUnixTimeWithGoTime(fileInfo.ModTime())
+	unixFileUpdatedAt := tkValueObject.NewUnixTimeWithGoTime(fileInfo.ModTime())
 
 	unixFile = entity.NewUnixFile(
-		unixFilePath.ReadFileName(), unixFilePath, unixFileMimeType, unixFilePermissions,
+		unixFilePath.ReadFileName(false), unixFilePath, unixFileMimeType, unixFilePermissions,
 		unixFileSize, unixFileExtensionPtr, unixFileContentPtr, unixFileUid,
 		unixFileUsername, unixFileGid, unixFileGroup, unixFileUpdatedAt,
 	)
@@ -123,30 +130,30 @@ func (repo *FilesQueryRepo) unixFileFactory(
 }
 
 func (repo *FilesQueryRepo) simplifiedUnixFileFactory(
-	unixFilePath valueObject.UnixFilePath,
+	unixFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (simplifiedUnixFile entity.SimplifiedUnixFile, err error) {
 	fileInfo, err := os.Stat(unixFilePath.String())
 	if err != nil {
 		return simplifiedUnixFile, err
 	}
 
-	unixFileMimeType := valueObject.MimeTypeGeneric
+	unixFileMimeType := tkValueObject.MimeTypeGeneric
 	if fileInfo.IsDir() {
-		unixFileMimeType = valueObject.MimeTypeDirectory
+		unixFileMimeType = tkValueObject.MimeTypeDirectory
 	}
 
 	unixFileExtension, err := unixFilePath.ReadFileExtension()
 	if err == nil {
-		unixFileMimeType = unixFileExtension.GetMimeType()
+		unixFileMimeType = unixFileExtension.ReadMimeType()
 	}
 
 	return entity.NewSimplifiedUnixFile(
-		unixFilePath.ReadFileName(), unixFilePath, unixFileMimeType,
+		unixFilePath.ReadFileName(false), unixFilePath, unixFileMimeType,
 	), nil
 }
 
 func (repo *FilesQueryRepo) unixFileBranchFactory(
-	branchAbsolutePath valueObject.UnixFilePath,
+	branchAbsolutePath tkValueObject.UnixAbsoluteFilePath,
 	shouldIncludeFiles bool,
 ) (fileBranch dto.UnixFileBranch, err error) {
 	simplifiedBranchFileEntity, err := repo.simplifiedUnixFileFactory(branchAbsolutePath)
@@ -164,10 +171,10 @@ func (repo *FilesQueryRepo) unixFileBranchFactory(
 		findCmdArgs = append(findCmdArgs, "-type", "d")
 	}
 
-	rawBranchTwigs, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawBranchTwigs, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "find",
 		Args:    findCmdArgs,
-	})
+	}).Run()
 	if err != nil {
 		return fileBranch, err
 	}
@@ -182,7 +189,7 @@ func (repo *FilesQueryRepo) unixFileBranchFactory(
 			continue
 		}
 
-		twigPath, err := valueObject.NewUnixFilePath(rawFilePath)
+		twigPath, err := tkValueObject.NewUnixAbsoluteFilePath(rawFilePath, false)
 		if err != nil {
 			slog.Error(
 				err.Error(),
@@ -206,19 +213,40 @@ func (repo *FilesQueryRepo) unixFileBranchFactory(
 }
 
 func (repo *FilesQueryRepo) unixFileTreeFactory(
-	leafAbsolutePath valueObject.UnixFilePath,
+	leafAbsolutePath tkValueObject.UnixAbsoluteFilePath,
 ) (treeTrunk dto.UnixFileBranch, err error) {
+	shouldIncludeFiles := false
+
+	fallbackBranchFilePath, err := tkValueObject.NewUnixAbsoluteFilePath("/", false)
+	if err != nil {
+		slog.Debug(
+			err.Error(),
+			slog.String("rawBranchPath", "/"),
+		)
+		return treeTrunk, err
+	}
+
+	treeTrunk, err = repo.unixFileBranchFactory(fallbackBranchFilePath, shouldIncludeFiles)
+	if err != nil {
+		slog.Error(
+			err.Error(),
+			slog.String("branchFilePath", fallbackBranchFilePath.String()),
+		)
+		return treeTrunk, err
+	}
+
 	rawTreeBranches := strings.SplitSeq(leafAbsolutePath.String(), "/")
 
-	shouldIncludeFiles := false
 	iterationBranch := treeTrunk
 	iterationBranchPath := ""
 	for rawBranchName := range rawTreeBranches {
 		rawBranchName = strings.TrimSpace(rawBranchName)
-		isTreeTrunk := rawBranchName == ""
+		if rawBranchName == "" {
+			continue
+		}
 
 		iterationBranchPath += rawBranchName + "/"
-		branchFilePath, err := valueObject.NewUnixFilePath(iterationBranchPath)
+		branchFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(iterationBranchPath, false)
 		if err != nil {
 			slog.Debug(
 				err.Error(),
@@ -235,11 +263,6 @@ func (repo *FilesQueryRepo) unixFileTreeFactory(
 			)
 			continue
 		}
-		if isTreeTrunk {
-			treeTrunk = treeBranch
-			iterationBranch = treeTrunk
-			continue
-		}
 
 		iterationBranch.Branches[treeBranch.Name] = treeBranch
 		iterationBranch = treeBranch
@@ -253,7 +276,7 @@ func (repo *FilesQueryRepo) Read(
 ) (responseDto dto.ReadFilesResponse, err error) {
 	sourcePathStr := requestDto.SourcePath.String()
 
-	if !infraHelper.FileExists(sourcePathStr) {
+	if !repo.fileClerk.FileExists(sourcePathStr) {
 		return responseDto, errors.New("PathNotFound")
 	}
 
@@ -262,16 +285,16 @@ func (repo *FilesQueryRepo) Read(
 		return responseDto, errors.New("ReadSourcePathInfoError: " + err.Error())
 	}
 
-	factorableFilePaths := []valueObject.UnixFilePath{requestDto.SourcePath}
+	factorableFilePaths := []tkValueObject.UnixAbsoluteFilePath{requestDto.SourcePath}
 
 	if sourcePathInfo.IsDir() {
 		factorableFilePathsWithoutSourcePath := factorableFilePaths[1:]
 		factorableFilePaths = factorableFilePathsWithoutSourcePath
 
-		rawDirectoryFiles, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		rawDirectoryFiles, err := tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "find",
 			Args:    []string{"-L", sourcePathStr, "-maxdepth", "1", "-printf", "%p\n"},
-		})
+		}).Run()
 		if err != nil {
 			return responseDto, errors.New("ReadDirectoryError: " + err.Error())
 		}
@@ -282,7 +305,7 @@ func (repo *FilesQueryRepo) Read(
 
 		rawDirectoryFilesList := strings.SplitSeq(rawDirectoryFiles, "\n")
 		for fileToFactoryStr := range rawDirectoryFilesList {
-			filePath, err := valueObject.NewUnixFilePath(fileToFactoryStr)
+			filePath, err := tkValueObject.NewUnixAbsoluteFilePath(fileToFactoryStr, false)
 			if err != nil {
 				slog.Error(
 					"FactoryFileError",
@@ -350,9 +373,9 @@ func (repo *FilesQueryRepo) Read(
 }
 
 func (repo *FilesQueryRepo) ReadFirst(
-	unixFilePath valueObject.UnixFilePath,
+	unixFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (unixFileEntity entity.UnixFile, err error) {
-	if !infraHelper.FileExists(unixFilePath.String()) {
+	if !repo.fileClerk.FileExists(unixFilePath.String()) {
 		return unixFileEntity, errors.New("FileNotFound")
 	}
 

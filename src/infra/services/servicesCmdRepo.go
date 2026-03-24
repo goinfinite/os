@@ -16,6 +16,8 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
@@ -26,6 +28,7 @@ var defaultServiceDirectories []string = []string{"conf", "logs"}
 type ServicesCmdRepo struct {
 	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
 	servicesQueryRepo *ServicesQueryRepo
+	fileClerk         tkInfra.FileClerk
 }
 
 func NewServicesCmdRepo(
@@ -34,22 +37,23 @@ func NewServicesCmdRepo(
 	return &ServicesCmdRepo{
 		persistentDbSvc:   persistentDbSvc,
 		servicesQueryRepo: NewServicesQueryRepo(persistentDbSvc),
+		fileClerk:         tkInfra.FileClerk{},
 	}
 }
 
 func (repo *ServicesCmdRepo) runCmdSteps(
 	stepsType string,
-	steps []valueObject.UnixCommand,
-	totalExecTimeoutSecs valueObject.UnixTime,
+	steps []tkValueObject.UnixCommand,
+	totalExecTimeoutSecs tkValueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
 	}
 
 	totalExecTimeoutSecsUint := uint64(totalExecTimeoutSecs.Int64())
-	runCmdSettings := infraHelper.RunCmdSettings{
-		ShouldRunWithSubShell: true,
-		ExecutionTimeoutSecs:  totalExecTimeoutSecsUint,
+	shellSettings := tkInfra.ShellSettings{
+		ShouldUseSubShell:    true,
+		ExecutionTimeoutSecs: totalExecTimeoutSecsUint,
 	}
 
 	totalExecRemainingTime := totalExecTimeoutSecsUint
@@ -58,13 +62,13 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 
 		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
 
-		runCmdSettings.Command = stepStr
+		shellSettings.Command = stepStr
 
 		execTimeStart := time.Now()
-		stepOutput, err := infraHelper.RunCmd(runCmdSettings)
+		stepOutput, err := tkInfra.NewShell(shellSettings).Run()
 		if err != nil {
 			errorMessage := stepOutput + " | " + err.Error()
-			if infraHelper.IsRunCmdTimeout(err) {
+			if strings.Contains(err.Error(), "CommandDeadlineExceeded") {
 				errorMessage = "Service" + stepsType + "TimeoutExceeded"
 			}
 
@@ -80,7 +84,7 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 			return errors.New("Service" + stepsType + "TimeoutExceeded")
 		}
 
-		runCmdSettings.ExecutionTimeoutSecs = totalExecRemainingTime
+		shellSettings.ExecutionTimeoutSecs = totalExecRemainingTime
 	}
 
 	time.Sleep(1 * time.Second)
@@ -107,20 +111,20 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
-	startOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               SupervisorCtlBin + " start " + serviceNameStr,
-		ShouldRunWithSubShell: true,
-	})
+	startOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           SupervisorCtlBin + " start " + serviceNameStr,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		combinedOutput := startOutput + " " + err.Error()
 		if !strings.Contains(combinedOutput, "no such process") {
 			return errors.New("SupervisorStartError: " + combinedOutput)
 		}
 
-		addOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-			Command:               SupervisorCtlBin + " add " + serviceNameStr,
-			ShouldRunWithSubShell: true,
-		})
+		addOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:           SupervisorCtlBin + " add " + serviceNameStr,
+			ShouldUseSubShell: true,
+		}).Run()
 		if err != nil {
 			combinedOutput = addOutput + " " + err.Error()
 			return errors.New("SupervisorAddError: " + combinedOutput)
@@ -152,10 +156,10 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return err
 	}
 
-	stopOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               SupervisorCtlBin + " stop " + serviceEntity.Name.String(),
-		ShouldRunWithSubShell: true,
-	})
+	stopOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           SupervisorCtlBin + " stop " + serviceEntity.Name.String(),
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		combinedOutput := stopOutput + " " + err.Error()
 		return errors.New("SupervisorStopError: " + combinedOutput)
@@ -199,7 +203,7 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 	shouldIncludeMetrics := false
 	readInstalledItemsDto := dto.ReadInstalledServicesItemsRequest{
-		Pagination: dto.Pagination{
+		Pagination: tkDto.Pagination{
 			ItemsPerPage: 1000,
 		},
 		ShouldIncludeMetrics: &shouldIncludeMetrics,
@@ -295,17 +299,17 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 		return errors.New("TemplateExecutionError: " + err.Error())
 	}
 
-	err = infraHelper.UpdateFile(
+	err = repo.fileClerk.UpdateFileContent(
 		"/infinite/supervisord.conf", supervisorConfFileContent.String(), true,
 	)
 	if err != nil {
 		return err
 	}
 
-	reReadOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               SupervisorCtlBin + " reread",
-		ShouldRunWithSubShell: true,
-	})
+	reReadOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           SupervisorCtlBin + " reread",
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		combinedOutput := reReadOutput + " " + err.Error()
 		return errors.New("SupervisorRereadError: " + combinedOutput)
@@ -320,13 +324,13 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 	for _, defaultDir := range defaultServiceDirectories {
 		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
-		err := infraHelper.MakeDir(defaultDirPath)
+		err := repo.fileClerk.CreateDir(defaultDirPath)
 		if err != nil {
 			return errors.New("CreateDefaultDirsError: " + err.Error())
 		}
 
 		deletionWarningFilePath := defaultDirPath + "/DONOTDELETE"
-		if infraHelper.FileExists(deletionWarningFilePath) {
+		if repo.fileClerk.FileExists(deletionWarningFilePath) {
 			continue
 		}
 
@@ -340,13 +344,13 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 }
 
 func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
-	serviceName valueObject.ServiceName, execUser valueObject.UnixUsername,
+	serviceName valueObject.ServiceName, execUser tkValueObject.UnixUsername,
 ) error {
 	execUserStr := execUser.String()
-	_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "id",
 		Args:    []string{execUserStr},
-	})
+	}).Run()
 	if err != nil {
 		return errors.New("EnsureExecUserExistenceError: " + err.Error())
 	}
@@ -354,10 +358,10 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 	for _, defaultDir := range defaultServiceDirectories {
 		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
-		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "chown",
 			Args:    []string{"-R", execUserStr, defaultDirPath},
-		})
+		}).Run()
 		if err != nil {
 			return errors.New("ChownDefaultDirsError: " + err.Error())
 		}
@@ -367,9 +371,9 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 }
 
 func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
-	cmdSteps []valueObject.UnixCommand,
+	cmdSteps []tkValueObject.UnixCommand,
 	placeholders map[string]string,
-) (usableCmdSteps []valueObject.UnixCommand, err error) {
+) (usableCmdSteps []tkValueObject.UnixCommand, err error) {
 	if len(cmdSteps) == 0 {
 		return usableCmdSteps, nil
 	}
@@ -389,14 +393,14 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 				placeholderValue = ""
 			}
 
-			printablePlaceholderValue := infraHelper.ShellEscape{}.StripUnsafe(placeholderValue)
+			printablePlaceholderValue := tkInfra.ShellEscape{}.StripUnsafe(placeholderValue)
 
 			cmdStepStr = strings.ReplaceAll(
 				cmdStepStr, "%"+stepPlaceholder+"%", printablePlaceholderValue,
 			)
 		}
 
-		usableCmdStep, err := valueObject.NewUnixCommand(cmdStepStr)
+		usableCmdStep, err := tkValueObject.NewUnixCommand(cmdStepStr)
 		if err != nil {
 			return nil, errors.New("InvalidCmdStep: " + cmdStepStr)
 		}
@@ -487,15 +491,15 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 	if installableServiceEntity.ExecUser != nil {
 		err = repo.updateDefaultDirectoriesPermissions(
-			installableServiceEntity.Name, *installableServiceEntity.ExecUser,
+			installedServiceName, *installableServiceEntity.ExecUser,
 		)
 		if err != nil {
 			return installedServiceName, err
 		}
 	}
 
-	startCmdSteps := []valueObject.UnixCommand{installableServiceEntity.StartCmd}
-	usableCmdSteps := map[string][]valueObject.UnixCommand{
+	startCmdSteps := []tkValueObject.UnixCommand{installableServiceEntity.StartCmd}
+	usableCmdSteps := map[string][]tkValueObject.UnixCommand{
 		"start":     startCmdSteps,
 		"stop":      installableServiceEntity.StopCmdSteps,
 		"preStart":  installableServiceEntity.PreStartCmdSteps,
@@ -815,10 +819,10 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 	}
 
 	serviceNameStr := serviceEntity.Name.String()
-	removeOutput, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               SupervisorCtlBin + " remove " + serviceNameStr,
-		ShouldRunWithSubShell: true,
-	})
+	removeOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           SupervisorCtlBin + " remove " + serviceNameStr,
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		combinedOutput := removeOutput + " " + err.Error()
 		return errors.New("SupervisorRemoveError: " + combinedOutput)
@@ -872,10 +876,10 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 
 		slog.Debug("RemovingFilePath", slog.String("filePath", filePathStr))
 
-		_, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "rm",
 			Args:    []string{"-rf", filePathStr},
-		})
+		}).Run()
 		if err != nil {
 			fileIndexStr := strconv.Itoa(fileIndex)
 			return errors.New(
@@ -899,19 +903,19 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 			infraEnvs.InfiniteOsMainDir, infraEnvs.InstallableServicesItemsRepoBranch,
 			infraEnvs.InstallableServicesItemsRepoUrl,
 		)
-		_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
-			Command:               repoCloneCmd,
-			ShouldRunWithSubShell: true,
-		})
+		_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:           repoCloneCmd,
+			ShouldUseSubShell: true,
+		}).Run()
 		if err != nil {
 			return errors.New("CloneServicesItemsRepoError: " + err.Error())
 		}
 	}
 
-	_, err = infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "cd " + infraEnvs.InstallableServicesItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",
-		ShouldRunWithSubShell: true,
-	})
+		ShouldUseSubShell: true,
+	}).Run()
 	return err
 }

@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const scheduledTaskNameRegex string = `^[a-zA-Z][\w\-]{1,256}[\w\-\ ]{0,512}$`
@@ -14,7 +14,7 @@ type ScheduledTaskName string
 func NewScheduledTaskName(value interface{}) (
 	scheduledTaskName ScheduledTaskName, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return scheduledTaskName, errors.New("ScheduledTaskNameMustBeString")
 	}

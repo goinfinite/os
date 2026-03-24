@@ -1,10 +1,9 @@
 package cliController
 
 import (
-	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -12,6 +11,7 @@ import (
 
 type SslController struct {
 	sslLiaison *liaison.SslLiaison
+	fileClerk  tkInfra.FileClerk
 }
 
 func NewSslController(
@@ -21,6 +21,7 @@ func NewSslController(
 ) *SslController {
 	return &SslController{
 		sslLiaison: liaison.NewSslLiaison(persistentDbSvc, transientDbSvc, trailDbSvc),
+		fileClerk:  tkInfra.FileClerk{},
 	}
 }
 
@@ -46,12 +47,23 @@ func (controller *SslController) Read() *cobra.Command {
 				requestBody["altNames"] = altNamesSlice
 			}
 
-			requestBody = cliHelper.PaginationParser(
-				requestBody, paginationPageNumberUint32, paginationItemsPerPageUint16,
-				paginationSortByStr, paginationSortDirectionStr, paginationLastSeenIdStr,
-			)
+			if paginationPageNumberUint32 != 0 {
+				requestBody["pageNumber"] = paginationPageNumberUint32
+			}
+			if paginationItemsPerPageUint16 != 0 {
+				requestBody["itemsPerPage"] = paginationItemsPerPageUint16
+			}
+			if paginationSortByStr != "" {
+				requestBody["sortBy"] = paginationSortByStr
+			}
+			if paginationSortDirectionStr != "" {
+				requestBody["sortDirection"] = paginationSortDirectionStr
+			}
+			if paginationLastSeenIdStr != "" {
+				requestBody["lastSeenId"] = paginationLastSeenIdStr
+			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.sslLiaison.Read(requestBody),
 			)
 		},
@@ -93,33 +105,35 @@ func (controller *SslController) Create() *cobra.Command {
 			requestBody := map[string]interface{}{}
 
 			vhostHostnames := tkPresentation.StringSliceValueObjectParser(
-				virtualHostsSlice, valueObject.NewFqdn,
+				virtualHostsSlice, tkValueObject.NewFqdn,
 			)
 			requestBody["virtualHostsHostnames"] = vhostHostnames
 
-			certFilePath, err := valueObject.NewUnixFilePath(certFilePathStr)
+			certFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(certFilePathStr, false)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "InvalidCertificateFilePath")
+				tkPresentation.SimpleCliResponseRenderer(false, "InvalidCertificateFilePath")
 			}
-			certContentStr, err := infraHelper.ReadFileContent(certFilePath.String())
+			certContentStr, err := controller.fileClerk.ReadFileContent(
+				certFilePath.String(), nil,
+			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "OpenSslCertificateFileError")
+				tkPresentation.SimpleCliResponseRenderer(false, "OpenSslCertificateFileError")
 			}
 			requestBody["certificate"] = certContentStr
 
-			privateKeyFilePath, err := valueObject.NewUnixFilePath(keyFilePathStr)
+			privateKeyFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(keyFilePathStr, false)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "InvalidSslPrivateKeyFilePath")
+				tkPresentation.SimpleCliResponseRenderer(false, "InvalidSslPrivateKeyFilePath")
 			}
-			privateKeyContentStr, err := infraHelper.ReadFileContent(
-				privateKeyFilePath.String(),
+			privateKeyContentStr, err := controller.fileClerk.ReadFileContent(
+				privateKeyFilePath.String(), nil,
 			)
 			if err != nil {
-				cliHelper.ResponseWrapper(false, "OpenSslPrivateKeyFileError")
+				tkPresentation.SimpleCliResponseRenderer(false, "OpenSslPrivateKeyFileError")
 			}
 			requestBody["key"] = privateKeyContentStr
 
-			cliHelper.LiaisonResponseWrapper(controller.sslLiaison.Create(requestBody))
+			tkPresentation.LiaisonCliResponseRenderer(controller.sslLiaison.Create(requestBody))
 		},
 	}
 
@@ -147,7 +161,7 @@ func (controller *SslController) CreatePubliclyTrusted() *cobra.Command {
 				"virtualHostHostname": hostnameStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.sslLiaison.CreatePubliclyTrusted(requestBody, false),
 			)
 		},
@@ -169,7 +183,7 @@ func (controller *SslController) Delete() *cobra.Command {
 				"id": sslPairIdStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(controller.sslLiaison.Delete(requestBody))
+			tkPresentation.LiaisonCliResponseRenderer(controller.sslLiaison.Delete(requestBody))
 		},
 	}
 

@@ -6,6 +6,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	filesInfra "github.com/goinfinite/os/src/infra/files"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	"github.com/labstack/echo/v4"
@@ -18,7 +19,7 @@ func NewFileManagerPresenter() *FileManagerPresenter {
 }
 
 func (presenter *FileManagerPresenter) readUnixFilesByWorkingDir(
-	workingDirPath valueObject.UnixFilePath,
+	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 ) dto.ReadFilesResponse {
 	shouldIncludeFileTree := true
 	readFilesRequestDto := dto.ReadFilesRequest{
@@ -41,9 +42,9 @@ func (presenter *FileManagerPresenter) Handler(c echo.Context) error {
 		rawWorkingDirPath = valueObject.UnixFilePathAppWorkingDir.String()
 	}
 
-	workingDirPath, err := valueObject.NewUnixFilePath(rawWorkingDirPath)
+	workingDirPath, err := tkValueObject.NewUnixAbsoluteFilePath(rawWorkingDirPath, false)
 	if err != nil {
-		workingDirPath, _ = valueObject.NewUnixFilePath("/invalid/path")
+		workingDirPath, _ = tkValueObject.NewUnixAbsoluteFilePath("/invalid/path", false)
 	}
 
 	readFilesResponseDto := presenter.readUnixFilesByWorkingDir(workingDirPath)

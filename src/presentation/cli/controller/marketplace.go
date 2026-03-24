@@ -6,8 +6,8 @@ import (
 
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
 
@@ -75,7 +75,7 @@ func (controller *MarketplaceController) ReadCatalog() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.marketplaceLiaison.ReadCatalog(requestBody),
 			)
 		},
@@ -176,7 +176,7 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 				requestBody["urlPath"] = urlPathStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.marketplaceLiaison.InstallCatalogItem(requestBody, false),
 			)
 		},
@@ -242,7 +242,7 @@ func (controller *MarketplaceController) ReadInstalledItems() *cobra.Command {
 				requestBody["lastSeenId"] = paginationLastSeenIdStr
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.marketplaceLiaison.ReadInstalledItems(requestBody),
 			)
 		},
@@ -295,7 +295,7 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 				"shouldUninstallServices": shouldUninstallServicesStr,
 			}
 
-			cliHelper.LiaisonResponseWrapper(
+			tkPresentation.LiaisonCliResponseRenderer(
 				controller.marketplaceLiaison.DeleteInstalledItem(requestBody, false),
 			)
 		},

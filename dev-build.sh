@@ -39,7 +39,7 @@ echo "=> Replacing the standard binary with the development binary..."
 podman exec os /bin/bash -c 'rm -f os && ln -s bin/os os && supervisorctl restart os-api'
 
 echo "=> Creating a development account..."
-podman exec os /bin/bash -c 'os account create -u dev -p 123456 --is-super-admin false'
+podman exec os /bin/bash -c 'os account create -u dev -p abc123! --is-super-admin false'
 
 if [[ ${1} == "ssh" ]]; then
   echo "=> Installing OpenSSH..."

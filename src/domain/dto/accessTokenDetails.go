@@ -1,17 +1,17 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type AccessTokenDetails struct {
-	TokenType valueObject.AccessTokenType `json:"tokenType"`
-	AccountId valueObject.AccountId       `json:"accountId"`
-	IpAddress *valueObject.IpAddress      `json:"ipAddress"`
+	TokenType tkValueObject.AccessTokenType `json:"tokenType"`
+	AccountId tkValueObject.AccountId       `json:"accountId"`
+	IpAddress *tkValueObject.IpAddress      `json:"ipAddress"`
 }
 
 func NewAccessTokenDetails(
-	tokenType valueObject.AccessTokenType,
-	accountId valueObject.AccountId,
-	ipAddress *valueObject.IpAddress,
+	tokenType tkValueObject.AccessTokenType,
+	accountId tkValueObject.AccountId,
+	ipAddress *tkValueObject.IpAddress,
 ) AccessTokenDetails {
 	return AccessTokenDetails{
 		TokenType: tokenType,

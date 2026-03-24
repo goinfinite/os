@@ -3,7 +3,7 @@ package valueObject
 import (
 	"errors"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type UnixFileContent string
@@ -13,7 +13,7 @@ const FileContentMaxSizeInMb = 5
 func NewUnixFileContent(value interface{}) (
 	unixFileContent UnixFileContent, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return unixFileContent, errors.New("UnixFileContentMustBeString")
 	}

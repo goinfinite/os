@@ -1,14 +1,17 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import (
+	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+)
 
 type UpdateProcessReport struct {
-	FilePathsSuccessfullyUpdated []valueObject.UnixFilePath         `json:"filePathsSuccessfullyUpdated"`
-	FailedPathsWithReason        []valueObject.UpdateProcessFailure `json:"failedPathsWithReason"`
+	FilePathsSuccessfullyUpdated []tkValueObject.UnixAbsoluteFilePath `json:"filePathsSuccessfullyUpdated"`
+	FailedPathsWithReason        []valueObject.UpdateProcessFailure   `json:"failedPathsWithReason"`
 }
 
 func NewUpdateProcessReport(
-	filePathsSuccessfullyUpdated []valueObject.UnixFilePath,
+	filePathsSuccessfullyUpdated []tkValueObject.UnixAbsoluteFilePath,
 	failedPathsWithReason []valueObject.UpdateProcessFailure,
 ) UpdateProcessReport {
 	return UpdateProcessReport{

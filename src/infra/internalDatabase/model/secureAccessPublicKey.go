@@ -5,6 +5,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type SecureAccessPublicKey struct {
@@ -46,7 +47,7 @@ func (model SecureAccessPublicKey) ToEntity() (
 		return secureAccessPublicKeyEntity, err
 	}
 
-	accountId, err := valueObject.NewAccountId(model.AccountID)
+	accountId, err := tkValueObject.NewAccountId(model.AccountID)
 	if err != nil {
 		return secureAccessPublicKeyEntity, err
 	}
@@ -68,7 +69,7 @@ func (model SecureAccessPublicKey) ToEntity() (
 
 	return entity.NewSecureAccessPublicKey(
 		id, accountId, content, fingerprint, name,
-		valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
-		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }

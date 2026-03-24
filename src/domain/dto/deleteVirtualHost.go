@@ -1,17 +1,17 @@
 package dto
 
-import "github.com/goinfinite/os/src/domain/valueObject"
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type DeleteVirtualHost struct {
-	Hostname          valueObject.Fqdn      `json:"hostname"`
-	OperatorAccountId valueObject.AccountId `json:"-"`
-	OperatorIpAddress valueObject.IpAddress `json:"-"`
+	Hostname          tkValueObject.Fqdn      `json:"hostname"`
+	OperatorAccountId tkValueObject.AccountId `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress `json:"-"`
 }
 
 func NewDeleteVirtualHost(
-	hostname valueObject.Fqdn,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	hostname tkValueObject.Fqdn,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) DeleteVirtualHost {
 	return DeleteVirtualHost{
 		Hostname:          hostname,

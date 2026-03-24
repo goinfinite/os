@@ -3,20 +3,22 @@ package valueObject
 import (
 	"fmt"
 	"strings"
+
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type HardwareSpecs struct {
 	CpuModel     string  `json:"cpuModel"`
 	CpuCores     float64 `json:"cpuCores"`
 	CpuFrequency float64 `json:"cpuFrequency"`
-	MemoryTotal  Byte    `json:"memoryTotal"`
-	StorageTotal Byte    `json:"storageTotal"`
+	MemoryTotal  tkValueObject.Byte `json:"memoryTotal"`
+	StorageTotal tkValueObject.Byte `json:"storageTotal"`
 }
 
 func NewHardwareSpecs(
 	cpuModel string,
 	cpuCores, cpuFrequency float64,
-	memoryTotal, storageTotal Byte,
+	memoryTotal, storageTotal tkValueObject.Byte,
 ) HardwareSpecs {
 	return HardwareSpecs{
 		CpuModel:     cpuModel,

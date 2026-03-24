@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const serviceVersionRegex string = `^([\w\_\.\-]{1,64}|[\d\.\_\-]{1,20}|latest|lts|alpha|beta)$`
@@ -14,7 +14,7 @@ type ServiceVersion string
 func NewServiceVersion(value interface{}) (
 	serviceVersion ServiceVersion, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceVersion, errors.New("ServiceVersionMustBeString")
 	}

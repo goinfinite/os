@@ -7,6 +7,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 )
 
 type DatabaseQueryRepo struct {
@@ -95,7 +96,7 @@ func (repo DatabaseQueryRepo) Read(
 func (repo DatabaseQueryRepo) ReadFirst(
 	requestDto dto.ReadDatabasesRequest,
 ) (database entity.Database, err error) {
-	requestDto.Pagination = dto.PaginationSingleItem
+	requestDto.Pagination = tkDto.PaginationSingleItem
 
 	if requestDto.DatabaseType == nil {
 		requestDto.DatabaseType = &repo.dbType

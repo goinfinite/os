@@ -5,6 +5,7 @@ import (
 	"encoding/hex"
 	"errors"
 	"log/slog"
+	"math"
 	"slices"
 	"strings"
 
@@ -12,13 +13,17 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-type SslQueryRepo struct{}
+type SslQueryRepo struct {
+	fileClerk tkInfra.FileClerk
+}
 
 func NewSslQueryRepo() *SslQueryRepo {
-	return &SslQueryRepo{}
+	return &SslQueryRepo{fileClerk: tkInfra.FileClerk{}}
 }
 
 func (repo *SslQueryRepo) sslCertificatesFactory(
@@ -61,10 +66,10 @@ func (repo *SslQueryRepo) sslCertificatesFactory(
 }
 
 func (repo *SslQueryRepo) sslPairFactory(
-	crtFilePath valueObject.UnixFilePath,
+	crtFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (sslPairEntity entity.SslPair, err error) {
-	crtKeyFilePath := crtFilePath.ReadWithoutExtension().String() + ".key"
-	crtKeyContentStr, err := infraHelper.ReadFileContent(crtKeyFilePath)
+	crtKeyFilePath := strings.Replace(crtFilePath.String(), ".crt", ".key", 1)
+	crtKeyContentStr, err := repo.fileClerk.ReadFileContent(crtKeyFilePath, nil)
 	if err != nil {
 		return sslPairEntity, errors.New("OpenCertKeyFileError: " + err.Error())
 	}
@@ -73,7 +78,9 @@ func (repo *SslQueryRepo) sslPairFactory(
 		return sslPairEntity, err
 	}
 
-	crtFileContentStr, err := infraHelper.ReadFileContent(crtFilePath.String())
+	crtFileContentStr, err := repo.fileClerk.ReadFileContent(
+		crtFilePath.String(), nil,
+	)
 	if err != nil {
 		return sslPairEntity, errors.New("OpenCertFileError: " + err.Error())
 	}
@@ -101,14 +108,14 @@ func (repo *SslQueryRepo) sslPairFactory(
 		return sslPairEntity, err
 	}
 
-	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension()
-	virtualHostHostname, err := valueObject.NewFqdn(crtFileNameWithoutExt.String())
+	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension(false)
+	virtualHostHostname, err := tkValueObject.NewFqdn(crtFileNameWithoutExt.String())
 	if err != nil {
 		if mainCert.CommonName == nil {
 			return sslPairEntity, errors.New("VirtualHostHostnameError: " + err.Error())
 		}
 
-		mainCertSslHostname, err := valueObject.NewFqdn(mainCert.CommonName.String())
+		mainCertSslHostname, err := tkValueObject.NewFqdn(mainCert.CommonName.String())
 		if err != nil {
 			return sslPairEntity, errors.New("VirtualHostHostnameFallbackError: " + err.Error())
 		}
@@ -126,17 +133,17 @@ func (repo *SslQueryRepo) Read(
 ) (responseDto dto.ReadSslPairsResponse, err error) {
 	sslPairEntities := []entity.SslPair{}
 
-	rawCertFilePaths, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	rawCertFilePaths, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "find " + infraEnvs.PkiConfDir +
 			" \\( -type f -o -type l \\) -name *.crt",
-		ShouldRunWithSubShell: true,
-	})
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return responseDto, errors.New("FindCertFilesError: " + err.Error())
 	}
 
 	for rawCertFilePath := range strings.SplitSeq(rawCertFilePaths, "\n") {
-		crtFilePath, err := valueObject.NewUnixFilePath(rawCertFilePath)
+		crtFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawCertFilePath, false)
 		if err != nil {
 			slog.Debug("InvalidCertFilePath", slog.String("rawCertFilePath", rawCertFilePath))
 			continue
@@ -144,7 +151,11 @@ func (repo *SslQueryRepo) Read(
 
 		sslPairEntity, err := repo.sslPairFactory(crtFilePath)
 		if err != nil {
-			slog.Debug("SslPairFactoryError", slog.String("crtFilePath", crtFilePath.String()))
+			slog.Debug(
+				"SslPairFactoryError",
+				slog.String("error", err.Error()),
+				slog.String("crtFilePath", crtFilePath.String()),
+			)
 			continue
 		}
 
@@ -160,10 +171,15 @@ func (repo *SslQueryRepo) Read(
 			}
 		}
 
+		altNamesMissing := false
 		for _, altName := range requestDto.AltNames {
 			if !slices.Contains(sslPairEntity.Certificate.AltNames, altName) {
-				continue
+				altNamesMissing = true
+				break
 			}
+		}
+		if altNamesMissing {
+			continue
 		}
 
 		if requestDto.IssuedBeforeAt != nil {
@@ -227,8 +243,23 @@ func (repo *SslQueryRepo) Read(
 		})
 	}
 
+	paginatedSslPairs := []entity.SslPair{}
+	paginationStartIndex := int(requestDto.Pagination.PageNumber) *
+		int(requestDto.Pagination.ItemsPerPage)
+	paginationEndIndex := paginationStartIndex +
+		int(requestDto.Pagination.ItemsPerPage)
+
+	if paginationStartIndex < len(sslPairEntities) {
+		if paginationEndIndex > len(sslPairEntities) {
+			paginationEndIndex = len(sslPairEntities)
+		}
+		paginatedSslPairs = sslPairEntities[paginationStartIndex:paginationEndIndex]
+	}
+
 	itemsTotal := uint64(len(sslPairEntities))
-	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+	pagesTotal := uint32(math.Ceil(
+		float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage),
+	))
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal
@@ -236,14 +267,14 @@ func (repo *SslQueryRepo) Read(
 
 	return dto.ReadSslPairsResponse{
 		Pagination: paginationDto,
-		SslPairs:   sslPairEntities,
+		SslPairs:   paginatedSslPairs,
 	}, nil
 }
 
 func (repo *SslQueryRepo) ReadFirst(
 	requestDto dto.ReadSslPairsRequest,
 ) (sslPairEntity entity.SslPair, err error) {
-	requestDto.Pagination = dto.PaginationSingleItem
+	requestDto.Pagination = tkDto.PaginationSingleItem
 	responseDto, err := repo.Read(requestDto)
 	if err != nil {
 		return sslPairEntity, err
@@ -258,9 +289,9 @@ func (repo *SslQueryRepo) ReadFirst(
 
 func (repo SslQueryRepo) GetOwnershipValidationHash(
 	sslCrtContent valueObject.SslCertificateContent,
-) (valueObject.Hash, error) {
+) (tkValueObject.Hash, error) {
 	sslCrtContentBytes := []byte(sslCrtContent.String())
 	sslCrtContentHash := md5.Sum(sslCrtContentBytes)
 	sslCrtContentHashStr := hex.EncodeToString(sslCrtContentHash[:])
-	return valueObject.NewHash(sslCrtContentHashStr)
+	return tkValueObject.NewHash(sslCrtContentHashStr)
 }

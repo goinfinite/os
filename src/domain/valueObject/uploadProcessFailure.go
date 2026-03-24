@@ -1,12 +1,14 @@
 package valueObject
 
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+
 type UploadProcessFailure struct {
-	FileName UnixFileName  `json:"fileName"`
-	Reason   FailureReason `json:"reason"`
+	FileName tkValueObject.UnixFileName `json:"fileName"`
+	Reason   FailureReason              `json:"reason"`
 }
 
 func NewUploadProcessFailure(
-	fileName UnixFileName,
+	fileName tkValueObject.UnixFileName,
 	reason FailureReason,
 ) UploadProcessFailure {
 	return UploadProcessFailure{

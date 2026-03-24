@@ -1,19 +1,17 @@
 package dto
 
-import (
-	"github.com/goinfinite/os/src/domain/valueObject"
-)
+import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type CreatePubliclyTrustedSslPair struct {
-	VirtualHostHostname valueObject.Fqdn      `json:"virtualHostHostname"`
-	OperatorAccountId   valueObject.AccountId `json:"-"`
-	OperatorIpAddress   valueObject.IpAddress `json:"-"`
+	VirtualHostHostname tkValueObject.Fqdn      `json:"virtualHostHostname"`
+	OperatorAccountId   tkValueObject.AccountId `json:"-"`
+	OperatorIpAddress   tkValueObject.IpAddress `json:"-"`
 }
 
 func NewCreatePubliclyTrustedSslPair(
-	virtualHostHostname valueObject.Fqdn,
-	operatorAccountId valueObject.AccountId,
-	operatorIpAddress valueObject.IpAddress,
+	virtualHostHostname tkValueObject.Fqdn,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
 ) CreatePubliclyTrustedSslPair {
 	return CreatePubliclyTrustedSslPair{
 		VirtualHostHostname: virtualHostHostname,

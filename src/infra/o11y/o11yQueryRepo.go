@@ -17,30 +17,36 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 const PublicIpTransientKey string = "PublicIp"
 
 type O11yQueryRepo struct {
 	transientDbSvc *internalDbInfra.TransientDatabaseService
+	fileClerk      tkInfra.FileClerk
 }
 
 func NewO11yQueryRepo(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *O11yQueryRepo {
-	return &O11yQueryRepo{transientDbSvc: transientDbSvc}
+	return &O11yQueryRepo{
+		transientDbSvc: transientDbSvc,
+		fileClerk:      tkInfra.FileClerk{},
+	}
 }
 
 func (repo *O11yQueryRepo) getUptime() (uint64, error) {
-	nowEpoch := valueObject.NewUnixTimeNow()
-	rawFirstPidEpoch, err := infraHelper.RunCmd(infraHelper.RunCmdSettings{
-		Command:               "stat -c '%Y' /proc/1",
-		ShouldRunWithSubShell: true,
-	})
+	nowEpoch := tkValueObject.NewUnixTimeNow()
+	rawFirstPidEpoch, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           "stat -c '%Y' /proc/1",
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return 0, errors.New("ReadFirstPidEpochFailed")
 	}
-	firstPidEpoch, err := valueObject.NewUnixTime(rawFirstPidEpoch)
+	firstPidEpoch, err := tkValueObject.NewUnixTime(rawFirstPidEpoch)
 	if err != nil {
 		return 0, errors.New("ParseFirstPidEpochFailed")
 	}
@@ -50,15 +56,15 @@ func (repo *O11yQueryRepo) getUptime() (uint64, error) {
 }
 
 func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
-	ipAddress valueObject.IpAddress,
+	ipAddress tkValueObject.IpAddress,
 	err error,
 ) {
 	cachedIpAddressStr, err := repo.transientDbSvc.Read(PublicIpTransientKey)
 	if err == nil {
-		return valueObject.NewIpAddress(cachedIpAddressStr)
+		return tkValueObject.NewIpAddress(cachedIpAddressStr)
 	}
 
-	serverPublicIpAddress, err := infraHelper.ReadServerPublicIpAddress()
+	serverPublicIpAddress, err := tkInfra.ReadServerPublicIpAddress()
 	if err != nil {
 		return ipAddress, errors.New("ReadServerPublicIpAddressError: " + err.Error())
 	}
@@ -77,7 +83,7 @@ func (repo *O11yQueryRepo) isCgroupV2() bool {
 }
 
 func (repo *O11yQueryRepo) getFileContent(file string) (string, error) {
-	fileContent, err := infraHelper.ReadFileContent(file)
+	fileContent, err := repo.fileClerk.ReadFileContent(file, nil)
 	if err != nil {
 		return "", err
 	}
@@ -121,7 +127,7 @@ func (repo *O11yQueryRepo) getCpuCores() (float64, error) {
 	return cpuQuotaInt / cpuPeriodInt, nil
 }
 
-func (repo *O11yQueryRepo) getMemoryLimit() (valueObject.Byte, error) {
+func (repo *O11yQueryRepo) getMemoryLimit() (tkValueObject.Byte, error) {
 	memLimitFile := "/sys/fs/cgroup/memory/memory.limit_in_bytes"
 	if repo.isCgroupV2() {
 		memLimitFile = "/sys/fs/cgroup/memory.max"
@@ -143,7 +149,7 @@ func (repo *O11yQueryRepo) getMemoryLimit() (valueObject.Byte, error) {
 		memLimitInt = int64(sysInfo.Totalram * uint64(sysInfo.Unit))
 	}
 
-	return valueObject.NewByte(memLimitInt)
+	return tkValueObject.NewByte(memLimitInt)
 }
 
 func (repo *O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
@@ -156,19 +162,19 @@ func (repo *O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
 	}
 
 	storageTotalUint := stat.Blocks * uint64(stat.Bsize)
-	storageTotal, err := valueObject.NewByte(storageTotalUint)
+	storageTotal, err := tkValueObject.NewByte(storageTotalUint)
 	if err != nil {
 		return storageInfo, err
 	}
 
 	storageAvailableUint := stat.Bavail * uint64(stat.Bsize)
-	storageAvailable, err := valueObject.NewByte(storageAvailableUint)
+	storageAvailable, err := tkValueObject.NewByte(storageAvailableUint)
 	if err != nil {
 		return storageInfo, err
 	}
 
 	storageUsedUint := storageTotalUint - storageAvailableUint
-	storageUsed, err := valueObject.NewByte(storageUsedUint)
+	storageUsed, err := tkValueObject.NewByte(storageUsedUint)
 	if err != nil {
 		return storageInfo, err
 	}
@@ -373,7 +379,7 @@ func (repo *O11yQueryRepo) ReadOverview(
 		hostnameStr = primaryVhost.String()
 	}
 
-	hostname, err := valueObject.NewFqdn(hostnameStr)
+	hostname, err := tkValueObject.NewFqdn(hostnameStr)
 	if err != nil {
 		return o11yOverview, errors.New("GetHostnameFailed")
 	}
@@ -385,15 +391,15 @@ func (repo *O11yQueryRepo) ReadOverview(
 
 	uptimeSecsDuration := time.Duration(uptimeSecs) * time.Second
 	humanizedUptime := humanize.Time(time.Now().Add(-uptimeSecsDuration))
-	uptimeRelative, err := valueObject.NewRelativeTime(humanizedUptime)
+	uptimeRelative, err := tkValueObject.NewRelativeTime(humanizedUptime)
 	if err != nil {
-		uptimeRelative, _ = valueObject.NewRelativeTime("0 seconds ago")
+		uptimeRelative, _ = tkValueObject.NewRelativeTime("0 seconds ago")
 	}
 
 	publicIpAddress, err := repo.ReadServerPublicIpAddress()
 	if err != nil {
 		slog.Debug("ReadServerPublicIpAddressError", slog.String("err", err.Error()))
-		publicIpAddress, _ = valueObject.NewIpAddress("0.0.0.0")
+		publicIpAddress, _ = tkValueObject.NewIpAddress("0.0.0.0")
 	}
 
 	hardwareSpecs, err := repo.getHardwareSpecs()

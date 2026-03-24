@@ -1,12 +1,16 @@
 package infraHelper
 
-import "errors"
+import (
+	"errors"
+
+	tkInfra "github.com/goinfinite/tk/src/infra"
+)
 
 func ValidateWebServerConfig() error {
-	_, err := RunCmd(RunCmdSettings{
-		Command:               "nginx -t",
-		ShouldRunWithSubShell: true,
-	})
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:          "nginx -t",
+		ShouldUseSubShell: true,
+	}).Run()
 	if err != nil {
 		return errors.New("WebServerConfigValidationError: " + err.Error())
 	}

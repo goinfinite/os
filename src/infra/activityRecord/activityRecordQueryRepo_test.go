@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
-	"github.com/goinfinite/os/src/domain/dto"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 )
 
 func TestActivityRecordQueryRepo(t *testing.T) {
@@ -13,7 +13,9 @@ func TestActivityRecordQueryRepo(t *testing.T) {
 	activityRecordQueryRepo := NewActivityRecordQueryRepo(trailDbSvc)
 
 	t.Run("ReadActivityRecordQuery", func(t *testing.T) {
-		readDto := dto.ReadActivityRecords{}
+		readDto := tkDto.ReadActivityRecordsRequest{
+			Pagination: tkDto.PaginationUnpaginated,
+		}
 		_, err := activityRecordQueryRepo.Read(readDto)
 		if err != nil {
 			t.Errorf("Expected no error, got: '%s'", err.Error())

@@ -4,6 +4,7 @@ import (
 	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
@@ -109,7 +110,7 @@ templ MarketplaceInstalledItemsTable(
 templ MarketplaceCatalogItemCarouselImage(
 	itemFirstSlug valueObject.MarketplaceItemSlug,
 	itemName valueObject.MarketplaceItemName,
-	screenshotUrl valueObject.Url,
+	screenshotUrl tkValueObject.Url,
 ) {
 	<!-- MarketplaceCatalogItemCarouselImage -->
 	<a @click={ "openImageLightbox('" + screenshotUrl.String() + "')" } class="cursor-pointer">
@@ -124,7 +125,7 @@ templ MarketplaceCatalogItemCarouselImage(
 func transformMarketplaceCatalogItemScreenshotUrlsIntoCarouselImages(
 	itemFirstSlug valueObject.MarketplaceItemSlug,
 	itemName valueObject.MarketplaceItemName,
-	screenshotUrls []valueObject.Url,
+	screenshotUrls []tkValueObject.Url,
 ) []templ.Component {
 	carouselImages := []templ.Component{}
 	for _, screenshotUrl := range screenshotUrls {

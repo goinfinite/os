@@ -7,7 +7,7 @@ import (
 	"encoding/pem"
 	"errors"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type SslCertificateContent string
@@ -15,7 +15,7 @@ type SslCertificateContent string
 func NewSslCertificateContent(input interface{}) (
 	certContent SslCertificateContent, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(input)
+	stringValue, err := tkVoUtil.InterfaceToString(input)
 	if err != nil {
 		return certContent, errors.New("SslCertificateContentMustBeString")
 	}

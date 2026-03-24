@@ -6,11 +6,12 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func CreateSecureAccessPublicKey(
 	accountCmdRepo repository.AccountCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateSecureAccessPublicKey,
 ) error {
 	keyId, err := accountCmdRepo.CreateSecureAccessPublicKey(createDto)

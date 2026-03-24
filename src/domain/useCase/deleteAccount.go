@@ -6,12 +6,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func DeleteAccount(
 	accountQueryRepo repository.AccountQueryRepo,
 	accountCmdRepo repository.AccountCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	deleteDto dto.DeleteAccount,
 ) error {
 	_, err := accountQueryRepo.ReadFirst(

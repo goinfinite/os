@@ -4,7 +4,7 @@ import (
 	"errors"
 	"strconv"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type ScheduledTaskId uint64
@@ -12,7 +12,7 @@ type ScheduledTaskId uint64
 func NewScheduledTaskId(value interface{}) (
 	scheduledTaskId ScheduledTaskId, err error,
 ) {
-	uintValue, err := voHelper.InterfaceToUint64(value)
+	uintValue, err := tkVoUtil.InterfaceToUint64(value)
 	if err != nil {
 		return scheduledTaskId, errors.New("ScheduledTaskIdMustBeUint64")
 	}

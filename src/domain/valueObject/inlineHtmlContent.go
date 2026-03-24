@@ -3,7 +3,7 @@ package valueObject
 import (
 	"errors"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type InlineHtmlContent string
@@ -11,7 +11,7 @@ type InlineHtmlContent string
 func NewInlineHtmlContent(value interface{}) (
 	inlineHtmlContent InlineHtmlContent, err error,
 ) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return inlineHtmlContent, errors.New("InlineHtmlContentMustBeString")
 	}

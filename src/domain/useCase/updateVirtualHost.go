@@ -6,12 +6,13 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func UpdateVirtualHost(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	vhostCmdRepo repository.VirtualHostCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	updateDto dto.UpdateVirtualHost,
 ) error {
 	_, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{

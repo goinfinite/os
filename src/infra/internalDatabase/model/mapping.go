@@ -5,6 +5,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type Mapping struct {
@@ -33,7 +34,7 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 		return mappingEntity, err
 	}
 
-	hostname, err := valueObject.NewFqdn(model.Hostname)
+	hostname, err := tkValueObject.NewFqdn(model.Hostname)
 	if err != nil {
 		return mappingEntity, err
 	}
@@ -64,9 +65,9 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 		targetValuePtr = &targetValue
 	}
 
-	var targetHttpResponseCodePtr *valueObject.HttpResponseCode
+	var targetHttpResponseCodePtr *tkValueObject.HttpStatusCode
 	if model.TargetHttpResponseCode != nil {
-		targetHttpResponseCode, err := valueObject.NewHttpResponseCode(
+		targetHttpResponseCode, err := tkValueObject.NewHttpStatusCode(
 			*model.TargetHttpResponseCode,
 		)
 		if err != nil {
@@ -112,7 +113,7 @@ func (model Mapping) ToEntity() (mappingEntity entity.Mapping, err error) {
 		mappingId, hostname, path, matchPattern, targetType, targetValuePtr,
 		targetHttpResponseCodePtr, model.ShouldUpgradeInsecureRequests,
 		marketplaceInstalledItemIdPtr, marketplaceInstalledItemNamePtr,
-		mappingSecurityRuleIdPtr, valueObject.NewUnixTimeWithGoTime(model.CreatedAt),
-		valueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
+		mappingSecurityRuleIdPtr, tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt),
+		tkValueObject.NewUnixTimeWithGoTime(model.UpdatedAt),
 	), nil
 }

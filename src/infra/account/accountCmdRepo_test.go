@@ -7,14 +7,15 @@ import (
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func addDummyUser() error {
 	username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
-	password, _ := valueObject.NewPassword(os.Getenv("DUMMY_USER_PASS"))
+	password, _ := tkValueObject.NewPassword(os.Getenv("DUMMY_USER_PASS"))
 
-	ipAddress := valueObject.IpAddressSystem
-	operatorAccountId, _ := valueObject.NewAccountId(0)
+	ipAddress := tkValueObject.IpAddressLocal
+	operatorAccountId, _ := tkValueObject.NewAccountId(0)
 	createDto := dto.NewCreateAccount(
 		username, password, false, operatorAccountId, ipAddress,
 	)
@@ -29,7 +30,7 @@ func addDummyUser() error {
 }
 
 func deleteDummyUser() error {
-	accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
+	accountId, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
 	err := accountCmdRepo.Delete(accountId)
 	if err != nil {
@@ -48,7 +49,7 @@ func resetDummyUser() {
 func TestAccountCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
-	accountId, _ := valueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
+	accountId, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
 	t.Run("AddValidAccount", func(t *testing.T) {
 		err := addDummyUser()
@@ -61,9 +62,9 @@ func TestAccountCmdRepo(t *testing.T) {
 
 	t.Run("AddInvalidAccount", func(t *testing.T) {
 		username, _ := valueObject.NewUsername("root")
-		password, _ := valueObject.NewPassword("invalid")
-		ipAddress := valueObject.IpAddressSystem
-		operatorAccountId, _ := valueObject.NewAccountId(0)
+		password, _ := tkValueObject.NewPassword("Invalid@123")
+		ipAddress := tkValueObject.IpAddressLocal
+		operatorAccountId, _ := tkValueObject.NewAccountId(0)
 		createDto := dto.NewCreateAccount(
 			username, password, false, operatorAccountId, ipAddress,
 		)
@@ -86,10 +87,10 @@ func TestAccountCmdRepo(t *testing.T) {
 	t.Run("UpdateValidAccount", func(t *testing.T) {
 		resetDummyUser()
 
-		newPassword, _ := valueObject.NewPassword("newPassword")
+		newPassword, _ := tkValueObject.NewPassword("newPassword@1")
 		updateDto := dto.NewUpdateAccount(
 			&accountId, nil, &newPassword, nil, nil, accountId,
-			valueObject.IpAddressSystem,
+			tkValueObject.IpAddressLocal,
 		)
 		err := accountCmdRepo.Update(updateDto)
 		if err != nil {

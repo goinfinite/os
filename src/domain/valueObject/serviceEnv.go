@@ -4,7 +4,7 @@ import (
 	"errors"
 	"regexp"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 const serviceEnvRegex string = `^\w{1,1000}=.{1,1000}$`
@@ -12,7 +12,7 @@ const serviceEnvRegex string = `^\w{1,1000}=.{1,1000}$`
 type ServiceEnv string
 
 func NewServiceEnv(value interface{}) (serviceEnv ServiceEnv, err error) {
-	stringValue, err := voHelper.InterfaceToString(value)
+	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceEnv, errors.New("ServiceEnvMustBeString")
 	}

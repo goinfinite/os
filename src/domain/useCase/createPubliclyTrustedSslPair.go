@@ -7,12 +7,13 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkRepository "github.com/goinfinite/tk/src/domain/repository"
 )
 
 func CreatePubliclyTrustedSslPair(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	sslCmdRepo repository.SslCmdRepo,
-	activityRecordCmdRepo repository.ActivityRecordCmdRepo,
+	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreatePubliclyTrustedSslPair,
 ) (sslPairId valueObject.SslPairId, err error) {
 	sslPairId, err = sslCmdRepo.CreatePubliclyTrusted(createDto)

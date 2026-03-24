@@ -2,17 +2,16 @@ package apiController
 
 import (
 	"errors"
-	"net/http"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	apiHelper "github.com/goinfinite/os/src/presentation/api/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
-	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
@@ -57,20 +56,21 @@ func NewSslController(
 // @Param        lastSeenId query  string  false  "LastSeenId (Pagination)"
 // @Success      200 {object} dto.ReadSslPairsResponse
 // @Router       /v1/ssl/ [get]
-func (controller *SslController) Read(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *SslController) Read(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if requestInputData["altNames"] != nil {
-		requestInputData["altNames"] = sharedHelper.StringSliceValueObjectParser(
-			requestInputData["altNames"], valueObject.NewSslHostname,
+	if requestData["altNames"] != nil {
+		requestData["altNames"] = tkPresentation.StringSliceValueObjectParser(
+			requestData["altNames"], valueObject.NewSslHostname,
 		)
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.sslLiaison.Read(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.sslLiaison.Read(requestData),
 	)
 }
 
@@ -99,53 +99,80 @@ func (controller *SslController) decodeContent(
 // @Param        createSslPairDto 	  body    dto.CreateSslPair  true  "All props are required.<br />virtualHosts may be string or []string. Alias is not allowed.<br />certificate is a string field, i.e. ignore the structure shown.<br />certificate and key must be base64 encoded.<br />certificate should include the CA chain/bundle if not provided in the certificate field."
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /v1/ssl/ [post]
-func (controller *SslController) Create(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *SslController) Create(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	if requestInputData["virtualHostsHostnames"] == nil {
-		return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "VirtualHostHostnameIsRequired")
+	if requestData["virtualHostsHostnames"] == nil {
+		return tkPresentation.LiaisonApiResponseEmitter(
+			echoContext,
+			tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				"VirtualHostHostnameIsRequired",
+			),
+		)
 	}
 
-	requestInputData["virtualHostsHostnames"] = sharedHelper.StringSliceValueObjectParser(
-		requestInputData["virtualHostsHostnames"], valueObject.NewFqdn,
+	requestData["virtualHostsHostnames"] = tkPresentation.StringSliceValueObjectParser(
+		requestData["virtualHostsHostnames"], tkValueObject.NewFqdn,
 	)
 
-	if requestInputData["encodedCertificate"] != nil {
-		requestInputData["certificate"], err = controller.decodeContent(
-			requestInputData["encodedCertificate"],
+	var err error
+
+	if requestData["encodedCertificate"] != nil {
+		requestData["certificate"], err = controller.decodeContent(
+			requestData["encodedCertificate"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslCertificateContent")
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError,
+					"CannotDecodeSslCertificateContent",
+				),
+			)
 		}
 	}
 
-	if requestInputData["encodedKey"] != nil {
-		requestInputData["key"], err = controller.decodeContent(
-			requestInputData["encodedKey"],
+	if requestData["encodedKey"] != nil {
+		requestData["key"], err = controller.decodeContent(
+			requestData["encodedKey"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslKeyContent")
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError,
+					"CannotDecodeSslKeyContent",
+				),
+			)
 		}
 	}
 
-	if requestInputData["encodedChainCertificates"] != nil && requestInputData["encodedChainCertificates"] != "" {
-		requestInputData["chainCertificates"], err = controller.decodeContent(
-			requestInputData["encodedChainCertificates"],
+	if requestData["encodedChainCertificates"] != nil && requestData["encodedChainCertificates"] != "" {
+		requestData["chainCertificates"], err = controller.decodeContent(
+			requestData["encodedChainCertificates"],
 		)
 		if err != nil {
-			return apiHelper.ResponseWrapper(c, http.StatusBadRequest, "CannotDecodeSslChainCertificatesContent")
+			return tkPresentation.LiaisonApiResponseEmitter(
+				echoContext,
+				tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError,
+					"CannotDecodeSslChainCertificatesContent",
+				),
+			)
 		}
 	}
 
-	if requestInputData["chainCertificates"] != nil && requestInputData["chainCertificates"] == "" {
-		requestInputData["chainCertificates"] = nil
+	if requestData["chainCertificates"] != nil && requestData["chainCertificates"] == "" {
+		requestData["chainCertificates"] = nil
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.sslLiaison.Create(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.sslLiaison.Create(requestData),
 	)
 }
 
@@ -159,14 +186,15 @@ func (controller *SslController) Create(c echo.Context) error {
 // @Param        createPubliclyTrustedDto 	  body    dto.CreatePubliclyTrustedSslPair  true "All props are required."
 // @Success      201 {object} object{} "PubliclyTrustedSslPairCreationScheduled"
 // @Router       /v1/ssl/trusted/ [post]
-func (controller *SslController) CreatePubliclyTrusted(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *SslController) CreatePubliclyTrusted(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.sslLiaison.CreatePubliclyTrusted(requestInputData, true),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.sslLiaison.CreatePubliclyTrusted(requestData, true),
 	)
 }
 
@@ -180,14 +208,15 @@ func (controller *SslController) CreatePubliclyTrusted(c echo.Context) error {
 // @Param        sslPairId 	  path   string  true  "SslPairId to delete."
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /v1/ssl/{sslPairId}/ [delete]
-func (controller *SslController) Delete(c echo.Context) error {
-	requestInputData, err := apiHelper.ReadRequestInputData(c)
-	if err != nil {
-		return err
+func (controller *SslController) Delete(echoContext echo.Context) error {
+	inputReader := tkPresentation.ApiRequestInputReader{}
+	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
 	}
 
-	return apiHelper.LiaisonResponseWrapper(
-		c, controller.sslLiaison.Delete(requestInputData),
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.sslLiaison.Delete(requestData),
 	)
 }
 

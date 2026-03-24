@@ -5,7 +5,10 @@ import (
 	"os"
 
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
+
+var fileClerk = tkInfra.FileClerk{}
 
 var (
 	IndexFileTemplatePath string = infraEnvs.VirtualHostsConfDir + "/index.html"
@@ -14,14 +17,16 @@ var (
 )
 
 func BackupPrimaryIndexFile() error {
-	if !FileExists(IndexFilePath) {
+	if !fileClerk.FileExists(IndexFilePath) {
 		return nil
 	}
 
-	if FileExists(IndexFileBackupPath) {
+	if fileClerk.FileExists(IndexFileBackupPath) {
 		err := os.Remove(IndexFileBackupPath)
 		if err != nil {
-			return errors.New("RemoveIndexBackupFileError: " + err.Error())
+			return errors.New(
+				"RemoveIndexBackupFileError: " + err.Error(),
+			)
 		}
 	}
 
@@ -30,38 +35,46 @@ func BackupPrimaryIndexFile() error {
 		return errors.New("MoveIndexFileError: " + err.Error())
 	}
 
-	err = UpdateOwnershipForWebServerUse(IndexFileBackupPath, false, false)
+	err = UpdateOwnershipForWebServerUse(
+		IndexFileBackupPath, false, false,
+	)
 	if err != nil {
-		return errors.New("UpdateOwnershipForWebServerUseError: " + err.Error())
+		return errors.New(
+			"UpdateOwnershipForWebServerUseError: " + err.Error(),
+		)
 	}
 
 	return nil
 }
 
 func RestorePrimaryIndexFile() error {
-	if FileExists(IndexFilePath) {
+	if fileClerk.FileExists(IndexFilePath) {
 		return nil
 	}
 
 	restorableIndexFilePath := IndexFileTemplatePath
-	if FileExists(IndexFileBackupPath) {
+	if fileClerk.FileExists(IndexFileBackupPath) {
 		restorableIndexFilePath = IndexFileBackupPath
 	}
 
-	err := CopyFile(restorableIndexFilePath, IndexFilePath)
+	err := fileClerk.CopyFile(restorableIndexFilePath, IndexFilePath)
 	if err != nil {
 		return errors.New("CopyIndexFileError: " + err.Error())
 	}
 
 	err = UpdateOwnershipForWebServerUse(IndexFilePath, false, false)
 	if err != nil {
-		return errors.New("UpdateOwnershipForWebServerUseError: " + err.Error())
+		return errors.New(
+			"UpdateOwnershipForWebServerUseError: " + err.Error(),
+		)
 	}
 
-	if FileExists(IndexFileBackupPath) {
+	if fileClerk.FileExists(IndexFileBackupPath) {
 		err = os.Remove(IndexFileBackupPath)
 		if err != nil {
-			return errors.New("RemoveIndexBackupFileError: " + err.Error())
+			return errors.New(
+				"RemoveIndexBackupFileError: " + err.Error(),
+			)
 		}
 	}
 

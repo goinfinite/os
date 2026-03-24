@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestScheduledTaskCmdRepo(t *testing.T) {
@@ -18,13 +19,13 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 
 	t.Run("CreateScheduledTask", func(t *testing.T) {
 		name, _ := valueObject.NewScheduledTaskName("test")
-		command, _ := valueObject.NewUnixCommand(
+		command, _ := tkValueObject.NewUnixCommand(
 			infraEnvs.InfiniteOsBinary + " account get",
 		)
 		tag, _ := valueObject.NewScheduledTaskTag("account")
 		tags := []valueObject.ScheduledTaskTag{tag}
 		timeoutSecs := uint16(60)
-		runAt := valueObject.NewUnixTimeNow()
+		runAt := tkValueObject.NewUnixTimeNow()
 
 		createDto := dto.NewCreateScheduledTask(
 			name, command, tags, &timeoutSecs, &runAt,

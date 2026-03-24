@@ -1,6 +1,7 @@
 package uiPresenter
 
 import (
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
 
@@ -34,7 +35,7 @@ func (presenter *FooterPresenter) Handler(echoContext echo.Context) error {
 	o11yLiaison := liaison.NewO11yLiaison(presenter.transientDbSvc)
 
 	o11yLiaisonOutput := o11yLiaison.ReadOverview()
-	if o11yLiaisonOutput.Status != liaison.Success {
+	if o11yLiaisonOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		slog.Debug("FooterPresenterReadOverviewFailure")
 		return echoContext.NoContent(http.StatusInternalServerError)
 	}
@@ -54,7 +55,7 @@ func (presenter *FooterPresenter) Handler(echoContext echo.Context) error {
 		"sortDirection": "desc",
 	}
 	scheduledTaskLiaisonOutput := scheduledTaskLiaison.Read(scheduledTaskReadRequestBody)
-	if scheduledTaskLiaisonOutput.Status != liaison.Success {
+	if scheduledTaskLiaisonOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		slog.Debug("FooterPresenterReadScheduledTaskFailure")
 		return echoContext.NoContent(http.StatusInternalServerError)
 	}

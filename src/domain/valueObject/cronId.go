@@ -4,13 +4,13 @@ import (
 	"errors"
 	"strconv"
 
-	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type CronId uint64
 
 func NewCronId(value interface{}) (cronId CronId, err error) {
-	uint64Value, err := voHelper.InterfaceToUint64(value)
+	uint64Value, err := tkVoUtil.InterfaceToUint64(value)
 	if err != nil {
 		return cronId, errors.New("CronIdMustBeUint64")
 	}

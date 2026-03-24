@@ -9,6 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	"github.com/iancoleman/strcase"
 )
 
@@ -121,7 +122,7 @@ func (repo *ScheduledTaskQueryRepo) Read(
 	pagesTotal := uint32(
 		math.Ceil(float64(itemsTotal) / float64(readDto.Pagination.ItemsPerPage)),
 	)
-	responsePagination := dto.Pagination{
+	responsePagination := tkDto.Pagination{
 		PageNumber:    readDto.Pagination.PageNumber,
 		ItemsPerPage:  readDto.Pagination.ItemsPerPage,
 		SortBy:        readDto.Pagination.SortBy,

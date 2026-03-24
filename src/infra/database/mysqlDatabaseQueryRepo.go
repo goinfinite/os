@@ -8,20 +8,21 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type MysqlDatabaseQueryRepo struct {
 }
 
 func MysqlCmd(cmd string) (string, error) {
-	return infraHelper.RunCmd(infraHelper.RunCmdSettings{
+	return tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "mysql",
 		Args: []string{
-			"--defaults-file=/root/.my.cnf", "--skip-column-names", "--silent",
-			"--execute", cmd,
+			"--defaults-file=/root/.my.cnf", "--skip-column-names",
+			"--silent", "--execute", cmd,
 		},
-	})
+	}).Run()
 }
 
 func (repo MysqlDatabaseQueryRepo) readDatabaseNames() ([]valueObject.DatabaseName, error) {
@@ -55,7 +56,7 @@ func (repo MysqlDatabaseQueryRepo) readDatabaseNames() ([]valueObject.DatabaseNa
 }
 
 func (repo MysqlDatabaseQueryRepo) readDatabaseSize(dbName valueObject.DatabaseName) (
-	valueObject.Byte,
+	tkValueObject.Byte,
 	error,
 ) {
 	rawDatabaseSize, err := MysqlCmd(
@@ -65,7 +66,7 @@ func (repo MysqlDatabaseQueryRepo) readDatabaseSize(dbName valueObject.DatabaseN
 		return 0, errors.New("ReadDatabaseSizeError: " + err.Error())
 	}
 
-	return valueObject.NewByte(rawDatabaseSize)
+	return tkValueObject.NewByte(rawDatabaseSize)
 }
 
 func (repo MysqlDatabaseQueryRepo) readDatabaseUsernames(
@@ -158,7 +159,7 @@ func (repo MysqlDatabaseQueryRepo) readAllDatabases() ([]entity.Database, error)
 	for _, dbName := range dbNames {
 		dbSize, err := repo.readDatabaseSize(dbName)
 		if err != nil {
-			dbSize, _ = valueObject.NewByte(0)
+			dbSize, _ = tkValueObject.NewByte(0)
 		}
 
 		dbUsernames, err := repo.readDatabaseUsernames(dbName)
