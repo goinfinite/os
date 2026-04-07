@@ -10,6 +10,7 @@ import (
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
@@ -20,23 +21,30 @@ import (
 const DomainOwnershipValidationUrlPath string = "/validateOwnership"
 
 type SslCmdRepo struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
-	sslQueryRepo    *SslQueryRepo
-	vhostQueryRepo  *vhostInfra.VirtualHostQueryRepo
-	fileClerk       tkInfra.FileClerk
+	persistentDbSvc        *internalDbInfra.PersistentDatabaseService
+	transientDbSvc         *internalDbInfra.TransientDatabaseService
+	sslQueryRepo           *SslQueryRepo
+	vhostQueryRepo         *vhostInfra.VirtualHostQueryRepo
+	mappingCmdRepo         *vhostInfra.MappingCmdRepo
+	mappingQueryRepo       *vhostInfra.MappingQueryRepo
+	fileClerk              tkInfra.FileClerk
+	ownershipValidationPath valueObject.MappingPath
 }
 
 func NewSslCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *SslCmdRepo {
+	ownershipValidationPath, _ := valueObject.NewMappingPath(DomainOwnershipValidationUrlPath)
 	return &SslCmdRepo{
-		persistentDbSvc: persistentDbSvc,
-		transientDbSvc:  transientDbSvc,
-		sslQueryRepo:    NewSslQueryRepo(),
-		vhostQueryRepo:  vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
-		fileClerk:       tkInfra.FileClerk{},
+		persistentDbSvc:         persistentDbSvc,
+		transientDbSvc:          transientDbSvc,
+		sslQueryRepo:            NewSslQueryRepo(),
+		vhostQueryRepo:          vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
+		mappingCmdRepo:          vhostInfra.NewMappingCmdRepo(persistentDbSvc),
+		mappingQueryRepo:        vhostInfra.NewMappingQueryRepo(persistentDbSvc),
+		fileClerk:               tkInfra.FileClerk{},
+		ownershipValidationPath: ownershipValidationPath,
 	}
 }
 
@@ -98,13 +106,11 @@ func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
 }
 
 func (repo *SslCmdRepo) createOwnershipValidationMapping(
-	mappingCmdRepo *vhostInfra.MappingCmdRepo,
 	targetVirtualHostHostname tkValueObject.Fqdn,
 	expectedOwnershipHash tkValueObject.Hash,
 	operatorAccountId tkValueObject.AccountId,
 	operatorIpAddress tkValueObject.IpAddress,
 ) (mappingId valueObject.MappingId, err error) {
-	path, _ := valueObject.NewMappingPath(DomainOwnershipValidationUrlPath)
 	matchPattern, _ := valueObject.NewMappingMatchPattern("equals")
 	targetType, _ := valueObject.NewMappingTargetType("inline-html")
 	httpResponseCode, _ := tkValueObject.NewHttpStatusCode(200)
@@ -113,13 +119,31 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 	)
 	shouldUpgradeInsecureRequests := false
 
-	inlineHtmlMapping := dto.NewCreateMapping(
-		targetVirtualHostHostname, path, matchPattern, targetType, &targetValue,
-		&httpResponseCode, &shouldUpgradeInsecureRequests, nil,
-		operatorAccountId, operatorIpAddress,
-	)
+	return repo.mappingCmdRepo.Create(dto.NewCreateMapping(
+		targetVirtualHostHostname, repo.ownershipValidationPath, matchPattern,
+		targetType, &targetValue, &httpResponseCode, &shouldUpgradeInsecureRequests,
+		nil, operatorAccountId, operatorIpAddress,
+	))
+}
 
-	return mappingCmdRepo.Create(inlineHtmlMapping)
+func (repo *SslCmdRepo) deleteStaleOwnershipValidationMappings(
+	hostname tkValueObject.Fqdn,
+) {
+	existingMappingsResponse, _ := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
+		Pagination:  tkDto.PaginationUnpaginated,
+		Hostname:    &hostname,
+		MappingPath: &repo.ownershipValidationPath,
+	})
+	for _, existingMapping := range existingMappingsResponse.Mappings {
+		err := repo.mappingCmdRepo.Delete(existingMapping.Id)
+		if err != nil {
+			slog.Error(
+				"DeleteStaleOwnershipValidationMappingError",
+				slog.String("hostname", hostname.String()),
+				slog.String("error", err.Error()),
+			)
+		}
+	}
 }
 
 func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
@@ -133,13 +157,14 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 
 	serverPublicIpAddressStr := serverPublicIpAddress.String()
 	expectedHashStr := expectedOwnershipHash.String()
-	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(repo.persistentDbSvc)
 
 	for _, vhostHostname := range vhostHostnames {
 		vhostHostnameStr := vhostHostname.String()
+
+		repo.deleteStaleOwnershipValidationMappings(vhostHostname)
+
 		ownershipValidationMappingId, err := repo.createOwnershipValidationMapping(
-			mappingCmdRepo, vhostHostname, expectedOwnershipHash, operatorAccountId,
-			operatorIpAddress,
+			vhostHostname, expectedOwnershipHash, operatorAccountId, operatorIpAddress,
 		)
 		if err != nil {
 			continue
@@ -160,21 +185,21 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 					"\" " + hashUrlFull,
 				ShouldUseSubShell: true,
 			}).Run()
-			if err != nil {
-				continue
-			}
 		}
 
-		if ownershipHashFound != expectedHashStr {
+		deleteErr := repo.mappingCmdRepo.Delete(ownershipValidationMappingId)
+		if deleteErr != nil {
+			slog.Error(
+				"DeleteOwnershipValidationMappingError",
+				slog.String("error", deleteErr.Error()),
+			)
+		}
+
+		if err != nil || ownershipHashFound != expectedHashStr {
 			continue
 		}
 
 		functionalHostnames = append(functionalHostnames, vhostHostname)
-
-		err = mappingCmdRepo.Delete(ownershipValidationMappingId)
-		if err != nil {
-			slog.Error("DeleteOwnershipValidationMappingError", slog.String("error", err.Error()))
-		}
 	}
 
 	return functionalHostnames
@@ -258,11 +283,20 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 		virtualHostsHostnames, vhostReadResponse.VirtualHosts[0].AliasesHostnames...,
 	)
 
-	dnsFunctionalHostnames := repo.dnsFilterFunctionalHostnames(
-		virtualHostsHostnames, serverPublicIpAddress,
-	)
-	if len(dnsFunctionalHostnames) == 0 {
-		return sslPairId, errors.New("NoSslHostnamePointingToServerIpAddress")
+	skipDnsOwnershipCheck := false
+	envSkipDns, err := tkVoUtil.InterfaceToBool(os.Getenv("SKIP_DNS_OWNERSHIP_CHECK"))
+	if err == nil && envSkipDns {
+		skipDnsOwnershipCheck = true
+	}
+
+	dnsFunctionalHostnames := virtualHostsHostnames
+	if !skipDnsOwnershipCheck {
+		dnsFunctionalHostnames = repo.dnsFilterFunctionalHostnames(
+			virtualHostsHostnames, serverPublicIpAddress,
+		)
+		if len(dnsFunctionalHostnames) == 0 {
+			return sslPairId, errors.New("NoSslHostnamePointingToServerIpAddress")
+		}
 	}
 
 	synthesizer := tkInfra.Synthesizer{}
