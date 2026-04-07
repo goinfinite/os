@@ -5,6 +5,7 @@
 fix(ssl): clean up stale /validateOwnership mappings before creating new ones
 feat(ssl): add SKIP_DNS_OWNERSHIP_CHECK env var to bypass DNS ownership check
 refactor(ssl): move mapping repos and ownership path to SslCmdRepo struct fields
+docs(readme): add environment variables reference table
 
 0.2.8 - 2026/03/XX
 chore: remove temporary echo-swagger replace directive and upgrade to v1.5.2

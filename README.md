@@ -99,6 +99,19 @@ os mktplace install -s wp \
   -f 'adminMailAddress:user@example.com'
 ```
 
+### Environment Variables
+
+| Variable                         | Required | Auto-generated | Description                                                                            |
+| -------------------------------- | -------- | -------------- | -------------------------------------------------------------------------------------- |
+| `PRIMARY_VHOST`                  | Yes      | Yes            | Primary virtual host (domain) for the container. Auto-detected from hostname if unset. |
+| `JWT_SECRET`                     | Yes      | Yes            | Signing key for JWT session tokens. Auto-generated on first boot.                      |
+| `ACCOUNT_API_KEY_SECRET`         | Yes      | Yes            | Encryption key for API key generation and validation. Auto-generated on first boot.    |
+| `DEV_MODE`                       | No       | No             | Enables dev mode — startup banner and additional UI routes.                            |
+| `TRUSTED_IPS`                    | No       | No             | Comma-separated IPs that bypass authentication origin validation.                      |
+| `READ_ONLY_MODE`                 | No       | No             | Blocks all non-GET/HEAD/OPTIONS API requests (HTTP 423).                               |
+| `SKIP_DNS_OWNERSHIP_CHECK`       | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                  |
+| `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables the PHP runtime command execution API endpoint.                                |
+
 ## Support
 
 Need help or have questions? We got you covered!
