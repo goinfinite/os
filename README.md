@@ -107,7 +107,8 @@ os mktplace install -s wp \
 | `JWT_SECRET`                     | Yes      | Yes            | Signing key for JWT session tokens. Auto-generated on first boot.                      |
 | `ACCOUNT_API_KEY_SECRET`         | Yes      | Yes            | Encryption key for API key generation and validation. Auto-generated on first boot.    |
 | `DEV_MODE`                       | No       | No             | Enables dev mode — startup banner and additional UI routes.                            |
-| `TRUSTED_IPS`                    | No       | No             | Comma-separated IPs that bypass authentication origin validation.                      |
+| `TRUSTED_IPS`                    | No       | No             | Comma-separated IPs or CIDRs that bypass auth origin validation and receive verbose API panic responses.                               |
+| `TRUSTED_CIDRS`                  | No       | No             | Comma-separated CIDRs that bypass auth origin validation and receive verbose API panic responses.                                      |
 | `READ_ONLY_MODE`                 | No       | No             | Blocks all non-GET/HEAD/OPTIONS API requests (HTTP 423).                               |
 | `SKIP_DNS_OWNERSHIP_CHECK`       | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                  |
 | `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables the PHP runtime command execution API endpoint.                                |

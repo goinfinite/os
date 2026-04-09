@@ -1,7 +1,9 @@
 # Changelog
 
 ```log
-0.2.9 - 2026/04/08
+0.2.9 - 2026/04/09
+feat(auth): migrate to tk TrustedCidrsReader and add TRUSTED_CIDRS env var
+docs(readme): document verbose API panic responses for trusted networks
 fix(ssl): clean up stale /validateOwnership mappings before creating new ones
 feat(ssl): add SKIP_DNS_OWNERSHIP_CHECK env var to bypass DNS ownership check
 refactor(ssl): move mapping repos and ownership path to SslCmdRepo struct fields

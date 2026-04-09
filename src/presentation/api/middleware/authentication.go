@@ -1,16 +1,17 @@
 package apiMiddleware
 
 import (
+	"log/slog"
 	"net/http"
-	"os"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/useCase"
 	authInfra "github.com/goinfinite/os/src/infra/auth"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	"github.com/labstack/echo/v4"
 )
 
@@ -19,18 +20,14 @@ func extractAccountIdFromAccessToken(
 	accessTokenStr tkValueObject.AccessTokenValue,
 	userIpAddress tkValueObject.IpAddress,
 ) (accountId tkValueObject.AccountId, err error) {
-	var trustedIps []tkValueObject.IpAddress
-	rawTrustedIps := strings.SplitSeq(os.Getenv("TRUSTED_IPS"), ",")
-	for rawTrustedIp := range rawTrustedIps {
-		trustedIp, err := tkValueObject.NewIpAddress(rawTrustedIp)
-		if err != nil {
-			continue
-		}
-		trustedIps = append(trustedIps, trustedIp)
+	trustedCidrs, err := tkInfra.TrustedCidrsReader()
+	if err != nil {
+		slog.Error("TrustedCidrsReaderError", slog.String("err", err.Error()))
+		trustedCidrs = []tkValueObject.CidrBlock{}
 	}
 
 	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
-		authQueryRepo, accessTokenStr, trustedIps, userIpAddress,
+		authQueryRepo, accessTokenStr, trustedCidrs, userIpAddress,
 	)
 	if err != nil {
 		return accountId, err
