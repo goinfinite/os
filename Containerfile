@@ -15,7 +15,8 @@ RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/
 	&& chown -R nobody:nogroup /app
 
 RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattended-upgrades-local \
-  && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local
+  && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local \
+  && grep -q 'origin=nginx,archive=stable,label=nginx' /etc/apt/apt.conf.d/52unattended-upgrades-local || (echo "ErrorEditingUnattendedUpgradesConfigFile" && exit 1)
 
 RUN curl -skL "https://mise.run" | sh \
 	&& mv /root/.local/bin/mise /usr/bin/mise \
