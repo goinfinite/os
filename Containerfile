@@ -7,15 +7,15 @@ RUN apt-get update && apt-get upgrade -y \
 	curl debian-archive-keyring git gnupg2 haveged lsb-release procps rsync supervisor \
 	tar unzip vim wget zip unattended-upgrades
 
-RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattended-upgrades-local \
-  && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local
-
 RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
 	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
 	&& install_packages nginx \
 	&& mkdir -p /app/logs/cron /app/logs/nginx /app/conf/pki /app/.trash \
 	&& mkdir -m 777 -p /app/html \
 	&& chown -R nobody:nogroup /app
+
+RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattended-upgrades-local \
+  && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local
 
 RUN curl -skL "https://mise.run" | sh \
 	&& mv /root/.local/bin/mise /usr/bin/mise \
