@@ -87,26 +87,14 @@ It is important that this is done before using Air to create the binary; otherwi
 
 The marketplace and services catalog are not part of this project. You can find their repositories at [goinfinite/os-services](https://github.com/goinfinite/os-services) and [goinfinite/os-marketplace](https://github.com/goinfinite/os-marketplace). Both are managed by Infinite DevOps team directly and their items manifests are based on JSON and YAML files. Read the instructions in their respective repositories to understand how to use, extend and contribute to them.
 
-## VSCode Extensions
+## Zed Extensions
 
-The following extensions are highly encouraged to be used during development:
+The following extensions are encouraged to be used during development:
 
 ```
-a-h.templ
-Augment.vscode-augment
-bradlc.vscode-tailwindcss
-EditorConfig.EditorConfig
-GitHub.vscode-pull-request-github
-esbenp.prettier-vscode
-foxundermoon.shell-format
-golang.go
-hbenl.vscode-test-explorer
-ms-vscode.test-adapter-converter
-redhat.vscode-yaml
-streetsidesoftware.code-spell-checker
-timonwong.shellcheck
-Trapfether.tailwind-raw-reorder
-yy0931.vscode-sqlite3-editor
+HTML
+TOML
+Make
 ```
 
 ## REST API
