@@ -289,6 +289,29 @@ func (repo *MappingCmdRepo) locationUriConfigFactory(
 func (repo *MappingCmdRepo) RecreateMappingFile(
 	vhostHostname tkValueObject.Fqdn,
 ) error {
+	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
+
+	vhostEntity, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &vhostHostname,
+	})
+	if err != nil {
+		return errors.New("ReadVirtualHostEntityError: " + err.Error())
+	}
+
+	if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
+		if vhostEntity.ParentHostname == nil {
+			return errors.New("AliasMissingParentHostname")
+		}
+
+		vhostEntity, err = vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+			Hostname: vhostEntity.ParentHostname,
+		})
+		if err != nil {
+			return errors.New("ReadParentVirtualHostEntityError: " + err.Error())
+		}
+		vhostHostname = vhostEntity.Hostname
+	}
+
 	mappingsReadResponse, err := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
 		Pagination: tkDto.PaginationUnpaginated,
 		Hostname:   &vhostHostname,
@@ -351,7 +374,6 @@ location {{ locationUriConfigFactory .MatchPattern .Path }} {
 		return errors.New("TemplateExecutionError: " + err.Error())
 	}
 
-	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
 	mappingFilePath, err := vhostQueryRepo.ReadVirtualHostMappingsFilePath(
 		vhostHostname,
 	)
