@@ -448,7 +448,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "ServiceStatus")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
-	cmd.Flags().StringSliceVarP(
+	cmd.Flags().StringArrayVarP(
 		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
 	)
 	cmd.Flags().StringSliceVarP(
