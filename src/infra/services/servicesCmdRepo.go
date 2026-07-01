@@ -659,25 +659,6 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		return err
 	}
 
-	if updateDto.Status != nil {
-		desiredStatusStr := updateDto.Status.String()
-		isSameStatus := serviceEntity.Status.String() == desiredStatusStr
-		if isSameStatus {
-			return nil
-		}
-
-		switch desiredStatusStr {
-		case "running":
-			return repo.Start(updateDto.Name)
-		case "stopped":
-			return repo.Stop(updateDto.Name)
-		case "restarting":
-			return repo.Restart(updateDto.Name)
-		default:
-			return errors.New("InvalidStatus: " + desiredStatusStr)
-		}
-	}
-
 	installedServiceModel := dbModel.InstalledService{}
 	updateMap := map[string]interface{}{}
 	if updateDto.Type != nil {
@@ -748,11 +729,6 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["working_directory"] = &workingDirectoryStr
 	}
 
-	if updateDto.StartupFile != nil && isSoloService {
-		startupFileStr := updateDto.StartupFile.String()
-		updateMap["startup_file"] = &startupFileStr
-	}
-
 	if updateDto.AutoStart != nil {
 		updateMap["auto_start"] = updateDto.AutoStart
 	}
@@ -784,20 +760,46 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		updateMap["avatar_url"] = &avatarUrlStr
 	}
 
-	err = repo.persistentDbSvc.Handler.
-		Model(&installedServiceModel).
-		Where("name = ?", updateDto.Name.String()).
-		Updates(updateMap).Error
-	if err != nil {
-		return err
+	hasFieldUpdates := len(updateMap) > 0
+	if hasFieldUpdates {
+		err = repo.persistentDbSvc.Handler.
+			Model(&installedServiceModel).
+			Where("name = ?", updateDto.Name.String()).
+			Updates(updateMap).Error
+		if err != nil {
+			return err
+		}
+
+		err = repo.updateProcessManagerConf()
+		if err != nil {
+			return err
+		}
 	}
 
-	err = repo.updateProcessManagerConf()
-	if err != nil {
-		return err
+	shouldHandleStatus := updateDto.Status != nil
+	shouldSkipStatusChange := !shouldHandleStatus
+	if shouldHandleStatus {
+		desiredStatusStr := updateDto.Status.String()
+		shouldSkipStatusChange = serviceEntity.Status.String() == desiredStatusStr
+		if !shouldSkipStatusChange {
+			switch desiredStatusStr {
+			case "running":
+				return repo.Start(updateDto.Name)
+			case "stopped":
+				return repo.Stop(updateDto.Name)
+			case "restarting":
+				return repo.Restart(updateDto.Name)
+			default:
+				return errors.New("InvalidStatus: " + desiredStatusStr)
+			}
+		}
 	}
 
-	return repo.Restart(updateDto.Name)
+	if hasFieldUpdates && serviceEntity.Status.String() != "stopped" {
+		return repo.Restart(updateDto.Name)
+	}
+
+	return nil
 }
 
 func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {

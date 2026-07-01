@@ -1,7 +1,17 @@
 # Changelog
 
 ```log
-0.2.8 - 2026/03/XX
+0.2.9 - 2026/04/09
+feat(auth): migrate to tk TrustedCidrsReader and add TRUSTED_CIDRS env var
+docs(readme): document verbose API panic responses for trusted networks
+fix(ssl): clean up stale /validateOwnership mappings before creating new ones
+feat(ssl): add SKIP_DNS_OWNERSHIP_CHECK env var to bypass DNS ownership check
+refactor(ssl): move mapping repos and ownership path to SslCmdRepo struct fields
+docs(readme): add environment variables reference table
+chore: update go deps
+fix(swagger): add missing dummy imports for swagger annotation compliance
+
+0.2.8 - 2026/03/24
 chore: remove temporary echo-swagger replace directive and upgrade to v1.5.2
 fix(ssl): wrap SslPrivateKey around tk EnvelopedPrivateKey
 fix(ssl): repair altnames filter and add pagination to ssl listing

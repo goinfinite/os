@@ -1,11 +1,10 @@
 package liaison
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
-	"log/slog"
 	"strconv"
 	"strings"
 
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -871,48 +870,28 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) tkPresenta
 		versionPtr = &version
 	}
 
-	envs := []valueObject.ServiceEnv{}
+	var envs []valueObject.ServiceEnv
 	if untrustedInput["envs"] != nil {
-		rawEnvs, assertOk := untrustedInput["envs"].([]string)
+		parsedEnvs, assertOk := untrustedInput["envs"].([]valueObject.ServiceEnv)
 		if !assertOk {
 			return tkPresentation.NewLiaisonResponseNoMessage(
 				tkPresentation.LiaisonResponseStatusUserError,
-				"EnvsMustBeStringArray",
+				"EnvsMustBeServiceEnvArray",
 			)
 		}
-
-		for _, rawEnv := range rawEnvs {
-			env, err := valueObject.NewServiceEnv(rawEnv)
-			if err != nil {
-				slog.Debug(err.Error(), slog.String("env", rawEnv))
-				continue
-			}
-			envs = append(envs, env)
-		}
+		envs = parsedEnvs
 	}
 
-	portBindings := []valueObject.PortBinding{}
+	var portBindings []valueObject.PortBinding
 	if _, exists := untrustedInput["portBindings"]; exists {
-		rawPortBindings, assertOk := untrustedInput["portBindings"].([]string)
+		parsedPortBindings, assertOk := untrustedInput["portBindings"].([]valueObject.PortBinding)
 		if !assertOk {
 			return tkPresentation.NewLiaisonResponseNoMessage(
 				tkPresentation.LiaisonResponseStatusUserError,
-				"PortBindingsMustBeStringArray",
+				"PortBindingsMustBePortBindingArray",
 			)
 		}
-
-		for _, rawPortBinding := range rawPortBindings {
-			if len(rawPortBinding) == 0 {
-				continue
-			}
-
-			portBinding, err := valueObject.NewPortBinding(rawPortBinding)
-			if err != nil {
-				slog.Debug(err.Error(), slog.String("portBinding", rawPortBinding))
-				continue
-			}
-			portBindings = append(portBindings, portBinding)
-		}
+		portBindings = parsedPortBindings
 	}
 
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath

@@ -7,3 +7,7 @@ TODO.md
 *_templ.go
 .agents/
 .memory/
+AGENTS.md
+opencode.json
+.claude/
+.ignore

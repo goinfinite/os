@@ -1,6 +1,8 @@
 package apiController
 
 import (
+	_ "github.com/goinfinite/os/src/domain/dto"
+	_ "github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"

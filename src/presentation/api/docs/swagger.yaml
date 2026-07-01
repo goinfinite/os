@@ -5,20 +5,20 @@ definitions:
       compressionType:
         type: string
       destinationPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       sourcePaths:
         items:
-          $ref: '#/definitions/valueObject.UnixFilePath'
+          type: string
         type: array
     type: object
   dto.CopyUnixFile:
     properties:
       destinationPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       shouldOverwrite:
         type: boolean
       sourcePath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
     type: object
   dto.CreateAccount:
     properties:
@@ -55,9 +55,9 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       logOutputPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       mappingHostname:
         type: string
       mappingPath:
@@ -101,7 +101,7 @@ definitions:
       version:
         type: string
       workingDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
     type: object
   dto.CreateDatabase:
     properties:
@@ -148,13 +148,13 @@ definitions:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
       startupFile:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       timeoutStartSecs:
         type: integer
       version:
         type: string
       workingDir:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
     type: object
   dto.CreateMapping:
     properties:
@@ -241,9 +241,9 @@ definitions:
   dto.CreateUnixFile:
     properties:
       filePath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       mimeType:
-        $ref: '#/definitions/valueObject.MimeType'
+        type: string
       permissions:
         type: string
     type: object
@@ -261,9 +261,9 @@ definitions:
   dto.ExtractUnixFiles:
     properties:
       destinationPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       sourcePath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
     type: object
   dto.InstallMarketplaceCatalogItem:
     properties:
@@ -297,9 +297,9 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       logOutputPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       maxStartRetries:
         type: integer
       metrics:
@@ -315,7 +315,7 @@ definitions:
       startCmd:
         type: string
       startupFile:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       status:
         type: string
       timeoutStartSecs:
@@ -327,23 +327,6 @@ definitions:
       version:
         type: string
       workingDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
-    type: object
-  dto.Pagination:
-    properties:
-      itemsPerPage:
-        type: integer
-      itemsTotal:
-        type: integer
-      lastSeenId:
-        type: string
-      pageNumber:
-        type: integer
-      pagesTotal:
-        type: integer
-      sortBy:
-        type: string
-      sortDirection:
         type: string
     type: object
   dto.ReadAccountsResponse:
@@ -353,7 +336,7 @@ definitions:
           $ref: '#/definitions/entity.Account'
         type: array
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadCronsResponse:
     properties:
@@ -362,7 +345,7 @@ definitions:
           $ref: '#/definitions/entity.Cron'
         type: array
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadDatabasesResponse:
     properties:
@@ -371,7 +354,7 @@ definitions:
           $ref: '#/definitions/entity.Database'
         type: array
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadFilesResponse:
     properties:
@@ -389,7 +372,7 @@ definitions:
           $ref: '#/definitions/entity.InstallableService'
         type: array
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadInstalledServicesItemsResponse:
     properties:
@@ -402,7 +385,7 @@ definitions:
           $ref: '#/definitions/dto.InstalledServiceWithMetrics'
         type: array
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadMappingSecurityRulesResponse:
     properties:
@@ -411,7 +394,7 @@ definitions:
           $ref: '#/definitions/entity.MappingSecurityRule'
         type: array
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadMarketplaceCatalogItemsResponse:
     properties:
@@ -420,7 +403,7 @@ definitions:
           $ref: '#/definitions/entity.MarketplaceCatalogItem'
         type: array
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadMarketplaceInstalledItemsResponse:
     properties:
@@ -429,12 +412,12 @@ definitions:
           $ref: '#/definitions/entity.MarketplaceInstalledItem'
         type: array
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadScheduledTasksResponse:
     properties:
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
       tasks:
         items:
           $ref: '#/definitions/entity.ScheduledTask'
@@ -443,7 +426,7 @@ definitions:
   dto.ReadSslPairsResponse:
     properties:
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
       sslPairs:
         items:
           $ref: '#/definitions/entity.SslPair'
@@ -452,7 +435,7 @@ definitions:
   dto.ReadVirtualHostsResponse:
     properties:
       pagination:
-        $ref: '#/definitions/dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
       virtualHostWithMappings:
         items:
           $ref: '#/definitions/dto.VirtualHostWithMappings'
@@ -487,11 +470,11 @@ definitions:
           $ref: '#/definitions/dto.UnixFileBranch'
         type: object
       mimeType:
-        $ref: '#/definitions/valueObject.MimeType'
+        type: string
       name:
         type: string
       path:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
     type: object
   dto.UpdateAccount:
     properties:
@@ -606,9 +589,9 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       logOutputPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       maxStartRetries:
         type: integer
       name:
@@ -636,7 +619,7 @@ definitions:
       startCmd:
         type: string
       startupFile:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       status:
         type: string
       stopCmdSteps:
@@ -650,23 +633,23 @@ definitions:
       version:
         type: string
       workingDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
     type: object
   dto.UpdateUnixFiles:
     properties:
       destinationPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       encodedContent:
         type: string
       ownership:
-        $ref: '#/definitions/valueObject.UnixFileOwnership'
+        type: string
       permissions:
         type: string
       shouldFixPermissions:
         type: boolean
       sourcePaths:
         items:
-          $ref: '#/definitions/valueObject.UnixFilePath'
+          type: string
         type: array
     type: object
   dto.UpdateVirtualHost:
@@ -697,7 +680,7 @@ definitions:
       parentHostname:
         type: string
       rootDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       type:
         $ref: '#/definitions/valueObject.VirtualHostType'
     type: object
@@ -717,7 +700,7 @@ definitions:
       groupId:
         type: integer
       homeDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       id:
         type: integer
       isSuperAdmin:
@@ -783,9 +766,9 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       logOutputPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       manifestVersion:
         type: string
       name:
@@ -799,7 +782,7 @@ definitions:
       startCmd:
         type: string
       startupFile:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       type:
         $ref: '#/definitions/valueObject.ServiceType'
       versions:
@@ -807,7 +790,7 @@ definitions:
           type: string
         type: array
       workingDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
     type: object
   entity.InstalledService:
     properties:
@@ -826,9 +809,9 @@ definitions:
       execUser:
         type: string
       logErrorPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       logOutputPath:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       maxStartRetries:
         type: integer
       name:
@@ -842,7 +825,7 @@ definitions:
       startCmd:
         type: string
       startupFile:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       status:
         type: string
       timeoutStartSecs:
@@ -854,7 +837,7 @@ definitions:
       version:
         type: string
       workingDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
     type: object
   entity.Mapping:
     properties:
@@ -968,7 +951,7 @@ definitions:
       id:
         type: integer
       installDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       installUuid:
         type: string
       mappings:
@@ -1140,13 +1123,13 @@ definitions:
       group:
         type: string
       mimeType:
-        $ref: '#/definitions/valueObject.MimeType'
+        type: string
       name:
         type: string
       owner:
         type: string
       path:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       permissions:
         type: string
       size:
@@ -1173,9 +1156,26 @@ definitions:
       parentHostname:
         type: string
       rootDirectory:
-        $ref: '#/definitions/valueObject.UnixFilePath'
+        type: string
       type:
         $ref: '#/definitions/valueObject.VirtualHostType'
+    type: object
+  tkDto.Pagination:
+    properties:
+      itemsPerPage:
+        type: integer
+      itemsTotal:
+        type: integer
+      lastSeenId:
+        type: string
+      pageNumber:
+        type: integer
+      pagesTotal:
+        type: integer
+      sortBy:
+        type: string
+      sortDirection:
+        type: string
     type: object
   valueObject.CurrentResourceUsage:
     properties:
@@ -1272,14 +1272,6 @@ definitions:
       targetValue:
         type: string
     type: object
-  valueObject.MimeType:
-    enum:
-    - directory
-    - generic
-    type: string
-    x-enum-varnames:
-    - MimeTypeDirectory
-    - MimeTypeGeneric
   valueObject.PortBinding:
     properties:
       port:
@@ -1331,22 +1323,6 @@ definitions:
     - ServiceTypeRuntime
     - ServiceTypeWebServer
     - ServiceTypeOther
-  valueObject.UnixFileOwnership:
-    enum:
-    - nobody:nogroup
-    type: string
-    x-enum-varnames:
-    - UnixFileOwnershipAppWorkingDir
-  valueObject.UnixFilePath:
-    enum:
-    - /
-    - /app
-    - /app/.trash
-    type: string
-    x-enum-varnames:
-    - UnixFilePathFileSystemRootDir
-    - UnixFilePathAppWorkingDir
-    - UnixFilePathTrashDir
   valueObject.VirtualHostType:
     enum:
     - top-level
@@ -1373,7 +1349,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.2.7
+  version: 0.2.9
 paths:
   /v1/account/:
     get:

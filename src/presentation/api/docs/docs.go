@@ -2918,12 +2918,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "destinationPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "sourcePaths": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/valueObject.UnixFilePath"
+                        "type": "string"
                     }
                 }
             }
@@ -2932,13 +2932,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "destinationPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "shouldOverwrite": {
                     "type": "boolean"
                 },
                 "sourcePath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 }
             }
         },
@@ -2995,10 +2995,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "logOutputPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "mappingHostname": {
                     "type": "string"
@@ -3064,7 +3064,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 }
             }
         },
@@ -3136,7 +3136,7 @@ const docTemplate = `{
                     }
                 },
                 "startupFile": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "timeoutStartSecs": {
                     "type": "integer"
@@ -3145,7 +3145,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDir": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 }
             }
         },
@@ -3279,10 +3279,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "filePath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "mimeType": {
-                    "$ref": "#/definitions/valueObject.MimeType"
+                    "type": "string"
                 },
                 "permissions": {
                     "type": "string"
@@ -3310,10 +3310,10 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "destinationPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "sourcePath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 }
             }
         },
@@ -3365,10 +3365,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "logOutputPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "maxStartRetries": {
                     "type": "integer"
@@ -3392,7 +3392,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startupFile": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"
@@ -3410,32 +3410,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
-                }
-            }
-        },
-        "dto.Pagination": {
-            "type": "object",
-            "properties": {
-                "itemsPerPage": {
-                    "type": "integer"
-                },
-                "itemsTotal": {
-                    "type": "integer"
-                },
-                "lastSeenId": {
-                    "type": "string"
-                },
-                "pageNumber": {
-                    "type": "integer"
-                },
-                "pagesTotal": {
-                    "type": "integer"
-                },
-                "sortBy": {
-                    "type": "string"
-                },
-                "sortDirection": {
                     "type": "string"
                 }
             }
@@ -3450,7 +3424,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3464,7 +3438,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3478,7 +3452,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3506,7 +3480,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3526,7 +3500,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3540,7 +3514,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3554,7 +3528,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3568,7 +3542,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3576,7 +3550,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "tasks": {
                     "type": "array",
@@ -3590,7 +3564,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "sslPairs": {
                     "type": "array",
@@ -3604,7 +3578,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "virtualHostWithMappings": {
                     "type": "array",
@@ -3658,13 +3632,13 @@ const docTemplate = `{
                     }
                 },
                 "mimeType": {
-                    "$ref": "#/definitions/valueObject.MimeType"
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
                 },
                 "path": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 }
             }
         },
@@ -3840,10 +3814,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "logOutputPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "maxStartRetries": {
                     "type": "integer"
@@ -3885,7 +3859,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startupFile": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"
@@ -3906,7 +3880,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 }
             }
         },
@@ -3914,13 +3888,13 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "destinationPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "encodedContent": {
                     "type": "string"
                 },
                 "ownership": {
-                    "$ref": "#/definitions/valueObject.UnixFileOwnership"
+                    "type": "string"
                 },
                 "permissions": {
                     "type": "string"
@@ -3931,7 +3905,7 @@ const docTemplate = `{
                 "sourcePaths": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/valueObject.UnixFilePath"
+                        "type": "string"
                     }
                 }
             }
@@ -3978,7 +3952,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rootDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/valueObject.VirtualHostType"
@@ -4009,7 +3983,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "homeDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "id": {
                     "type": "integer"
@@ -4110,10 +4084,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "logOutputPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "manifestVersion": {
                     "type": "string"
@@ -4134,7 +4108,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startupFile": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/valueObject.ServiceType"
@@ -4146,7 +4120,7 @@ const docTemplate = `{
                     }
                 },
                 "workingDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 }
             }
         },
@@ -4175,10 +4149,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "logErrorPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "logOutputPath": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "maxStartRetries": {
                     "type": "integer"
@@ -4199,7 +4173,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "startupFile": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "status": {
                     "type": "string"
@@ -4217,7 +4191,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 }
             }
         },
@@ -4390,7 +4364,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "installDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "installUuid": {
                     "type": "string"
@@ -4653,7 +4627,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "mimeType": {
-                    "$ref": "#/definitions/valueObject.MimeType"
+                    "type": "string"
                 },
                 "name": {
                     "type": "string"
@@ -4662,7 +4636,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "path": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "permissions": {
                     "type": "string"
@@ -4703,10 +4677,36 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "rootDirectory": {
-                    "$ref": "#/definitions/valueObject.UnixFilePath"
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/valueObject.VirtualHostType"
+                }
+            }
+        },
+        "tkDto.Pagination": {
+            "type": "object",
+            "properties": {
+                "itemsPerPage": {
+                    "type": "integer"
+                },
+                "itemsTotal": {
+                    "type": "integer"
+                },
+                "lastSeenId": {
+                    "type": "string"
+                },
+                "pageNumber": {
+                    "type": "integer"
+                },
+                "pagesTotal": {
+                    "type": "integer"
+                },
+                "sortBy": {
+                    "type": "string"
+                },
+                "sortDirection": {
+                    "type": "string"
                 }
             }
         },
@@ -4848,17 +4848,6 @@ const docTemplate = `{
                 }
             }
         },
-        "valueObject.MimeType": {
-            "type": "string",
-            "enum": [
-                "directory",
-                "generic"
-            ],
-            "x-enum-varnames": [
-                "MimeTypeDirectory",
-                "MimeTypeGeneric"
-            ]
-        },
         "valueObject.PortBinding": {
             "type": "object",
             "properties": {
@@ -4931,28 +4920,6 @@ const docTemplate = `{
                 "ServiceTypeOther"
             ]
         },
-        "valueObject.UnixFileOwnership": {
-            "type": "string",
-            "enum": [
-                "nobody:nogroup"
-            ],
-            "x-enum-varnames": [
-                "UnixFileOwnershipAppWorkingDir"
-            ]
-        },
-        "valueObject.UnixFilePath": {
-            "type": "string",
-            "enum": [
-                "/",
-                "/app",
-                "/app/.trash"
-            ],
-            "x-enum-varnames": [
-                "UnixFilePathFileSystemRootDir",
-                "UnixFilePathAppWorkingDir",
-                "UnixFilePathTrashDir"
-            ]
-        },
         "valueObject.VirtualHostType": {
             "type": "string",
             "enum": [
@@ -4983,7 +4950,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.7",
+	Version:          "0.2.9",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},
