@@ -48,24 +48,11 @@ func NewSslCmdRepo(
 	}
 }
 
-func (repo *SslCmdRepo) dnsFilterFunctionalHostnames(
+func (repo *SslCmdRepo) dnsFunctionalHostnamesFilter(
 	vhostHostnames []tkValueObject.Fqdn,
 	serverPublicIpAddress tkValueObject.IpAddress,
 ) []tkValueObject.Fqdn {
 	functionalHostnames := []tkValueObject.Fqdn{}
-
-	for _, vhostHostname := range vhostHostnames {
-		wwwVirtualHostHostname, err := tkValueObject.NewFqdn("www." + vhostHostname.String())
-		if err != nil {
-			slog.Debug(
-				"InvalidWwwVirtualHostHostname",
-				slog.String("fqdn", vhostHostname.String()),
-			)
-			continue
-		}
-
-		vhostHostnames = append(vhostHostnames, wwwVirtualHostHostname)
-	}
 
 	serverPublicIpAddressStr := serverPublicIpAddress.String()
 	for _, vhostHostname := range vhostHostnames {
@@ -128,25 +115,26 @@ func (repo *SslCmdRepo) createOwnershipValidationMapping(
 
 func (repo *SslCmdRepo) deleteStaleOwnershipValidationMappings(
 	hostname tkValueObject.Fqdn,
-) {
-	existingMappingsResponse, _ := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
+) error {
+	existingMappingsResponse, err := repo.mappingQueryRepo.Read(dto.ReadMappingsRequest{
 		Pagination:  tkDto.PaginationUnpaginated,
 		Hostname:    &hostname,
 		MappingPath: &repo.ownershipValidationPath,
 	})
+	if err != nil {
+		return errors.New("ReadStaleOwnershipValidationMappingsError: " + err.Error())
+	}
+
 	for _, existingMapping := range existingMappingsResponse.Mappings {
 		err := repo.mappingCmdRepo.Delete(existingMapping.Id)
 		if err != nil {
-			slog.Error(
-				"DeleteStaleOwnershipValidationMappingError",
-				slog.String("hostname", hostname.String()),
-				slog.String("error", err.Error()),
-			)
+			return errors.New("DeleteStaleOwnershipValidationMappingError: " + err.Error())
 		}
 	}
+	return nil
 }
 
-func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
+func (repo *SslCmdRepo) httpFunctionalHostnamesFilter(
 	vhostHostnames []tkValueObject.Fqdn,
 	expectedOwnershipHash tkValueObject.Hash,
 	serverPublicIpAddress tkValueObject.IpAddress,
@@ -161,7 +149,15 @@ func (repo *SslCmdRepo) httpFilterFunctionalHostnames(
 	for _, vhostHostname := range vhostHostnames {
 		vhostHostnameStr := vhostHostname.String()
 
-		repo.deleteStaleOwnershipValidationMappings(vhostHostname)
+		err := repo.deleteStaleOwnershipValidationMappings(vhostHostname)
+		if err != nil {
+			slog.Error(
+				"DeleteStaleOwnershipValidationMappingsError",
+				slog.String("hostname", vhostHostnameStr),
+				slog.String("error", err.Error()),
+			)
+			continue
+		}
 
 		ownershipValidationMappingId, err := repo.createOwnershipValidationMapping(
 			vhostHostname, expectedOwnershipHash, operatorAccountId, operatorIpAddress,
@@ -289,9 +285,25 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 		skipDnsOwnershipCheck = true
 	}
 
+	for _, vhostHostname := range virtualHostsHostnames {
+		wwwVirtualHostHostname, err := tkValueObject.NewFqdn(
+			"www." + vhostHostname.String(),
+		)
+		if err != nil {
+			slog.Debug(
+				"CreatePubliclyTrustedInvalidWwwHostname",
+				slog.String("fqdn", vhostHostname.String()),
+			)
+			continue
+		}
+		virtualHostsHostnames = append(
+			virtualHostsHostnames, wwwVirtualHostHostname,
+		)
+	}
+
 	dnsFunctionalHostnames := virtualHostsHostnames
 	if !skipDnsOwnershipCheck {
-		dnsFunctionalHostnames = repo.dnsFilterFunctionalHostnames(
+		dnsFunctionalHostnames = repo.dnsFunctionalHostnamesFilter(
 			virtualHostsHostnames, serverPublicIpAddress,
 		)
 		if len(dnsFunctionalHostnames) == 0 {
@@ -308,7 +320,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 		return sslPairId, errors.New("CreateOwnershipValidationHashError: " + err.Error())
 	}
 
-	httpFunctionalHostnames := repo.httpFilterFunctionalHostnames(
+	httpFunctionalHostnames := repo.httpFunctionalHostnamesFilter(
 		dnsFunctionalHostnames, expectedOwnershipHash, serverPublicIpAddress,
 		createDto.OperatorAccountId, createDto.OperatorIpAddress,
 	)
