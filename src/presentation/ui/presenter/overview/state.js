@@ -522,8 +522,7 @@ UiToolset.RegisterAlpineState(() => {
         }
 
         if (
-          (typeof serviceAttrValue === "string" ||
-            Array.isArray(serviceAttrValue)) &&
+          typeof serviceAttrValue === "string" &&
           serviceAttrValue.length === 0
         ) {
           delete serviceAttributesToUpdate[serviceAttrName];
