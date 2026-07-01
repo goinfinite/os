@@ -419,11 +419,21 @@ UiToolset.RegisterAlpineState(() => {
       for (const [serviceAttrName, serviceAttrValue] of Object.entries(
         serviceInstallationAttributes
       )) {
-        if (serviceAttrValue.length !== 0) {
+        if (
+          serviceAttrValue === null ||
+          serviceAttrValue === undefined
+        ) {
+          delete serviceInstallationAttributes[serviceAttrName];
           continue;
         }
 
-        delete serviceInstallationAttributes[serviceAttrName];
+        if (
+          (typeof serviceAttrValue === "string" ||
+            Array.isArray(serviceAttrValue)) &&
+          serviceAttrValue.length === 0
+        ) {
+          delete serviceInstallationAttributes[serviceAttrName];
+        }
       }
 
       this.closeServiceInstallationModal();
@@ -503,11 +513,21 @@ UiToolset.RegisterAlpineState(() => {
           continue;
         }
 
-        if (serviceAttrValue.length !== 0) {
+        if (
+          serviceAttrValue === null ||
+          serviceAttrValue === undefined
+        ) {
+          delete serviceAttributesToUpdate[serviceAttrName];
           continue;
         }
 
-        delete serviceAttributesToUpdate[serviceAttrName];
+        if (
+          (typeof serviceAttrValue === "string" ||
+            Array.isArray(serviceAttrValue)) &&
+          serviceAttrValue.length === 0
+        ) {
+          delete serviceAttributesToUpdate[serviceAttrName];
+        }
       }
 
       this.closeUpdateInstalledServiceModal();
