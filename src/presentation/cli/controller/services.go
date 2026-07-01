@@ -393,7 +393,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 
 func (controller *ServicesController) Update() *cobra.Command {
 	var nameStr, typeStr, startCmdStr, statusStr, versionStr, startupFileStr string
-	var portBindingsSlice []string
+	var envsSlice, portBindingsSlice []string
 
 	cmd := &cobra.Command{
 		Use:   "update",
@@ -423,8 +423,16 @@ func (controller *ServicesController) Update() *cobra.Command {
 				requestBody["startupFile"] = startupFileStr
 			}
 
+			if len(envsSlice) > 0 {
+				requestBody["envs"] = tkPresentation.StringSliceValueObjectParser(
+					envsSlice, valueObject.NewServiceEnv,
+				)
+			}
+
 			if len(portBindingsSlice) > 0 {
-				requestBody["portBindings"] = portBindingsSlice
+				requestBody["portBindings"] = tkPresentation.StringSliceValueObjectParser(
+					portBindingsSlice, valueObject.NewPortBinding,
+				)
 			}
 
 			tkPresentation.LiaisonCliResponseRenderer(
@@ -440,6 +448,9 @@ func (controller *ServicesController) Update() *cobra.Command {
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "ServiceStatus")
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
+	cmd.Flags().StringSliceVarP(
+		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
+	)
 	cmd.Flags().StringSliceVarP(
 		&portBindingsSlice, "port-bindings", "p", []string{},
 		"PortBindings (port/protocol)",
