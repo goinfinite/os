@@ -795,7 +795,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 		}
 	}
 
-	if hasFieldUpdates {
+	if hasFieldUpdates && serviceEntity.Status.String() != "stopped" {
 		return repo.Restart(updateDto.Name)
 	}
 
