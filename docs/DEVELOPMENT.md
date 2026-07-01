@@ -91,7 +91,7 @@ The marketplace and services catalog are not part of this project. You can find 
 
 The following extensions are encouraged to be used during development:
 
-```
+```text
 HTML
 TOML
 Make
