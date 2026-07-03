@@ -3,6 +3,7 @@ package internalDbInfra
 import (
 	"errors"
 	"reflect"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -20,7 +21,11 @@ func NewPersistentDatabaseService() (*PersistentDatabaseService, error) {
 			infraEnvs.PersistentDatabaseFilePath+
 			infraEnvs.PersistentDatabaseConnectionParams,
 		),
-		&gorm.Config{},
+		&gorm.Config{
+			NowFunc: func() time.Time {
+				return time.Now().UTC()
+			},
+		},
 	)
 	if err != nil {
 		return nil, errors.New("DatabaseConnectionError")

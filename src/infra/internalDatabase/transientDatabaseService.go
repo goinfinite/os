@@ -2,6 +2,7 @@ package internalDbInfra
 
 import (
 	"errors"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
@@ -17,7 +18,14 @@ type KeyValueModel struct {
 }
 
 func NewTransientDatabaseService() (*TransientDatabaseService, error) {
-	ormSvc, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	ormSvc, err := gorm.Open(
+		sqlite.Open("file::memory:?cache=shared"),
+		&gorm.Config{
+			NowFunc: func() time.Time {
+				return time.Now().UTC()
+			},
+		},
+	)
 	if err != nil {
 		return nil, errors.New("TransientDatabaseConnectionError")
 	}
