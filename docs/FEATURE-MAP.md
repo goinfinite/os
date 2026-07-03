@@ -81,7 +81,7 @@ Configure domain/path mappings to route traffic to deployed applications. Secure
 4. `src/domain/useCase/createMapping.go` — Mapping creation and routing setup
 5. `src/domain/useCase/createMappingSecurityRule.go` — Add rate/bandwidth/connection limits
 6. `src/infra/vhost/` — NGINX virtual host configuration generation
-7. `src/infra/webServer/` — Web server reload after config changes
+7. `src/infra/internalSetup/` — Web server reload after config changes
 8. `src/infra/internalDatabase/` — Mapping metadata persistence
 
 ---
@@ -176,7 +176,7 @@ One-time setup flow to create the first admin account and configure system defau
 1. `src/presentation/api/controller/setup.go` — Setup REST endpoints (gated on account count)
 2. `src/presentation/ui/presenter/setup/` — Web dashboard multi-step setup form
 3. `src/domain/useCase/createFirstAccount.go` — Initial admin account creation
-4. `src/infra/webServer/` — Initial web server configuration
+4. `src/infra/internalSetup/` — Initial web server configuration
 5. `src/infra/internalDatabase/` — First account persistence
 
 ---
@@ -188,7 +188,7 @@ Automatically generate and manage NGINX configuration for hosting multiple appli
 **Flow:**
 
 1. `src/infra/vhost/` — Virtual host configuration generator and manager
-2. `src/infra/webServer/` — Web server reload and NGINX integration
+2. `src/infra/internalSetup/` — Web server reload and NGINX integration
 3. `src/presentation/api/controller/virtualHost.go` — API endpoints for vhost management
 4. `src/infra/internalDatabase/` — Vhost configuration metadata
 
