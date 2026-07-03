@@ -5,6 +5,7 @@ import (
 
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	internalSetupInfra "github.com/goinfinite/os/src/infra/internalSetup"
 	"github.com/goinfinite/os/src/presentation"
 	cliController "github.com/goinfinite/os/src/presentation/cli/controller"
 	"github.com/spf13/cobra"
@@ -169,6 +170,11 @@ func (router Router) serveRoutes() {
 		Use:   "serve",
 		Short: "Start Infinite OS HTTPS server (port " + infraEnvs.InfiniteOsApiHttpPublicPort + ")",
 		Run: func(cmd *cobra.Command, args []string) {
+			bootstrap := internalSetupInfra.NewContainerBootstrap(
+				router.persistentDbSvc, router.transientDbSvc,
+			)
+			bootstrap.FirstBoot()
+			bootstrap.OnStart()
 			presentation.HttpServerInit(
 				router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 			)

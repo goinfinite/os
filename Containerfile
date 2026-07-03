@@ -11,7 +11,6 @@ RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/
 	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
 	&& install_packages nginx \
 	&& mkdir -p /app/logs/cron /app/logs/nginx /app/conf/pki /app/.trash \
-	&& mkdir -m 777 -p /app/html \
 	&& chown -R nobody:nogroup /app
 
 RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattended-upgrades-local \
