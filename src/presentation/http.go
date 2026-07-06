@@ -14,7 +14,6 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
-	wsInfra "github.com/goinfinite/os/src/infra/webServer"
 	"github.com/goinfinite/os/src/presentation/api"
 	presentationMiddleware "github.com/goinfinite/os/src/presentation/middleware"
 	tkPresentationMiddleware "github.com/goinfinite/tk/src/presentation/middleware"
@@ -23,15 +22,6 @@ import (
 )
 
 var fileClerk = tkInfra.FileClerk{}
-
-func webServerSetup(
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
-) {
-	ws := wsInfra.NewWebServerSetup(persistentDbSvc, transientDbSvc)
-	ws.FirstSetup()
-	ws.OnStartSetup()
-}
 
 func initialSslSetup() (
 	certFilePath tkValueObject.UnixAbsoluteFilePath,
@@ -118,8 +108,6 @@ func HttpServerInit(
 
 	api.ApiInit(echoInstance, apiBasePath, persistentDbSvc, transientDbSvc, trailDbSvc)
 	ui.UiInit(echoInstance, uiBasePath, persistentDbSvc, transientDbSvc, trailDbSvc)
-
-	webServerSetup(persistentDbSvc, transientDbSvc)
 
 	certFilePath, keyFilePath, err := initialSslSetup()
 	if err != nil {

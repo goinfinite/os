@@ -2,6 +2,7 @@ package internalDbInfra
 
 import (
 	"errors"
+	"time"
 
 	"github.com/glebarez/sqlite"
 	tkInfraDbModel "github.com/goinfinite/tk/src/infra/db/model"
@@ -20,7 +21,11 @@ func NewTrailDatabaseService() (*TrailDatabaseService, error) {
 			infraEnvs.TrailDatabaseFilePath+
 			infraEnvs.PersistentDatabaseConnectionParams,
 		),
-		&gorm.Config{},
+		&gorm.Config{
+			NowFunc: func() time.Time {
+				return time.Now().UTC()
+			},
+		},
 	)
 	if err != nil {
 		return nil, errors.New("DatabaseConnectionError")

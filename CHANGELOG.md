@@ -1,6 +1,11 @@
 # Changelog
 
 ```log
+0.3.0 - 2026/07/03
+fix(internalSetup): create /app/html at runtime to prevent fuse-overlayfs whiteout accumulation
+refactor(infra): rename webServer package to internalSetup
+fix(db): enforce UTC timestamps in gorm NowFunc for all database services
+
 0.2.9 - 2026/04/09
 feat(auth): migrate to tk TrustedCidrsReader and add TRUSTED_CIDRS env var
 docs(readme): document verbose API panic responses for trusted networks
