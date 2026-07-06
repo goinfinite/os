@@ -23,6 +23,7 @@ import (
 type WebServerSetup struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	vhostHelpers    *vhostInfra.VirtualHostHelpers
 }
 
 func NewWebServerSetup(
@@ -32,11 +33,12 @@ func NewWebServerSetup(
 	return &WebServerSetup{
 		persistentDbSvc: persistentDbSvc,
 		transientDbSvc:  transientDbSvc,
+		vhostHelpers:    vhostInfra.NewVirtualHostHelpers(),
 	}
 }
 
 func (ws *WebServerSetup) updatePrimaryVirtualHost() {
-	primaryVirtualHostHostname, readErr := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVirtualHostHostname, readErr := ws.vhostHelpers.ReadPrimaryVirtualHostHostname()
 	if readErr != nil {
 		slog.Error("PrimaryVirtualHostNotFound")
 		os.Exit(1)
@@ -77,7 +79,7 @@ func (ws *WebServerSetup) generateDhParams() {
 func (ws *WebServerSetup) generateSelfSignedCert() {
 	slog.Info("GeneratingSelfSignedCert")
 
-	primaryVirtualHostHostname, readErr := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVirtualHostHostname, readErr := ws.vhostHelpers.ReadPrimaryVirtualHostHostname()
 	if readErr != nil {
 		slog.Error("PrimaryVirtualHostNotFound")
 		os.Exit(1)

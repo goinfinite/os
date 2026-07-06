@@ -6,8 +6,8 @@ import (
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 )
 
 func TestRuntimeCmdRepo(t *testing.T) {
@@ -16,7 +16,8 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	persistentDbSvc, _ := internalDbInfra.NewPersistentDatabaseService()
 	runtimeCmdRepo := NewRuntimeCmdRepo(persistentDbSvc)
 
-	primaryVhost, _ := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVhost, _ := vhostInfra.NewVirtualHostHelpers().
+		ReadPrimaryVirtualHostHostname()
 	phpVersion, _ := valueObject.NewPhpVersion("8.1")
 
 	t.Run("UpdatePhpVersion", func(t *testing.T) {

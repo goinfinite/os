@@ -24,6 +24,7 @@ type SslCmdRepo struct {
 	persistentDbSvc         *internalDbInfra.PersistentDatabaseService
 	transientDbSvc          *internalDbInfra.TransientDatabaseService
 	sslQueryRepo            *SslQueryRepo
+	vhostHelpers            *vhostInfra.VirtualHostHelpers
 	vhostQueryRepo          *vhostInfra.VirtualHostQueryRepo
 	mappingCmdRepo          *vhostInfra.MappingCmdRepo
 	mappingQueryRepo        *vhostInfra.MappingQueryRepo
@@ -40,6 +41,7 @@ func NewSslCmdRepo(
 		persistentDbSvc:         persistentDbSvc,
 		transientDbSvc:          transientDbSvc,
 		sslQueryRepo:            NewSslQueryRepo(),
+		vhostHelpers:            vhostInfra.NewVirtualHostHelpers(),
 		vhostQueryRepo:          vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
 		mappingCmdRepo:          vhostInfra.NewMappingCmdRepo(persistentDbSvc),
 		mappingQueryRepo:        vhostInfra.NewMappingQueryRepo(persistentDbSvc),
@@ -207,7 +209,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 ) error {
 	mainHostnameStr := mainHostname.String()
 	vhostRootDir := infraEnvs.PrimaryVirtualHostPublicDir
-	if !infraHelper.IsPrimaryVirtualHost(mainHostname) {
+	if !repo.vhostHelpers.IsPrimaryVirtualHost(mainHostname) {
 		vhostRootDir += "/" + mainHostnameStr
 	}
 
@@ -250,7 +252,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 		return errors.New("CreateSslKeySymlinkError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return repo.vhostHelpers.ReloadWebServer()
 }
 
 func (repo *SslCmdRepo) CreatePubliclyTrusted(
@@ -383,7 +385,7 @@ func (repo *SslCmdRepo) Create(
 		return sslPairId, errors.New("SslPairNotFound: " + err.Error())
 	}
 
-	err = infraHelper.ReloadWebServer()
+	err = repo.vhostHelpers.ReloadWebServer()
 	if err != nil {
 		return sslPairId, errors.New("ReloadWebServerError: " + err.Error())
 	}
@@ -444,7 +446,7 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) 
 		return errors.New("CreateSelfSignedSslError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return repo.vhostHelpers.ReloadWebServer()
 }
 
 func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {

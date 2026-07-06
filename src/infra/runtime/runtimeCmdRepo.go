@@ -13,6 +13,7 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
@@ -21,6 +22,7 @@ type RuntimeCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	runtimeQueryRepo *RuntimeQueryRepo
 	fileClerk        tkInfra.FileClerk
+	vhostHelpers     *vhostInfra.VirtualHostHelpers
 }
 
 func NewRuntimeCmdRepo(
@@ -30,6 +32,7 @@ func NewRuntimeCmdRepo(
 		persistentDbSvc:  persistentDbSvc,
 		runtimeQueryRepo: NewRuntimeQueryRepo(),
 		fileClerk:        tkInfra.FileClerk{},
+		vhostHelpers:     vhostInfra.NewVirtualHostHelpers(),
 	}
 }
 
@@ -55,7 +58,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 		timeoutSecs = *runRequest.TimeoutSecs
 	}
 	workingDir := infraEnvs.PrimaryVirtualHostPublicDir
-	if !infraHelper.IsPrimaryVirtualHost(runRequest.Hostname) {
+	if !repo.vhostHelpers.IsPrimaryVirtualHost(runRequest.Hostname) {
 		workingDir += "/" + runRequest.Hostname.String()
 	}
 	if !repo.fileClerk.FileExists(workingDir) {
@@ -135,7 +138,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		return errors.New("UpdatePhpVersionFailed: " + err.Error())
 	}
 
-	isPrimaryVirtualHost := infraHelper.IsPrimaryVirtualHost(hostname)
+	isPrimaryVirtualHost := repo.vhostHelpers.IsPrimaryVirtualHost(hostname)
 	if isPrimaryVirtualHost {
 		sourcePhpCliPath := "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php"
 		updatePhpCliVersionCmd := "unlink /usr/bin/php; ln -s " + sourcePhpCliPath + " /usr/bin/php"
