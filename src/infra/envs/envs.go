@@ -21,6 +21,8 @@ const (
 	MappingsConfDir                    string = VirtualHostsConfDir + "/mapping"
 	MappingsSecurityRulesConfDir       string = MappingsConfDir + "/security"
 	PkiConfDir                         string = "/app/conf/pki"
+	WebServerBinaryPath                string = "/usr/sbin/nginx"
+	WebServerMainConfPath              string = "/etc/nginx/nginx.conf"
 	PhpWebserverMainConfFilePath       string = "/usr/local/lsws/conf/httpd_config.conf"
 	PhpWebserverUsername               string = "nobody"
 	PhpWebserverGroupName              string = "nogroup"
