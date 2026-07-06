@@ -1,6 +1,7 @@
 package internalSetupInfra
 
 import (
+	"errors"
 	"log/slog"
 	"math"
 	"os"
@@ -15,8 +16,8 @@ import (
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type WebServerSetup struct {
@@ -160,31 +161,37 @@ func (ws *WebServerSetup) FirstSetup() {
 	ws.reloadSupervisor()
 }
 
-func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal tkValueObject.Byte) {
-	slog.Info("UpdatingMaxPhpChildProcesses")
+func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal tkValueObject.Byte) error {
+	slog.Info("UpdatingMaxPhpChildProcessesInit")
 
-	maxChildProcesses := uint64(300)
-	childProcessPerGb := uint64(5)
+	childProcsHardCap := uint64(300)
+	childProcsPerGb := uint64(5)
 
-	memoryInGb := memoryTotal.ToGiB()
-	desiredChildProcesses := memoryInGb * childProcessPerGb
-	if desiredChildProcesses > maxChildProcesses {
-		desiredChildProcesses = maxChildProcesses
+	childProcsHealthyAmount := memoryTotal.ToGiB() * childProcsPerGb
+	if childProcsHealthyAmount > childProcsHardCap {
+		childProcsHealthyAmount = childProcsHardCap
 	}
 
-	desiredChildProcessesStr := strconv.FormatUint(desiredChildProcesses, 10)
+	childProcsHealthyAmountStr := strconv.FormatUint(childProcsHealthyAmount, 10)
+	autoUpdateComment := "# AUTO CALCULATED. DO NOT EDIT. LAST EDIT: " +
+		tkValueObject.NewUnixTimeNow().ReadRfcDate()
+	childProcsNewValue := "PHP_LSAPI_CHILDREN=" + childProcsHealthyAmountStr + "; " +
+		autoUpdateComment
+
 	_, sedErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
-			"-i", "-e",
-			"s/PHP_LSAPI_CHILDREN=[0-9]+/PHP_LSAPI_CHILDREN=" + desiredChildProcessesStr + ";/g",
+			"-i", "-E",
+			"s/PHP_LSAPI_CHILDREN=[0-9]+.*/" + childProcsNewValue + "/g",
 			infraEnvs.PhpWebserverMainConfFilePath,
 		},
 	}).Run()
 	if sedErr != nil {
-		slog.Error("UpdateMaxChildProcessesFailed", slog.String("err", sedErr.Error()))
-		os.Exit(1)
+		return errors.New("UpdatePhpMaxChildProcessesFailed: " + sedErr.Error())
 	}
+
+	slog.Info("UpdateMaxPhpChildProcessesSuccess")
+	return nil
 }
 
 func (ws *WebServerSetup) startNginxIfNeeded(
@@ -245,23 +252,26 @@ func (ws *WebServerSetup) configurePhpChildProcesses(
 	memoryTotal tkValueObject.Byte,
 ) {
 	phpWebServerSvcName, _ := valueObject.NewServiceName("php-webserver")
-	readRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &phpWebServerSvcName,
-	}
-	_, readErr := servicesQueryRepo.ReadFirstInstalledItem(readRequestDto)
+	_, readErr := servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &phpWebServerSvcName},
+	)
 	if readErr != nil {
-		slog.Debug("PhpWebServerNotInstalled, skipping child processes tuning")
+		slog.Debug("PhpWebServerNotInstalled. SkippingConfigurePhpChildProcesses")
 		return
 	}
 
-	ws.updatePhpMaxChildProcesses(memoryTotal)
+	err := ws.updatePhpMaxChildProcesses(memoryTotal)
+	if err != nil {
+		slog.Error("ConfigurePhpChildProcessesFailed", slog.String("err", err.Error()))
+		return
+	}
 }
 
 func (ws *WebServerSetup) OnStartSetup() {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(ws.transientDbSvc)
 	containerResources, resourcesErr := o11yQueryRepo.ReadOverview(false)
 	if resourcesErr != nil {
-		slog.Error("GetContainerResourcesFailed", slog.String("err", resourcesErr.Error()))
+		slog.Error("ReadContainerResourcesFailed", slog.String("err", resourcesErr.Error()))
 		os.Exit(1)
 	}
 
@@ -276,18 +286,20 @@ func (ws *WebServerSetup) OnStartSetup() {
 		},
 	}).Run()
 	if awkErr != nil {
-		slog.Error("GetNginxWorkersCountFailed", slog.String("err", awkErr.Error()))
+		slog.Error("ReadNginxWorkersCountFailed", slog.String("err", awkErr.Error()))
 		os.Exit(1)
 	}
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
 
+	ws.configurePhpChildProcesses(
+		servicesQueryRepo, containerResources.HardwareSpecs.MemoryTotal,
+	)
+
 	if workerCount == cpuCoresStr {
 		ws.startNginxIfNeeded(servicesQueryRepo, servicesCmdRepo)
 		return
 	}
-
 	ws.updateNginxWorkersCount(cpuCoresStr, servicesCmdRepo)
-	ws.configurePhpChildProcesses(servicesQueryRepo, containerResources.HardwareSpecs.MemoryTotal)
 }
