@@ -1,7 +1,11 @@
 # Changelog
 
 ```log
+0.3.1 - 2026/07/06
+fix(envs): rename PrimaryPublicDir to PrimaryVirtualHostPublicDir
+
 0.3.0 - 2026/07/03
+fix(internalSetup): lsapi counter and add last edit comment
 fix(internalSetup): create /app/html at runtime to prevent fuse-overlayfs whiteout accumulation
 refactor(infra): rename webServer package to internalSetup
 fix(db): enforce UTC timestamps in gorm NowFunc for all database services

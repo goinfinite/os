@@ -12,8 +12,8 @@ var fileClerk = tkInfra.FileClerk{}
 
 var (
 	IndexFileTemplatePath string = infraEnvs.VirtualHostsConfDir + "/index.html"
-	IndexFilePath         string = infraEnvs.PrimaryPublicDir + "/index.html"
-	IndexFileBackupPath   string = infraEnvs.PrimaryPublicDir + "/../index.html.backup"
+	IndexFilePath         string = infraEnvs.PrimaryVirtualHostPublicDir + "/index.html"
+	IndexFileBackupPath   string = infraEnvs.PrimaryVirtualHostPublicDir + "/../index.html.backup"
 )
 
 func BackupPrimaryIndexFile() error {

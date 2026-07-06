@@ -54,20 +54,20 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 	if runRequest.TimeoutSecs != nil {
 		timeoutSecs = *runRequest.TimeoutSecs
 	}
-	workingDir := infraEnvs.PrimaryPublicDir
+	workingDir := infraEnvs.PrimaryVirtualHostPublicDir
 	if !infraHelper.IsPrimaryVirtualHost(runRequest.Hostname) {
 		workingDir += "/" + runRequest.Hostname.String()
 	}
 	if !repo.fileClerk.FileExists(workingDir) {
-		workingDir = infraEnvs.PrimaryPublicDir
+		workingDir = infraEnvs.PrimaryVirtualHostPublicDir
 	}
 
 	cmdOutput, cmdErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           phpCli,
-		Args:              []string{runRequest.Command.String()},
-		Username:          infraEnvs.PhpWebserverUsername,
-		WorkingDirectory:  workingDir,
-		ShouldUseSubShell: true,
+		Command:              phpCli,
+		Args:                 []string{runRequest.Command.String()},
+		Username:             infraEnvs.PhpWebserverUsername,
+		WorkingDirectory:     workingDir,
+		ShouldUseSubShell:    true,
 		ExecutionTimeoutSecs: timeoutSecs,
 	}).Run()
 	stdOutput, err := valueObject.NewUnixCommandOutput(cmdOutput)
@@ -128,7 +128,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	updatePhpVersionCmd := "sed -i 's/lsapi:lsphp[0-9][0-9]/" + newLsapiLine +
 		"/g' " + phpConfFilePath.String()
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          updatePhpVersionCmd,
+		Command:           updatePhpVersionCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
@@ -140,7 +140,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		sourcePhpCliPath := "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php"
 		updatePhpCliVersionCmd := "unlink /usr/bin/php; ln -s " + sourcePhpCliPath + " /usr/bin/php"
 		_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-			Command:          updatePhpCliVersionCmd,
+			Command:           updatePhpCliVersionCmd,
 			ShouldUseSubShell: true,
 		}).Run()
 		if err != nil {
@@ -246,7 +246,7 @@ func (repo *RuntimeCmdRepo) EnablePhpModule(
 	}
 
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          "echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
+		Command:           "echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {

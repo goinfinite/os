@@ -453,7 +453,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		return errors.New("DefineInstallDirectoryError: " + err.Error())
 	}
 	installDirStr = installDir.String()
-	if installDirStr == infraEnvs.PrimaryPublicDir {
+	if installDirStr == infraEnvs.PrimaryVirtualHostPublicDir {
 		err := infraHelper.BackupPrimaryIndexFile()
 		if err != nil {
 			return err
@@ -723,7 +723,7 @@ func (repo *MarketplaceCmdRepo) uninstallFilesDelete(
 		return errors.New("UpdateSoftDeleteDirPrivilegesError: " + err.Error())
 	}
 
-	if installedItem.InstallDirectory.String() == infraEnvs.PrimaryPublicDir {
+	if installedItem.InstallDirectory.String() == infraEnvs.PrimaryVirtualHostPublicDir {
 		err := infraHelper.RestorePrimaryIndexFile()
 		if err != nil {
 			return err

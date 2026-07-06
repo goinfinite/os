@@ -8,26 +8,26 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	tkDto "github.com/goinfinite/tk/src/domain/dto"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 const DomainOwnershipValidationUrlPath string = "/validateOwnership"
 
 type SslCmdRepo struct {
-	persistentDbSvc        *internalDbInfra.PersistentDatabaseService
-	transientDbSvc         *internalDbInfra.TransientDatabaseService
-	sslQueryRepo           *SslQueryRepo
-	vhostQueryRepo         *vhostInfra.VirtualHostQueryRepo
-	mappingCmdRepo         *vhostInfra.MappingCmdRepo
-	mappingQueryRepo       *vhostInfra.MappingQueryRepo
-	fileClerk              tkInfra.FileClerk
+	persistentDbSvc         *internalDbInfra.PersistentDatabaseService
+	transientDbSvc          *internalDbInfra.TransientDatabaseService
+	sslQueryRepo            *SslQueryRepo
+	vhostQueryRepo          *vhostInfra.VirtualHostQueryRepo
+	mappingCmdRepo          *vhostInfra.MappingCmdRepo
+	mappingQueryRepo        *vhostInfra.MappingQueryRepo
+	fileClerk               tkInfra.FileClerk
 	ownershipValidationPath valueObject.MappingPath
 }
 
@@ -206,7 +206,7 @@ func (repo *SslCmdRepo) issueValidSsl(
 	functionalHostnames []tkValueObject.Fqdn,
 ) error {
 	mainHostnameStr := mainHostname.String()
-	vhostRootDir := infraEnvs.PrimaryPublicDir
+	vhostRootDir := infraEnvs.PrimaryVirtualHostPublicDir
 	if !infraHelper.IsPrimaryVirtualHost(mainHostname) {
 		vhostRootDir += "/" + mainHostnameStr
 	}

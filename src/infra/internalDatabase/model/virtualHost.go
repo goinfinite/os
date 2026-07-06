@@ -33,7 +33,7 @@ func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
 	primaryEntry := VirtualHost{
 		Hostname:      primaryHostname.String(),
 		Type:          valueObject.VirtualHostTypeTopLevel.String(),
-		RootDirectory: infraEnvs.PrimaryPublicDir,
+		RootDirectory: infraEnvs.PrimaryVirtualHostPublicDir,
 		IsPrimary:     true,
 		IsWildcard:    false,
 	}

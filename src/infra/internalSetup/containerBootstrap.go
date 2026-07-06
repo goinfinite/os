@@ -30,7 +30,7 @@ func NewContainerBootstrap(
 }
 
 func (cb *ContainerBootstrap) setupPrimaryPublicDir() {
-	primaryPublicDir := infraEnvs.PrimaryPublicDir
+	primaryPublicDir := infraEnvs.PrimaryVirtualHostPublicDir
 
 	if !cb.fileClerk.FileExists(primaryPublicDir) {
 		slog.Info("CreatingPrimaryPublicDir")

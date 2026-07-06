@@ -15,8 +15,8 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type VirtualHostCmdRepo struct {
@@ -177,7 +177,7 @@ func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
 		return parentVirtualHostEntity.RootDirectory, nil
 	}
 
-	rawPublicDir := infraEnvs.PrimaryPublicDir + "/" + createDto.Hostname.String()
+	rawPublicDir := infraEnvs.PrimaryVirtualHostPublicDir + "/" + createDto.Hostname.String()
 
 	publicDir, err = tkValueObject.NewUnixAbsoluteFilePath(rawPublicDir, false)
 	if err != nil {
