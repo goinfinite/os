@@ -10,6 +10,7 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 
@@ -522,10 +523,11 @@ func (liaison *VirtualHostLiaison) CreateMapping(
 	)
 
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(liaison.persistentDbSvc)
+	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(liaison.persistentDbSvc)
 
 	err = useCase.CreateMapping(
-		liaison.vhostQueryRepo, liaison.mappingCmdRepo, servicesQueryRepo,
-		liaison.activityRecordCmdRepo, createDto,
+		liaison.vhostQueryRepo, liaison.mappingCmdRepo, runtimeCmdRepo,
+		servicesQueryRepo, liaison.activityRecordCmdRepo, createDto,
 	)
 	if err != nil {
 		return tkPresentation.NewLiaisonResponseNoMessage(

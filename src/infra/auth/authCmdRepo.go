@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/goinfinite/os/src/domain/entity"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -29,7 +29,7 @@ func (repo *AuthCmdRepo) CreateSessionToken(
 ) (entity.AccessToken, error) {
 	var accessToken entity.AccessToken
 
-	apiURL, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	apiURL, err := vhostInfra.NewVirtualHostHelpers().ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return accessToken, errors.New("PrimaryVirtualHostNotFound")
 	}

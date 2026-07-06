@@ -80,7 +80,8 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	primaryVhostHostname, err := vhostInfra.NewVirtualHostHelpers().ReadPrimaryVirtualHostHostname()
+	primaryVhostHostname, err := vhostInfra.NewVirtualHostHelpers().
+		ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		slog.Error("ReadPrimaryVirtualHost", slog.String("err", err.Error()))
 		return nil

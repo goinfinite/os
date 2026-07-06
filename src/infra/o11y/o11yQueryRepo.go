@@ -15,10 +15,10 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	tkInfra "github.com/goinfinite/tk/src/infra"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 const PublicIpTransientKey string = "PublicIp"
@@ -374,7 +374,8 @@ func (repo *O11yQueryRepo) ReadOverview(
 		hostnameStr = "localhost"
 	}
 
-	primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVhost, err := vhostInfra.NewVirtualHostHelpers().
+		ReadPrimaryVirtualHostHostname()
 	if err == nil {
 		hostnameStr = primaryVhost.String()
 	}

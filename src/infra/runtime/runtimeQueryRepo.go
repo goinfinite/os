@@ -10,9 +10,9 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
-	tkInfra "github.com/goinfinite/tk/src/infra"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type RuntimeQueryRepo struct {
@@ -29,7 +29,8 @@ func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
 	primaryVhostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
 	vhostPhpConfFilePathStr := "/app/conf/php-webserver/" + hostname.String() + ".conf"
 
-	primaryVirtualHostHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVirtualHostHostname, err := vhostInfra.NewVirtualHostHelpers().
+		ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return vhostPhpConfFilePath, errors.New("PrimaryVhostNotFound: " + err.Error())
 	}

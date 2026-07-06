@@ -8,17 +8,16 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	marketplaceInfra "github.com/goinfinite/os/src/infra/marketplace"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type MarketplaceLiaison struct {
@@ -120,7 +119,8 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 	untrustedInput map[string]any,
 	shouldSchedule bool,
 ) tkPresentation.LiaisonResponse {
-	hostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	hostname, err := vhostInfra.NewVirtualHostHelpers().
+		ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return tkPresentation.NewLiaisonResponseNoMessage(
 			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
