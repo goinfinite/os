@@ -6,9 +6,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
@@ -116,7 +116,7 @@ func (helpers *VirtualHostHelpers) ReloadWebServer() error {
 
 func (helpers *VirtualHostHelpers) UpdateWebServerWorkerCount(
 	cpuCoresStr string,
-	servicesCmdRepo *servicesInfra.ServicesCmdRepo,
+	servicesCmdRepo repository.ServicesCmdRepo,
 ) error {
 	slog.Info("UpdatingWebServerWorkerCount")
 
