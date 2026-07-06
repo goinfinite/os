@@ -37,30 +37,6 @@ func NewWebServerSetup(
 	}
 }
 
-func (ws *WebServerSetup) updatePrimaryVirtualHost() {
-	primaryVirtualHostHostname, readErr := ws.vhostHelpers.ReadPrimaryVirtualHostHostname()
-	if readErr != nil {
-		slog.Error("PrimaryVirtualHostNotFound")
-		os.Exit(1)
-	}
-
-	slog.Info("UpdatingPrimaryVirtualHost")
-
-	primaryConfFilePath := infraEnvs.VirtualHostsConfDir + "/primary.conf"
-	_, updateErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-i",
-			"s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryVirtualHostHostname.String() + "/g",
-			primaryConfFilePath,
-		},
-	}).Run()
-	if updateErr != nil {
-		slog.Error("UpdatePrimaryVirtualHostFileFailed", slog.String("err", updateErr.Error()))
-		os.Exit(1)
-	}
-}
-
 func (ws *WebServerSetup) generateDhParams() {
 	slog.Info("GeneratingDhParams")
 
@@ -154,7 +130,12 @@ func (ws *WebServerSetup) reloadSupervisor() {
 }
 
 func (ws *WebServerSetup) FirstSetup() {
-	ws.updatePrimaryVirtualHost()
+	err := ws.vhostHelpers.UpdatePrimaryVirtualHostPlaceholder()
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
+
 	ws.generateDhParams()
 	ws.generateSelfSignedCert()
 	ws.restorePrimaryIndexFile()
@@ -221,34 +202,6 @@ func (ws *WebServerSetup) startNginxIfNeeded(
 	}
 }
 
-func (ws *WebServerSetup) updateNginxWorkersCount(
-	cpuCoresStr string,
-	servicesCmdRepo *servicesInfra.ServicesCmdRepo,
-) {
-	slog.Info("UpdatingNginxWorkersCount")
-
-	nginxConfFilePath := "/etc/nginx/nginx.conf"
-	_, sedErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-i", "-e",
-			"s/^worker_processes.*/worker_processes " + cpuCoresStr + ";/g",
-			nginxConfFilePath,
-		},
-	}).Run()
-	if sedErr != nil {
-		slog.Error("UpdateNginxWorkersCountFailed", slog.String("err", sedErr.Error()))
-		os.Exit(1)
-	}
-
-	serviceName, _ := valueObject.NewServiceName("nginx")
-	restartErr := servicesCmdRepo.Restart(serviceName)
-	if restartErr != nil {
-		slog.Error("RestartNginxFailed", slog.String("err", restartErr.Error()))
-		os.Exit(1)
-	}
-}
-
 func (ws *WebServerSetup) configurePhpChildProcesses(
 	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
 	memoryTotal tkValueObject.Byte,
@@ -303,5 +256,9 @@ func (ws *WebServerSetup) OnStartSetup() {
 		ws.startNginxIfNeeded(servicesQueryRepo, servicesCmdRepo)
 		return
 	}
-	ws.updateNginxWorkersCount(cpuCoresStr, servicesCmdRepo)
+	err := ws.vhostHelpers.UpdateWebServerWorkerCount(cpuCoresStr, servicesCmdRepo)
+	if err != nil {
+		slog.Error(err.Error())
+		os.Exit(1)
+	}
 }
