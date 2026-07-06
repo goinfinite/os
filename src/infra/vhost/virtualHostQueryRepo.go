@@ -8,7 +8,6 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
@@ -46,7 +45,7 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 		virtualHostModel.ParentHostname = &parentHostnameStr
 	}
 	if requestDto.IsPrimary != nil && *requestDto.IsPrimary {
-		primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+		primaryHostname, err := NewVirtualHostHelpers().ReadPrimaryVirtualHostHostname()
 		if err != nil {
 			return responseDto, errors.New("ReadPrimaryVirtualHostHostnameError: " + err.Error())
 		}

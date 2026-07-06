@@ -160,7 +160,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return NewVirtualHostHelpers().ReloadWebServer()
 }
 
 func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
@@ -356,5 +356,5 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname tkValueObject.Fqdn) error {
 		return errors.New("RemoveWebServerUnitConfFileError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return NewVirtualHostHelpers().ReloadWebServer()
 }
