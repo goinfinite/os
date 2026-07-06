@@ -7,12 +7,12 @@ import (
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"github.com/labstack/echo/v4"
 )
 
@@ -80,7 +80,7 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	primaryVhostHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVhostHostname, err := vhostInfra.NewVirtualHostHelpers().ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		slog.Error("ReadPrimaryVirtualHost", slog.String("err", err.Error()))
 		return nil
