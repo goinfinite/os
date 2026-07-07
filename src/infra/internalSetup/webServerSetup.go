@@ -91,7 +91,10 @@ func (ws *WebServerSetup) generateMappingSecurityRules() {
 	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(ws.persistentDbSvc)
 	recreateErr := mappingCmdRepo.RecreateSecurityRuleFiles()
 	if recreateErr != nil {
-		slog.Error("GenerateMappingSecurityRulesFailed", slog.String("err", recreateErr.Error()))
+		slog.Error(
+			"GenerateMappingSecurityRulesFailed",
+			slog.String("err", recreateErr.Error()),
+		)
 		os.Exit(1)
 	}
 }
@@ -139,7 +142,7 @@ func (ws *WebServerSetup) FirstSetup() {
 }
 
 func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal tkValueObject.Byte) error {
-	slog.Info("UpdatingMaxPhpChildProcessesInit")
+	slog.Debug("UpdatingMaxPhpChildProcessesInit")
 
 	childProcsHardCap := uint64(300)
 	childProcsPerGb := uint64(5)
@@ -167,7 +170,7 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal tkValueObject.B
 		return errors.New("UpdatePhpMaxChildProcessesFailed: " + sedErr.Error())
 	}
 
-	slog.Info("UpdateMaxPhpChildProcessesSuccess")
+	slog.Debug("UpdateMaxPhpChildProcessesSuccess")
 	return nil
 }
 
@@ -205,7 +208,10 @@ func (ws *WebServerSetup) configurePhpChildProcesses(
 		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &phpWebServerSvcName},
 	)
 	if readErr != nil {
-		slog.Debug("PhpWebServerNotInstalled. SkippingConfigurePhpChildProcesses")
+		slog.Debug(
+			"SkippingConfigurePhpChildProcesses",
+			slog.String("reason", "PhpWebServerNotInstalled"),
+		)
 		return
 	}
 
@@ -220,7 +226,10 @@ func (ws *WebServerSetup) OnStartSetup() {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(ws.transientDbSvc)
 	containerResources, resourcesErr := o11yQueryRepo.ReadOverview(false)
 	if resourcesErr != nil {
-		slog.Error("ReadContainerResourcesFailed", slog.String("err", resourcesErr.Error()))
+		slog.Error(
+			"ReadContainerResourcesFailed",
+			slog.String("err", resourcesErr.Error()),
+		)
 		os.Exit(1)
 	}
 
@@ -235,7 +244,10 @@ func (ws *WebServerSetup) OnStartSetup() {
 		},
 	}).Run()
 	if awkErr != nil {
-		slog.Error("ReadNginxWorkersCountFailed", slog.String("err", awkErr.Error()))
+		slog.Error(
+			"ReadNginxWorkersCountFailed",
+			slog.String("err", awkErr.Error()),
+		)
 		os.Exit(1)
 	}
 

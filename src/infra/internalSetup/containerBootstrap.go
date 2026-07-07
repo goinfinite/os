@@ -33,24 +33,33 @@ func (cb *ContainerBootstrap) setupPrimaryPublicDir() {
 	primaryPublicDir := infraEnvs.PrimaryVirtualHostPublicDir
 
 	if !cb.fileClerk.FileExists(primaryPublicDir) {
-		slog.Info("CreatingPrimaryPublicDir")
+		slog.Debug("CreatingPrimaryPublicDir")
 		createDirErr := cb.fileClerk.CreateDir(primaryPublicDir)
 		if createDirErr != nil {
-			slog.Error("CreatePrimaryPublicDirFailed", slog.String("err", createDirErr.Error()))
+			slog.Error(
+				"CreatePrimaryPublicDirFailed",
+				slog.String("err", createDirErr.Error()),
+			)
 			os.Exit(1)
 		}
 
 		permissions := 0755
 		chmodErr := cb.fileClerk.UpdateFilePermissions(primaryPublicDir, &permissions)
 		if chmodErr != nil {
-			slog.Error("UpdatePrimaryPublicDirPermissionsFailed", slog.String("err", chmodErr.Error()))
+			slog.Error(
+				"UpdatePrimaryPublicDirPermissionsFailed",
+				slog.String("err", chmodErr.Error()),
+			)
 			os.Exit(1)
 		}
 	}
 
 	chownErr := infraHelper.UpdateOwnershipForWebServerUse(primaryPublicDir, false, false)
 	if chownErr != nil {
-		slog.Error("ChownPrimaryPublicDirFailed", slog.String("err", chownErr.Error()))
+		slog.Error(
+			"ChownPrimaryPublicDirFailed",
+			slog.String("err", chownErr.Error()),
+		)
 		os.Exit(1)
 	}
 }
