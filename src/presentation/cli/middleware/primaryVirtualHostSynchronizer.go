@@ -13,9 +13,9 @@ import (
 )
 
 type PrimaryVirtualHostSynchronizer struct {
-	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
+	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
 	newPrimaryHostname tkValueObject.Fqdn
-	vhostHelpers     *vhostInfra.VirtualHostHelpers
+	vhostHelpers       *vhostInfra.VirtualHostHelpers
 }
 
 func NewPrimaryVirtualHostSynchronizer(
@@ -39,27 +39,20 @@ func (sync *PrimaryVirtualHostSynchronizer) confUpdater() error {
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) dbUpdater() error {
-	var primaryVhost dbModel.VirtualHost
+	var primaryVirtualHostModel dbModel.VirtualHost
 	queryErr := sync.persistentDbSvc.Handler.Where(
 		"is_primary = ?", true,
-	).First(&primaryVhost).Error
+	).First(&primaryVirtualHostModel).Error
 	if queryErr != nil {
 		return errors.New("DbReadFailed: " + queryErr.Error())
 	}
 
-	if primaryVhost.Hostname == sync.newPrimaryHostname.String() {
+	if primaryVirtualHostModel.Hostname == sync.newPrimaryHostname.String() {
 		return nil
 	}
 
-	slog.Info(
-		"PrimaryVirtualHostSynchronizer",
-		slog.String("phase", "db-update"),
-		slog.String("oldHostname", primaryVhost.Hostname),
-		slog.String("newHostname", sync.newPrimaryHostname.String()),
-	)
-
 	updateErr := sync.persistentDbSvc.Handler.Model(
-		&primaryVhost,
+		&primaryVirtualHostModel,
 	).Update("hostname", sync.newPrimaryHostname.String()).Error
 	if updateErr != nil {
 		return errors.New("DbWriteFailed: " + updateErr.Error())
@@ -69,33 +62,53 @@ func (sync *PrimaryVirtualHostSynchronizer) dbUpdater() error {
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) Run() {
-	rawEnvHostnameStr := os.Getenv(infraEnvs.PrimaryVirtualHostEnvKey)
-	if rawEnvHostnameStr == "" {
-		slog.Info(
-			"PrimaryVirtualHostSynchronizer",
-			slog.String("phase", "skip"),
-			slog.String("reason", "EmptyEnvVar"),
+	rawPrimaryVirtualHostEnvValue := os.Getenv(infraEnvs.PrimaryVirtualHostEnvKey)
+	if rawPrimaryVirtualHostEnvValue == "" {
+		slog.Debug(
+			"SkippingPrimaryVirtualHostSynchronizer",
+			slog.String("reason", "EmptyPrimaryVirtualHostEnvValue"),
 		)
 		return
 	}
 
-	newPrimaryHostname, parseErr := tkValueObject.NewFqdn(rawEnvHostnameStr)
+	primaryVirtualHostEnvValue, parseErr := tkValueObject.NewFqdn(rawPrimaryVirtualHostEnvValue)
 	if parseErr != nil {
 		slog.Error(
-			"PrimaryVirtualHostSynchronizer",
-			slog.String("phase", "parse"),
+			"InvalidPrimaryVirtualHostEnvValue",
 			slog.String("error", parseErr.Error()),
 		)
 		os.Exit(1)
 	}
 
-	sync.newPrimaryHostname = newPrimaryHostname
+	webServerPrimaryVirtualHost, err := sync.vhostHelpers.
+		ReadPrimaryVirtualHostHostnameFromWebServerConf()
+	if err != nil {
+		slog.Error(
+			"ReadPrimaryVirtualHostHostnameFailed",
+			slog.String("error", err.Error()),
+		)
+		os.Exit(1)
+	}
+
+	if primaryVirtualHostEnvValue == webServerPrimaryVirtualHost {
+		slog.Debug(
+			"SkippingPrimaryVirtualHostSynchronizer",
+			slog.String("reason", "PrimaryVirtualHostEnvValueMatchesCurrent"),
+		)
+		return
+	}
+
+	sync.newPrimaryHostname = primaryVirtualHostEnvValue
+	slog.Debug(
+		"UpdatingPrimaryVirtualHost",
+		slog.String("primaryVirtualHostEnvValue", primaryVirtualHostEnvValue.String()),
+		slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHost.String()),
+	)
 
 	confErr := sync.confUpdater()
 	if confErr != nil {
 		slog.Error(
-			"PrimaryVirtualHostSynchronizer",
-			slog.String("phase", "conf"),
+			"UpdatePrimaryVirtualHostConfFailed",
 			slog.String("error", confErr.Error()),
 		)
 		os.Exit(1)
@@ -104,8 +117,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	dbErr := sync.dbUpdater()
 	if dbErr != nil {
 		slog.Error(
-			"PrimaryVirtualHostSynchronizer",
-			slog.String("phase", "db"),
+			"UpdatePrimaryVirtualHostDbFailed",
 			slog.String("error", dbErr.Error()),
 		)
 		os.Exit(1)
