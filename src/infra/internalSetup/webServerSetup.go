@@ -262,6 +262,8 @@ func (ws *WebServerSetup) OnStartSetup() {
 		ws.startNginxIfNeeded(servicesQueryRepo, servicesCmdRepo)
 		return
 	}
+
+	slog.Debug("UpdatingWebServerWorkerCount")
 	err := ws.vhostHelpers.UpdateWebServerWorkerCount(cpuCoresStr, servicesCmdRepo)
 	if err != nil {
 		slog.Error(err.Error())
