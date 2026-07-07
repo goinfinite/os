@@ -21,7 +21,7 @@ func NewVirtualHostHelpers() *VirtualHostHelpers {
 	return &VirtualHostHelpers{}
 }
 
-func (helpers *VirtualHostHelpers) parsePrimaryConfHostname() (
+func (helpers *VirtualHostHelpers) ReadPrimaryVirtualHostHostnameFromWebServerConf() (
 	primaryHostname tkValueObject.Fqdn, err error,
 ) {
 	rawServerNameHostname, err := tkInfra.NewShell(tkInfra.ShellSettings{
@@ -50,8 +50,9 @@ func (helpers *VirtualHostHelpers) ReadPrimaryVirtualHostHostname() (
 	if primaryHostFromEnv != "" {
 		return tkValueObject.NewFqdn(primaryHostFromEnv)
 	}
+	slog.Debug("PrimaryVirtualHostEnvValueNotFound")
 
-	hostnameFromConf, parseErr := helpers.parsePrimaryConfHostname()
+	hostnameFromConf, parseErr := helpers.ReadPrimaryVirtualHostHostnameFromWebServerConf()
 	if parseErr == nil {
 		return hostnameFromConf, nil
 	}
@@ -120,8 +121,6 @@ func (helpers *VirtualHostHelpers) UpdateWebServerWorkerCount(
 	cpuCoresStr string,
 	servicesCmdRepo repository.ServicesCmdRepo,
 ) error {
-	slog.Info("UpdatingWebServerWorkerCount")
-
 	_, sedErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
@@ -146,11 +145,13 @@ func (helpers *VirtualHostHelpers) UpdateWebServerWorkerCount(
 func (helpers *VirtualHostHelpers) UpdateWebServerPrimaryVirtualHost(
 	newHostname tkValueObject.Fqdn,
 ) error {
-	slog.Info("SyncingPrimaryVirtualHostServerName")
+	slog.Debug("UpdatingPrimaryVirtualHostWebServerConf")
 
-	currentHostname, readErr := helpers.parsePrimaryConfHostname()
+	currentHostname, readErr := helpers.ReadPrimaryVirtualHostHostnameFromWebServerConf()
 	if readErr != nil {
-		return errors.New("ReadPrimaryConfHostnameFailed: " + readErr.Error())
+		return errors.New(
+			"ReadPrimaryVirtualHostHostnameFromWebServerConfFailed: " + readErr.Error(),
+		)
 	}
 
 	if currentHostname == newHostname {
