@@ -130,12 +130,6 @@ func (ws *WebServerSetup) reloadSupervisor() {
 }
 
 func (ws *WebServerSetup) FirstSetup() {
-	err := ws.vhostHelpers.UpdatePrimaryVirtualHostPlaceholder()
-	if err != nil {
-		slog.Error(err.Error())
-		os.Exit(1)
-	}
-
 	ws.generateDhParams()
 	ws.generateSelfSignedCert()
 	ws.restorePrimaryIndexFile()

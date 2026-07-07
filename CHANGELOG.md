@@ -2,7 +2,12 @@
 
 ```log
 0.3.1 - 2026/07/06
+feat(cli): add PrimaryVirtualHostSynchronizer middleware for env-conf-db sync
+refactor(vhost): consolidate primary vhost update methods and improve server_name targeting
 fix(envs): rename PrimaryPublicDir to PrimaryVirtualHostPublicDir
+refactor(vhost): move webserver helpers to virtualHostHelpers
+refactor(vhost): consolidate webserver helpers and abstract nginx naming
+fix(envs): remove PRIMARY_VHOST from required env vars
 
 0.3.0 - 2026/07/03
 fix(internalSetup): lsapi counter and add last edit comment
