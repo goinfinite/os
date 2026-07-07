@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"strconv"
+	"strings"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/repository"
@@ -44,7 +46,7 @@ func (helpers *VirtualHostHelpers) parsePrimaryConfHostname() (
 func (helpers *VirtualHostHelpers) ReadPrimaryVirtualHostHostname() (
 	primaryHostname tkValueObject.Fqdn, err error,
 ) {
-	primaryHostFromEnv := os.Getenv("PRIMARY_VHOST")
+	primaryHostFromEnv := os.Getenv(infraEnvs.PrimaryVirtualHostEnvKey)
 	if primaryHostFromEnv != "" {
 		return tkValueObject.NewFqdn(primaryHostFromEnv)
 	}
@@ -141,25 +143,65 @@ func (helpers *VirtualHostHelpers) UpdateWebServerWorkerCount(
 	return nil
 }
 
-func (helpers *VirtualHostHelpers) UpdatePrimaryVirtualHostPlaceholder() error {
-	primaryVirtualHostHostname, readErr := helpers.ReadPrimaryVirtualHostHostname()
+func (helpers *VirtualHostHelpers) UpdateWebServerPrimaryVirtualHost(
+	newHostname tkValueObject.Fqdn,
+) error {
+	slog.Info("SyncingPrimaryVirtualHostServerName")
+
+	currentHostname, readErr := helpers.parsePrimaryConfHostname()
 	if readErr != nil {
-		return errors.New("PrimaryVirtualHostNotFound")
+		return errors.New("ReadPrimaryConfHostnameFailed: " + readErr.Error())
 	}
 
-	slog.Info("UpdatingPrimaryVirtualHostPlaceholder")
+	if currentHostname == newHostname {
+		return nil
+	}
 
+	currentHostnameStr := currentHostname.String()
+	grepCurrentHostname := strings.ReplaceAll(currentHostnameStr, ".", "\\.")
+	rawGrepOutput, grepErr := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: "grep",
+		Args: []string{
+			"-n", "--",
+			"server_name.*" + grepCurrentHostname,
+			infraEnvs.PrimaryVirtualHostConfPath,
+		},
+	}).Run()
+	if grepErr != nil {
+		return errors.New("FindHostnameLineFailed: " + grepErr.Error())
+	}
+
+	if rawGrepOutput == "" {
+		return errors.New("HostnameLineNotFound")
+	}
+
+	rawGrepOutputParts := strings.SplitN(rawGrepOutput, ":", 2)
+	if len(rawGrepOutputParts) < 2 {
+		return errors.New("InvalidGrepOutputFormat")
+	}
+
+	rawHostnameLineNumStr := rawGrepOutputParts[0]
+
+	hostnameLineNum, parseErr := strconv.Atoi(rawHostnameLineNumStr)
+	if parseErr != nil {
+		return errors.New("ParseHostnameLineNumFailed: " + parseErr.Error())
+	}
+
+	sedCurrentHostname := strings.ReplaceAll(currentHostnameStr, ".", "\\.")
+	sedNewHostname := strings.ReplaceAll(newHostname.String(), ".", "\\.")
 	_, updateErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
 			"-i",
-			"s/" + infraEnvs.DefaultPrimaryVhost + "/" +
-				primaryVirtualHostHostname.String() + "/g",
+			strconv.Itoa(hostnameLineNum) + "s/" + sedCurrentHostname + "/" +
+				sedNewHostname + "/g",
 			infraEnvs.PrimaryVirtualHostConfPath,
 		},
 	}).Run()
 	if updateErr != nil {
-		return errors.New("UpdatePrimaryVirtualHostFileFailed: " + updateErr.Error())
+		return errors.New(
+			"UpdatePrimaryVhostServerNameFailed: " + updateErr.Error(),
+		)
 	}
 
 	return nil

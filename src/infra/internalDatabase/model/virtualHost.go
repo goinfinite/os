@@ -3,12 +3,12 @@ package dbModel
 import (
 	"errors"
 	"log/slog"
+	"os"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
@@ -25,9 +25,16 @@ type VirtualHost struct {
 }
 
 func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
-	primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	rawPrimaryHostnameStr := os.Getenv(infraEnvs.PrimaryVirtualHostEnvKey)
+	if rawPrimaryHostnameStr == "" {
+		rawPrimaryHostnameStr = infraEnvs.DefaultPrimaryVhost
+	}
+
+	primaryHostname, err := tkValueObject.NewFqdn(rawPrimaryHostnameStr)
 	if err != nil {
-		return entries, errors.New("ReadPrimaryVirtualHostHostnameError: " + err.Error())
+		return entries, errors.New(
+			"ParsePrimaryVhostHostnameError: " + err.Error(),
+		)
 	}
 
 	primaryEntry := VirtualHost{

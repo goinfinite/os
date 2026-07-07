@@ -446,9 +446,16 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		serviceVersion = *createDto.Version
 	}
 
-	primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	rawPrimaryHostnameStr := os.Getenv(infraEnvs.PrimaryVirtualHostEnvKey)
+	if rawPrimaryHostnameStr == "" {
+		return installedServiceName, errors.New("PrimaryVirtualHostUnset")
+	}
+
+	primaryHostname, err := tkValueObject.NewFqdn(rawPrimaryHostnameStr)
 	if err != nil {
-		return installedServiceName, err
+		return installedServiceName, errors.New(
+			"ParsePrimaryVirtualHostHostnameError: " + err.Error(),
+		)
 	}
 
 	synthesizer := tkInfra.Synthesizer{}
