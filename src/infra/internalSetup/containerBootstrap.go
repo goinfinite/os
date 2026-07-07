@@ -79,4 +79,5 @@ func (cb *ContainerBootstrap) FirstBoot() {
 
 func (cb *ContainerBootstrap) OnStart() {
 	cb.webServerSetup.OnStartSetup()
+	NewPrimaryVirtualHostSynchronizer(cb.persistentDbSvc).Run()
 }

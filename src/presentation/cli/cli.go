@@ -39,8 +39,6 @@ func CliInit() {
 	persistentDbSvc := cliInit.PersistentDatabaseService()
 	trailDbSvc := cliInit.TrailDatabaseService()
 
-	cliMiddleware.NewPrimaryVirtualHostSynchronizer(persistentDbSvc).Run()
-
 	router := NewRouter(transientDbSvc, persistentDbSvc, trailDbSvc)
 	router.RegisterRoutes()
 

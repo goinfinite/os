@@ -1,4 +1,4 @@
-package cliMiddleware
+package internalSetupInfra
 
 import (
 	"errors"

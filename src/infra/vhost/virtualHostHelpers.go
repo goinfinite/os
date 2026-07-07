@@ -145,8 +145,6 @@ func (helpers *VirtualHostHelpers) UpdateWebServerWorkerCount(
 func (helpers *VirtualHostHelpers) UpdateWebServerPrimaryVirtualHost(
 	newHostname tkValueObject.Fqdn,
 ) error {
-	slog.Debug("UpdatingPrimaryVirtualHostWebServerConf")
-
 	currentHostname, readErr := helpers.ReadPrimaryVirtualHostHostnameFromWebServerConf()
 	if readErr != nil {
 		return errors.New(
