@@ -23,7 +23,6 @@ func CheckEnvs() {
 		"JWT_SECRET",
 	}
 	autoFillableEnvVars := []string{
-		"PRIMARY_VHOST",
 		"ACCOUNT_API_KEY_SECRET",
 		"JWT_SECRET",
 	}
