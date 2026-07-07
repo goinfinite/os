@@ -336,7 +336,7 @@ definitions:
           $ref: '#/definitions/entity.Account'
         type: array
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
     type: object
   dto.ReadCronsResponse:
     properties:
@@ -345,7 +345,7 @@ definitions:
           $ref: '#/definitions/entity.Cron'
         type: array
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
     type: object
   dto.ReadDatabasesResponse:
     properties:
@@ -354,7 +354,7 @@ definitions:
           $ref: '#/definitions/entity.Database'
         type: array
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
     type: object
   dto.ReadFilesResponse:
     properties:
@@ -372,7 +372,7 @@ definitions:
           $ref: '#/definitions/entity.InstallableService'
         type: array
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
     type: object
   dto.ReadInstalledServicesItemsResponse:
     properties:
@@ -385,7 +385,7 @@ definitions:
           $ref: '#/definitions/dto.InstalledServiceWithMetrics'
         type: array
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
     type: object
   dto.ReadMappingSecurityRulesResponse:
     properties:
@@ -394,7 +394,7 @@ definitions:
           $ref: '#/definitions/entity.MappingSecurityRule'
         type: array
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
     type: object
   dto.ReadMarketplaceCatalogItemsResponse:
     properties:
@@ -403,7 +403,7 @@ definitions:
           $ref: '#/definitions/entity.MarketplaceCatalogItem'
         type: array
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
     type: object
   dto.ReadMarketplaceInstalledItemsResponse:
     properties:
@@ -412,12 +412,12 @@ definitions:
           $ref: '#/definitions/entity.MarketplaceInstalledItem'
         type: array
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
     type: object
   dto.ReadScheduledTasksResponse:
     properties:
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
       tasks:
         items:
           $ref: '#/definitions/entity.ScheduledTask'
@@ -426,7 +426,7 @@ definitions:
   dto.ReadSslPairsResponse:
     properties:
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
       sslPairs:
         items:
           $ref: '#/definitions/entity.SslPair'
@@ -435,7 +435,7 @@ definitions:
   dto.ReadVirtualHostsResponse:
     properties:
       pagination:
-        $ref: '#/definitions/tkDto.Pagination'
+        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
       virtualHostWithMappings:
         items:
           $ref: '#/definitions/dto.VirtualHostWithMappings'
@@ -1160,7 +1160,7 @@ definitions:
       type:
         $ref: '#/definitions/valueObject.VirtualHostType'
     type: object
-  tkDto.Pagination:
+  github_com_goinfinite_tk_src_domain_dto.Pagination:
     properties:
       itemsPerPage:
         type: integer
@@ -1349,7 +1349,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.2.9
+  version: 0.3.1
 paths:
   /v1/account/:
     get:

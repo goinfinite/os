@@ -1,7 +1,7 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion                  string = "0.2.9"
+	InfiniteOsVersion                  string = "0.3.1"
 	InfiniteOsMainDir                  string = "/infinite"
 	InfiniteOsBinary                   string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath              string = InfiniteOsMainDir + "/.env"
@@ -16,6 +16,7 @@ const (
 	InstallableServicesItemsRepoUrl    string = "https://github.com/goinfinite/os-services"
 	InstallableServicesItemsRepoBranch string = "v1"
 	VirtualHostsConfDir                string = "/app/conf/nginx"
+	PrimaryVirtualHostEnvKey           string = "PRIMARY_VHOST"
 	PrimaryVirtualHostPublicDir        string = "/app/html"
 	PrimaryVirtualHostConfPath         string = VirtualHostsConfDir + "/primary.conf"
 	MappingsConfDir                    string = VirtualHostsConfDir + "/mapping"

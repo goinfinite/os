@@ -3424,7 +3424,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 }
             }
         },
@@ -3438,7 +3438,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 }
             }
         },
@@ -3452,7 +3452,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 }
             }
         },
@@ -3480,7 +3480,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 }
             }
         },
@@ -3500,7 +3500,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 }
             }
         },
@@ -3514,7 +3514,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 }
             }
         },
@@ -3528,7 +3528,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 }
             }
         },
@@ -3542,7 +3542,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 }
             }
         },
@@ -3550,7 +3550,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 },
                 "tasks": {
                     "type": "array",
@@ -3564,7 +3564,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 },
                 "sslPairs": {
                     "type": "array",
@@ -3578,7 +3578,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/tkDto.Pagination"
+                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
                 },
                 "virtualHostWithMappings": {
                     "type": "array",
@@ -4684,7 +4684,7 @@ const docTemplate = `{
                 }
             }
         },
-        "tkDto.Pagination": {
+        "github_com_goinfinite_tk_src_domain_dto.Pagination": {
             "type": "object",
             "properties": {
                 "itemsPerPage": {
@@ -4950,7 +4950,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.2.9",
+	Version:          "0.3.1",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},
