@@ -282,7 +282,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 	)
 
 	skipDnsOwnershipCheck := false
-	envSkipDns, err := tkVoUtil.InterfaceToBool(os.Getenv("SKIP_DNS_OWNERSHIP_CHECK"))
+	envSkipDns, err := tkVoUtil.InterfaceToBool(os.Getenv("SKIP_SSL_DNS_OWNERSHIP_CHECK"))
 	if err == nil && envSkipDns {
 		skipDnsOwnershipCheck = true
 	}
