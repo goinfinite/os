@@ -14,9 +14,10 @@ import (
 )
 
 type PrimaryVirtualHostSynchronizer struct {
-	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
-	newPrimaryHostname tkValueObject.Fqdn
-	vhostHelpers       *vhostInfra.VirtualHostHelpers
+	persistentDbSvc         *internalDbInfra.PersistentDatabaseService
+	previousPrimaryHostname tkValueObject.Fqdn
+	newPrimaryHostname      tkValueObject.Fqdn
+	vhostHelpers            *vhostInfra.VirtualHostHelpers
 }
 
 func NewPrimaryVirtualHostSynchronizer(
@@ -31,10 +32,10 @@ func NewPrimaryVirtualHostSynchronizer(
 func (sync *PrimaryVirtualHostSynchronizer) confUpdater() error {
 	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(sync.persistentDbSvc)
 	vhostEntity, readErr := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
-		Hostname: &sync.newPrimaryHostname,
+		Hostname: &sync.previousPrimaryHostname,
 	})
 	if readErr != nil {
-		return errors.New("ReadVirtualHostFailed: " + readErr.Error())
+		return errors.New("ReadPreviousVirtualHostFailed: " + readErr.Error())
 	}
 
 	updateErr := sync.vhostHelpers.UpdateWebServerPrimaryVirtualHost(
@@ -83,8 +84,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	primaryVirtualHostEnvValue, parseErr := tkValueObject.NewFqdn(rawPrimaryVirtualHostEnvValue)
 	if parseErr != nil {
 		slog.Error(
-			"InvalidPrimaryVirtualHostEnvValue",
-			slog.String("err", parseErr.Error()),
+			"InvalidPrimaryVirtualHostEnvValue", slog.String("err", parseErr.Error()),
 		)
 		os.Exit(1)
 	}
@@ -93,8 +93,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		ReadPrimaryVirtualHostHostnameFromWebServerConf()
 	if err != nil {
 		slog.Error(
-			"ReadPrimaryVirtualHostHostnameFailed",
-			slog.String("err", err.Error()),
+			"ReadPrimaryVirtualHostHostnameFailed", slog.String("err", err.Error()),
 		)
 		os.Exit(1)
 	}
@@ -108,6 +107,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	}
 
 	sync.newPrimaryHostname = primaryVirtualHostEnvValue
+	sync.previousPrimaryHostname = webServerPrimaryVirtualHost
 	slog.Debug(
 		"UpdatingPrimaryVirtualHost",
 		slog.String("primaryVirtualHostEnvValue", primaryVirtualHostEnvValue.String()),
