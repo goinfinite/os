@@ -65,7 +65,7 @@ func (repo *SslCmdRepo) dnsFunctionalHostnamesFilter(
 			slog.Debug(
 				"DnsLookupFailed",
 				slog.String("fqdn", vhostHostnameStr),
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -156,7 +156,7 @@ func (repo *SslCmdRepo) httpFunctionalHostnamesFilter(
 			slog.Error(
 				"DeleteStaleOwnershipValidationMappingsError",
 				slog.String("hostname", vhostHostnameStr),
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -189,7 +189,7 @@ func (repo *SslCmdRepo) httpFunctionalHostnamesFilter(
 		if deleteErr != nil {
 			slog.Error(
 				"DeleteOwnershipValidationMappingError",
-				slog.String("error", deleteErr.Error()),
+				slog.String("err", deleteErr.Error()),
 			)
 		}
 
@@ -474,7 +474,7 @@ func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {
 	if shouldHardDeleteOnly {
 		err = repo.deleteCertFiles(sslPairEntity.VirtualHostHostname)
 		if err != nil {
-			slog.Error("DeleteCertFilesError", slog.String("error", err.Error()))
+			slog.Error("DeleteCertFilesError", slog.String("err", err.Error()))
 		}
 
 		return nil

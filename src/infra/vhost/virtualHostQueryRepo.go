@@ -103,7 +103,7 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 			slog.Debug(
 				"VirtualHostModelToEntityError",
 				slog.String("hostname", virtualHostModel.Hostname),
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

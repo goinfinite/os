@@ -153,7 +153,7 @@ func (repo *SslQueryRepo) Read(
 		if err != nil {
 			slog.Debug(
 				"SslPairFactoryError",
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 				slog.String("crtFilePath", crtFilePath.String()),
 			)
 			continue

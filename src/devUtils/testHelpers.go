@@ -23,7 +23,7 @@ func LoadEnvVars() {
 		infraEnvs.InfiniteOsEnvFilePath, false,
 	)
 	if err != nil {
-		slog.Error("InvalidEnvFilePath", slog.String("error", err.Error()))
+		slog.Error("InvalidEnvFilePath", slog.String("err", err.Error()))
 		os.Exit(1)
 	}
 
@@ -41,7 +41,7 @@ func LoadEnvVars() {
 	)
 	inspectErr := envsInspector.Inspect()
 	if inspectErr != nil {
-		slog.Error("EnvsInspectorError", slog.String("error", inspectErr.Error()))
+		slog.Error("EnvsInspectorError", slog.String("err", inspectErr.Error()))
 		os.Exit(1)
 	}
 }

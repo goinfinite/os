@@ -84,7 +84,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	if parseErr != nil {
 		slog.Error(
 			"InvalidPrimaryVirtualHostEnvValue",
-			slog.String("error", parseErr.Error()),
+			slog.String("err", parseErr.Error()),
 		)
 		os.Exit(1)
 	}
@@ -94,7 +94,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	if err != nil {
 		slog.Error(
 			"ReadPrimaryVirtualHostHostnameFailed",
-			slog.String("error", err.Error()),
+			slog.String("err", err.Error()),
 		)
 		os.Exit(1)
 	}
@@ -118,7 +118,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	if confErr != nil {
 		slog.Error(
 			"UpdatePrimaryVirtualHostConfFailed",
-			slog.String("error", confErr.Error()),
+			slog.String("err", confErr.Error()),
 		)
 		os.Exit(1)
 	}
@@ -127,7 +127,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	if dbErr != nil {
 		slog.Error(
 			"UpdatePrimaryVirtualHostDbFailed",
-			slog.String("error", dbErr.Error()),
+			slog.String("err", dbErr.Error()),
 		)
 		os.Exit(1)
 	}

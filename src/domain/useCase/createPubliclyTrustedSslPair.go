@@ -18,7 +18,7 @@ func CreatePubliclyTrustedSslPair(
 ) (sslPairId valueObject.SslPairId, err error) {
 	sslPairId, err = sslCmdRepo.CreatePubliclyTrusted(createDto)
 	if err != nil {
-		slog.Error("CreatePubliclyTrustedSslPairError", slog.String("error", err.Error()))
+		slog.Error("CreatePubliclyTrustedSslPairError", slog.String("err", err.Error()))
 		return sslPairId, errors.New("CreatePubliclyTrustedSslPairInfraError")
 	}
 

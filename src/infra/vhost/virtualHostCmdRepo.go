@@ -297,7 +297,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname tkValueObject.Fqdn) error {
 			slog.Error(
 				"DeleteMappingError",
 				slog.String("mappingId", mappingEntity.Id.String()),
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 			)
 		}
 	}
@@ -342,13 +342,13 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname tkValueObject.Fqdn) error {
 	vhostCertFilePath := pkiConfDirStr + "/" + vhostHostnameStr + ".crt"
 	err = os.Remove(vhostCertFilePath)
 	if err != nil {
-		slog.Error("RemoveSslCertFileError", slog.String("error", err.Error()))
+		slog.Error("RemoveSslCertFileError", slog.String("err", err.Error()))
 	}
 
 	vhostCertKeyFilePath := pkiConfDirStr + "/" + vhostHostnameStr + ".key"
 	err = os.Remove(vhostCertKeyFilePath)
 	if err != nil {
-		slog.Error("RemoveSslCertKeyFileError", slog.String("error", err.Error()))
+		slog.Error("RemoveSslCertKeyFileError", slog.String("err", err.Error()))
 	}
 
 	err = os.Remove(vhostWebServerConfFilePath.String())

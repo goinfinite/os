@@ -59,7 +59,7 @@ func (helpers *VirtualHostHelpers) ReadPrimaryVirtualHostHostname() (
 	}
 	slog.Debug(
 		"ParsePrimaryConfHostnameFail",
-		slog.String("error", parseErr.Error()),
+		slog.String("err", parseErr.Error()),
 	)
 
 	primaryHostFromShell, shellErr := tkInfra.NewShell(tkInfra.ShellSettings{
@@ -78,7 +78,7 @@ func (helpers *VirtualHostHelpers) IsPrimaryVirtualHost(vhost tkValueObject.Fqdn
 	if err != nil {
 		slog.Error(
 			"ReadPrimaryVirtualHostHostnameError",
-			slog.String("error", err.Error()),
+			slog.String("err", err.Error()),
 		)
 		return false
 	}
