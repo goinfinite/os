@@ -11,6 +11,7 @@ import (
 	"github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
@@ -142,8 +143,145 @@ func (helpers *VirtualHostHelpers) UpdateWebServerWorkerCount(
 	return nil
 }
 
+func (helpers *VirtualHostHelpers) findWebServerConfLineNumber(
+	confPath, searchPattern string,
+) (lineNumber int, err error) {
+	rawGrepOutput, grepErr := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: "grep",
+		Args: []string{
+			"-n", "-E", "--", searchPattern, confPath,
+		},
+	}).Run()
+	if grepErr != nil {
+		return lineNumber, errors.New("GrepWebServerConfLineFailed: " + grepErr.Error())
+	}
+
+	if rawGrepOutput == "" {
+		return lineNumber, errors.New("WebServerConfLineNotFound")
+	}
+
+	rawParts := strings.SplitN(rawGrepOutput, ":", 2)
+	if len(rawParts) < 2 {
+		return lineNumber, errors.New("InvalidGrepOutputFormat")
+	}
+
+	lineNumber, parseErr := strconv.Atoi(rawParts[0])
+	if parseErr != nil {
+		return lineNumber, errors.New("ParseLineNumberFailed: " + parseErr.Error())
+	}
+
+	return lineNumber, nil
+}
+
+func (helpers *VirtualHostHelpers) replaceWebServerConfLineContent(
+	confPath string,
+	lineNumber int,
+	previousValue, newValue string,
+) error {
+	_, sedErr := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: "sed",
+		Args: []string{
+			"-i", "-E",
+			strconv.Itoa(lineNumber) + "s|" + previousValue + "|" + newValue + "|",
+			confPath,
+		},
+	}).Run()
+	if sedErr != nil {
+		return errors.New("ReplaceWebServerConfLineContentFailed: " + sedErr.Error())
+	}
+
+	return nil
+}
+
+func (helpers *VirtualHostHelpers) replaceVirtualHostServerName(
+	currentHostname tkValueObject.Fqdn,
+	newHostname tkValueObject.Fqdn,
+) error {
+	escapedHostname := strings.ReplaceAll(currentHostname.String(), ".", "\\.")
+
+	lineNumber, grepErr := helpers.findWebServerConfLineNumber(
+		infraEnvs.PrimaryVirtualHostConfPath,
+		// 	server_name app.net;
+		"^[[:space:]]*server_name[[:space:]]+"+escapedHostname+"[[:space:];]",
+	)
+	if grepErr != nil {
+		return errors.New("FindServerNameLineFailed: " + grepErr.Error())
+	}
+
+	newHostnameStr := newHostname.String()
+	sedErr := helpers.replaceWebServerConfLineContent(
+		infraEnvs.PrimaryVirtualHostConfPath, lineNumber, escapedHostname,
+		strings.ReplaceAll(newHostnameStr, ".", "\\."),
+	)
+	if sedErr != nil {
+		return errors.New("UpdateServerNameFailed: " + sedErr.Error())
+	}
+
+	return nil
+}
+
+func (helpers *VirtualHostHelpers) replaceVirtualHostSslCertificate(
+	newHostname tkValueObject.Fqdn,
+) error {
+	newHostnameStr := newHostname.String()
+	rawCertPath := infraEnvs.PkiConfDir + "/" + newHostnameStr + ".crt"
+	newCertPath, certPathErr := tkValueObject.NewUnixAbsoluteFilePath(rawCertPath, false)
+	if certPathErr != nil {
+		return errors.New("InvalidSslCertPath: " + certPathErr.Error())
+	}
+
+	rawKeyPath := infraEnvs.PkiConfDir + "/" + newHostnameStr + ".key"
+	newKeyPath, keyPathErr := tkValueObject.NewUnixAbsoluteFilePath(rawKeyPath, false)
+	if keyPathErr != nil {
+		return errors.New("InvalidSslKeyPath: " + keyPathErr.Error())
+	}
+
+	confPath := infraEnvs.PrimaryVirtualHostConfPath
+
+	certLineNum, certGrepErr := helpers.findWebServerConfLineNumber(
+		confPath,
+		// ssl_certificate /app/conf/pki/app.net.crt;
+		"^[[:space:]]*ssl_certificate[[:space:]]",
+	)
+	if certGrepErr != nil {
+		return errors.New("FindSslCertLineFailed: " + certGrepErr.Error())
+	}
+
+	keyLineNum, keyGrepErr := helpers.findWebServerConfLineNumber(
+		confPath,
+		// ssl_certificate_key /app/conf/pki/app.net.key;
+		"^[[:space:]]*ssl_certificate_key[[:space:]]",
+	)
+	if keyGrepErr != nil {
+		return errors.New("FindSslKeyLineFailed: " + keyGrepErr.Error())
+	}
+
+	certSedErr := helpers.replaceWebServerConfLineContent(
+		confPath, certLineNum,
+		// ssl_certificate /old/path.crt; → ssl_certificate /new/path.crt;
+		"ssl_certificate[[:space:]]+[^;]+",
+		"ssl_certificate "+newCertPath.String()+";",
+	)
+	if certSedErr != nil {
+		return errors.New("UpdateSslCertPathFailed: " + certSedErr.Error())
+	}
+
+	keySedErr := helpers.replaceWebServerConfLineContent(
+		confPath, keyLineNum,
+		// ssl_certificate_key /old/path.key; → ssl_certificate_key /new/path.key;
+		"ssl_certificate_key[[:space:]]+[^;]+",
+		"ssl_certificate_key "+newKeyPath.String()+";",
+	)
+	if keySedErr != nil {
+		return errors.New("UpdateSslKeyPathFailed: " + keySedErr.Error())
+	}
+
+	return nil
+}
+
 func (helpers *VirtualHostHelpers) UpdateWebServerPrimaryVirtualHost(
 	newHostname tkValueObject.Fqdn,
+	aliasesHostnames []tkValueObject.Fqdn,
 ) error {
 	currentHostname, readErr := helpers.ReadPrimaryVirtualHostHostnameFromWebServerConf()
 	if readErr != nil {
@@ -156,52 +294,31 @@ func (helpers *VirtualHostHelpers) UpdateWebServerPrimaryVirtualHost(
 		return nil
 	}
 
-	currentHostnameStr := currentHostname.String()
-	grepCurrentHostname := strings.ReplaceAll(currentHostnameStr, ".", "\\.")
-	rawGrepOutput, grepErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "grep",
-		Args: []string{
-			"-n", "--",
-			"server_name.*" + grepCurrentHostname,
-			infraEnvs.PrimaryVirtualHostConfPath,
-		},
-	}).Run()
-	if grepErr != nil {
-		return errors.New("FindHostnameLineFailed: " + grepErr.Error())
+	serverNameErr := helpers.replaceVirtualHostServerName(
+		currentHostname, newHostname,
+	)
+	if serverNameErr != nil {
+		return serverNameErr
 	}
 
-	if rawGrepOutput == "" {
-		return errors.New("HostnameLineNotFound")
+	pkiConfDir, pkiErr := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
+	if pkiErr != nil {
+		return errors.New("PkiConfDirNotFound: " + pkiErr.Error())
 	}
 
-	rawGrepOutputParts := strings.SplitN(rawGrepOutput, ":", 2)
-	if len(rawGrepOutputParts) < 2 {
-		return errors.New("InvalidGrepOutputFormat")
+	createCertErr := infraHelper.CreateSelfSignedSsl(
+		pkiConfDir, newHostname, aliasesHostnames,
+	)
+	if createCertErr != nil {
+		return errors.New("CreateSelfSignedSslFailed: " + createCertErr.Error())
 	}
 
-	rawHostnameLineNumStr := rawGrepOutputParts[0]
-
-	hostnameLineNum, parseErr := strconv.Atoi(rawHostnameLineNumStr)
-	if parseErr != nil {
-		return errors.New("ParseHostnameLineNumFailed: " + parseErr.Error())
-	}
-
-	sedCurrentHostname := strings.ReplaceAll(currentHostnameStr, ".", "\\.")
-	sedNewHostname := strings.ReplaceAll(newHostname.String(), ".", "\\.")
-	_, updateErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-i",
-			strconv.Itoa(hostnameLineNum) + "s/" + sedCurrentHostname + "/" +
-				sedNewHostname + "/g",
-			infraEnvs.PrimaryVirtualHostConfPath,
-		},
-	}).Run()
-	if updateErr != nil {
+	replaceCertPathErr := helpers.replaceVirtualHostSslCertificate(newHostname)
+	if replaceCertPathErr != nil {
 		return errors.New(
-			"UpdatePrimaryVhostServerNameFailed: " + updateErr.Error(),
+			"ReplaceVirtualHostSslCertificateFailed: " + replaceCertPathErr.Error(),
 		)
 	}
 
-	return nil
+	return helpers.ReloadWebServer()
 }

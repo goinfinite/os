@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 
+	"github.com/goinfinite/os/src/domain/dto"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
@@ -28,8 +29,16 @@ func NewPrimaryVirtualHostSynchronizer(
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) confUpdater() error {
+	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(sync.persistentDbSvc)
+	vhostEntity, readErr := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &sync.newPrimaryHostname,
+	})
+	if readErr != nil {
+		return errors.New("ReadVirtualHostFailed: " + readErr.Error())
+	}
+
 	updateErr := sync.vhostHelpers.UpdateWebServerPrimaryVirtualHost(
-		sync.newPrimaryHostname,
+		sync.newPrimaryHostname, vhostEntity.AliasesHostnames,
 	)
 	if updateErr != nil {
 		return errors.New("ConfUpdateFailed: " + updateErr.Error())
