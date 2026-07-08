@@ -15,6 +15,10 @@ import (
 	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
+var (
+	ErrVirtualHostNotFound error = errors.New("VirtualHostNotFound")
+)
+
 type VirtualHostQueryRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 }
@@ -164,7 +168,7 @@ func (repo *VirtualHostQueryRepo) ReadFirst(
 	}
 
 	if len(responseDto.VirtualHosts) == 0 {
-		return vhostEntity, errors.New("VirtualHostNotFound")
+		return vhostEntity, ErrVirtualHostNotFound
 	}
 
 	return responseDto.VirtualHosts[0], nil
@@ -183,7 +187,7 @@ func (repo *VirtualHostQueryRepo) ReadFirstWithMappings(
 	}
 
 	if len(responseDto.VirtualHostWithMappings) == 0 {
-		return vhostWithMappingsDto, errors.New("VirtualHostNotFound")
+		return vhostWithMappingsDto, ErrVirtualHostNotFound
 	}
 
 	return responseDto.VirtualHostWithMappings[0], nil
