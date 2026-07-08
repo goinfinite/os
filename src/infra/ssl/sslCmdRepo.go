@@ -393,17 +393,30 @@ func (repo *SslCmdRepo) Create(
 	return sslPairEntity.Id, nil
 }
 
-func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) error {
-	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
-		Hostname: &vhostHostname,
-	})
-	if err != nil {
-		return errors.New("ReadVirtualHostEntityError: " + err.Error())
-	}
-	if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
-		return errors.New("AliasVirtualHostSslReliesOnParent")
+func (repo *SslCmdRepo) deleteCertFiles(vhostHostname tkValueObject.Fqdn) error {
+	vhostHostnameStr := vhostHostname.String()
+	vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
+	vhostCertFileExists := repo.fileClerk.FileExists(vhostCertFilePath)
+	if vhostCertFileExists {
+		err := repo.fileClerk.DeleteFile(vhostCertFilePath)
+		if err != nil {
+			return errors.New("DeleteCertFileError: " + err.Error())
+		}
 	}
 
+	vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
+	vhostCertKeyFileExists := repo.fileClerk.FileExists(vhostCertKeyFilePath)
+	if vhostCertKeyFileExists {
+		err := repo.fileClerk.DeleteFile(vhostCertKeyFilePath)
+		if err != nil {
+			return errors.New("DeleteCertKeyFileError: " + err.Error())
+		}
+	}
+
+	return nil
+}
+
+func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) error {
 	aliasesVirtualHostsReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
 		Pagination:     tkDto.PaginationUnpaginated,
 		ParentHostname: &vhostHostname,
@@ -417,23 +430,9 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) 
 		aliasesHostnames = append(aliasesHostnames, aliasVirtualHostEntity.Hostname)
 	}
 
-	vhostHostnameStr := vhostHostname.String()
-	vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
-	vhostCertFileExists := repo.fileClerk.FileExists(vhostCertFilePath)
-	if vhostCertFileExists {
-		err := os.Remove(vhostCertFilePath)
-		if err != nil {
-			return errors.New("DeleteCertFileError: " + err.Error())
-		}
-	}
-
-	vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
-	vhostCertKeyFileExists := repo.fileClerk.FileExists(vhostCertKeyFilePath)
-	if vhostCertKeyFileExists {
-		err := os.Remove(vhostCertKeyFilePath)
-		if err != nil {
-			return errors.New("DeleteCertKeyFileError: " + err.Error())
-		}
+	err = repo.deleteCertFiles(vhostHostname)
+	if err != nil {
+		return errors.New("DeleteCertFilesError: " + err.Error())
 	}
 
 	pkiConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
@@ -450,11 +449,35 @@ func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) 
 }
 
 func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {
+	shouldHardDeleteOnly := false
 	sslPairEntity, err := repo.sslQueryRepo.ReadFirst(dto.ReadSslPairsRequest{
 		SslPairId: &sslPairId,
 	})
 	if err != nil {
 		return errors.New("ReadSslPairEntityError: " + err.Error())
+	}
+
+	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		Hostname: &sslPairEntity.VirtualHostHostname,
+	})
+	if err != nil {
+		if !errors.Is(err, vhostInfra.ErrVirtualHostNotFound) {
+			return errors.New("ReadVirtualHostEntityError: " + err.Error())
+		}
+		shouldHardDeleteOnly = true
+	}
+
+	if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
+		return errors.New("AliasVirtualHostSslReliesOnParent")
+	}
+
+	if shouldHardDeleteOnly {
+		err = repo.deleteCertFiles(sslPairEntity.VirtualHostHostname)
+		if err != nil {
+			slog.Error("DeleteCertFilesError", slog.String("error", err.Error()))
+		}
+
+		return nil
 	}
 
 	err = repo.ReplaceWithSelfSigned(sslPairEntity.VirtualHostHostname)
