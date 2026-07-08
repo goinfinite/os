@@ -416,7 +416,7 @@ func (repo *SslCmdRepo) deleteCertFiles(vhostHostname tkValueObject.Fqdn) error 
 	return nil
 }
 
-func (repo *SslCmdRepo) ReplaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) error {
+func (repo *SslCmdRepo) replaceWithSelfSigned(vhostHostname tkValueObject.Fqdn) error {
 	aliasesVirtualHostsReadResponse, err := repo.vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
 		Pagination:     tkDto.PaginationUnpaginated,
 		ParentHostname: &vhostHostname,
@@ -480,7 +480,7 @@ func (repo *SslCmdRepo) Delete(sslPairId valueObject.SslPairId) error {
 		return nil
 	}
 
-	err = repo.ReplaceWithSelfSigned(sslPairEntity.VirtualHostHostname)
+	err = repo.replaceWithSelfSigned(sslPairEntity.VirtualHostHostname)
 	if err != nil {
 		return errors.New("ReplaceWithSelfSignedError: " + err.Error())
 	}
