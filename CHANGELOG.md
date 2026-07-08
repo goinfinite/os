@@ -2,12 +2,14 @@
 
 ```log
 0.3.1 - 2026/07/06
-feat(cli): add PrimaryVirtualHostSynchronizer middleware for env-conf-db sync
-refactor(vhost): consolidate primary vhost update methods and improve server_name targeting
-fix(envs): rename PrimaryPublicDir to PrimaryVirtualHostPublicDir
-refactor(vhost): move webserver helpers to virtualHostHelpers
-refactor(vhost): consolidate webserver helpers and abstract nginx naming
-fix(envs): remove PRIMARY_VHOST from required env vars
+feat(cli): add PrimaryVirtualHostSynchronizer for env-conf-db sync
+refactor(vhost): consolidate helpers into VirtualHostHelpers and abstract nginx naming
+fix(envs): rename PrimaryPublicDir, remove PRIMARY_VHOST from required, add SSL prefix to skip dns env
+feat: add SKIP_PHP_PROCS_COUNT_UPDATE env var
+feat: allow ssl delete to hard delete only
+fix(services): prevent restart on field-only updates, handle null values and persist fields
+fix(cli): use StringArrayVarP for --envs flag to preserve commas
+refactor(internalSetup): return errors from auxiliary methods and unify slog key to err
 
 0.3.0 - 2026/07/03
 fix(internalSetup): lsapi counter and add last edit comment

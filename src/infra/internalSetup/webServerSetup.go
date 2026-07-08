@@ -17,6 +17,7 @@ import (
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
@@ -269,7 +270,23 @@ func (ws *WebServerSetup) configurePhpChildProcesses(
 		return nil
 	}
 
-	err := ws.updatePhpMaxChildProcesses(memoryTotal)
+	skipProcUpdate := false
+	envSkipProcUpdate, err := tkVoUtil.InterfaceToBool(
+		os.Getenv(infraEnvs.PhpChildProcessesUpdateSkipEnvKey),
+	)
+	if err == nil && envSkipProcUpdate {
+		skipProcUpdate = true
+	}
+
+	if skipProcUpdate {
+		slog.Debug(
+			"SkippingConfigurePhpChildProcesses",
+			slog.String("reason", "EnvVarSet"),
+		)
+		return nil
+	}
+
+	err = ws.updatePhpMaxChildProcesses(memoryTotal)
 	if err != nil {
 		return errors.New("ConfigurePhpChildProcessesError: " + err.Error())
 	}
