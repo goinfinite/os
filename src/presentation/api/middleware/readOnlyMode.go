@@ -27,11 +27,11 @@ func IsSkippableApiCall(req *http.Request, apiBasePath string) bool {
 func ReadOnlyMode(apiBasePath string) echo.MiddlewareFunc {
 	return func(subsequentHandler echo.HandlerFunc) echo.HandlerFunc {
 		return func(echoContext echo.Context) error {
-			isReadOnlyModeEnabled, err :=
-				tkVoUtil.InterfaceToBool(os.Getenv("READ_ONLY_MODE"))
-			if err == nil && isReadOnlyModeEnabled {
-				return subsequentHandler(echoContext)
-			}
+		isReadOnlyModeEnabled, err :=
+			tkVoUtil.InterfaceToBool(os.Getenv("READ_ONLY_MODE"))
+		if err != nil || !isReadOnlyModeEnabled {
+			return subsequentHandler(echoContext)
+		}
 
 			shouldSkip := IsSkippableApiCall(echoContext.Request(), apiBasePath)
 			if shouldSkip {
