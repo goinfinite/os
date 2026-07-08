@@ -30,11 +30,11 @@ When developing the project, you may want to use a script to automate the build 
 
 To run the script you can simply use `bash dev-build.sh` (bash may be replaced by zsh or similar). By default, the script will expose the port 1618 to the host which is used by the API and the dashboard.
 
-- If you pass the `http` argument, it will also expose the ports 80 and 443 to the host;
+- If you pass the `http` or `http-unpriv` argument, it will also expose the ports 80 and 443 OR 8080 and 8443 respectively to the host;
 - If you pass the `ols` argument, it will expose port 7080 (used by OpenLiteSpeed admin);
 - If you pass the `no-cache` argument, it will remove the image cache and rebuild the image from scratch;
 
-The script will also create a `dev` account with the password `123456` so you can access the dashboard.
+The script will also create a `dev` account with the password `123456!` so you can access the dashboard.
 
 When you need to stop the container, just CTRL+C to stop and remove it. If you don't want to remove it, just ditch the `--rm` flag from the `podman run` command in the script.
 
