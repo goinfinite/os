@@ -5,9 +5,9 @@ import (
 	"os"
 	"regexp"
 	"slices"
-	"strconv"
 	"strings"
 
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	"github.com/labstack/echo/v4"
 )
 
@@ -27,17 +27,9 @@ func IsSkippableApiCall(req *http.Request, apiBasePath string) bool {
 func ReadOnlyMode(apiBasePath string) echo.MiddlewareFunc {
 	return func(subsequentHandler echo.HandlerFunc) echo.HandlerFunc {
 		return func(echoContext echo.Context) error {
-			rawReadOnlyModeEnvVar := os.Getenv("READ_ONLY_MODE")
-			if rawReadOnlyModeEnvVar == "" {
-				return subsequentHandler(echoContext)
-			}
-
-			isReadOnlyModeEnabled, err := strconv.ParseBool(rawReadOnlyModeEnvVar)
-			if err != nil {
-				return subsequentHandler(echoContext)
-			}
-
-			if !isReadOnlyModeEnabled {
+			isReadOnlyModeEnabled, err :=
+				tkVoUtil.InterfaceToBool(os.Getenv("READ_ONLY_MODE"))
+			if err == nil && isReadOnlyModeEnabled {
 				return subsequentHandler(echoContext)
 			}
 

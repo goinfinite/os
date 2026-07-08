@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiController "github.com/goinfinite/os/src/presentation/api/controller"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	"github.com/labstack/echo/v4"
 	echoSwagger "github.com/swaggo/echo-swagger"
 
@@ -147,17 +147,9 @@ func (router Router) runtimeRoutes() {
 	runtimeGroup.GET("/php/:hostname/", runtimeController.ReadPhpConfigs)
 	runtimeGroup.PUT("/php/:hostname/", runtimeController.UpdatePhpConfigs)
 
-	rawEnableApiRuntimePhpRunCmdEnvVar := os.Getenv("ENABLE_API_RUNTIME_PHP_RUN_CMD")
-	if rawEnableApiRuntimePhpRunCmdEnvVar == "" {
-		return
-	}
-
-	shouldEnablePhpRunCmd, err := strconv.ParseBool(rawEnableApiRuntimePhpRunCmdEnvVar)
-	if err != nil {
-		return
-	}
-
-	if shouldEnablePhpRunCmd {
+	shouldEnablePhpRunCmd, err :=
+		tkVoUtil.InterfaceToBool(os.Getenv("ENABLE_API_RUNTIME_PHP_RUN_CMD"))
+	if err == nil && shouldEnablePhpRunCmd {
 		runtimeGroup.POST("/php/:hostname/run/", runtimeController.RunPhpCommand)
 		runtimeGroup.POST("/php/run/", runtimeController.RunPhpCommand)
 	}
