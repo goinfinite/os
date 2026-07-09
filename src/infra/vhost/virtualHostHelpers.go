@@ -6,8 +6,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
@@ -111,31 +109,6 @@ func (helpers *VirtualHostHelpers) ReloadWebServer() error {
 	}
 
 	time.Sleep(1 * time.Second)
-
-	return nil
-}
-
-func (helpers *VirtualHostHelpers) UpdateWebServerWorkerCount(
-	cpuCoresStr string,
-	servicesCmdRepo repository.ServicesCmdRepo,
-) error {
-	_, sedErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-i", "-e",
-			"s/^worker_processes.*/worker_processes " + cpuCoresStr + ";/g",
-			infraEnvs.WebServerMainConfPath,
-		},
-	}).Run()
-	if sedErr != nil {
-		return errors.New("UpdateNginxWorkersCountFailed: " + sedErr.Error())
-	}
-
-	serviceName, _ := valueObject.NewServiceName("nginx")
-	restartErr := servicesCmdRepo.Restart(serviceName)
-	if restartErr != nil {
-		return errors.New("RestartNginxFailed: " + restartErr.Error())
-	}
 
 	return nil
 }
