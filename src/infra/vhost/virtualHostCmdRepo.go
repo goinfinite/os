@@ -35,7 +35,7 @@ func NewVirtualHostCmdRepo(
 	}
 }
 
-func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
+func (repo *VirtualHostCmdRepo) WebServerUnitFileFactory(
 	vhostEntity entity.VirtualHost,
 	mappingFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (string, error) {
@@ -135,7 +135,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
 	}
 
-	unitConfFileContent, err := repo.webServerUnitFileFactory(
+	unitConfFileContent, err := repo.WebServerUnitFileFactory(
 		vhostEntity, mappingsFilePath,
 	)
 	if err != nil {

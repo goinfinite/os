@@ -7,16 +7,19 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type PrimaryVirtualHostSynchronizer struct {
 	persistentDbSvc         *internalDbInfra.PersistentDatabaseService
 	previousPrimaryHostname tkValueObject.Fqdn
 	newPrimaryHostname      tkValueObject.Fqdn
+	vhostCmdRepo            *vhostInfra.VirtualHostCmdRepo
 	vhostHelpers            *vhostInfra.VirtualHostHelpers
 }
 
@@ -25,6 +28,7 @@ func NewPrimaryVirtualHostSynchronizer(
 ) *PrimaryVirtualHostSynchronizer {
 	return &PrimaryVirtualHostSynchronizer{
 		persistentDbSvc: persistentDbSvc,
+		vhostCmdRepo:    vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
 		vhostHelpers:    vhostInfra.NewVirtualHostHelpers(),
 	}
 }
@@ -38,14 +42,46 @@ func (sync *PrimaryVirtualHostSynchronizer) confUpdater() error {
 		return errors.New("ReadPreviousVirtualHostFailed: " + readErr.Error())
 	}
 
-	updateErr := sync.vhostHelpers.UpdateWebServerPrimaryVirtualHost(
-		sync.newPrimaryHostname, vhostEntity.AliasesHostnames,
+	mappingsFilePath, readErr := vhostQueryRepo.ReadVirtualHostMappingsFilePath(
+		sync.previousPrimaryHostname,
 	)
-	if updateErr != nil {
-		return errors.New("ConfUpdateFailed: " + updateErr.Error())
+	if readErr != nil {
+		return errors.New("ReadMappingsFilePathFailed: " + readErr.Error())
 	}
 
-	return nil
+	pkiConfDir, parseErr := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.PkiConfDir, false,
+	)
+	if parseErr != nil {
+		return errors.New("InvalidPkiConfDir: " + parseErr.Error())
+	}
+
+	createCertErr := infraHelper.CreateSelfSignedSsl(
+		pkiConfDir, sync.newPrimaryHostname, vhostEntity.AliasesHostnames,
+	)
+	if createCertErr != nil {
+		return errors.New("CreateSelfSignedSslFailed: " + createCertErr.Error())
+	}
+
+	modifiedEntity := vhostEntity
+	modifiedEntity.Hostname = sync.newPrimaryHostname
+
+	confContent, factoryErr := sync.vhostCmdRepo.WebServerUnitFileFactory(
+		modifiedEntity, mappingsFilePath,
+	)
+	if factoryErr != nil {
+		return errors.New("WebServerUnitFileFactoryFailed: " + factoryErr.Error())
+	}
+
+	fileClerk := tkInfra.FileClerk{}
+	writeErr := fileClerk.UpdateFileContent(
+		infraEnvs.PrimaryVirtualHostConfPath, confContent, true,
+	)
+	if writeErr != nil {
+		return errors.New("WritePrimaryVirtualHostConfFailed: " + writeErr.Error())
+	}
+
+	return sync.vhostHelpers.ReloadWebServer()
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) dbUpdater() error {
@@ -117,7 +153,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	confErr := sync.confUpdater()
 	if confErr != nil {
 		slog.Error(
-			"UpdatePrimaryVirtualHostConfFailed",
+			"ConfUpdaterFailed",
 			slog.String("err", confErr.Error()),
 		)
 		os.Exit(1)
@@ -126,7 +162,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	dbErr := sync.dbUpdater()
 	if dbErr != nil {
 		slog.Error(
-			"UpdatePrimaryVirtualHostDbFailed",
+			"DbUpdaterFailed",
 			slog.String("err", dbErr.Error()),
 		)
 		os.Exit(1)
