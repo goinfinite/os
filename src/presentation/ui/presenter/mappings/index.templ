@@ -249,16 +249,16 @@ templ CreateVirtualHostForm(existingHostnames []string) {
 		</template>
 		<template x-if="virtualHost.type == 'alias'">
 			<div class="space-y-6">
+				@componentForm.SelectInput(
+					"parentHostname", "Parent Hostname", "virtualHost.parentHostname", "",
+					existingHostnames, false,
+				)
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
 					Id:                 "hostname",
 					Label:              "Alias (e.g. example.com)",
 					BindModelValuePath: "virtualHost.hostname",
 				})
-				@componentForm.SelectInput(
-					"parentHostname", "Parent Hostname", "virtualHost.parentHostname", "",
-					existingHostnames, false,
-				)
 			</div>
 		</template>
 		@componentForm.DeactivableSubmitButton(
