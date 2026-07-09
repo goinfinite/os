@@ -8,6 +8,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 func TestRuntimeCmdRepo(t *testing.T) {
@@ -23,7 +24,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 	t.Run("UpdatePhpVersion", func(t *testing.T) {
 		err := runtimeCmdRepo.UpdatePhpVersion(primaryVhost, phpVersion)
 		if err != nil {
-			t.Errorf("Expected nil, got %v", err)
+			t.Errorf("UpdatePhpVersionShouldSucceed: %v", err)
 		}
 	})
 
@@ -41,7 +42,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 			},
 		)
 		if err != nil {
-			t.Errorf("Expected nil, got %v", err)
+			t.Errorf("UpdatePhpSettingsShouldSucceed: %v", err)
 		}
 	})
 
@@ -53,7 +54,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 			[]entity.PhpModule{entity.NewPhpModule(phpModuleName, true)},
 		)
 		if err != nil {
-			t.Errorf("Expected nil, got %v", err)
+			t.Errorf("UpdatePhpModulesEnableShouldSucceed: %v", err)
 		}
 
 		err = runtimeCmdRepo.UpdatePhpModules(
@@ -61,7 +62,34 @@ func TestRuntimeCmdRepo(t *testing.T) {
 			[]entity.PhpModule{entity.NewPhpModule(phpModuleName, false)},
 		)
 		if err != nil {
-			t.Errorf("Expected nil, got %v", err)
+			t.Errorf("UpdatePhpModulesDisableShouldSucceed: %v", err)
+		}
+	})
+
+	t.Run("UpdatePhpVirtualHostHostname", func(t *testing.T) {
+		newHostname, _ := tkValueObject.NewFqdn(primaryVhost.String() + ".renamed")
+
+		err := runtimeCmdRepo.UpdatePhpVirtualHostHostname(
+			primaryVhost, newHostname,
+		)
+		if err != nil {
+			t.Errorf("UpdatePhpVirtualHostHostnameShouldSucceed: %v", err)
+		}
+
+		err = runtimeCmdRepo.UpdatePhpVirtualHostHostname(
+			newHostname, primaryVhost,
+		)
+		if err != nil {
+			t.Errorf("UpdatePhpVirtualHostHostnameReverseShouldSucceed: %v", err)
+		}
+	})
+
+	t.Run("UpdatePhpVirtualHostHostnameNoOp", func(t *testing.T) {
+		err := runtimeCmdRepo.UpdatePhpVirtualHostHostname(
+			primaryVhost, primaryVhost,
+		)
+		if err != nil {
+			t.Errorf("UpdatePhpVirtualHostHostnameNoOpShouldReturnNil: %v", err)
 		}
 	})
 }
