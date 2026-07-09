@@ -3,7 +3,6 @@ package internalSetupInfra
 import (
 	"errors"
 	"log/slog"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -38,7 +37,7 @@ func NewWebServerSetup(
 	}
 }
 
-func (ws *WebServerSetup) generateDhParams() error {
+func (ws *WebServerSetup) dhParamsGenerator() error {
 	slog.Info("GeneratingDhParams")
 
 	_, dhparamErr := tkInfra.NewShell(tkInfra.ShellSettings{
@@ -48,13 +47,13 @@ func (ws *WebServerSetup) generateDhParams() error {
 		},
 	}).Run()
 	if dhparamErr != nil {
-		return errors.New("GenerateDhParamsError: " + dhparamErr.Error())
+		return errors.New("DhParamsGeneratorError: " + dhparamErr.Error())
 	}
 
 	return nil
 }
 
-func (ws *WebServerSetup) generateSelfSignedCert() error {
+func (ws *WebServerSetup) selfSignedCertGenerator() error {
 	slog.Info("GeneratingSelfSignedCert")
 
 	primaryVirtualHostHostname, readErr :=
@@ -74,35 +73,35 @@ func (ws *WebServerSetup) generateSelfSignedCert() error {
 		pkiConfDir, primaryVirtualHostHostname, aliasesHostnames,
 	)
 	if certErr != nil {
-		return errors.New("GenerateSelfSignedCertError: " + certErr.Error())
+		return errors.New("SelfSignedCertGeneratorError: " + certErr.Error())
 	}
 
 	return nil
 }
 
-func (ws *WebServerSetup) restorePrimaryIndexFile() error {
+func (ws *WebServerSetup) primaryIndexFileRestorer() error {
 	restoreErr := infraHelper.RestorePrimaryIndexFile()
 	if restoreErr != nil {
-		return errors.New("RestorePrimaryIndexFileError: " + restoreErr.Error())
+		return errors.New("PrimaryIndexFileRestorerError: " + restoreErr.Error())
 	}
 
 	return nil
 }
 
-func (ws *WebServerSetup) generateMappingSecurityRules() error {
+func (ws *WebServerSetup) mappingSecurityRulesGenerator() error {
 	slog.Info("GeneratingMappingSecurityRules")
 
 	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(ws.persistentDbSvc)
 	recreateErr := mappingCmdRepo.RecreateSecurityRuleFiles()
 	if recreateErr != nil {
-		return errors.New("GenerateMappingSecurityRulesError: " + recreateErr.Error())
+		return errors.New("MappingSecurityRulesGeneratorError: " + recreateErr.Error())
 	}
 
 	return nil
 }
 
-func (ws *WebServerSetup) configureNginxAutoStart() error {
-	slog.Info("ConfiguringNginxAutoStart")
+func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
+	slog.Info("ConfiguringWebServerAutoStart")
 
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
 	nginxServiceName, _ := valueObject.NewServiceName("nginx")
@@ -118,13 +117,13 @@ func (ws *WebServerSetup) configureNginxAutoStart() error {
 			return nil
 		}
 
-		return errors.New("ConfigureNginxAutoStartError: " + updateErr.Error())
+		return errors.New("WebServerAutoStartConfiguratorError: " + updateErr.Error())
 	}
 
 	return nil
 }
 
-func (ws *WebServerSetup) reloadSupervisor() error {
+func (ws *WebServerSetup) supervisorReloader() error {
 	slog.Info("WebServerConfigured! RestartingServices")
 
 	_, reloadErr := tkInfra.NewShell(tkInfra.ShellSettings{
@@ -132,69 +131,69 @@ func (ws *WebServerSetup) reloadSupervisor() error {
 		Args:    []string{"-p", "replacedOnFirstBoot", "reload"},
 	}).Run()
 	if reloadErr != nil {
-		return errors.New("ReloadSupervisorError: " + reloadErr.Error())
+		return errors.New("SupervisorReloaderError: " + reloadErr.Error())
 	}
 
 	return nil
 }
 
-func (ws *WebServerSetup) FirstSetup() {
-	generateDhParamsErr := ws.generateDhParams()
-	if generateDhParamsErr != nil {
+func (ws *WebServerSetup) firstSetupOrchestrator() {
+	dhParamsGeneratorErr := ws.dhParamsGenerator()
+	if dhParamsGeneratorErr != nil {
 		slog.Error(
-			"GenerateDhParamsError",
-			slog.String("err", generateDhParamsErr.Error()),
+			"DhParamsGeneratorError",
+			slog.String("err", dhParamsGeneratorErr.Error()),
 		)
 		os.Exit(1)
 	}
 
-	generateSelfSignedCertErr := ws.generateSelfSignedCert()
-	if generateSelfSignedCertErr != nil {
+	selfSignedCertGeneratorErr := ws.selfSignedCertGenerator()
+	if selfSignedCertGeneratorErr != nil {
 		slog.Error(
-			"GenerateSelfSignedCertError",
-			slog.String("err", generateSelfSignedCertErr.Error()),
+			"SelfSignedCertGeneratorError",
+			slog.String("err", selfSignedCertGeneratorErr.Error()),
 		)
 		os.Exit(1)
 	}
 
-	restorePrimaryIndexFileErr := ws.restorePrimaryIndexFile()
-	if restorePrimaryIndexFileErr != nil {
+	primaryIndexFileRestorerErr := ws.primaryIndexFileRestorer()
+	if primaryIndexFileRestorerErr != nil {
 		slog.Error(
-			"RestorePrimaryIndexFileError",
-			slog.String("err", restorePrimaryIndexFileErr.Error()),
+			"PrimaryIndexFileRestorerError",
+			slog.String("err", primaryIndexFileRestorerErr.Error()),
 		)
 		os.Exit(1)
 	}
 
-	generateMappingSecurityRulesErr := ws.generateMappingSecurityRules()
-	if generateMappingSecurityRulesErr != nil {
+	mappingSecurityRulesGeneratorErr := ws.mappingSecurityRulesGenerator()
+	if mappingSecurityRulesGeneratorErr != nil {
 		slog.Error(
-			"GenerateMappingSecurityRulesError",
-			slog.String("err", generateMappingSecurityRulesErr.Error()),
+			"MappingSecurityRulesGeneratorError",
+			slog.String("err", mappingSecurityRulesGeneratorErr.Error()),
 		)
 		os.Exit(1)
 	}
 
-	configureNginxAutoStartErr := ws.configureNginxAutoStart()
-	if configureNginxAutoStartErr != nil {
+	webServerAutoStartConfiguratorErr := ws.webServerAutoStartConfigurator()
+	if webServerAutoStartConfiguratorErr != nil {
 		slog.Error(
-			"ConfigureNginxAutoStartError",
-			slog.String("err", configureNginxAutoStartErr.Error()),
+			"WebServerAutoStartConfiguratorError",
+			slog.String("err", webServerAutoStartConfiguratorErr.Error()),
 		)
 		os.Exit(1)
 	}
 
-	reloadSupervisorErr := ws.reloadSupervisor()
-	if reloadSupervisorErr != nil {
+	supervisorReloaderErr := ws.supervisorReloader()
+	if supervisorReloaderErr != nil {
 		slog.Error(
-			"ReloadSupervisorError",
-			slog.String("err", reloadSupervisorErr.Error()),
+			"SupervisorReloaderError",
+			slog.String("err", supervisorReloaderErr.Error()),
 		)
 		os.Exit(1)
 	}
 }
 
-func (ws *WebServerSetup) updatePhpMaxChildProcesses(
+func (ws *WebServerSetup) phpMaxChildProcessesUpdater(
 	memoryTotal tkValueObject.Byte,
 ) error {
 	slog.Debug("UpdatingMaxPhpChildProcessesInit")
@@ -222,14 +221,14 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(
 		},
 	}).Run()
 	if sedErr != nil {
-		return errors.New("UpdatePhpMaxChildProcessesError: " + sedErr.Error())
+		return errors.New("PhpMaxChildProcessesUpdaterError: " + sedErr.Error())
 	}
 
 	slog.Debug("UpdateMaxPhpChildProcessesSuccess")
 	return nil
 }
 
-func (ws *WebServerSetup) startNginxIfNeeded(
+func (ws *WebServerSetup) webServerRunningEnsurer(
 	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
 	servicesCmdRepo *servicesInfra.ServicesCmdRepo,
 ) error {
@@ -239,7 +238,7 @@ func (ws *WebServerSetup) startNginxIfNeeded(
 	}
 	nginxService, readErr := servicesQueryRepo.ReadFirstInstalledItem(readRequestDto)
 	if readErr != nil {
-		return errors.New("StartNginxIfNeededError: " + readErr.Error())
+		return errors.New("WebServerRunningEnsurerError: " + readErr.Error())
 	}
 
 	if nginxService.Status.String() == "running" {
@@ -248,13 +247,13 @@ func (ws *WebServerSetup) startNginxIfNeeded(
 
 	startErr := servicesCmdRepo.Start(serviceName)
 	if startErr != nil {
-		return errors.New("StartNginxIfNeededError: " + startErr.Error())
+		return errors.New("WebServerRunningEnsurerError: " + startErr.Error())
 	}
 
 	return nil
 }
 
-func (ws *WebServerSetup) configurePhpChildProcesses(
+func (ws *WebServerSetup) phpChildProcessesConfigurator(
 	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
 	memoryTotal tkValueObject.Byte,
 ) error {
@@ -264,7 +263,7 @@ func (ws *WebServerSetup) configurePhpChildProcesses(
 	)
 	if readErr != nil {
 		slog.Debug(
-			"SkippingConfigurePhpChildProcesses",
+			"SkippingPhpChildProcessesConfigurator",
 			slog.String("reason", "PhpWebServerNotInstalled"),
 		)
 		return nil
@@ -280,21 +279,21 @@ func (ws *WebServerSetup) configurePhpChildProcesses(
 
 	if skipProcUpdate {
 		slog.Debug(
-			"SkippingConfigurePhpChildProcesses",
+			"SkippingPhpChildProcessesConfigurator",
 			slog.String("reason", "EnvVarSet"),
 		)
 		return nil
 	}
 
-	err = ws.updatePhpMaxChildProcesses(memoryTotal)
+	err = ws.phpMaxChildProcessesUpdater(memoryTotal)
 	if err != nil {
-		return errors.New("ConfigurePhpChildProcessesError: " + err.Error())
+		return errors.New("PhpChildProcessesConfiguratorError: " + err.Error())
 	}
 
 	return nil
 }
 
-func (ws *WebServerSetup) OnStartSetup() {
+func (ws *WebServerSetup) onStartSetupOrchestrator() {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(ws.transientDbSvc)
 	containerResources, resourcesErr := o11yQueryRepo.ReadOverview(false)
 	if resourcesErr != nil {
@@ -305,57 +304,26 @@ func (ws *WebServerSetup) OnStartSetup() {
 		os.Exit(1)
 	}
 
-	cpuCores := containerResources.HardwareSpecs.CpuCores
-	cpuCoresStr := strconv.FormatInt(int64(math.Ceil(cpuCores)), 10)
-
-	nginxConfFilePath := "/etc/nginx/nginx.conf"
-	workerCount, awkErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "awk",
-		Args: []string{
-			"/worker_processes/{gsub(/[^0-9]+/, \"\"); print}", nginxConfFilePath,
-		},
-	}).Run()
-	if awkErr != nil {
-		slog.Error(
-			"ReadNginxWorkersCountFailed", slog.String("err", awkErr.Error()),
-		)
-		os.Exit(1)
-	}
-
 	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
 
-	configurePhpChildProcessesErr := ws.configurePhpChildProcesses(
+	phpChildProcessesConfiguratorErr := ws.phpChildProcessesConfigurator(
 		servicesQueryRepo, containerResources.HardwareSpecs.MemoryTotal,
 	)
-	if configurePhpChildProcessesErr != nil {
+	if phpChildProcessesConfiguratorErr != nil {
 		slog.Warn(
-			"ConfigurePhpChildProcessesError",
-			slog.String("err", configurePhpChildProcessesErr.Error()),
+			"PhpChildProcessesConfiguratorError",
+			slog.String("err", phpChildProcessesConfiguratorErr.Error()),
 		)
 	}
 
-	if workerCount == cpuCoresStr {
-		startNginxIfNeededErr := ws.startNginxIfNeeded(servicesQueryRepo, servicesCmdRepo)
-		if startNginxIfNeededErr != nil {
-			slog.Error(
-				"StartNginxIfNeededError",
-				slog.String("err", startNginxIfNeededErr.Error()),
-			)
-			os.Exit(1)
-		}
-
-		return
-	}
-
-	slog.Debug("UpdatingWebServerWorkerCount")
-	updateWorkerCountErr := ws.vhostHelpers.UpdateWebServerWorkerCount(
-		cpuCoresStr, servicesCmdRepo,
+	webServerRunningEnsurerErr := ws.webServerRunningEnsurer(
+		servicesQueryRepo, servicesCmdRepo,
 	)
-	if updateWorkerCountErr != nil {
+	if webServerRunningEnsurerErr != nil {
 		slog.Error(
-			"UpdateWebServerWorkerCountError",
-			slog.String("err", updateWorkerCountErr.Error()),
+			"WebServerRunningEnsurerError",
+			slog.String("err", webServerRunningEnsurerErr.Error()),
 		)
 		os.Exit(1)
 	}

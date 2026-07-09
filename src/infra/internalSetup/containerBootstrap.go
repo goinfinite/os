@@ -74,10 +74,10 @@ func (cb *ContainerBootstrap) FirstBoot() {
 	}
 
 	cb.setupPrimaryPublicDir()
-	cb.webServerSetup.FirstSetup()
+	cb.webServerSetup.firstSetupOrchestrator()
 }
 
 func (cb *ContainerBootstrap) OnStart() {
-	cb.webServerSetup.OnStartSetup()
+	cb.webServerSetup.onStartSetupOrchestrator()
 	NewPrimaryVirtualHostSynchronizer(cb.persistentDbSvc).Run()
 }
