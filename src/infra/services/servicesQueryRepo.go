@@ -378,6 +378,13 @@ func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
 	return responseDto.InstalledServices[0], nil
 }
 
+func (repo *ServicesQueryRepo) IsInstalled(serviceName valueObject.ServiceName) bool {
+	_, readErr := repo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &serviceName},
+	)
+	return readErr == nil
+}
+
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 	stepsType string,
 	rawCmdSteps interface{},

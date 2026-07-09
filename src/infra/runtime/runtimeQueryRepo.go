@@ -23,7 +23,7 @@ func NewRuntimeQueryRepo() *RuntimeQueryRepo {
 	return &RuntimeQueryRepo{fileClerk: tkInfra.FileClerk{}}
 }
 
-func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
+func (repo RuntimeQueryRepo) ReadVirtualHostPhpConfFilePath(
 	hostname tkValueObject.Fqdn,
 ) (vhostPhpConfFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
 	primaryVhostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
@@ -84,7 +84,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 func (repo RuntimeQueryRepo) ReadPhpVersion(
 	hostname tkValueObject.Fqdn,
 ) (phpVersion entity.PhpVersion, err error) {
-	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
+	vhostPhpConfFilePath, err := repo.ReadVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return phpVersion, err
 	}
@@ -219,7 +219,7 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 func (repo RuntimeQueryRepo) ReadPhpSettings(
 	hostname tkValueObject.Fqdn,
 ) (phpSettings []entity.PhpSetting, err error) {
-	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
+	vhostPhpConfFilePath, err := repo.ReadVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return phpSettings, err
 	}

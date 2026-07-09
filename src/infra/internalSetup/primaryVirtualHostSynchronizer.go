@@ -6,10 +6,13 @@ import (
 	"os"
 
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
+	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
@@ -19,6 +22,8 @@ type PrimaryVirtualHostSynchronizer struct {
 	persistentDbSvc         *internalDbInfra.PersistentDatabaseService
 	previousPrimaryHostname tkValueObject.Fqdn
 	newPrimaryHostname      tkValueObject.Fqdn
+	servicesQueryRepo       *servicesInfra.ServicesQueryRepo
+	runtimeCmdRepo          *runtimeInfra.RuntimeCmdRepo
 	vhostCmdRepo            *vhostInfra.VirtualHostCmdRepo
 	vhostHelpers            *vhostInfra.VirtualHostHelpers
 }
@@ -27,10 +32,34 @@ func NewPrimaryVirtualHostSynchronizer(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *PrimaryVirtualHostSynchronizer {
 	return &PrimaryVirtualHostSynchronizer{
-		persistentDbSvc: persistentDbSvc,
-		vhostCmdRepo:    vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
-		vhostHelpers:    vhostInfra.NewVirtualHostHelpers(),
+		persistentDbSvc:   persistentDbSvc,
+		servicesQueryRepo: servicesInfra.NewServicesQueryRepo(persistentDbSvc),
+		runtimeCmdRepo:    runtimeInfra.NewRuntimeCmdRepo(persistentDbSvc),
+		vhostCmdRepo:      vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
+		vhostHelpers:      vhostInfra.NewVirtualHostHelpers(),
 	}
+}
+
+func (sync *PrimaryVirtualHostSynchronizer) phpConfUpdater() error {
+	phpWebServerSvcName, err := valueObject.NewServiceName("php-webserver")
+	if err != nil {
+		slog.Error(
+			"NewPhpWebServerServiceNameFailed", slog.String("err", err.Error()),
+		)
+		return errors.New("NewPhpWebServerServiceNameFailed: " + err.Error())
+	}
+
+	if !sync.servicesQueryRepo.IsInstalled(phpWebServerSvcName) {
+		slog.Debug(
+			"SkippingPrimaryVirtualHostPhpConfUpdater",
+			slog.String("reason", "PhpWebServerNotInstalled"),
+		)
+		return nil
+	}
+
+	return sync.runtimeCmdRepo.UpdatePhpVirtualHostHostname(
+		sync.previousPrimaryHostname, sync.newPrimaryHostname,
+	)
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) confUpdater() error {
@@ -149,6 +178,15 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		slog.String("primaryVirtualHostEnvValue", primaryVirtualHostEnvValue.String()),
 		slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHost.String()),
 	)
+
+	phpConfErr := sync.phpConfUpdater()
+	if phpConfErr != nil {
+		slog.Error(
+			"PrimaryVirtualHostPhpConfUpdaterFailed",
+			slog.String("err", phpConfErr.Error()),
+		)
+		os.Exit(1)
+	}
 
 	confErr := sync.confUpdater()
 	if confErr != nil {

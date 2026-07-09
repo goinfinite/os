@@ -18,6 +18,10 @@ import (
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
+var phpWebserverServiceName, phpWebserverServiceNameError = valueObject.NewServiceName(
+	"php-webserver",
+)
+
 type RuntimeCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	runtimeQueryRepo *RuntimeQueryRepo
@@ -99,11 +103,107 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 }
 
 func (repo *RuntimeCmdRepo) restartPhpWebserver() error {
-	phpSvcName, _ := valueObject.NewServiceName("php-webserver")
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
-	err := servicesCmdRepo.Restart(phpSvcName)
+	err := servicesCmdRepo.Restart(phpWebserverServiceName)
 	if err != nil {
 		return errors.New("RestartWebServerFailed: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo *RuntimeCmdRepo) regexReplaceInFile(
+	searchPattern, replacement, filePath string,
+) error {
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: "sed",
+		Args: []string{
+			"-i", "-E", "s#" + searchPattern + "#" + replacement + "#g", filePath,
+		},
+	}).Run()
+	return err
+}
+
+func (repo *RuntimeCmdRepo) validatePhpWebserverConfig() error {
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           infraEnvs.PhpWebserverConfigValidationCmd,
+		ShouldUseSubShell: true,
+	}).Run()
+	if err != nil {
+		return errors.New("PhpWebserverConfigValidationFailed: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
+	previousHostname, newHostname tkValueObject.Fqdn,
+) error {
+	if previousHostname == newHostname {
+		return nil
+	}
+
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadVirtualHostPhpConfFilePath(
+		previousHostname,
+	)
+	if err != nil {
+		return err
+	}
+	phpConfFilePathStr := phpConfFilePath.String()
+
+	escapedPreviousHostname := strings.ReplaceAll(previousHostname.String(), ".", `\.`)
+	newHostnameStr := newHostname.String()
+
+	hostnameSubstitutionPattern := "(^|[^[:alnum:].-])" +
+		escapedPreviousHostname + "([^[:alnum:].-]|$)"
+	hostnameSubstitutionReplacement := `\1` + newHostnameStr + `\2`
+
+	listenerMapSubstitutionPattern := "(map[[:space:]]+)" +
+		escapedPreviousHostname + "([[:space:]]+)" + escapedPreviousHostname
+	listenerMapSubstitutionReplacement := `\1` + newHostnameStr + `\2` +
+		newHostnameStr
+
+	err = repo.regexReplaceInFile(
+		hostnameSubstitutionPattern, hostnameSubstitutionReplacement,
+		phpConfFilePathStr,
+	)
+	if err != nil {
+		return errors.New("PhpConfHostnameSubstitutionFailed: " + err.Error())
+	}
+
+	httpdConfigFilePath := infraEnvs.PhpWebserverMainConfFilePath
+	err = repo.regexReplaceInFile(
+		listenerMapSubstitutionPattern, listenerMapSubstitutionReplacement,
+		httpdConfigFilePath,
+	)
+	if err != nil {
+		return errors.New("HttpdListenerMapHostnameSubstitutionFailed: " + err.Error())
+	}
+
+	err = repo.regexReplaceInFile(
+		hostnameSubstitutionPattern, hostnameSubstitutionReplacement,
+		httpdConfigFilePath,
+	)
+	if err != nil {
+		return errors.New("HttpdConfigHostnameSubstitutionFailed: " + err.Error())
+	}
+
+	err = repo.validatePhpWebserverConfig()
+	if err != nil {
+		return err
+	}
+
+	if phpWebserverServiceNameError != nil {
+		return errors.New(
+			"PhpWebServerServiceNameResolutionFailed: " +
+				phpWebserverServiceNameError.Error(),
+		)
+	}
+
+	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
+	err = servicesCmdRepo.Restart(phpWebserverServiceName)
+	if err != nil {
+		return errors.New("PhpWebServerRestartFailed: " + err.Error())
 	}
 
 	return nil
@@ -122,18 +222,15 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		return nil
 	}
 
-	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
 
 	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
-	updatePhpVersionCmd := "sed -i 's/lsapi:lsphp[0-9][0-9]/" + newLsapiLine +
-		"/g' " + phpConfFilePath.String()
-	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           updatePhpVersionCmd,
-		ShouldUseSubShell: true,
-	}).Run()
+	err = repo.regexReplaceInFile(
+		"lsapi:lsphp[0-9][0-9]", newLsapiLine, phpConfFilePath.String(),
+	)
 	if err != nil {
 		return errors.New("UpdatePhpVersionFailed: " + err.Error())
 	}
@@ -158,7 +255,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 	hostname tkValueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
-	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
@@ -170,15 +267,16 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 		if setting.Value.GetType() == "string" {
 			settingValue = "\"" + settingValue + "\""
 			settingValue = strings.Replace(settingValue, "|", "\\|", -1)
+			settingValue = strings.Replace(settingValue, "/", "\\/", -1)
+			settingValue = strings.Replace(settingValue, "#", "\\#", -1)
 		}
 
-		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
-			Command: "sed",
-			Args: []string{
-				"-i", "s|" + settingName + " .*|" + settingName + " " + settingValue + "|g",
-				phpConfigFilePathStr,
-			},
-		}).Run()
+		phpSettingLinePattern := settingName + " .*"
+		phpSettingLineReplacement := settingName + " " + settingValue
+
+		err := repo.regexReplaceInFile(
+			phpSettingLinePattern, phpSettingLineReplacement, phpConfigFilePathStr,
+		)
 		if err != nil {
 			slog.Debug(
 				"UpdatePhpSettingFailed",
@@ -353,7 +451,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) error {
 	vhostExists := true
 
-	phpConfFilePath, err := repo.runtimeQueryRepo.GetVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadVirtualHostPhpConfFilePath(hostname)
 	if err != nil {
 		if err.Error() != "VirtualHostNotFound" {
 			return err
@@ -373,14 +471,9 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) er
 	}
 
 	hostnameStr := hostname.String()
-	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-ie",
-			"s/" + infraEnvs.DefaultPrimaryVhost + "/" + hostnameStr + "/g",
-			phpConfFilePathStr,
-		},
-	}).Run()
+	err = repo.regexReplaceInFile(
+		infraEnvs.DefaultPrimaryVhost, hostnameStr, phpConfFilePathStr,
+	)
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
 	}

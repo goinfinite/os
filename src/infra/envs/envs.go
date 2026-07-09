@@ -27,6 +27,7 @@ const (
 	PhpWebserverMainConfFilePath       string = "/usr/local/lsws/conf/httpd_config.conf"
 	PhpWebserverUsername               string = "nobody"
 	PhpWebserverGroupName              string = "nogroup"
+	PhpWebserverConfigValidationCmd    string = "/usr/local/lsws/bin/lswsctrl -t"
 	PhpChildProcessesUpdateSkipEnvKey  string = "SKIP_PHP_PROCS_COUNT_UPDATE"
 	AccessTokenCookieKey               string = "os-access-token"
 	UserDataBaseDirectory              string = "/home"
