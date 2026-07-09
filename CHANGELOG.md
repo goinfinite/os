@@ -2,6 +2,8 @@
 
 ```log
 0.3.1 - 2026/07/06
+refactor(vhost): rebuild primary vhost conf from template instead of sed-editing
+refactor(vhost): remove sed-based primary vhost update helpers
 feat(cli): add PrimaryVirtualHostSynchronizer for env-conf-db sync
 refactor(vhost): consolidate helpers into VirtualHostHelpers and abstract nginx naming
 fix(envs): rename PrimaryPublicDir, remove PRIMARY_VHOST from required, add SSL prefix to skip dns env
