@@ -153,8 +153,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	confErr := sync.confUpdater()
 	if confErr != nil {
 		slog.Error(
-			"ConfUpdaterFailed",
-			slog.String("err", confErr.Error()),
+			"PrimaryVirtualHostConfUpdaterFailed", slog.String("err", confErr.Error()),
 		)
 		os.Exit(1)
 	}
@@ -162,8 +161,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	dbErr := sync.dbUpdater()
 	if dbErr != nil {
 		slog.Error(
-			"DbUpdaterFailed",
-			slog.String("err", dbErr.Error()),
+			"PrimaryVirtualHostDbUpdaterFailed", slog.String("err", dbErr.Error()),
 		)
 		os.Exit(1)
 	}
