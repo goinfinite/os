@@ -186,11 +186,11 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 	listenerMapSubstitutionReplacement := `\1` + newHostnameStr + `\2` +
 		newHostnameStr + `, *.` + newHostnameStr + `\4`
 
-	sslFilePathSubstitutionPattern := "(keyFile|certFile)[[:space:]]+" +
+	sslFilePathSubstitutionPattern := "(keyFile|certFile)([[:space:]]+)" +
 		infraEnvs.PkiConfDir + "/" + escapedPreviousHostname +
 		`\.(key|crt)([[:space:]]|$)`
-	sslFilePathSubstitutionReplacement := `\1 ` + infraEnvs.PkiConfDir + "/" +
-		newHostnameStr + `.\2\3`
+	sslFilePathSubstitutionReplacement := `\1\2` + infraEnvs.PkiConfDir + "/" +
+		newHostnameStr + `.\3\4`
 
 	err = repo.regexReplaceInFile(
 		hostnameSubstitutionPattern, hostnameSubstitutionReplacement,
