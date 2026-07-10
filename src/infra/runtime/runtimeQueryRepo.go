@@ -33,7 +33,7 @@ func (repo RuntimeQueryRepo) ReadPhpVirtualHostConfFilePath(
 	rawPhpVirtualHostConfFilePath := "/app/conf/php-webserver/" + vhostHostname.String() + ".conf"
 
 	primaryVirtualHostHostname, err := vhostInfra.NewVirtualHostHelpers().
-		ReadPrimaryVirtualHostHostname()
+		ReadPrimaryVirtualHostHostnameFromWebServerConf()
 	if err != nil {
 		return phpVirtualHostConfFilePath, errors.New(
 			"WebServerPrimaryVirtualHostNotFound: " + err.Error(),

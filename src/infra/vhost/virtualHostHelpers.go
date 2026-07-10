@@ -39,6 +39,11 @@ func (helpers *VirtualHostHelpers) ReadPrimaryVirtualHostHostnameFromWebServerCo
 	return tkValueObject.NewFqdn(rawServerNameHostname)
 }
 
+// ReadPrimaryVirtualHostHostname returns the primary virtual host hostname from the
+// environment variables, followed by the web server configuration and fallback
+// to the shell command.
+// If you need the hostname straight from the web server configuration, use
+// ReadPrimaryVirtualHostHostnameFromWebServerConf instead.
 func (helpers *VirtualHostHelpers) ReadPrimaryVirtualHostHostname() (
 	primaryHostname tkValueObject.Fqdn, err error,
 ) {
