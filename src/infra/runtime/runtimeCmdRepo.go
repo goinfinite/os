@@ -181,9 +181,10 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 	hostnameSubstitutionReplacement := `\1` + newHostnameStr + `\2`
 
 	listenerMapSubstitutionPattern := "(map[[:space:]]+)" +
-		escapedPreviousHostname + "([[:space:]]+)" + escapedPreviousHostname
+		escapedPreviousHostname + "([[:space:]]+)" + escapedPreviousHostname +
+		"(, \\*\\.)" + escapedPreviousHostname + `([[:space:]]|$)`
 	listenerMapSubstitutionReplacement := `\1` + newHostnameStr + `\2` +
-		newHostnameStr
+		newHostnameStr + `, *.` + newHostnameStr + `\4`
 
 	sslFilePathSubstitutionPattern := "(keyFile|certFile)[[:space:]]+" +
 		infraEnvs.PkiConfDir + "/" + escapedPreviousHostname +
@@ -534,7 +535,8 @@ virtualhost ` + hostname.String() + ` {
 	}
 
 	listenerMapRegex := `^[[:space:]]*map[[:space:]]\+[[:alnum:].-]\+[[:space:]]\+\*`
-	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr
+	newListenerMapLine := "\\ \\ map                     " + hostnameStr + " " + hostnameStr +
+		", *." + hostnameStr
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
