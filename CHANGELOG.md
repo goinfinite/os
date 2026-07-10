@@ -1,7 +1,7 @@
 # Changelog
 
 ```log
-0.3.1 - 2026/07/06
+0.3.1 - 2026/07/10
 refactor(vhost): rebuild primary vhost conf from template instead of sed-editing
 refactor(vhost): remove sed-based primary vhost update helpers
 feat(cli): add PrimaryVirtualHostSynchronizer for env-conf-db sync
