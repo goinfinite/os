@@ -4,6 +4,8 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"regexp"
+	"strings"
 	"time"
 
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
@@ -20,23 +22,36 @@ func NewVirtualHostHelpers() *VirtualHostHelpers {
 func (helpers *VirtualHostHelpers) ReadPrimaryVirtualHostHostnameFromWebServerConf() (
 	primaryHostname tkValueObject.Fqdn, err error,
 ) {
-	rawServerNameHostname, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-n",
-			`/^\s\{0,20\}server_name\s/s/^\s\{0,20\}server_name\s\{1,255\}\([^; ]\{1,255\}\).\{0,1024\}$/\1/p`,
-			infraEnvs.PrimaryVirtualHostConfPath,
-		},
-	}).Run()
+	rawPrimaryConfContentStr, err := tkInfra.FileClerk{}.ReadFileContent(
+		infraEnvs.PrimaryVirtualHostConfPath, nil,
+	)
 	if err != nil {
 		return primaryHostname, err
 	}
 
-	if rawServerNameHostname == "" {
-		return primaryHostname, errors.New("PrimaryServerNameNotFound")
+	serverNameRegex := regexp.MustCompile(`^\s*server_name\s+([^;]+);`)
+	for rawPrimaryConfLineStr := range strings.SplitSeq(
+		rawPrimaryConfContentStr, "\n",
+	) {
+		rawServerNameMatchStrSlice := serverNameRegex.FindStringSubmatch(
+			rawPrimaryConfLineStr,
+		)
+		if len(rawServerNameMatchStrSlice) < 2 {
+			continue
+		}
+
+		rawServerNameValueStr := rawServerNameMatchStrSlice[1]
+		rawPrimaryConfServerNamesStrSlice := strings.Fields(
+			rawServerNameValueStr,
+		)
+		if len(rawPrimaryConfServerNamesStrSlice) == 0 {
+			continue
+		}
+
+		return tkValueObject.NewFqdn(rawPrimaryConfServerNamesStrSlice[0])
 	}
 
-	return tkValueObject.NewFqdn(rawServerNameHostname)
+	return primaryHostname, errors.New("PrimaryServerNameNotFound")
 }
 
 // ReadPrimaryVirtualHostHostname returns the primary virtual host hostname from the

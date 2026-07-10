@@ -14,6 +14,7 @@ fix(cli): use StringArrayVarP for --envs flag to preserve commas
 refactor(internalSetup): return errors from auxiliary methods and unify slog key to err
 test(runtime,services): use PascalCase test errors and cover PHP vhost sync
 feat(runtime): extend PrimaryVirtualHostSynchronizer to sync PHP vhost
+perf(vhost): read primary server_name via tk FileClerk instead of sed subprocess
 
 0.3.0 - 2026/07/03
 fix(internalSetup): lsapi counter and add last edit comment
