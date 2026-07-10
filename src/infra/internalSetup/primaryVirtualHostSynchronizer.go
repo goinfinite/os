@@ -18,6 +18,10 @@ import (
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
+var phpWebServerServiceName, phpWebServerServiceNameError = valueObject.NewServiceName(
+	"php-webserver",
+)
+
 type PrimaryVirtualHostSynchronizer struct {
 	persistentDbSvc         *internalDbInfra.PersistentDatabaseService
 	previousPrimaryHostname tkValueObject.Fqdn
@@ -41,15 +45,7 @@ func NewPrimaryVirtualHostSynchronizer(
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) phpConfUpdater() error {
-	phpWebServerSvcName, err := valueObject.NewServiceName("php-webserver")
-	if err != nil {
-		slog.Error(
-			"NewPhpWebServerServiceNameFailed", slog.String("err", err.Error()),
-		)
-		return errors.New("NewPhpWebServerServiceNameFailed: " + err.Error())
-	}
-
-	if !sync.servicesQueryRepo.IsInstalled(phpWebServerSvcName) {
+	if !sync.servicesQueryRepo.IsInstalled(phpWebServerServiceName) {
 		slog.Debug(
 			"SkippingPrimaryVirtualHostPhpConfUpdater",
 			slog.String("reason", "PhpWebServerNotInstalled"),
@@ -151,7 +147,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		slog.Error(
 			"InvalidPrimaryVirtualHostEnvValue", slog.String("err", parseErr.Error()),
 		)
-		os.Exit(1)
+		return
 	}
 
 	webServerPrimaryVirtualHost, err := sync.vhostHelpers.
@@ -160,7 +156,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		slog.Error(
 			"ReadPrimaryVirtualHostHostnameFailed", slog.String("err", err.Error()),
 		)
-		os.Exit(1)
+		return
 	}
 
 	if primaryVirtualHostEnvValue == webServerPrimaryVirtualHost {
@@ -179,13 +175,15 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHost.String()),
 	)
 
+	// phpConfUpdater must be first, as it relies on the previous primary hostname being set
+	// on the web server config before other steps can be performed.
 	phpConfErr := sync.phpConfUpdater()
 	if phpConfErr != nil {
 		slog.Error(
 			"PrimaryVirtualHostPhpConfUpdaterFailed",
 			slog.String("err", phpConfErr.Error()),
 		)
-		os.Exit(1)
+		return
 	}
 
 	confErr := sync.confUpdater()
@@ -193,7 +191,7 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		slog.Error(
 			"PrimaryVirtualHostConfUpdaterFailed", slog.String("err", confErr.Error()),
 		)
-		os.Exit(1)
+		return
 	}
 
 	dbErr := sync.dbUpdater()
@@ -201,6 +199,6 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		slog.Error(
 			"PrimaryVirtualHostDbUpdaterFailed", slog.String("err", dbErr.Error()),
 		)
-		os.Exit(1)
+		return
 	}
 }

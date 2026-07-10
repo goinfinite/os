@@ -257,8 +257,7 @@ func (ws *WebServerSetup) phpChildProcessesConfigurator(
 	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
 	memoryTotal tkValueObject.Byte,
 ) error {
-	phpWebServerSvcName, _ := valueObject.NewServiceName("php-webserver")
-	if !servicesQueryRepo.IsInstalled(phpWebServerSvcName) {
+	if !servicesQueryRepo.IsInstalled(phpWebServerServiceName) {
 		slog.Debug(
 			"SkippingPhpChildProcessesConfigurator",
 			slog.String("reason", "PhpWebServerNotInstalled"),

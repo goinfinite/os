@@ -18,7 +18,7 @@ import (
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-var phpWebserverServiceName, phpWebserverServiceNameError = valueObject.NewServiceName(
+var phpWebServerServiceName, phpWebServerServiceNameError = valueObject.NewServiceName(
 	"php-webserver",
 )
 
@@ -104,7 +104,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 
 func (repo *RuntimeCmdRepo) restartPhpWebserver() error {
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
-	err := servicesCmdRepo.Restart(phpWebserverServiceName)
+	err := servicesCmdRepo.Restart(phpWebServerServiceName)
 	if err != nil {
 		return errors.New("RestartWebServerFailed: " + err.Error())
 	}
@@ -143,11 +143,18 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 		return nil
 	}
 
-	phpConfFilePath, err := repo.runtimeQueryRepo.ReadVirtualHostPhpConfFilePath(
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(
 		previousHostname,
 	)
 	if err != nil {
-		return err
+		if errors.Is(err, ErrPhpVirtualHostNotFound) {
+			slog.Debug(
+				"SkippingUpdatePhpVirtualHost",
+				slog.String("reason", "PhpVirtualHostNotFound"),
+			)
+			return nil
+		}
+		return errors.New("PhpConfFilePathResolutionFailed: " + err.Error())
 	}
 	phpConfFilePathStr := phpConfFilePath.String()
 
@@ -193,15 +200,15 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 		return err
 	}
 
-	if phpWebserverServiceNameError != nil {
+	if phpWebServerServiceNameError != nil {
 		return errors.New(
 			"PhpWebServerServiceNameResolutionFailed: " +
-				phpWebserverServiceNameError.Error(),
+				phpWebServerServiceNameError.Error(),
 		)
 	}
 
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
-	err = servicesCmdRepo.Restart(phpWebserverServiceName)
+	err = servicesCmdRepo.Restart(phpWebServerServiceName)
 	if err != nil {
 		return errors.New("PhpWebServerRestartFailed: " + err.Error())
 	}
@@ -222,7 +229,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		return nil
 	}
 
-	phpConfFilePath, err := repo.runtimeQueryRepo.ReadVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
@@ -255,7 +262,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 	hostname tkValueObject.Fqdn,
 	settings []entity.PhpSetting,
 ) error {
-	phpConfFilePath, err := repo.runtimeQueryRepo.ReadVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(hostname)
 	if err != nil {
 		return err
 	}
@@ -451,7 +458,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) error {
 	vhostExists := true
 
-	phpConfFilePath, err := repo.runtimeQueryRepo.ReadVirtualHostPhpConfFilePath(hostname)
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(hostname)
 	if err != nil {
 		if err.Error() != "VirtualHostNotFound" {
 			return err
