@@ -72,7 +72,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 	cmdOutput, cmdErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:              phpCli,
 		Args:                 []string{runRequest.Command.String()},
-		Username:             infraEnvs.PhpWebserverUsername,
+		Username:             infraEnvs.PhpWebServerUsername,
 		WorkingDirectory:     workingDir,
 		ShouldUseSubShell:    true,
 		ExecutionTimeoutSecs: timeoutSecs,
@@ -102,7 +102,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 	}, nil
 }
 
-func (repo *RuntimeCmdRepo) restartPhpWebserver() error {
+func (repo *RuntimeCmdRepo) restartPhpWebServer() error {
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
 	err := servicesCmdRepo.Restart(phpWebServerServiceName)
 	if err != nil {
@@ -124,13 +124,13 @@ func (repo *RuntimeCmdRepo) regexReplaceInFile(
 	return err
 }
 
-func (repo *RuntimeCmdRepo) validatePhpWebserverConfig() error {
+func (repo *RuntimeCmdRepo) validatePhpWebServerConfig() error {
 	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           infraEnvs.PhpWebserverConfigValidationCmd,
+		Command:           infraEnvs.PhpWebServerConfigValidationCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
-		return errors.New("PhpWebserverConfigValidationFailed: " + err.Error())
+		return errors.New("PhpWebServerConfigValidationFailed: " + err.Error())
 	}
 
 	return nil
@@ -178,7 +178,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 		return errors.New("PhpConfHostnameSubstitutionFailed: " + err.Error())
 	}
 
-	httpdConfigFilePath := infraEnvs.PhpWebserverMainConfFilePath
+	httpdConfigFilePath := infraEnvs.PhpWebServerMainConfFilePath
 	err = repo.regexReplaceInFile(
 		listenerMapSubstitutionPattern, listenerMapSubstitutionReplacement,
 		httpdConfigFilePath,
@@ -195,7 +195,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 		return errors.New("HttpdConfigHostnameSubstitutionFailed: " + err.Error())
 	}
 
-	err = repo.validatePhpWebserverConfig()
+	err = repo.validatePhpWebServerConfig()
 	if err != nil {
 		return err
 	}
@@ -255,7 +255,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		}
 	}
 
-	return repo.restartPhpWebserver()
+	return repo.restartPhpWebServer()
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpSettings(
@@ -295,7 +295,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 		}
 	}
 
-	return repo.restartPhpWebserver()
+	return repo.restartPhpWebServer()
 }
 
 func (repo *RuntimeCmdRepo) EnablePhpModule(
@@ -452,7 +452,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 		}
 	}
 
-	return repo.restartPhpWebserver()
+	return repo.restartPhpWebServer()
 }
 
 func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) error {
@@ -497,7 +497,7 @@ virtualhost ` + hostname.String() + ` {
 `
 	shouldOverwrite := false
 	err = repo.fileClerk.UpdateFileContent(
-		infraEnvs.PhpWebserverMainConfFilePath, phpVhostHttpdConf, shouldOverwrite,
+		infraEnvs.PhpWebServerMainConfFilePath, phpVhostHttpdConf, shouldOverwrite,
 	)
 	if err != nil {
 		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
@@ -509,7 +509,7 @@ virtualhost ` + hostname.String() + ` {
 		Command: "sed",
 		Args: []string{
 			"-ie", "/" + listenerMapRegex + "/a" + newListenerMapLine,
-			infraEnvs.PhpWebserverMainConfFilePath,
+			infraEnvs.PhpWebServerMainConfFilePath,
 		},
 	}).Run()
 	if err != nil {

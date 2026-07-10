@@ -217,7 +217,7 @@ func (ws *WebServerSetup) phpMaxChildProcessesUpdater(
 		Args: []string{
 			"-i", "-E",
 			"s/PHP_LSAPI_CHILDREN=[0-9]+.*/" + childProcsNewValue + "/g",
-			infraEnvs.PhpWebserverMainConfFilePath,
+			infraEnvs.PhpWebServerMainConfFilePath,
 		},
 	}).Run()
 	if sedErr != nil {

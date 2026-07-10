@@ -67,7 +67,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	output, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "awk",
 		Args: []string{
-			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebserverMainConfFilePath,
+			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebServerMainConfFilePath,
 		},
 	}).Run()
 	if err != nil {
