@@ -15,6 +15,11 @@ refactor(internalSetup): return errors from auxiliary methods and unify slog key
 test(runtime,services): use PascalCase test errors and cover PHP vhost sync
 feat(runtime): extend PrimaryVirtualHostSynchronizer to sync PHP vhost
 perf(vhost): read primary server_name via tk FileClerk instead of sed subprocess
+refactor(mapping): orchestrate PHP vhost creation in domain use case
+fix: alias search should use previous host
+feat(runtime): enable php webserver wildcard for new vhosts
+fix: make primary vhost rename ssl-safe
+fix: add missing restart after php vhost creation
 
 0.3.0 - 2026/07/03
 fix(internalSetup): lsapi counter and add last edit comment
