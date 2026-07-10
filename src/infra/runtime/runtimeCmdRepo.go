@@ -106,7 +106,7 @@ func (repo *RuntimeCmdRepo) restartPhpWebServer() error {
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
 	err := servicesCmdRepo.Restart(phpWebServerServiceName)
 	if err != nil {
-		return errors.New("RestartWebServerFailed: " + err.Error())
+		return errors.New("RestartPhpWebServerFailed: " + err.Error())
 	}
 
 	return nil
@@ -237,13 +237,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 		)
 	}
 
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
-	err = servicesCmdRepo.Restart(phpWebServerServiceName)
-	if err != nil {
-		return errors.New("PhpWebServerRestartFailed: " + err.Error())
-	}
-
-	return nil
+	return repo.restartPhpWebServer()
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpVersion(
@@ -548,5 +542,5 @@ virtualhost ` + hostname.String() + ` {
 		return errors.New("UpdateListenerMapLineError: " + err.Error())
 	}
 
-	return nil
+	return repo.restartPhpWebServer()
 }
