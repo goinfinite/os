@@ -2,6 +2,7 @@ package infraHelper
 
 import (
 	"errors"
+	"log/slog"
 
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
@@ -12,6 +13,33 @@ func CreateSelfSignedSsl(
 	vhostHostname tkValueObject.Fqdn,
 	aliasesHostname []tkValueObject.Fqdn,
 ) error {
+	dirPathStr := dirPath.String()
+	vhostHostnameStr := vhostHostname.String()
+
+	rawCertFilePath := dirPathStr + "/" + vhostHostnameStr + ".crt"
+	certFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawCertFilePath, false)
+	if err != nil {
+		return errors.New("InvalidCertFilePath: " + err.Error())
+	}
+	certFilePathStr := certFilePath.String()
+
+	rawKeyFilePath := dirPathStr + "/" + vhostHostnameStr + ".key"
+	keyFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawKeyFilePath, false)
+	if err != nil {
+		return errors.New("InvalidKeyFilePath: " + err.Error())
+	}
+	keyFilePathStr := keyFilePath.String()
+
+	fileClerk := tkInfra.FileClerk{}
+	if fileClerk.FileExists(certFilePathStr) && fileClerk.FileExists(keyFilePathStr) {
+		slog.Debug(
+			"SkippingSelfSignedSslAlreadyExists",
+			slog.String("certFilePath", certFilePathStr),
+			slog.String("keyFilePath", keyFilePathStr),
+		)
+		return nil
+	}
+
 	synth := &tkInfra.Synthesizer{}
 	certPem, keyPem, err := synth.SelfSignedCertificatePairPemFactory(
 		&vhostHostname, aliasesHostname,
@@ -20,23 +48,13 @@ func CreateSelfSignedSsl(
 		return errors.New("SelfSignedCertificateGenerationError: " + err.Error())
 	}
 
-	vhostHostnameStr := vhostHostname.String()
-	dirPathStr := dirPath.String()
-
 	shouldOverwrite := true
-	sslFileClerk := tkInfra.FileClerk{}
-	err = sslFileClerk.UpdateFileContent(
-		dirPathStr+"/"+vhostHostnameStr+".key",
-		keyPem, shouldOverwrite,
-	)
+	err = fileClerk.UpdateFileContent(keyFilePathStr, keyPem, shouldOverwrite)
 	if err != nil {
 		return errors.New("WritePrivateKeyError: " + err.Error())
 	}
 
-	err = sslFileClerk.UpdateFileContent(
-		dirPathStr+"/"+vhostHostnameStr+".crt",
-		certPem, shouldOverwrite,
-	)
+	err = fileClerk.UpdateFileContent(certFilePathStr, certPem, shouldOverwrite)
 	if err != nil {
 		return errors.New("WriteCertificateError: " + err.Error())
 	}

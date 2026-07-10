@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -23,13 +24,15 @@ var phpWebServerServiceName, phpWebServerServiceNameError = valueObject.NewServi
 )
 
 type PrimaryVirtualHostSynchronizer struct {
-	persistentDbSvc         *internalDbInfra.PersistentDatabaseService
-	previousPrimaryHostname tkValueObject.Fqdn
-	newPrimaryHostname      tkValueObject.Fqdn
-	servicesQueryRepo       *servicesInfra.ServicesQueryRepo
-	runtimeCmdRepo          *runtimeInfra.RuntimeCmdRepo
-	vhostCmdRepo            *vhostInfra.VirtualHostCmdRepo
-	vhostHelpers            *vhostInfra.VirtualHostHelpers
+	persistentDbSvc          *internalDbInfra.PersistentDatabaseService
+	previousPrimaryHostname  tkValueObject.Fqdn
+	newPrimaryHostname       tkValueObject.Fqdn
+	servicesQueryRepo        *servicesInfra.ServicesQueryRepo
+	runtimeCmdRepo           *runtimeInfra.RuntimeCmdRepo
+	vhostCmdRepo             *vhostInfra.VirtualHostCmdRepo
+	vhostQueryRepo           *vhostInfra.VirtualHostQueryRepo
+	vhostHelpers             *vhostInfra.VirtualHostHelpers
+	primaryVirtualHostEntity entity.VirtualHost
 }
 
 func NewPrimaryVirtualHostSynchronizer(
@@ -40,6 +43,7 @@ func NewPrimaryVirtualHostSynchronizer(
 		servicesQueryRepo: servicesInfra.NewServicesQueryRepo(persistentDbSvc),
 		runtimeCmdRepo:    runtimeInfra.NewRuntimeCmdRepo(persistentDbSvc),
 		vhostCmdRepo:      vhostInfra.NewVirtualHostCmdRepo(persistentDbSvc),
+		vhostQueryRepo:    vhostInfra.NewVirtualHostQueryRepo(persistentDbSvc),
 		vhostHelpers:      vhostInfra.NewVirtualHostHelpers(),
 	}
 }
@@ -55,19 +59,12 @@ func (sync *PrimaryVirtualHostSynchronizer) phpConfUpdater() error {
 
 	return sync.runtimeCmdRepo.UpdatePhpVirtualHostHostname(
 		sync.previousPrimaryHostname, sync.newPrimaryHostname,
+		sync.primaryVirtualHostEntity.AliasesHostnames,
 	)
 }
 
-func (sync *PrimaryVirtualHostSynchronizer) confUpdater() error {
-	vhostQueryRepo := vhostInfra.NewVirtualHostQueryRepo(sync.persistentDbSvc)
-	vhostEntity, readErr := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
-		Hostname: &sync.previousPrimaryHostname,
-	})
-	if readErr != nil {
-		return errors.New("ReadPreviousVirtualHostFailed: " + readErr.Error())
-	}
-
-	mappingsFilePath, readErr := vhostQueryRepo.ReadVirtualHostMappingsFilePath(
+func (sync *PrimaryVirtualHostSynchronizer) webServerConfUpdater() error {
+	mappingsFilePath, readErr := sync.vhostQueryRepo.ReadVirtualHostMappingsFilePath(
 		sync.previousPrimaryHostname,
 	)
 	if readErr != nil {
@@ -82,13 +79,14 @@ func (sync *PrimaryVirtualHostSynchronizer) confUpdater() error {
 	}
 
 	createCertErr := infraHelper.CreateSelfSignedSsl(
-		pkiConfDir, sync.newPrimaryHostname, vhostEntity.AliasesHostnames,
+		pkiConfDir, sync.newPrimaryHostname,
+		sync.primaryVirtualHostEntity.AliasesHostnames,
 	)
 	if createCertErr != nil {
 		return errors.New("CreateSelfSignedSslFailed: " + createCertErr.Error())
 	}
 
-	modifiedEntity := vhostEntity
+	modifiedEntity := sync.primaryVirtualHostEntity
 	modifiedEntity.Hostname = sync.newPrimaryHostname
 
 	confContent, factoryErr := sync.vhostCmdRepo.WebServerUnitFileFactory(
@@ -175,21 +173,34 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHost.String()),
 	)
 
+	primaryVirtualHostEntity, entityReadErr := sync.vhostQueryRepo.ReadFirst(
+		dto.ReadVirtualHostsRequest{Hostname: &sync.previousPrimaryHostname},
+	)
+	if entityReadErr != nil {
+		slog.Error(
+			"ReadPrimaryVirtualHostEntityFailed",
+			slog.String("err", entityReadErr.Error()),
+		)
+		return
+	}
+	sync.primaryVirtualHostEntity = primaryVirtualHostEntity
+
 	// phpConfUpdater must be first, as it relies on the previous primary hostname being set
 	// on the web server config before other steps can be performed.
 	phpConfErr := sync.phpConfUpdater()
 	if phpConfErr != nil {
 		slog.Error(
-			"PrimaryVirtualHostPhpConfUpdaterFailed",
+			"PrimaryPhpVirtualHostConfUpdaterFailed",
 			slog.String("err", phpConfErr.Error()),
 		)
 		return
 	}
 
-	confErr := sync.confUpdater()
-	if confErr != nil {
+	wsConfErr := sync.webServerConfUpdater()
+	if wsConfErr != nil {
 		slog.Error(
-			"PrimaryVirtualHostConfUpdaterFailed", slog.String("err", confErr.Error()),
+			"PrimaryWebServerVirtualHostConfUpdaterFailed",
+			slog.String("err", wsConfErr.Error()),
 		)
 		return
 	}

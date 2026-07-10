@@ -138,9 +138,24 @@ func (repo *RuntimeCmdRepo) validatePhpWebServerConfig() error {
 
 func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 	previousHostname, newHostname tkValueObject.Fqdn,
+	aliasesHostnames []tkValueObject.Fqdn,
 ) error {
 	if previousHostname == newHostname {
 		return nil
+	}
+
+	pkiConfDir, parseErr := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.PkiConfDir, false,
+	)
+	if parseErr != nil {
+		return errors.New("InvalidPkiConfDir: " + parseErr.Error())
+	}
+
+	createCertErr := infraHelper.CreateSelfSignedSsl(
+		pkiConfDir, newHostname, aliasesHostnames,
+	)
+	if createCertErr != nil {
+		return errors.New("CreateSelfSignedSslFailed: " + createCertErr.Error())
 	}
 
 	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(
@@ -170,6 +185,12 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 	listenerMapSubstitutionReplacement := `\1` + newHostnameStr + `\2` +
 		newHostnameStr
 
+	sslFilePathSubstitutionPattern := "(keyFile|certFile)[[:space:]]+" +
+		infraEnvs.PkiConfDir + "/" + escapedPreviousHostname +
+		`\.(key|crt)([[:space:]]|$)`
+	sslFilePathSubstitutionReplacement := `\1 ` + infraEnvs.PkiConfDir + "/" +
+		newHostnameStr + `.\2\3`
+
 	err = repo.regexReplaceInFile(
 		hostnameSubstitutionPattern, hostnameSubstitutionReplacement,
 		phpConfFilePathStr,
@@ -193,6 +214,14 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 	)
 	if err != nil {
 		return errors.New("HttpdConfigHostnameSubstitutionFailed: " + err.Error())
+	}
+
+	err = repo.regexReplaceInFile(
+		sslFilePathSubstitutionPattern, sslFilePathSubstitutionReplacement,
+		httpdConfigFilePath,
+	)
+	if err != nil {
+		return errors.New("HttpdConfigSslFilePathSubstitutionFailed: " + err.Error())
 	}
 
 	err = repo.validatePhpWebServerConfig()

@@ -70,14 +70,14 @@ func TestRuntimeCmdRepo(t *testing.T) {
 		newHostname, _ := tkValueObject.NewFqdn(primaryVhost.String() + ".renamed")
 
 		err := runtimeCmdRepo.UpdatePhpVirtualHostHostname(
-			primaryVhost, newHostname,
+			primaryVhost, newHostname, []tkValueObject.Fqdn{},
 		)
 		if err != nil {
 			t.Errorf("UpdatePhpVirtualHostHostnameShouldSucceed: %v", err)
 		}
 
 		err = runtimeCmdRepo.UpdatePhpVirtualHostHostname(
-			newHostname, primaryVhost,
+			newHostname, primaryVhost, []tkValueObject.Fqdn{},
 		)
 		if err != nil {
 			t.Errorf("UpdatePhpVirtualHostHostnameReverseShouldSucceed: %v", err)
@@ -86,7 +86,7 @@ func TestRuntimeCmdRepo(t *testing.T) {
 
 	t.Run("UpdatePhpVirtualHostHostnameNoOp", func(t *testing.T) {
 		err := runtimeCmdRepo.UpdatePhpVirtualHostHostname(
-			primaryVhost, primaryVhost,
+			primaryVhost, primaryVhost, []tkValueObject.Fqdn{},
 		)
 		if err != nil {
 			t.Errorf("UpdatePhpVirtualHostHostnameNoOpShouldReturnNil: %v", err)
