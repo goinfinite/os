@@ -30,7 +30,8 @@ func NewRuntimeQueryRepo() *RuntimeQueryRepo {
 func (repo RuntimeQueryRepo) ReadPhpVirtualHostConfFilePath(
 	vhostHostname tkValueObject.Fqdn,
 ) (phpVirtualHostConfFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
-	rawPhpVirtualHostConfFilePath := "/app/conf/php-webserver/" + vhostHostname.String() + ".conf"
+	nonWildcardHostname := strings.Replace(vhostHostname.String(), "*.", "", -1)
+	rawPhpVirtualHostConfFilePath := "/app/conf/php-webserver/" + nonWildcardHostname + ".conf"
 
 	primaryVirtualHostHostname, err := vhostInfra.NewVirtualHostHelpers().
 		ReadPrimaryVirtualHostHostnameFromWebServerConf()

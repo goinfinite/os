@@ -27,7 +27,7 @@ type VirtualHost struct {
 func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
 	rawPrimaryHostnameStr := os.Getenv(infraEnvs.PrimaryVirtualHostEnvKey)
 	if rawPrimaryHostnameStr == "" {
-		rawPrimaryHostnameStr = infraEnvs.DefaultPrimaryVhost
+		rawPrimaryHostnameStr = infraEnvs.DefaultPrimaryVirtualHost
 	}
 
 	primaryHostname, err := tkValueObject.NewFqdn(rawPrimaryHostnameStr)

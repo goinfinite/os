@@ -31,7 +31,7 @@ const (
 	PhpChildProcessesUpdateSkipEnvKey  string = "SKIP_PHP_PROCS_COUNT_UPDATE"
 	AccessTokenCookieKey               string = "os-access-token"
 	UserDataBaseDirectory              string = "/home"
-	DefaultPrimaryVhost                string = "goinfinite.local"
+	DefaultPrimaryVirtualHost          string = "goinfinite.local"
 	LocalStatesAssetsPath              string = "/assets/local-states"
 	GlobalStatesAssetsPath             string = "/assets/global-states"
 )

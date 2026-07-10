@@ -489,7 +489,7 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) er
 
 	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(hostname)
 	if err != nil {
-		if err.Error() != "VirtualHostNotFound" {
+		if !errors.Is(err, ErrPhpVirtualHostNotFound) {
 			return err
 		}
 		vhostExists = false
@@ -506,9 +506,10 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) er
 		return errors.New("CopyPhpConfTemplateError: " + err.Error())
 	}
 
-	hostnameStr := hostname.String()
+	nonWildcardHostname := strings.Replace(hostname.String(), "*.", "", -1)
+	hostnameStr := nonWildcardHostname
 	err = repo.regexReplaceInFile(
-		infraEnvs.DefaultPrimaryVhost, hostnameStr, phpConfFilePathStr,
+		infraEnvs.DefaultPrimaryVirtualHost, hostnameStr, phpConfFilePathStr,
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
