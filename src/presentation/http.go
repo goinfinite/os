@@ -7,17 +7,17 @@ import (
 	"net/http"
 	"os"
 
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
 	"github.com/goinfinite/os/src/presentation/api"
 	presentationMiddleware "github.com/goinfinite/os/src/presentation/middleware"
-	tkPresentationMiddleware "github.com/goinfinite/tk/src/presentation/middleware"
 	"github.com/goinfinite/os/src/presentation/ui"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkPresentationMiddleware "github.com/goinfinite/tk/src/presentation/middleware"
 	"github.com/labstack/echo/v4"
 )
 
@@ -71,13 +71,14 @@ func initialBannerSetup(
 	o11yOverview, err := o11yQueryRepo.ReadOverview(false)
 	if err == nil {
 		devModeStr := ""
-		if isDevMode, _ := tkVoUtil.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
-			devModeStr = "(🚧 DevMode 🚧)"
+		isDevModeEnabled, err := tkVoUtil.InterfaceToBool(os.Getenv("DEV_MODE"))
+		if err == nil && isDevModeEnabled {
+			devModeStr = "(DevMode ON)"
 		}
 
 		osBanner = `
         INFINITE
-    ▄▄█▀▀██▄  ▄█▀▀▀█▄█   |  🔒 HTTPS server started on [::]:` + infraEnvs.InfiniteOsApiHttpPublicPort + `! ` + devModeStr + `        
+    ▄▄█▀▀██▄  ▄█▀▀▀█▄█   |  🔒 HTTPS server started on [::]:` + infraEnvs.InfiniteOsApiHttpPublicPort + `! ` + devModeStr + `
   ▄██▀    ▀██▄██    ▀█   |
   ██▀      ▀█████▄       |  🏠 Primary Hostname: ` + o11yOverview.Hostname.String() + `
   ██        ██ ▀█████▄   |  ⏰ Uptime: ` + o11yOverview.UptimeRelative.String() + `
@@ -104,7 +105,9 @@ func HttpServerInit(
 		uiBasePath = ""
 	}
 
-	echoInstance.Use(presentationMiddleware.BaseHref(rootBasePath, apiBasePath, uiBasePath))
+	echoInstance.Use(
+		presentationMiddleware.BaseHref(rootBasePath, apiBasePath, uiBasePath),
+	)
 
 	api.ApiInit(echoInstance, apiBasePath, persistentDbSvc, transientDbSvc, trailDbSvc)
 	ui.UiInit(echoInstance, uiBasePath, persistentDbSvc, transientDbSvc, trailDbSvc)

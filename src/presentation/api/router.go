@@ -39,6 +39,8 @@ func NewRouter(
 
 func (router Router) swaggerRoute() {
 	swaggerGroup := router.baseRoute.Group("/swagger")
+	// KnownIssue: echo-swagger forces double slashes on / path.
+	// @see https://github.com/swaggo/echo-swagger/pull/127
 	swaggerGroup.GET("/*", echoSwagger.WrapHandler)
 }
 
