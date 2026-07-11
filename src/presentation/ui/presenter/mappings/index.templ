@@ -76,9 +76,6 @@ templ MappingsIndex(
 		@CreateMappingModal(
 			vhostsHostnames, installedServiceNames, secRulesLabelValueOptions,
 		)
-		@CreateMappingFromVirtualHostModal(
-			vhostsHostnames, installedServiceNames, secRulesLabelValueOptions,
-		)
 		@UpdateMappingModal(
 			installedServiceNames, secRulesLabelValueOptions,
 		)
@@ -96,6 +93,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 		hx-get="mappings/"
 		hx-trigger={ MappingsRecordsDisplayRefreshEventName + " from:window" }
 		hx-select={ "#" + MappingsRecordsDisplayId }
+		hx-select-oob="#create-vhost-form, #create-mapping-form"
 		hx-target={ "#" + MappingsRecordsDisplayId }
 		hx-swap="outerHTML transition:true"
 		class="mt-2 flex flex-col gap-4"
@@ -357,6 +355,7 @@ templ CreateMappingForm(
 ) {
 	<!-- CreateMappingForm -->
 	<form
+		id="create-mapping-form"
 		class="flex flex-col gap-5"
 		hx-post="api/v1/vhost/mapping/"
 		hx-indicator="#loading-overlay"
@@ -445,19 +444,6 @@ templ CreateMappingModal(
 	@componentStructural.RegularModal(
 		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
 		"",
-	) {
-		@CreateMappingForm(vhostsHostnames, installedServiceNames, secRulesLabelValueOptions)
-	}
-}
-
-templ CreateMappingFromVirtualHostModal(
-	vhostsHostnames []string,
-	installedServiceNames []string,
-	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
-) {
-	@componentStructural.RegularModal(
-		"Create Mapping", "isCreateMappingFromVirtualHostModalOpen",
-		"closeCreateMappingModal()", "virtualHost.hostname",
 	) {
 		@CreateMappingForm(vhostsHostnames, installedServiceNames, secRulesLabelValueOptions)
 	}
