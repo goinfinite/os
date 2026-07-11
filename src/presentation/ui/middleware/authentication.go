@@ -3,7 +3,6 @@ package uiMiddleware
 import (
 	"log/slog"
 	"net/http"
-	"regexp"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/repository"
@@ -41,10 +40,11 @@ func shouldSkipUiAuthentication(
 	uiBasePath, apiBasePath string,
 	httpRequest *http.Request,
 ) bool {
-	urlSkipRegex := regexp.MustCompile(
-		"^(" + apiBasePath + "|" + uiBasePath + "/(login|assets|setup))/",
-	)
-	return urlSkipRegex.MatchString(httpRequest.URL.Path)
+	isApi := strings.HasPrefix(httpRequest.URL.Path, apiBasePath)
+	if isApi {
+		return true
+	}
+	return IsUnauthenticatedUiCall(httpRequest, uiBasePath)
 }
 
 func Authentication(
