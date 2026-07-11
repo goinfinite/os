@@ -20,6 +20,7 @@ fix: alias search should use previous host
 feat(runtime): enable php webserver wildcard for new vhosts
 fix: make primary vhost rename ssl-safe
 fix: add missing restart after php vhost creation
+fix(mappings): unify mapping modal and refresh stale form dropdowns
 refactor(dev): rewrite hot-reload WS handler with gorilla/websocket
 feat(auth): exempt dev WS endpoint from UI auth
 fix(api): replace deprecated TimeoutWithConfig with ContextTimeout
