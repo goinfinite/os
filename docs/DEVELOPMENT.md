@@ -30,7 +30,7 @@ When developing the project, you may want to use a script to automate the build 
 
 To run the script you can simply use `bash dev-build.sh` (bash may be replaced by zsh or similar). By default, the script will expose the port 1618 to the host which is used by the API and the dashboard.
 
-- If you pass the `http` or `http-unpriv` argument, it will also expose the ports 80 and 443 OR 8080 and 8443 respectively to the host;
+- If you pass `http`, it will expose ports 80 and 443; if you pass `http-unpriv`, it will expose ports 8080 and 8443;
 - If you pass the `ols` argument, it will expose port 7080 (used by OpenLiteSpeed admin);
 - If you pass the `no-cache` argument, it will remove the image cache and rebuild the image from scratch;
 
