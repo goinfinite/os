@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
-	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -59,13 +58,13 @@ func (ws *WebServerSetup) selfSignedCertGenerator() error {
 	primaryVirtualHostHostname, readErr :=
 		ws.vhostHelpers.ReadPrimaryVirtualHostHostname()
 	if readErr != nil {
-		return errors.New("ReadPrimaryVirtualHostHostnameError")
+		return errors.New("ReadPrimaryVirtualHostHostnameError: " + readErr.Error())
 	}
 
 	pkiConfDir, pkiErr :=
 		tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if pkiErr != nil {
-		return errors.New("PkiConfDirError")
+		return errors.New("PkiConfDirError: " + pkiErr.Error())
 	}
 
 	aliasesHostnames := []tkValueObject.Fqdn{}
@@ -113,10 +112,6 @@ func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
 	)
 	updateErr := servicesCmdRepo.Update(updateServiceDto)
 	if updateErr != nil {
-		if strings.Contains(updateErr.Error(), "Unauthorized") {
-			return nil
-		}
-
 		return errors.New("WebServerAutoStartConfiguratorError: " + updateErr.Error())
 	}
 
@@ -257,7 +252,7 @@ func (ws *WebServerSetup) phpChildProcessesConfigurator(
 	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
 	memoryTotal tkValueObject.Byte,
 ) error {
-	if !servicesQueryRepo.IsInstalled(phpWebServerServiceName) {
+	if !servicesQueryRepo.IsInstalled(valueObject.PhpWebServerServiceName) {
 		slog.Debug(
 			"SkippingPhpChildProcessesConfigurator",
 			slog.String("reason", "PhpWebServerNotInstalled"),

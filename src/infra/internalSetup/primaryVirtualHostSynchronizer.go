@@ -19,10 +19,6 @@ import (
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-var phpWebServerServiceName, phpWebServerServiceNameError = valueObject.NewServiceName(
-	"php-webserver",
-)
-
 type PrimaryVirtualHostSynchronizer struct {
 	persistentDbSvc          *internalDbInfra.PersistentDatabaseService
 	previousPrimaryHostname  tkValueObject.Fqdn
@@ -49,7 +45,7 @@ func NewPrimaryVirtualHostSynchronizer(
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) phpConfUpdater() error {
-	if !sync.servicesQueryRepo.IsInstalled(phpWebServerServiceName) {
+	if !sync.servicesQueryRepo.IsInstalled(valueObject.PhpWebServerServiceName) {
 		slog.Debug(
 			"SkippingPrimaryVirtualHostPhpConfUpdater",
 			slog.String("reason", "PhpWebServerNotInstalled"),

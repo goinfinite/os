@@ -26,6 +26,8 @@ var NativeSvcNamesWithAliases = map[string][]string{
 	"java":       {"jre", "jdk", "openjdk"},
 }
 
+var PhpWebServerServiceName = ServiceName("php-webserver")
+
 func NewServiceName(value interface{}) (serviceName ServiceName, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -18,9 +19,7 @@ import (
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-var phpWebServerServiceName, phpWebServerServiceNameError = valueObject.NewServiceName(
-	"php-webserver",
-)
+var regexShellSubstitutionMetachars = regexp.MustCompile(`[\\&|#/]`)
 
 type RuntimeCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
@@ -66,7 +65,12 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 		workingDir += "/" + runRequest.Hostname.String()
 	}
 	if !repo.fileClerk.FileExists(workingDir) {
-		workingDir = infraEnvs.PrimaryVirtualHostPublicDir
+		createErr := repo.fileClerk.CreateDir(workingDir)
+		if createErr != nil {
+			return runResponse, errors.New(
+				"PhpWorkingDirCreateFailed: " + createErr.Error(),
+			)
+		}
 	}
 
 	cmdOutput, cmdErr := tkInfra.NewShell(tkInfra.ShellSettings{
@@ -104,7 +108,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 
 func (repo *RuntimeCmdRepo) restartPhpWebServer() error {
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
-	err := servicesCmdRepo.Restart(phpWebServerServiceName)
+	err := servicesCmdRepo.Restart(valueObject.PhpWebServerServiceName)
 	if err != nil {
 		return errors.New("RestartPhpWebServerFailed: " + err.Error())
 	}
@@ -134,6 +138,14 @@ func (repo *RuntimeCmdRepo) validatePhpWebServerConfig() error {
 	}
 
 	return nil
+}
+
+func (repo *RuntimeCmdRepo) escapeRegexShellSubstitutionMetachars(
+	quotedSettingValue string,
+) string {
+	return regexShellSubstitutionMetachars.ReplaceAllString(
+		quotedSettingValue, `\$0`,
+	)
 }
 
 func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
@@ -230,13 +242,6 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 		return err
 	}
 
-	if phpWebServerServiceNameError != nil {
-		return errors.New(
-			"PhpWebServerServiceNameResolutionFailed: " +
-				phpWebServerServiceNameError.Error(),
-		)
-	}
-
 	return repo.restartPhpWebServer()
 }
 
@@ -297,9 +302,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 		settingValue := setting.Value.String()
 		if setting.Value.GetType() == "string" {
 			settingValue = "\"" + settingValue + "\""
-			settingValue = strings.Replace(settingValue, "|", "\\|", -1)
-			settingValue = strings.Replace(settingValue, "/", "\\/", -1)
-			settingValue = strings.Replace(settingValue, "#", "\\#", -1)
+			settingValue = repo.escapeRegexShellSubstitutionMetachars(settingValue)
 		}
 
 		phpSettingLinePattern := settingName + " .*"
@@ -534,7 +537,7 @@ virtualhost ` + hostname.String() + ` {
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
-			"-ie", "/" + listenerMapRegex + "/a" + newListenerMapLine,
+			"-i", "/" + listenerMapRegex + "/a" + newListenerMapLine,
 			infraEnvs.PhpWebServerMainConfFilePath,
 		},
 	}).Run()
