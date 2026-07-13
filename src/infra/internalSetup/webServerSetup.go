@@ -132,25 +132,59 @@ func (ws *WebServerSetup) supervisorReloader() error {
 	return nil
 }
 
-type firstSetupStep struct {
-	name string
-	fn   func() error
-}
-
 func (ws *WebServerSetup) firstSetupOrchestrator() {
-	steps := []firstSetupStep{
-		{name: "DhParamsGeneratorError", fn: ws.dhParamsGenerator},
-		{name: "SelfSignedCertGeneratorError", fn: ws.selfSignedCertGenerator},
-		{name: "PrimaryIndexFileRestorerError", fn: ws.primaryIndexFileRestorer},
-		{name: "MappingSecurityRulesGeneratorError", fn: ws.mappingSecurityRulesGenerator},
-		{name: "WebServerAutoStartConfiguratorError", fn: ws.webServerAutoStartConfigurator},
-		{name: "SupervisorReloaderError", fn: ws.supervisorReloader},
+	dhParamsGeneratorErr := ws.dhParamsGenerator()
+	if dhParamsGeneratorErr != nil {
+		slog.Error(
+			"DhParamsGeneratorError",
+			slog.String("err", dhParamsGeneratorErr.Error()),
+		)
+		os.Exit(1)
 	}
-	for _, step := range steps {
-		if err := step.fn(); err != nil {
-			slog.Error(step.name, slog.String("err", err.Error()))
-			os.Exit(1)
-		}
+
+	selfSignedCertGeneratorErr := ws.selfSignedCertGenerator()
+	if selfSignedCertGeneratorErr != nil {
+		slog.Error(
+			"SelfSignedCertGeneratorError",
+			slog.String("err", selfSignedCertGeneratorErr.Error()),
+		)
+		os.Exit(1)
+	}
+
+	primaryIndexFileRestorerErr := ws.primaryIndexFileRestorer()
+	if primaryIndexFileRestorerErr != nil {
+		slog.Error(
+			"PrimaryIndexFileRestorerError",
+			slog.String("err", primaryIndexFileRestorerErr.Error()),
+		)
+		os.Exit(1)
+	}
+
+	mappingSecurityRulesGeneratorErr := ws.mappingSecurityRulesGenerator()
+	if mappingSecurityRulesGeneratorErr != nil {
+		slog.Error(
+			"MappingSecurityRulesGeneratorError",
+			slog.String("err", mappingSecurityRulesGeneratorErr.Error()),
+		)
+		os.Exit(1)
+	}
+
+	webServerAutoStartConfiguratorErr := ws.webServerAutoStartConfigurator()
+	if webServerAutoStartConfiguratorErr != nil {
+		slog.Error(
+			"WebServerAutoStartConfiguratorError",
+			slog.String("err", webServerAutoStartConfiguratorErr.Error()),
+		)
+		os.Exit(1)
+	}
+
+	supervisorReloaderErr := ws.supervisorReloader()
+	if supervisorReloaderErr != nil {
+		slog.Error(
+			"SupervisorReloaderError",
+			slog.String("err", supervisorReloaderErr.Error()),
+		)
+		os.Exit(1)
 	}
 }
 
