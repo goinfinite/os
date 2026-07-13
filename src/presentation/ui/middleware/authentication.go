@@ -40,10 +40,12 @@ func shouldSkipUiAuthentication(
 	uiBasePath, apiBasePath string,
 	httpRequest *http.Request,
 ) bool {
-	isApi := strings.HasPrefix(httpRequest.URL.Path, apiBasePath)
-	if isApi {
+	requestPath := httpRequest.URL.Path
+
+	if requestPath == apiBasePath || strings.HasPrefix(requestPath, apiBasePath+"/") {
 		return true
 	}
+
 	return IsUnauthenticatedUiCall(httpRequest, uiBasePath)
 }
 
