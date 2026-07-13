@@ -42,7 +42,7 @@ func (ws *WebServerSetup) dhParamsGenerator() error {
 	_, dhparamErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "openssl",
 		Args: []string{
-			"dhparam", "-dsaparam", "-out", "/etc/nginx/dhparam.pem", "2048",
+			"dhparam", "-dsaparam", "-out", infraEnvs.WebServerDhParamFilePath, "2048",
 		},
 	}).Run()
 	if dhparamErr != nil {

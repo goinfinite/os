@@ -24,6 +24,7 @@ fix(mappings): unify mapping modal and refresh stale form dropdowns
 refactor(dev): rewrite hot-reload WS handler with gorilla/websocket
 feat(auth): exempt dev WS endpoint from UI auth
 fix(api): replace deprecated TimeoutWithConfig with ContextTimeout
+fix(internalSetup): create /app/logs/cron, /app/logs/nginx, and /app/.trash at runtime to prevent fuse-overlayfs whiteout accumulation
 
 0.3.0 - 2026/07/03
 fix(internalSetup): lsapi counter and add last edit comment
