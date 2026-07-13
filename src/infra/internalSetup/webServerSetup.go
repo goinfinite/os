@@ -133,58 +133,46 @@ func (ws *WebServerSetup) supervisorReloader() error {
 }
 
 func (ws *WebServerSetup) firstSetupOrchestrator() {
-	dhParamsGeneratorErr := ws.dhParamsGenerator()
-	if dhParamsGeneratorErr != nil {
-		slog.Error(
-			"DhParamsGeneratorError",
-			slog.String("err", dhParamsGeneratorErr.Error()),
-		)
-		os.Exit(1)
+	type firstSetupStep struct {
+		errorMessage string
+		executeFn    func() error
 	}
 
-	selfSignedCertGeneratorErr := ws.selfSignedCertGenerator()
-	if selfSignedCertGeneratorErr != nil {
-		slog.Error(
-			"SelfSignedCertGeneratorError",
-			slog.String("err", selfSignedCertGeneratorErr.Error()),
-		)
-		os.Exit(1)
+	setupSteps := []firstSetupStep{
+		{
+			errorMessage: "DhParamsGeneratorError",
+			executeFn:    ws.dhParamsGenerator,
+		},
+		{
+			errorMessage: "SelfSignedCertGeneratorError",
+			executeFn:    ws.selfSignedCertGenerator,
+		},
+		{
+			errorMessage: "PrimaryIndexFileRestorerError",
+			executeFn:    ws.primaryIndexFileRestorer,
+		},
+		{
+			errorMessage: "MappingSecurityRulesGeneratorError",
+			executeFn:    ws.mappingSecurityRulesGenerator,
+		},
+		{
+			errorMessage: "WebServerAutoStartConfiguratorError",
+			executeFn:    ws.webServerAutoStartConfigurator,
+		},
+		{
+			errorMessage: "SupervisorReloaderError",
+			executeFn:    ws.supervisorReloader,
+		},
 	}
-
-	primaryIndexFileRestorerErr := ws.primaryIndexFileRestorer()
-	if primaryIndexFileRestorerErr != nil {
-		slog.Error(
-			"PrimaryIndexFileRestorerError",
-			slog.String("err", primaryIndexFileRestorerErr.Error()),
-		)
-		os.Exit(1)
-	}
-
-	mappingSecurityRulesGeneratorErr := ws.mappingSecurityRulesGenerator()
-	if mappingSecurityRulesGeneratorErr != nil {
-		slog.Error(
-			"MappingSecurityRulesGeneratorError",
-			slog.String("err", mappingSecurityRulesGeneratorErr.Error()),
-		)
-		os.Exit(1)
-	}
-
-	webServerAutoStartConfiguratorErr := ws.webServerAutoStartConfigurator()
-	if webServerAutoStartConfiguratorErr != nil {
-		slog.Error(
-			"WebServerAutoStartConfiguratorError",
-			slog.String("err", webServerAutoStartConfiguratorErr.Error()),
-		)
-		os.Exit(1)
-	}
-
-	supervisorReloaderErr := ws.supervisorReloader()
-	if supervisorReloaderErr != nil {
-		slog.Error(
-			"SupervisorReloaderError",
-			slog.String("err", supervisorReloaderErr.Error()),
-		)
-		os.Exit(1)
+	for _, setupStep := range setupSteps {
+		executeErr := setupStep.executeFn()
+		if executeErr != nil {
+			slog.Error(
+				setupStep.errorMessage,
+				slog.String("err", executeErr.Error()),
+			)
+			os.Exit(1)
+		}
 	}
 }
 
