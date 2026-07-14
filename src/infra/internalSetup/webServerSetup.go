@@ -97,35 +97,9 @@ func (ws *WebServerSetup) mappingSecurityRulesGenerator() error {
 	return nil
 }
 
-func (ws *WebServerSetup) processManagerStateGuarantor() error {
-	fileClerk := tkInfra.FileClerk{}
-	err := fileClerk.CreateSymlink(
-		infraEnvs.ProcessManagerConfFilePath, "/etc/supervisord.conf", true,
-	)
-	if err != nil {
-		return errors.New("ProcessManagerConfSymlinkError: " + err.Error())
-	}
-
-	_, reloadErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          infraEnvs.ProcessManagerBinaryPath,
-		Args:             []string{"-p", "replacedOnFirstBoot", "reload"},
-		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
-	}).Run()
-	if reloadErr != nil {
-		return errors.New("ProcessManagerReloadError: " + reloadErr.Error())
-	}
-
-	err = ws.servicesCmdRepo.ProcessManagerConfRebuilder()
-	if err != nil {
-		return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
-	}
-
-	return nil
-}
-
-// The reason this method exists is that the main web server will have it's
-// configuration on the database already, however, we cannot auto-start it until
-// the mapping and other config-related steps have executed successfully.
+// The main web server is configured with auto-start disabled by default.
+// This method enables auto-start in the database after mapping and
+// configuration complete successfully.
 func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
 	_, readErr := ws.servicesQueryRepo.ReadFirstInstalledItem(
 		dto.ReadFirstInstalledServiceItemsRequest{
@@ -139,7 +113,6 @@ func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
 	serviceAutoStart := true
 	updateServiceDto := dto.UpdateService{
 		Name:              valueObject.ServiceNameMainWebServer,
-		Status:            &valueObject.ServiceStatusRunning,
 		AutoStart:         &serviceAutoStart,
 		OperatorAccountId: tkValueObject.AccountIdSystem,
 		OperatorIpAddress: tkValueObject.IpAddressLocal,
@@ -147,6 +120,36 @@ func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
 	updateErr := ws.servicesCmdRepo.Update(updateServiceDto)
 	if updateErr != nil {
 		return errors.New("MainWebServerAutoStartUpdateError: " + updateErr.Error())
+	}
+
+	return nil
+}
+
+// Important: Reloading the process manager (PID 1) restarts the container.
+// Do not expect any code after this method to execute.
+func (ws *WebServerSetup) processManagerStateGuarantor() error {
+	fileClerk := tkInfra.FileClerk{}
+	err := fileClerk.CreateSymlink(
+		infraEnvs.ProcessManagerConfFilePath, "/etc/supervisord.conf", true,
+	)
+	if err != nil {
+		return errors.New("ProcessManagerConfSymlinkError: " + err.Error())
+	}
+
+	err = ws.servicesCmdRepo.ProcessManagerConfRebuilder()
+	if err != nil {
+		if !errors.Is(err, servicesInfra.ErrProcessManagerAuthError) {
+			return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
+		}
+
+		_, reloadErr := tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:          infraEnvs.ProcessManagerBinaryPath,
+			Args:             []string{"-p", "replacedOnFirstBoot", "reload"},
+			WorkingDirectory: infraEnvs.InfiniteOsMainDir,
+		}).Run()
+		if reloadErr != nil {
+			return errors.New("ProcessManagerReloadError: " + reloadErr.Error())
+		}
 	}
 
 	return nil
@@ -176,12 +179,12 @@ func (ws *WebServerSetup) firstSetupOrchestrator() {
 			executeFn:    ws.mappingSecurityRulesGenerator,
 		},
 		{
-			errorMessage: "ProcessManagerStateGuarantorError",
-			executeFn:    ws.processManagerStateGuarantor,
-		},
-		{
 			errorMessage: "WebServerAutoStartConfiguratorError",
 			executeFn:    ws.webServerAutoStartConfigurator,
+		},
+		{
+			errorMessage: "ProcessManagerStateGuarantorError",
+			executeFn:    ws.processManagerStateGuarantor,
 		},
 	}
 	for _, setupStep := range setupSteps {

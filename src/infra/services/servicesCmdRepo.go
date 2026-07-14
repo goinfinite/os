@@ -21,7 +21,10 @@ import (
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-var defaultServiceDirectories []string = []string{"conf", "logs"}
+var (
+	ErrProcessManagerAuthError error    = errors.New("ProcessManagerAuthenticationError")
+	defaultServiceDirectories  []string = []string{"conf", "logs"}
+)
 
 type ServicesCmdRepo struct {
 	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
@@ -305,6 +308,9 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	}).Run()
 	if err != nil {
 		combinedOutput := reReadOutput + " " + err.Error()
+		if strings.Contains(combinedOutput, "authentication") {
+			return ErrProcessManagerAuthError
+		}
 		return errors.New("ProcessManagerRereadError: " + combinedOutput)
 	}
 
