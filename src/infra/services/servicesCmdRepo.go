@@ -21,8 +21,6 @@ import (
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /infinite/supervisord.conf"
-
 var defaultServiceDirectories []string = []string{"conf", "logs"}
 
 type ServicesCmdRepo struct {
@@ -112,22 +110,24 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 
 	serviceNameStr := serviceEntity.Name.String()
 	startOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           SupervisorCtlBin + " start " + serviceNameStr,
-		ShouldUseSubShell: true,
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"start", serviceNameStr},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if err != nil {
 		combinedOutput := startOutput + " " + err.Error()
 		if !strings.Contains(combinedOutput, "no such process") {
-			return errors.New("SupervisorStartError: " + combinedOutput)
+			return errors.New("ProcessManagerStartError: " + combinedOutput)
 		}
 
 		addOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-			Command:           SupervisorCtlBin + " add " + serviceNameStr,
-			ShouldUseSubShell: true,
+			Command:          infraEnvs.ProcessManagerBinaryPath,
+			Args:             []string{"add", serviceNameStr},
+			WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 		}).Run()
 		if err != nil {
 			combinedOutput = addOutput + " " + err.Error()
-			return errors.New("SupervisorAddError: " + combinedOutput)
+			return errors.New("ProcessManagerAddError: " + combinedOutput)
 		}
 	}
 
@@ -157,12 +157,13 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 	}
 
 	stopOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           SupervisorCtlBin + " stop " + serviceEntity.Name.String(),
-		ShouldUseSubShell: true,
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"stop", serviceEntity.Name.String()},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if err != nil {
 		combinedOutput := stopOutput + " " + err.Error()
-		return errors.New("SupervisorStopError: " + combinedOutput)
+		return errors.New("ProcessManagerStopError: " + combinedOutput)
 	}
 
 	time.Sleep(1 * time.Second)
@@ -190,7 +191,7 @@ func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
 		return err
 	}
 
-	if serviceEntity.Status.String() == "running" {
+	if serviceEntity.Status == valueObject.ServiceStatusRunning {
 		err = repo.Stop(name)
 		if err != nil {
 			return err
@@ -288,7 +289,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 
 	templatePtr, err := template.New("supervisorConf").Parse(fileTemplate)
 	if err != nil {
-		return errors.New("TemplateParsingError: " + err.Error())
+		return errors.New("ProcessManagerTemplateParsingError: " + err.Error())
 	}
 
 	var supervisorConfFileContent strings.Builder
@@ -300,19 +301,20 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	}
 
 	err = repo.fileClerk.UpdateFileContent(
-		"/infinite/supervisord.conf", supervisorConfFileContent.String(), true,
+		infraEnvs.ProcessManagerConfFilePath, supervisorConfFileContent.String(), true,
 	)
 	if err != nil {
 		return err
 	}
 
 	reReadOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           SupervisorCtlBin + " reread",
-		ShouldUseSubShell: true,
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"reread"},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if err != nil {
 		combinedOutput := reReadOutput + " " + err.Error()
-		return errors.New("SupervisorRereadError: " + combinedOutput)
+		return errors.New("ProcessManagerRereadError: " + combinedOutput)
 	}
 
 	return nil
@@ -424,7 +426,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	if installableServiceEntity.Nature == valueObject.ServiceNatureMulti {
 		if createDto.StartupFile == nil {
 			if installableServiceEntity.StartupFile == nil {
-				return installedServiceName, errors.New("MultiNatureServiceRequiresStartupFile")
+				return installedServiceName, errors.New(
+					"MultiNatureServiceRequiresStartupFile",
+				)
 			}
 			createDto.StartupFile = installableServiceEntity.StartupFile
 		}
@@ -656,11 +660,8 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 }
 
 func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &updateDto.Name,
-	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readFirstInstalledRequestDto,
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &updateDto.Name},
 	)
 	if err != nil {
 		return err
@@ -786,23 +787,22 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	shouldHandleStatus := updateDto.Status != nil
 	shouldSkipStatusChange := !shouldHandleStatus
 	if shouldHandleStatus {
-		desiredStatusStr := updateDto.Status.String()
-		shouldSkipStatusChange = serviceEntity.Status.String() == desiredStatusStr
+		shouldSkipStatusChange = serviceEntity.Status == *updateDto.Status
 		if !shouldSkipStatusChange {
-			switch desiredStatusStr {
-			case "running":
+			switch *updateDto.Status {
+			case valueObject.ServiceStatusRunning:
 				return repo.Start(updateDto.Name)
-			case "stopped":
+			case valueObject.ServiceStatusStopped:
 				return repo.Stop(updateDto.Name)
-			case "restarting":
+			case valueObject.ServiceStatusRestarting:
 				return repo.Restart(updateDto.Name)
 			default:
-				return errors.New("InvalidStatus: " + desiredStatusStr)
+				return errors.New("InvalidStatus: " + updateDto.Status.String())
 			}
 		}
 	}
 
-	if hasFieldUpdates && serviceEntity.Status.String() != "stopped" {
+	if hasFieldUpdates && serviceEntity.Status != valueObject.ServiceStatusStopped {
 		return repo.Restart(updateDto.Name)
 	}
 
@@ -820,7 +820,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	if serviceEntity.Status.String() != "stopped" {
+	if serviceEntity.Status != valueObject.ServiceStatusStopped {
 		err = repo.Stop(serviceEntity.Name)
 		if err != nil {
 			return err
@@ -829,12 +829,13 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 
 	serviceNameStr := serviceEntity.Name.String()
 	removeOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           SupervisorCtlBin + " remove " + serviceNameStr,
-		ShouldUseSubShell: true,
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"remove", serviceNameStr},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if err != nil {
 		combinedOutput := removeOutput + " " + err.Error()
-		return errors.New("SupervisorRemoveError: " + combinedOutput)
+		return errors.New("ProcessManagerRemoveError: " + combinedOutput)
 	}
 
 	err = repo.persistentDbSvc.Handler.

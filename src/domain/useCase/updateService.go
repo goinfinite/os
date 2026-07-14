@@ -33,7 +33,8 @@ func UpdateService(
 		return errors.New("OnlyStatusUpdateAllowed")
 	}
 
-	shouldDelete := shouldUpdateStatus && updateDto.Status.String() == "uninstalled"
+	shouldDelete := shouldUpdateStatus &&
+		*updateDto.Status == valueObject.ServiceStatusUninstalled
 	if shouldDelete {
 		deleteDto := dto.NewDeleteService(
 			updateDto.Name, updateDto.OperatorAccountId, updateDto.OperatorIpAddress,

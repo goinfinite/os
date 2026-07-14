@@ -276,7 +276,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		return serviceEntity, err
 	}
 
-	status, _ := valueObject.NewServiceStatus("running")
+	status := valueObject.ServiceStatusRunning
 
 	envs := []valueObject.ServiceEnv{}
 	if model.Envs != nil {
