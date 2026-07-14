@@ -6,7 +6,6 @@ import (
 	"math"
 	"os"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -18,6 +17,7 @@ import (
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 
@@ -196,10 +196,15 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 		// <serviceName>                    RUNNING   pid 120, uptime 0:00:35
 		procManagerStatusParts := strings.Fields(procManagerStatus)
 		if len(procManagerStatusParts) < 4 {
+			installedServicesWithMetrics = append(
+				installedServicesWithMetrics, serviceWithoutMetrics,
+			)
+
 			slog.Debug(
 				"MissingProcManagerStatusParts",
 				slog.String("name", serviceNameStr),
 			)
+			continue
 		}
 
 		rawServiceStatus := procManagerStatusParts[1]
@@ -226,14 +231,15 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 		rawServicePid := procManagerStatusParts[3]
 		rawServicePid = strings.Trim(rawServicePid, ",")
-		servicePidInt, err := strconv.ParseInt(rawServicePid, 10, 32)
+		servicePidInt, err := tkVoUtil.InterfaceToInt64(rawServicePid)
 		if err != nil {
 			installedServicesWithMetrics = append(
 				installedServicesWithMetrics, serviceWithoutMetrics,
 			)
 
 			slog.Debug(
-				err.Error(), slog.String("name", serviceNameStr),
+				"ParsePidError",
+				slog.String("name", serviceNameStr),
 				slog.String("rawPid", rawServicePid),
 			)
 			continue
