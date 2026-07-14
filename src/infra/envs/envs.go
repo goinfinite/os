@@ -41,5 +41,5 @@ const (
 	DevModeEnvKey                      string = "DEV_MODE"
 	SilentExitModeEnvKey               string = "SILENT_EXIT_MODE"
 	ProcessManagerBinaryPath           string = "/usr/bin/supervisorctl"
-	ProcessManagerConfFilePath         string = InfiniteOsMainDir + "/supervisor.conf"
+	ProcessManagerConfFilePath         string = InfiniteOsMainDir + "/supervisord.conf"
 )
