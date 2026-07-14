@@ -214,8 +214,31 @@ func (repo *ServicesCmdRepo) ProcessManagerConfRebuilder() error {
 		return errors.New("NoServicesFoundToUpdateProcessManager")
 	}
 
-	tkSynthesizer := tkInfra.Synthesizer{}
-	ctlPassword := tkSynthesizer.PasswordFactory(16, false)
+	currentConfContent, err := repo.fileClerk.ReadFileContent(
+		infraEnvs.ProcessManagerConfFilePath, nil,
+	)
+	if err != nil {
+		slog.Debug(
+			"ReadCurrentProcessManagerConfError",
+			slog.String("error", err.Error()),
+		)
+		currentConfContent = ""
+	}
+
+	currentPassword := ""
+	for rawConfLineStr := range strings.SplitSeq(currentConfContent, "\n") {
+		if strings.Contains(rawConfLineStr, "password=") {
+			currentPassword = strings.TrimPrefix(rawConfLineStr, "password=")
+			currentPassword = strings.TrimSpace(currentPassword)
+			break
+		}
+	}
+
+	newPassword := currentPassword
+	if currentPassword == "replacedOnFirstBoot" || currentPassword == "" {
+		tkSynthesizer := tkInfra.Synthesizer{}
+		newPassword = tkSynthesizer.PasswordFactory(16, false)
+	}
 
 	// cSpell:disable
 	fileTemplate := `# AUTO GENERATED FILE. DO NOT EDIT.
@@ -223,7 +246,7 @@ func (repo *ServicesCmdRepo) ProcessManagerConfRebuilder() error {
 file=/run/supervisor.sock
 chmod=0700
 username=supervisord
-password=` + ctlPassword + `
+password=` + newPassword + `
 
 [supervisord]
 nodaemon=true
@@ -237,7 +260,7 @@ pidfile=/run/supervisord.pid
 [supervisorctl]
 serverurl=unix:///run/supervisor.sock
 username=supervisord
-password=` + ctlPassword + `
+password=` + newPassword + `
 
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
@@ -291,7 +314,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 		&supervisorConfFileContent, readInstalledItemsResponseDto.InstalledServices,
 	)
 	if err != nil {
-		return errors.New("TemplateExecutionError: " + err.Error())
+		return errors.New("ProcessManagerTemplateExecutionError: " + err.Error())
 	}
 
 	err = repo.fileClerk.UpdateFileContent(
