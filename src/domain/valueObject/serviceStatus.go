@@ -10,24 +10,31 @@ import (
 
 type ServiceStatus string
 
-var ServiceStatusesWithAliases = map[string][]string{
-	"running": {
-		"run", "up", "start", "started", "enable", "enabled", "activate", "active",
-		"true", "on", "ok", "yes", "y", "1",
-	},
-	"stopped": {
-		"stop", "halt", "halted", "pause", "paused", "deactivate", "deactivated",
-		"false", "off", "no", "n", "0",
-	},
-	"uninstalled": {
-		"uninstall", "uninstalled", "remove", "removed", "delete", "deleted",
-		"purge", "purged", "clear", "cleared", "clean", "cleaned",
-	},
-	"restarting": {
-		"restart", "restarted", "reload", "reloaded", "refresh", "refreshed",
-		"reboot", "rebooted", "reset", "reseted",
-	},
-}
+var (
+	ServiceStatusRunning     = ServiceStatus("running")
+	ServiceStatusStopped     = ServiceStatus("stopped")
+	ServiceStatusUninstalled = ServiceStatus("uninstalled")
+	ServiceStatusRestarting  = ServiceStatus("restarting")
+
+	ServiceStatusesWithAliases = map[string][]string{
+		"running": {
+			"run", "up", "start", "started", "enable", "enabled", "activate", "active",
+			"true", "on", "ok", "yes", "y", "1",
+		},
+		"stopped": {
+			"stop", "halt", "halted", "pause", "paused", "deactivate", "deactivated",
+			"false", "off", "no", "n", "0",
+		},
+		"uninstalled": {
+			"uninstall", "uninstalled", "remove", "removed", "delete", "deleted",
+			"purge", "purged", "clear", "cleared", "clean", "cleaned",
+		},
+		"restarting": {
+			"restart", "restarted", "reload", "reloaded", "refresh", "refreshed",
+			"reboot", "rebooted", "reset", "reseted",
+		},
+	}
+)
 
 func NewServiceStatus(value interface{}) (status ServiceStatus, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

@@ -20,9 +20,11 @@ import (
 )
 
 type WebServerSetup struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
-	vhostHelpers    *vhostInfra.VirtualHostHelpers
+	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
+	transientDbSvc    *internalDbInfra.TransientDatabaseService
+	servicesQueryRepo *servicesInfra.ServicesQueryRepo
+	servicesCmdRepo   *servicesInfra.ServicesCmdRepo
+	vhostHelpers      *vhostInfra.VirtualHostHelpers
 }
 
 func NewWebServerSetup(
@@ -30,15 +32,15 @@ func NewWebServerSetup(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *WebServerSetup {
 	return &WebServerSetup{
-		persistentDbSvc: persistentDbSvc,
-		transientDbSvc:  transientDbSvc,
-		vhostHelpers:    vhostInfra.NewVirtualHostHelpers(),
+		persistentDbSvc:   persistentDbSvc,
+		transientDbSvc:    transientDbSvc,
+		servicesQueryRepo: servicesInfra.NewServicesQueryRepo(persistentDbSvc),
+		servicesCmdRepo:   servicesInfra.NewServicesCmdRepo(persistentDbSvc),
+		vhostHelpers:      vhostInfra.NewVirtualHostHelpers(),
 	}
 }
 
 func (ws *WebServerSetup) dhParamsGenerator() error {
-	slog.Info("GeneratingDhParams")
-
 	_, dhparamErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "openssl",
 		Args: []string{
@@ -53,8 +55,6 @@ func (ws *WebServerSetup) dhParamsGenerator() error {
 }
 
 func (ws *WebServerSetup) selfSignedCertGenerator() error {
-	slog.Info("GeneratingSelfSignedCert")
-
 	primaryVirtualHostHostname, readErr :=
 		ws.vhostHelpers.ReadPrimaryVirtualHostHostname()
 	if readErr != nil {
@@ -88,8 +88,6 @@ func (ws *WebServerSetup) primaryIndexFileRestorer() error {
 }
 
 func (ws *WebServerSetup) mappingSecurityRulesGenerator() error {
-	slog.Info("GeneratingMappingSecurityRules")
-
 	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(ws.persistentDbSvc)
 	recreateErr := mappingCmdRepo.RecreateSecurityRuleFiles()
 	if recreateErr != nil {
@@ -100,27 +98,30 @@ func (ws *WebServerSetup) mappingSecurityRulesGenerator() error {
 }
 
 func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
-	slog.Info("ConfiguringWebServerAutoStart")
-
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
-	nginxServiceName, _ := valueObject.NewServiceName("nginx")
-	nginxAutoStart := true
-	updateServiceDto := dto.NewUpdateService(
-		nginxServiceName, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil, nil,
-		tkValueObject.AccountIdSystem, tkValueObject.IpAddressLocal,
+	_, readErr := ws.servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{
+			ServiceName: &valueObject.MainWebServerServiceName,
+		},
 	)
-	updateErr := servicesCmdRepo.Update(updateServiceDto)
+	if readErr != nil {
+		return errors.New("MainWebServerServiceNotFound: " + readErr.Error())
+	}
+
+	serviceAutoStart := true
+	updateServiceDto := dto.NewUpdateService(
+		valueObject.MainWebServerServiceName, nil, nil, nil, nil, nil, nil, nil,
+		nil, nil, nil, nil, nil, nil, nil, &serviceAutoStart, nil, nil, nil, nil,
+		nil, nil, tkValueObject.AccountIdSystem, tkValueObject.IpAddressLocal,
+	)
+	updateErr := ws.servicesCmdRepo.Update(updateServiceDto)
 	if updateErr != nil {
-		return errors.New("WebServerAutoStartConfiguratorError: " + updateErr.Error())
+		return errors.New("MainWebServerAutoStartUpdateError: " + updateErr.Error())
 	}
 
 	return nil
 }
 
 func (ws *WebServerSetup) supervisorReloader() error {
-	slog.Info("WebServerConfigured! RestartingServices")
-
 	_, reloadErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "supervisorctl",
 		Args:    []string{"-p", "replacedOnFirstBoot", "reload"},
@@ -179,8 +180,6 @@ func (ws *WebServerSetup) firstSetupOrchestrator() {
 func (ws *WebServerSetup) phpMaxChildProcessesUpdater(
 	memoryTotal tkValueObject.Byte,
 ) error {
-	slog.Debug("UpdatingMaxPhpChildProcessesInit")
-
 	childProcsHardCap := uint64(300)
 	childProcsPerGb := uint64(5)
 
@@ -207,40 +206,35 @@ func (ws *WebServerSetup) phpMaxChildProcessesUpdater(
 		return errors.New("PhpMaxChildProcessesUpdaterError: " + sedErr.Error())
 	}
 
-	slog.Debug("UpdateMaxPhpChildProcessesSuccess")
 	return nil
 }
 
-func (ws *WebServerSetup) webServerRunningEnsurer(
-	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
-	servicesCmdRepo *servicesInfra.ServicesCmdRepo,
-) error {
-	serviceName, _ := valueObject.NewServiceName("nginx")
-	readRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &serviceName,
-	}
-	nginxService, readErr := servicesQueryRepo.ReadFirstInstalledItem(readRequestDto)
+func (ws *WebServerSetup) webServerRunningEnsurer() error {
+	mainWebServerService, readErr := ws.servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{
+			ServiceName: &valueObject.MainWebServerServiceName,
+		},
+	)
 	if readErr != nil {
-		return errors.New("WebServerRunningEnsurerError: " + readErr.Error())
+		return errors.New("MainWebServerServiceNotFound: " + readErr.Error())
 	}
 
-	if nginxService.Status.String() == "running" {
+	if mainWebServerService.Status == valueObject.ServiceStatusRunning {
 		return nil
 	}
 
-	startErr := servicesCmdRepo.Start(serviceName)
+	startErr := ws.servicesCmdRepo.Start(valueObject.MainWebServerServiceName)
 	if startErr != nil {
-		return errors.New("WebServerRunningEnsurerError: " + startErr.Error())
+		return errors.New("WebServerStartError: " + startErr.Error())
 	}
 
 	return nil
 }
 
 func (ws *WebServerSetup) phpChildProcessesConfigurator(
-	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
 	memoryTotal tkValueObject.Byte,
 ) error {
-	if !servicesQueryRepo.IsInstalled(valueObject.PhpWebServerServiceName) {
+	if !ws.servicesQueryRepo.IsInstalled(valueObject.PhpWebServerServiceName) {
 		slog.Debug(
 			"SkippingPhpChildProcessesConfigurator",
 			slog.String("reason", "PhpWebServerNotInstalled"),
@@ -283,11 +277,8 @@ func (ws *WebServerSetup) onStartSetupOrchestrator() {
 		os.Exit(1)
 	}
 
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
-
 	phpChildProcessesConfiguratorErr := ws.phpChildProcessesConfigurator(
-		servicesQueryRepo, containerResources.HardwareSpecs.MemoryTotal,
+		containerResources.HardwareSpecs.MemoryTotal,
 	)
 	if phpChildProcessesConfiguratorErr != nil {
 		slog.Warn(
@@ -296,9 +287,7 @@ func (ws *WebServerSetup) onStartSetupOrchestrator() {
 		)
 	}
 
-	webServerRunningEnsurerErr := ws.webServerRunningEnsurer(
-		servicesQueryRepo, servicesCmdRepo,
-	)
+	webServerRunningEnsurerErr := ws.webServerRunningEnsurer()
 	if webServerRunningEnsurerErr != nil {
 		slog.Error(
 			"WebServerRunningEnsurerError",

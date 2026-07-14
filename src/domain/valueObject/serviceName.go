@@ -13,20 +13,22 @@ type ServiceName string
 
 const ServiceNameRegex string = `^[a-z0-9\.\_\-]{1,64}$`
 
-var NativeSvcNamesWithAliases = map[string][]string{
-	"php-webserver": {
-		"php", "php-ws", "lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed",
-	},
-	"node": {"nodejs"},
-	"mariadb": {
-		"mariadbd", "mariadb-server", "mysql", "mysqld", "percona", "perconadb",
-	},
-	"postgresql": {"postgres"},
-	"redis":      {"redis-server"},
-	"java":       {"jre", "jdk", "openjdk"},
-}
-
-var PhpWebServerServiceName = ServiceName("php-webserver")
+var (
+	MainWebServerServiceName  = ServiceName("nginx")
+	PhpWebServerServiceName   = ServiceName("php-webserver")
+	NativeSvcNamesWithAliases = map[string][]string{
+		"php-webserver": {
+			"php", "php-ws", "lsphp", "php-fpm", "php-cgi", "litespeed", "openlitespeed",
+		},
+		"node": {"nodejs"},
+		"mariadb": {
+			"mariadbd", "mariadb-server", "mysql", "mysqld", "percona", "perconadb",
+		},
+		"postgresql": {"postgres"},
+		"redis":      {"redis-server"},
+		"java":       {"jre", "jdk", "openjdk"},
+	}
+)
 
 func NewServiceName(value interface{}) (serviceName ServiceName, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
