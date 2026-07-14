@@ -121,13 +121,22 @@ func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
 	return nil
 }
 
-func (ws *WebServerSetup) supervisorReloader() error {
+func (ws *WebServerSetup) processManagerReloader() error {
+	fileClerk := tkInfra.FileClerk{}
+	err := fileClerk.CreateSymlink(
+		infraEnvs.ProcessManagerConfFilePath, "/etc/supervisord.conf", true,
+	)
+	if err != nil {
+		return errors.New("ProcessManagerConfSymlinkError: " + err.Error())
+	}
+
 	_, reloadErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "supervisorctl",
-		Args:    []string{"-p", "replacedOnFirstBoot", "reload"},
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"-p", "replacedOnFirstBoot", "reload"},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if reloadErr != nil {
-		return errors.New("SupervisorReloaderError: " + reloadErr.Error())
+		return errors.New("ProcessManagerReloaderError: " + reloadErr.Error())
 	}
 
 	return nil
@@ -161,8 +170,8 @@ func (ws *WebServerSetup) firstSetupOrchestrator() {
 			executeFn:    ws.webServerAutoStartConfigurator,
 		},
 		{
-			errorMessage: "SupervisorReloaderError",
-			executeFn:    ws.supervisorReloader,
+			errorMessage: "ProcessManagerReloaderError",
+			executeFn:    ws.processManagerReloader,
 		},
 	}
 	for _, setupStep := range setupSteps {
