@@ -5,6 +5,7 @@ import (
 	"log/slog"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -117,9 +118,16 @@ func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
 		OperatorAccountId: tkValueObject.AccountIdSystem,
 		OperatorIpAddress: tkValueObject.IpAddressLocal,
 	}
-	updateErr := ws.servicesCmdRepo.Update(updateServiceDto)
-	if updateErr != nil {
-		return errors.New("MainWebServerAutoStartUpdateError: " + updateErr.Error())
+	err := ws.servicesCmdRepo.Update(updateServiceDto)
+	if err != nil {
+		// ProcessManagerAuthError is expected until processManagerStateGuarantor is
+		// called. strings.Contains is used as the error message may be appended with
+		// additional context.
+		if strings.Contains(err.Error(), servicesInfra.ErrProcessManagerAuthError.Error()) {
+			return nil
+		}
+
+		return errors.New("MainWebServerAutoStartUpdateError: " + err.Error())
 	}
 
 	return nil
