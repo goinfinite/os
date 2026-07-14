@@ -133,6 +133,19 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 		return stoppedServicesNames, err
 	}
 
+	if rawStoppedServices == "" {
+		return stoppedServicesNames, nil
+	}
+
+	//Server requires authentication
+	//error: <class 'xmlrpc.client.ProtocolError'> [...]
+	if strings.Contains(rawStoppedServices, "error:") {
+		return stoppedServicesNames, nil
+	}
+
+	//cron
+	//nginx
+	//os-api
 	rawStoppedServicesLines := strings.Split(rawStoppedServices, "\n")
 	for _, rawStoppedService := range rawStoppedServicesLines {
 		if rawStoppedService == "" {
