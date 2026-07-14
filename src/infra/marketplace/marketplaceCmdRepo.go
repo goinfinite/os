@@ -57,18 +57,17 @@ func (repo *MarketplaceCmdRepo) installServices(
 
 	shouldCreatePhpVirtualHost := false
 	for _, serviceWithVersion := range services {
-		if serviceWithVersion.Name.String() == "php-webserver" {
+		if serviceWithVersion.Name == valueObject.ServiceNamePhpWebServer {
 			shouldCreatePhpVirtualHost = true
 		}
 
-		readFirstInstalledServiceRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-			ServiceName: &serviceWithVersion.Name,
-		}
 		_, err := servicesQueryRepo.ReadFirstInstalledItem(
-			readFirstInstalledServiceRequestDto,
+			dto.ReadFirstInstalledServiceItemsRequest{
+				ServiceName: &serviceWithVersion.Name,
+			},
 		)
-		if err != nil && err.Error() != servicesInfra.InstalledServiceNotFound {
-			return err
+		if err != nil && !errors.Is(err, servicesInfra.ErrInstalledServiceNotFound) {
+			return errors.New("ReadFirstInstalledItemError: " + err.Error())
 		}
 
 		if err == nil {

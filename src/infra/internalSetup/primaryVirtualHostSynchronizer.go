@@ -45,7 +45,7 @@ func NewPrimaryVirtualHostSynchronizer(
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) phpConfUpdater() error {
-	if !sync.servicesQueryRepo.IsInstalled(valueObject.PhpWebServerServiceName) {
+	if !sync.servicesQueryRepo.IsInstalled(valueObject.ServiceNamePhpWebServer) {
 		slog.Debug(
 			"SkippingPrimaryVirtualHostPhpConfUpdater",
 			slog.String("reason", "PhpWebServerNotInstalled"),
