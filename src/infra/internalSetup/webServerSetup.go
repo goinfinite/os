@@ -97,31 +97,7 @@ func (ws *WebServerSetup) mappingSecurityRulesGenerator() error {
 	return nil
 }
 
-func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
-	_, readErr := ws.servicesQueryRepo.ReadFirstInstalledItem(
-		dto.ReadFirstInstalledServiceItemsRequest{
-			ServiceName: &valueObject.MainWebServerServiceName,
-		},
-	)
-	if readErr != nil {
-		return errors.New("MainWebServerServiceNotFound: " + readErr.Error())
-	}
-
-	serviceAutoStart := true
-	updateServiceDto := dto.NewUpdateService(
-		valueObject.MainWebServerServiceName, nil, nil, nil, nil, nil, nil, nil,
-		nil, nil, nil, nil, nil, nil, nil, &serviceAutoStart, nil, nil, nil, nil,
-		nil, nil, tkValueObject.AccountIdSystem, tkValueObject.IpAddressLocal,
-	)
-	updateErr := ws.servicesCmdRepo.Update(updateServiceDto)
-	if updateErr != nil {
-		return errors.New("MainWebServerAutoStartUpdateError: " + updateErr.Error())
-	}
-
-	return nil
-}
-
-func (ws *WebServerSetup) processManagerReloader() error {
+func (ws *WebServerSetup) processManagerStateGuarantor() error {
 	fileClerk := tkInfra.FileClerk{}
 	err := fileClerk.CreateSymlink(
 		infraEnvs.ProcessManagerConfFilePath, "/etc/supervisord.conf", true,
@@ -136,7 +112,41 @@ func (ws *WebServerSetup) processManagerReloader() error {
 		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if reloadErr != nil {
-		return errors.New("ProcessManagerReloaderError: " + reloadErr.Error())
+		return errors.New("ProcessManagerReloadError: " + reloadErr.Error())
+	}
+
+	err = ws.servicesCmdRepo.ProcessManagerConfRebuilder()
+	if err != nil {
+		return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
+	}
+
+	return nil
+}
+
+// The reason this method exists is that the main web server will have it's
+// configuration on the database already, however, we cannot auto-start it until
+// the mapping and other config-related steps have executed successfully.
+func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
+	_, readErr := ws.servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{
+			ServiceName: &valueObject.ServiceNameMainWebServer,
+		},
+	)
+	if readErr != nil {
+		return errors.New("MainWebServerServiceNotFound: " + readErr.Error())
+	}
+
+	serviceAutoStart := true
+	updateServiceDto := dto.UpdateService{
+		Name:              valueObject.ServiceNameMainWebServer,
+		Status:            &valueObject.ServiceStatusRunning,
+		AutoStart:         &serviceAutoStart,
+		OperatorAccountId: tkValueObject.AccountIdSystem,
+		OperatorIpAddress: tkValueObject.IpAddressLocal,
+	}
+	updateErr := ws.servicesCmdRepo.Update(updateServiceDto)
+	if updateErr != nil {
+		return errors.New("MainWebServerAutoStartUpdateError: " + updateErr.Error())
 	}
 
 	return nil
@@ -166,12 +176,12 @@ func (ws *WebServerSetup) firstSetupOrchestrator() {
 			executeFn:    ws.mappingSecurityRulesGenerator,
 		},
 		{
-			errorMessage: "WebServerAutoStartConfiguratorError",
-			executeFn:    ws.webServerAutoStartConfigurator,
+			errorMessage: "ProcessManagerStateGuarantorError",
+			executeFn:    ws.processManagerStateGuarantor,
 		},
 		{
-			errorMessage: "ProcessManagerReloaderError",
-			executeFn:    ws.processManagerReloader,
+			errorMessage: "WebServerAutoStartConfiguratorError",
+			executeFn:    ws.webServerAutoStartConfigurator,
 		},
 	}
 	for _, setupStep := range setupSteps {
@@ -221,7 +231,7 @@ func (ws *WebServerSetup) phpMaxChildProcessesUpdater(
 func (ws *WebServerSetup) webServerRunningEnsurer() error {
 	mainWebServerService, readErr := ws.servicesQueryRepo.ReadFirstInstalledItem(
 		dto.ReadFirstInstalledServiceItemsRequest{
-			ServiceName: &valueObject.MainWebServerServiceName,
+			ServiceName: &valueObject.ServiceNameMainWebServer,
 		},
 	)
 	if readErr != nil {
@@ -232,7 +242,7 @@ func (ws *WebServerSetup) webServerRunningEnsurer() error {
 		return nil
 	}
 
-	startErr := ws.servicesCmdRepo.Start(valueObject.MainWebServerServiceName)
+	startErr := ws.servicesCmdRepo.Start(valueObject.ServiceNameMainWebServer)
 	if startErr != nil {
 		return errors.New("WebServerStartError: " + startErr.Error())
 	}
@@ -243,7 +253,7 @@ func (ws *WebServerSetup) webServerRunningEnsurer() error {
 func (ws *WebServerSetup) phpChildProcessesConfigurator(
 	memoryTotal tkValueObject.Byte,
 ) error {
-	if !ws.servicesQueryRepo.IsInstalled(valueObject.PhpWebServerServiceName) {
+	if !ws.servicesQueryRepo.IsInstalled(valueObject.ServiceNamePhpWebServer) {
 		slog.Debug(
 			"SkippingPhpChildProcessesConfigurator",
 			slog.String("reason", "PhpWebServerNotInstalled"),

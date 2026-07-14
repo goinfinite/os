@@ -139,21 +139,18 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &name,
-	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readFirstInstalledRequestDto,
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &name},
 	)
 	if err != nil {
-		return err
+		return errors.New("ReadServiceEntityError: " + err.Error())
 	}
 
 	err = repo.runCmdSteps(
 		"PreStop", serviceEntity.PreStopCmdSteps, serviceEntity.PreStopTimeoutSecs,
 	)
 	if err != nil {
-		return err
+		return errors.New("PreStopError: " + err.Error())
 	}
 
 	stopOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
@@ -172,7 +169,7 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		"Stop", serviceEntity.StopCmdSteps, serviceEntity.StopTimeoutSecs,
 	)
 	if err != nil {
-		return err
+		return errors.New("StopError: " + err.Error())
 	}
 
 	return repo.runCmdSteps(
@@ -181,47 +178,41 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &name,
-	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readFirstInstalledRequestDto,
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &name},
 	)
 	if err != nil {
-		return err
+		return errors.New("ReadServiceEntityError: " + err.Error())
 	}
 
 	if serviceEntity.Status == valueObject.ServiceStatusRunning {
 		err = repo.Stop(name)
 		if err != nil {
-			return err
+			return errors.New("StopProcessError: " + err.Error())
 		}
 	}
 
 	return repo.Start(name)
 }
 
-func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
+func (repo *ServicesCmdRepo) ProcessManagerConfRebuilder() error {
 	shouldIncludeMetrics := false
-	readInstalledItemsDto := dto.ReadInstalledServicesItemsRequest{
-		Pagination: tkDto.Pagination{
-			ItemsPerPage: 1000,
-		},
-		ShouldIncludeMetrics: &shouldIncludeMetrics,
-	}
 	readInstalledItemsResponseDto, err := repo.servicesQueryRepo.ReadInstalledItems(
-		readInstalledItemsDto,
+		dto.ReadInstalledServicesItemsRequest{
+			Pagination:           tkDto.Pagination{ItemsPerPage: 1000},
+			ShouldIncludeMetrics: &shouldIncludeMetrics,
+		},
 	)
 	if err != nil {
-		return err
+		return errors.New("ReadInstalledItemsError: " + err.Error())
 	}
+
 	if len(readInstalledItemsResponseDto.InstalledServices) == 0 {
 		return errors.New("NoServicesFoundToUpdateProcessManager")
 	}
 
-	ctlPassword := infraHelper.GenStrongShortHash(
-		readInstalledItemsResponseDto.InstalledServices[0].CreatedAt.String(),
-	)
+	tkSynthesizer := tkInfra.Synthesizer{}
+	ctlPassword := tkSynthesizer.PasswordFactory(16, false)
 
 	// cSpell:disable
 	fileTemplate := `# AUTO GENERATED FILE. DO NOT EDIT.
@@ -586,9 +577,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	err = repo.updateProcessManagerConf()
+	err = repo.ProcessManagerConfRebuilder()
 	if err != nil {
-		return installedServiceName, err
+		return installedServiceName, errors.New("ProcessManagerConfRebuilderError: " + err.Error())
 	}
 
 	return installedServiceName, repo.Start(installedServiceName)
@@ -651,9 +642,9 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		}
 	}
 
-	err = repo.updateProcessManagerConf()
+	err = repo.ProcessManagerConfRebuilder()
 	if err != nil {
-		return err
+		return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
 	}
 
 	return repo.Start(createDto.Name)
@@ -778,9 +769,9 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 			return err
 		}
 
-		err = repo.updateProcessManagerConf()
+		err = repo.ProcessManagerConfRebuilder()
 		if err != nil {
-			return err
+			return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
 		}
 	}
 
@@ -845,9 +836,9 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	err = repo.updateProcessManagerConf()
+	err = repo.ProcessManagerConfRebuilder()
 	if err != nil {
-		return err
+		return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
 	}
 
 	if serviceEntity.Nature == valueObject.ServiceNatureCustom {

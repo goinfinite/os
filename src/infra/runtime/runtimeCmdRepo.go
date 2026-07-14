@@ -108,7 +108,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 
 func (repo *RuntimeCmdRepo) restartPhpWebServer() error {
 	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(repo.persistentDbSvc)
-	err := servicesCmdRepo.Restart(valueObject.PhpWebServerServiceName)
+	err := servicesCmdRepo.Restart(valueObject.ServiceNamePhpWebServer)
 	if err != nil {
 		return errors.New("RestartPhpWebServerFailed: " + err.Error())
 	}

@@ -24,7 +24,9 @@ import (
 	"github.com/shirou/gopsutil/process"
 )
 
-const InstalledServiceNotFound = "ServiceInstalledItemNotFound"
+var (
+	ErrInstalledServiceNotFound = errors.New("ServiceInstalledItemNotFound")
+)
 
 type ServicesQueryRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
@@ -377,7 +379,7 @@ func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
 	}
 
 	if len(responseDto.InstalledServices) == 0 {
-		return installedItem, errors.New(InstalledServiceNotFound)
+		return installedItem, ErrInstalledServiceNotFound
 	}
 
 	return responseDto.InstalledServices[0], nil
