@@ -58,16 +58,18 @@ func (cb *ContainerBootstrap) foundationalDirsCreator() {
 				os.Exit(1)
 			}
 		}
+	}
 
-		chownErr := infraHelper.UpdateOwnershipForWebServerUse(dirPath, false, false)
-		if chownErr != nil {
-			slog.Error(
-				"ChownFoundationalDirFailed",
-				slog.String("path", dirPath),
-				slog.String("err", chownErr.Error()),
-			)
-			os.Exit(1)
-		}
+	chownErr := infraHelper.UpdateOwnershipForWebServerUse(
+		infraEnvs.ApplicationRootDir, true, false,
+	)
+	if chownErr != nil {
+		slog.Error(
+			"ChownFoundationalDirFailed",
+			slog.String("path", infraEnvs.ApplicationRootDir),
+			slog.String("err", chownErr.Error()),
+		)
+		os.Exit(1)
 	}
 }
 
