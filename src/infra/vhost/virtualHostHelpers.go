@@ -119,13 +119,16 @@ func (helpers *VirtualHostHelpers) ReloadWebServer() error {
 		return errors.New("WebServerConfigTestFail: " + err.Error())
 	}
 
-	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: infraEnvs.WebServerBinaryPath + " -s reload -c " +
-			infraEnvs.WebServerMainConfPath,
-		ShouldUseSubShell: true,
+	reloadOutput, reloadErr := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: infraEnvs.WebServerBinaryPath,
+		Args:    []string{"-s", "reload", "-c", infraEnvs.WebServerMainConfPath},
 	}).Run()
-	if err != nil {
-		return errors.New("WebServerReloadFail: " + err.Error())
+	if reloadErr != nil {
+		combinedOutput := reloadOutput + " " + reloadErr.Error()
+		failBecauseWebServerNotRunning := strings.Contains(combinedOutput, "nginx.pid")
+		if !failBecauseWebServerNotRunning {
+			return errors.New("WebServerReloadFail: " + combinedOutput)
+		}
 	}
 
 	time.Sleep(1 * time.Second)
