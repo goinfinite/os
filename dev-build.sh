@@ -26,9 +26,9 @@ echo "=> Building the container..."
 make build
 podman build -t os:latest --format docker .
 podman run --name os -d \
-  --env 'LOG_LEVEL=debug' --env 'PRIMARY_VHOST=goinfinite.local' \
+  --env 'LOG_LEVEL=debug' --env 'PRIMARY_VHOST=goinfinite.app' \
   --env 'DEV_MODE=true' \
-  --hostname=goinfinite.local --cpus=2 --memory=2g --rm \
+  --hostname=goinfinite.app --cpus=2 --memory=2g --rm \
   --volume "$(pwd)/bin:/infinite/bin:Z,ro,bind,slave" \
   "${ports[@]}" -it os:latest
 
