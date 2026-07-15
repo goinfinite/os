@@ -17,7 +17,7 @@ func ReadAccessTokenDetails(
 	authQueryRepo repository.AuthQueryRepo,
 	accessToken tkValueObject.AccessTokenValue,
 	trustedCidrs []tkValueObject.CidrBlock,
-	ipAddress tkValueObject.IpAddress,
+	operatorIpAddress tkValueObject.IpAddress,
 ) (accessTokenDetails dto.AccessTokenDetails, err error) {
 	accessTokenDetails, err = authQueryRepo.ReadAccessTokenDetails(accessToken)
 	if err != nil {
@@ -29,13 +29,13 @@ func ReadAccessTokenDetails(
 	}
 
 	for _, cidrBlock := range trustedCidrs {
-		if cidrBlock.Contains(ipAddress) {
+		if cidrBlock.Contains(operatorIpAddress) {
 			return accessTokenDetails, nil
 		}
 	}
 
 	tokenIpAddressStr := accessTokenDetails.IpAddress.String()
-	operatorIpAddressStr := ipAddress.String()
+	operatorIpAddressStr := operatorIpAddress.String()
 	if tokenIpAddressStr != operatorIpAddressStr {
 		slog.Debug(
 			ErrIpAddressMismatch.Error(),
