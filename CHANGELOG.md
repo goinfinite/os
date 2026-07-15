@@ -1,32 +1,24 @@
 # Changelog
 
 ```log
-0.3.1 - 2026/07/10
-refactor(vhost): rebuild primary vhost conf from template instead of sed-editing
-refactor(vhost): remove sed-based primary vhost update helpers
-feat(cli): add PrimaryVirtualHostSynchronizer for env-conf-db sync
-refactor(vhost): consolidate helpers into VirtualHostHelpers and abstract nginx naming
+0.3.1 - 2026/07/15
+feat: add PrimaryVirtualHostSynchronizer to sync env, conf, db, and PHP vhost on restart
+fix: harden primary vhost rename — ssl-safe, restart php-webserver after creation, alias search uses previous host
+refactor(vhost): rebuild primary vhost conf from template via VirtualHostHelpers and read server_name via tk FileClerk (no more sed)
+refactor(mapping): orchestrate PHP vhost creation in domain use case
+feat(runtime): enable php webserver wildcard for new vhosts
 fix(envs): rename PrimaryPublicDir, remove PRIMARY_VHOST from required, add SSL prefix to skip dns env
-feat: add SKIP_PHP_PROCS_COUNT_UPDATE env var
 feat: allow ssl delete to hard delete only
 fix(services): prevent restart on field-only updates, handle null values and persist fields
-fix(cli): use StringArrayVarP for --envs flag to preserve commas
-refactor(internalSetup): return errors from auxiliary methods and unify slog key to err
-test(runtime,services): use PascalCase test errors and cover PHP vhost sync
-feat(runtime): extend PrimaryVirtualHostSynchronizer to sync PHP vhost
-perf(vhost): read primary server_name via tk FileClerk instead of sed subprocess
-refactor(mapping): orchestrate PHP vhost creation in domain use case
-fix: alias search should use previous host
-feat(runtime): enable php webserver wildcard for new vhosts
-fix: make primary vhost rename ssl-safe
-fix: add missing restart after php vhost creation
-fix(mappings): unify mapping modal and refresh stale form dropdowns
-refactor(dev): rewrite hot-reload WS handler with gorilla/websocket
-feat(auth): exempt dev WS endpoint from UI auth
-fix(api): replace deprecated TimeoutWithConfig with ContextTimeout
 fix(internalSetup): create /app/logs/cron, /app/logs/nginx, and /app/.trash at runtime to prevent fuse-overlayfs whiteout accumulation
-refactor(services): use canonical service status values
-refactor(services): finish process manager migration
+fix(ui): refresh stale mappings form state
+feat: add SKIP_PHP_PROCS_COUNT_UPDATE env var (skip PHP children recalc on startup)
+fix(cli): preserve commas in --envs values
+fix(api): adopt context-based request timeouts
+refactor(dev): upgrade hot-reload websocket handler and exempt it from UI auth
+refactor(services): normalize status values and finish process manager migration
+refactor(internalSetup): standardize error returns and slog keys
+test: normalize test error format and cover primary-vhost sync
 
 0.3.0 - 2026/07/03
 fix(internalSetup): lsapi counter and add last edit comment
