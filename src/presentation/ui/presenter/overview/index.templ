@@ -508,14 +508,14 @@ templ InstalledServicesItemsTable(
 										"Restart", "os-200",
 									)
 									if installedServiceEntity.Type != valueObject.ServiceTypeSystem {
-										switch installedServiceEntity.Status.String() {
-											case "running":
+										switch installedServiceEntity.Status {
+											case valueObject.ServiceStatusRunning:
 												@componentStructural.CircularIconButtonWithTooltip(
 													"ph-pause", "yellow-900", "yellow-700",
 													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'pause')",
 													"Pause", "yellow-700",
 												)
-											case "stopped":
+											case valueObject.ServiceStatusStopped:
 												@componentStructural.CircularIconButtonWithTooltip(
 													"ph-play", "cyan-900", "cyan-700",
 													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'start')",

@@ -10,9 +10,13 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
-	tkInfra "github.com/goinfinite/tk/src/infra"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+)
+
+var (
+	ErrPhpVirtualHostNotFound error = errors.New("PhpVirtualHostNotFound")
 )
 
 type RuntimeQueryRepo struct {
@@ -23,31 +27,39 @@ func NewRuntimeQueryRepo() *RuntimeQueryRepo {
 	return &RuntimeQueryRepo{fileClerk: tkInfra.FileClerk{}}
 }
 
-func (repo RuntimeQueryRepo) GetVirtualHostPhpConfFilePath(
-	hostname tkValueObject.Fqdn,
-) (vhostPhpConfFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
-	primaryVhostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
-	vhostPhpConfFilePathStr := "/app/conf/php-webserver/" + hostname.String() + ".conf"
+func (repo RuntimeQueryRepo) ReadPhpVirtualHostConfFilePath(
+	vhostHostname tkValueObject.Fqdn,
+) (phpVirtualHostConfFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
+	nonWildcardHostname := strings.Replace(vhostHostname.String(), "*.", "", -1)
+	rawPhpVirtualHostConfFilePath := "/app/conf/php-webserver/" + nonWildcardHostname + ".conf"
 
-	primaryVirtualHostHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVirtualHostHostname, err := vhostInfra.NewVirtualHostHelpers().
+		ReadPrimaryVirtualHostHostnameFromWebServerConf()
 	if err != nil {
-		return vhostPhpConfFilePath, errors.New("PrimaryVhostNotFound: " + err.Error())
+		return phpVirtualHostConfFilePath, errors.New(
+			"WebServerPrimaryVirtualHostNotFound: " + err.Error(),
+		)
 	}
 
-	if hostname == primaryVirtualHostHostname {
-		vhostPhpConfFilePathStr = primaryVhostPhpConfFilePathStr
+	primaryVirtualHostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
+	if vhostHostname == primaryVirtualHostHostname {
+		rawPhpVirtualHostConfFilePath = primaryVirtualHostPhpConfFilePathStr
 	}
 
-	vhostPhpConfFilePath, err = tkValueObject.NewUnixAbsoluteFilePath(vhostPhpConfFilePathStr, false)
+	phpVirtualHostConfFilePath, err = tkValueObject.NewUnixAbsoluteFilePath(
+		rawPhpVirtualHostConfFilePath, false,
+	)
 	if err != nil {
-		return vhostPhpConfFilePath, err
+		return phpVirtualHostConfFilePath, errors.New(
+			"InvalidPhpVirtualHostConfFilePath: " + err.Error(),
+		)
 	}
 
-	if !repo.fileClerk.FileExists(vhostPhpConfFilePathStr) {
-		return vhostPhpConfFilePath, errors.New("VirtualHostNotFound")
+	if !repo.fileClerk.FileExists(phpVirtualHostConfFilePath.String()) {
+		return phpVirtualHostConfFilePath, ErrPhpVirtualHostNotFound
 	}
 
-	return vhostPhpConfFilePath, nil
+	return phpVirtualHostConfFilePath, nil
 }
 
 func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
@@ -56,7 +68,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	output, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "awk",
 		Args: []string{
-			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebserverMainConfFilePath,
+			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebServerMainConfFilePath,
 		},
 	}).Run()
 	if err != nil {
@@ -83,7 +95,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 func (repo RuntimeQueryRepo) ReadPhpVersion(
 	hostname tkValueObject.Fqdn,
 ) (phpVersion entity.PhpVersion, err error) {
-	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
+	phpVirtualHostConfFilePath, err := repo.ReadPhpVirtualHostConfFilePath(hostname)
 	if err != nil {
 		return phpVersion, err
 	}
@@ -92,11 +104,11 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 		Command: "awk",
 		Args: []string{
 			"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
-			vhostPhpConfFilePath.String(),
+			phpVirtualHostConfFilePath.String(),
 		},
 	}).Run()
 	if err != nil {
-		return phpVersion, errors.New("GetCurrentPhpVersionFromFileFailed: " + err.Error())
+		return phpVersion, errors.New("ReadCurrentPhpVersionFromFileFailed: " + err.Error())
 	}
 
 	currentPhpVersion, err := valueObject.NewPhpVersion(currentPhpVersionStr)
@@ -106,7 +118,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 
 	phpVersions, err := repo.ReadPhpVersionsInstalled()
 	if err != nil {
-		return phpVersion, errors.New("GetPhpVersionsInstalledFailed: " + err.Error())
+		return phpVersion, errors.New("ReadPhpVersionsInstalledFailed: " + err.Error())
 	}
 
 	phpVersion = entity.NewPhpVersion(currentPhpVersion, phpVersions)
@@ -119,7 +131,7 @@ func (repo RuntimeQueryRepo) getPhpTimezones() (timezones []string, err error) {
 		Args:    []string{"-r", "echo json_encode(DateTimeZone::listIdentifiers());"},
 	}).Run()
 	if err != nil {
-		return timezones, errors.New("GetPhpTimezonesFailed: " + err.Error())
+		return timezones, errors.New("ReadPhpTimezonesFailed: " + err.Error())
 	}
 
 	err = json.Unmarshal([]byte(timezonesRaw), &timezones)
@@ -218,7 +230,7 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 func (repo RuntimeQueryRepo) ReadPhpSettings(
 	hostname tkValueObject.Fqdn,
 ) (phpSettings []entity.PhpSetting, err error) {
-	vhostPhpConfFilePath, err := repo.GetVirtualHostPhpConfFilePath(hostname)
+	phpVirtualHostConfFilePath, err := repo.ReadPhpVirtualHostConfFilePath(hostname)
 	if err != nil {
 		return phpSettings, err
 	}
@@ -229,7 +241,7 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 			"-n",
 			"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; " +
 				"s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
-			vhostPhpConfFilePath.String(),
+			phpVirtualHostConfFilePath.String(),
 		},
 	}).Run()
 	if err != nil || output == "" {
@@ -313,10 +325,5 @@ func (repo RuntimeQueryRepo) ReadPhpConfigs(
 		return phpConfigs, err
 	}
 
-	return entity.NewPhpConfigs(
-		hostname,
-		phpVersion,
-		phpSettings,
-		phpModules,
-	), nil
+	return entity.NewPhpConfigs(hostname, phpVersion, phpSettings, phpModules), nil
 }

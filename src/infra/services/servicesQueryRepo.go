@@ -6,7 +6,6 @@ import (
 	"math"
 	"os"
 	"slices"
-	"strconv"
 	"strings"
 	"time"
 
@@ -18,13 +17,16 @@ import (
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 
 	"github.com/shirou/gopsutil/process"
 )
 
-const InstalledServiceNotFound = "ServiceInstalledItemNotFound"
+var (
+	ErrInstalledServiceNotFound = errors.New("ServiceInstalledItemNotFound")
+)
 
 type ServicesQueryRepo struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
@@ -120,15 +122,30 @@ func (repo *ServicesQueryRepo) readPidMetrics(
 func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	stoppedServicesNames := []string{}
 
-	readStoppedServicesCmd := SupervisorCtlBin + " status | grep -v 'RUNNING' | awk '{print $1}'"
+	readStoppedServicesCmd := infraEnvs.ProcessManagerBinaryPath +
+		" status | grep -v 'RUNNING' | awk '{print $1}'"
 	rawStoppedServices, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           readStoppedServicesCmd,
+		WorkingDirectory:  infraEnvs.InfiniteOsMainDir,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
 		return stoppedServicesNames, err
 	}
 
+	if rawStoppedServices == "" {
+		return stoppedServicesNames, nil
+	}
+
+	//Server requires authentication
+	//error: <class 'xmlrpc.client.ProtocolError'> [...]
+	if strings.Contains(rawStoppedServices, "error:") {
+		return stoppedServicesNames, nil
+	}
+
+	//cron
+	//nginx
+	//os-api
 	rawStoppedServicesLines := strings.Split(rawStoppedServices, "\n")
 	for _, rawStoppedService := range rawStoppedServicesLines {
 		if rawStoppedService == "" {
@@ -138,7 +155,7 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 		serviceName, err := valueObject.NewServiceName(rawStoppedService)
 		if err != nil {
 			slog.Debug(
-				"InvalidStoppedServiceName",
+				"SkippingInvalidStoppedServiceName",
 				slog.String("serviceName", rawStoppedService),
 			)
 			continue
@@ -161,27 +178,36 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 		serviceNameStr := installedService.Name.String()
 
-		supervisorStatus, _ := tkInfra.NewShell(tkInfra.ShellSettings{
-			Command:           SupervisorCtlBin + " status " + serviceNameStr,
-			ShouldUseSubShell: true,
+		procManagerStatus, _ := tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:          infraEnvs.ProcessManagerBinaryPath,
+			Args:             []string{"status", serviceNameStr},
+			WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 		}).Run()
-		if len(supervisorStatus) == 0 {
+		if len(procManagerStatus) == 0 {
 			installedServicesWithMetrics = append(
 				installedServicesWithMetrics, serviceWithoutMetrics,
 			)
 
-			slog.Debug("ReadSupervisorStatusError", slog.String("name", serviceNameStr))
+			slog.Debug("ReadProcManagerStatusError", slog.String("name", serviceNameStr))
 			continue
 		}
 
 		// # supervisorctl status <serviceName>
 		// <serviceName>                    RUNNING   pid 120, uptime 0:00:35
-		supervisorStatusParts := strings.Fields(supervisorStatus)
-		if len(supervisorStatusParts) < 4 {
-			slog.Debug("MissingSupervisorStatusParts", slog.String("name", serviceNameStr))
+		procManagerStatusParts := strings.Fields(procManagerStatus)
+		if len(procManagerStatusParts) < 4 {
+			installedServicesWithMetrics = append(
+				installedServicesWithMetrics, serviceWithoutMetrics,
+			)
+
+			slog.Debug(
+				"MissingProcManagerStatusParts",
+				slog.String("name", serviceNameStr),
+			)
+			continue
 		}
 
-		rawServiceStatus := supervisorStatusParts[1]
+		rawServiceStatus := procManagerStatusParts[1]
 		serviceStatus, err := valueObject.NewServiceStatus(rawServiceStatus)
 		if err != nil {
 			installedServicesWithMetrics = append(
@@ -195,7 +221,7 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 			continue
 		}
 
-		if serviceStatus.String() != "running" {
+		if serviceStatus != valueObject.ServiceStatusRunning {
 			installedServicesWithMetrics = append(
 				installedServicesWithMetrics, serviceWithoutMetrics,
 			)
@@ -203,16 +229,17 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 			continue
 		}
 
-		rawServicePid := supervisorStatusParts[3]
+		rawServicePid := procManagerStatusParts[3]
 		rawServicePid = strings.Trim(rawServicePid, ",")
-		servicePidInt, err := strconv.ParseInt(rawServicePid, 10, 32)
+		servicePidInt, err := tkVoUtil.InterfaceToInt64(rawServicePid)
 		if err != nil {
 			installedServicesWithMetrics = append(
 				installedServicesWithMetrics, serviceWithoutMetrics,
 			)
 
 			slog.Debug(
-				err.Error(), slog.String("name", serviceNameStr),
+				"ParsePidError",
+				slog.String("name", serviceNameStr),
 				slog.String("rawPid", rawServicePid),
 			)
 			continue
@@ -298,13 +325,12 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		)
 	}
 
-	stoppedStatus, _ := valueObject.NewServiceStatus("stopped")
 	for serviceEntityIndex, serviceEntity := range installedServiceEntities {
 		if !slices.Contains(stoppedServicesNames, serviceEntity.Name.String()) {
 			continue
 		}
 
-		installedServiceEntities[serviceEntityIndex].Status = stoppedStatus
+		installedServiceEntities[serviceEntityIndex].Status = valueObject.ServiceStatusStopped
 	}
 
 	if requestDto.ServiceStatus != nil {
@@ -372,10 +398,17 @@ func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
 	}
 
 	if len(responseDto.InstalledServices) == 0 {
-		return installedItem, errors.New(InstalledServiceNotFound)
+		return installedItem, ErrInstalledServiceNotFound
 	}
 
 	return responseDto.InstalledServices[0], nil
+}
+
+func (repo *ServicesQueryRepo) IsInstalled(serviceName valueObject.ServiceName) bool {
+	_, readErr := repo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &serviceName},
+	)
+	return readErr == nil
 }
 
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(

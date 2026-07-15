@@ -8,12 +8,15 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
+)
+
+var (
+	ErrVirtualHostNotFound error = errors.New("VirtualHostNotFound")
 )
 
 type VirtualHostQueryRepo struct {
@@ -46,7 +49,7 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 		virtualHostModel.ParentHostname = &parentHostnameStr
 	}
 	if requestDto.IsPrimary != nil && *requestDto.IsPrimary {
-		primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+		primaryHostname, err := NewVirtualHostHelpers().ReadPrimaryVirtualHostHostname()
 		if err != nil {
 			return responseDto, errors.New("ReadPrimaryVirtualHostHostnameError: " + err.Error())
 		}
@@ -100,7 +103,7 @@ func (repo *VirtualHostQueryRepo) Read(requestDto dto.ReadVirtualHostsRequest) (
 			slog.Debug(
 				"VirtualHostModelToEntityError",
 				slog.String("hostname", virtualHostModel.Hostname),
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -165,7 +168,7 @@ func (repo *VirtualHostQueryRepo) ReadFirst(
 	}
 
 	if len(responseDto.VirtualHosts) == 0 {
-		return vhostEntity, errors.New("VirtualHostNotFound")
+		return vhostEntity, ErrVirtualHostNotFound
 	}
 
 	return responseDto.VirtualHosts[0], nil
@@ -184,7 +187,7 @@ func (repo *VirtualHostQueryRepo) ReadFirstWithMappings(
 	}
 
 	if len(responseDto.VirtualHostWithMappings) == 0 {
-		return vhostWithMappingsDto, errors.New("VirtualHostNotFound")
+		return vhostWithMappingsDto, ErrVirtualHostNotFound
 	}
 
 	return responseDto.VirtualHostWithMappings[0], nil

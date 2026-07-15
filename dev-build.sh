@@ -24,11 +24,11 @@ esac
 
 echo "=> Building the container..."
 make build
-podman build -t os:latest .
-# TODO: Re-add --env 'DEV_MODE=true' after Echo v4.13.0 release.
+podman build -t os:latest --format docker .
 podman run --name os -d \
-  --env 'LOG_LEVEL=debug' --env 'PRIMARY_VHOST=goinfinite.local' \
-  --hostname=goinfinite.local --cpus=2 --memory=2g --rm \
+  --env 'LOG_LEVEL=debug' --env 'PRIMARY_VHOST=goinfinite.app' \
+  --env 'DEV_MODE=true' \
+  --hostname=goinfinite.app --cpus=2 --memory=2g --rm \
   --volume "$(pwd)/bin:/infinite/bin:Z,ro,bind,slave" \
   "${ports[@]}" -it os:latest
 
@@ -51,7 +51,6 @@ echo "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>"
 echo
 echo "=> Starting the development build..."
 echo "Any changes to the code will trigger a rebuild automatically."
-echo "Ignore the 'InfiniteOsMustBeRunAsRoot' message or enable DEV_MODE."
 echo
 echo "<<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>><<>>"
 echo
@@ -71,7 +70,10 @@ stopDevBuild() {
 
 trap stopDevBuild SIGINT
 
-air &
+# Air is used only to trigger a rebuild on code changes, not to run the application
+# itself. That's why we set SILENT_EXIT_MODE to true to avoid the application from
+# starting on the local machine when the rebuild is complete.
+SILENT_EXIT_MODE=true air &
 airPid=$!
 podman attach os &
 podmanPid=$!

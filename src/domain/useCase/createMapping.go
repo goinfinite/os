@@ -51,6 +51,7 @@ func mappingTargetLinter(createDto dto.CreateMapping) (dto.CreateMapping, error)
 func CreateMapping(
 	vhostQueryRepo repository.VirtualHostQueryRepo,
 	mappingCmdRepo repository.MappingCmdRepo,
+	runtimeCmdRepo repository.RuntimeCmdRepo,
 	svcsQueryRepo repository.ServicesQueryRepo,
 	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateMapping,
@@ -111,6 +112,16 @@ func CreateMapping(
 			if isTransportLayer {
 				return errors.New("TransportLayerMappingNotSupportedYet")
 			}
+		}
+	}
+
+	isPhpServiceMapping := createDto.TargetType == valueObject.MappingTargetTypeService &&
+		createDto.TargetValue.String() == "php-webserver"
+	if isPhpServiceMapping {
+		err = runtimeCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
+		if err != nil {
+			slog.Error("CreatePhpVirtualHostError", slog.String("err", err.Error()))
+			return errors.New("CreatePhpVirtualHostError")
 		}
 	}
 

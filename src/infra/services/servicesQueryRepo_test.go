@@ -25,7 +25,7 @@ func TestServicesQueryRepo(t *testing.T) {
 			readInstallableItemsRequestDto,
 		)
 		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+			t.Errorf("ReadInstallableItemsShouldSucceed: %v", err)
 		}
 
 		if len(services.InstallableServices) == 0 {
@@ -44,7 +44,7 @@ func TestServicesQueryRepo(t *testing.T) {
 			readInstallableItemsRequestDto,
 		)
 		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+			t.Errorf("ReadFirstInstallableItemShouldSucceed: %v", err)
 		}
 	})
 
@@ -59,7 +59,7 @@ func TestServicesQueryRepo(t *testing.T) {
 			readInstalledItemsRequestDto,
 		)
 		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+			t.Errorf("ReadInstalledItemsShouldSucceed: %v", err)
 		}
 
 		if len(services.InstalledServices) == 0 {
@@ -78,7 +78,21 @@ func TestServicesQueryRepo(t *testing.T) {
 			readFirstInstalledRequestDto,
 		)
 		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+			t.Errorf("ReadFirstInstalledItemShouldSucceed: %v", err)
+		}
+	})
+
+	t.Run("IsInstalled", func(t *testing.T) {
+		installedName, _ := valueObject.NewServiceName("node")
+		isInstalled := servicesQueryRepo.IsInstalled(installedName)
+		if !isInstalled {
+			t.Error("InstalledServiceShouldReturnTrue")
+		}
+
+		missingName, _ := valueObject.NewServiceName("nonexistent-svc-xyz")
+		isMissingInstalled := servicesQueryRepo.IsInstalled(missingName)
+		if isMissingInstalled {
+			t.Error("MissingServiceShouldReturnFalse")
 		}
 	})
 }

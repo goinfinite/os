@@ -10,7 +10,7 @@ import (
 )
 
 // @title			OsApi
-// @version			0.2.9
+// @version			0.3.1
 // @description		Infinite OS API
 // @termsOfService	https://goinfinite.net/tos/
 
@@ -40,9 +40,7 @@ func ApiInit(
 	echoInstance.Pre(apiMiddleware.AddTrailingSlash(apiBasePath))
 
 	requestTimeout := 180 * time.Second
-	echoInstance.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
-		Timeout: requestTimeout,
-	}))
+	echoInstance.Use(middleware.ContextTimeout(requestTimeout))
 
 	echoInstance.Use(apiMiddleware.SetDefaultHeaders(apiBasePath))
 	echoInstance.Use(apiMiddleware.ReadOnlyMode(apiBasePath))

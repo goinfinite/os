@@ -80,10 +80,10 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 	nginxPortBindings := "80/http;443/https"
 	nginxAutoStart := false
 	nginxService := InstalledService{
-		Name:         "nginx",
+		Name:         valueObject.ServiceNameMainWebServer.String(),
 		Nature:       valueObject.ServiceNatureSolo.String(),
 		Type:         valueObject.ServiceTypeSystem.String(),
-		Version:      "1.26.3",
+		Version:      "1.30.3",
 		StartCmd:     "/usr/sbin/nginx",
 		PortBindings: &nginxPortBindings,
 		AutoStart:    &nginxAutoStart,
@@ -276,7 +276,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		return serviceEntity, err
 	}
 
-	status, _ := valueObject.NewServiceStatus("running")
+	status := valueObject.ServiceStatusRunning
 
 	envs := []valueObject.ServiceEnv{}
 	if model.Envs != nil {

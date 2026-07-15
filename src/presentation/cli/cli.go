@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	cliInit "github.com/goinfinite/os/src/presentation/cli/init"
 	cliMiddleware "github.com/goinfinite/os/src/presentation/cli/middleware"
 	tkPresentationMiddleware "github.com/goinfinite/tk/src/presentation/middleware"
@@ -30,8 +31,11 @@ func RunRootCmd() {
 
 func CliInit() {
 	defer tkPresentationMiddleware.CliPanicHandler()
-	cliMiddleware.PreventRootless()
+	if infraHelper.IsSilentExitMode() {
+		os.Exit(0)
+	}
 
+	cliMiddleware.PreventRootless()
 	cliMiddleware.CheckEnvs()
 	tkPresentationMiddleware.LogHandler{}.Init()
 

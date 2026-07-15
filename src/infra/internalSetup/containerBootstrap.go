@@ -11,10 +11,11 @@ import (
 )
 
 type ContainerBootstrap struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
-	webServerSetup  *WebServerSetup
-	fileClerk       tkInfra.FileClerk
+	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
+	transientDbSvc   *internalDbInfra.TransientDatabaseService
+	webServerSetup   *WebServerSetup
+	fileClerk        tkInfra.FileClerk
+	foundationalDirs []string
 }
 
 func NewContainerBootstrap(
@@ -26,37 +27,50 @@ func NewContainerBootstrap(
 		transientDbSvc:  transientDbSvc,
 		webServerSetup:  NewWebServerSetup(persistentDbSvc, transientDbSvc),
 		fileClerk:       tkInfra.FileClerk{},
-	}
-}
-
-func (cb *ContainerBootstrap) setupPrimaryPublicDir() {
-	primaryPublicDir := infraEnvs.PrimaryPublicDir
-
-	if !cb.fileClerk.FileExists(primaryPublicDir) {
-		slog.Info("CreatingPrimaryPublicDir")
-		createDirErr := cb.fileClerk.CreateDir(primaryPublicDir)
-		if createDirErr != nil {
-			slog.Error("CreatePrimaryPublicDirFailed", slog.String("err", createDirErr.Error()))
-			os.Exit(1)
-		}
-
-		permissions := 0755
-		chmodErr := cb.fileClerk.UpdateFilePermissions(primaryPublicDir, &permissions)
-		if chmodErr != nil {
-			slog.Error("UpdatePrimaryPublicDirPermissionsFailed", slog.String("err", chmodErr.Error()))
-			os.Exit(1)
-		}
-	}
-
-	chownErr := infraHelper.UpdateOwnershipForWebServerUse(primaryPublicDir, false, false)
-	if chownErr != nil {
-		slog.Error("ChownPrimaryPublicDirFailed", slog.String("err", chownErr.Error()))
-		os.Exit(1)
+		foundationalDirs: []string{
+			infraEnvs.PrimaryVirtualHostPublicDir,
+			infraEnvs.CronLogDir,
+			infraEnvs.WebServerLogDir,
+			infraEnvs.TrashDir,
+		},
 	}
 }
 
 func (cb *ContainerBootstrap) isFirstBoot() bool {
-	return !cb.fileClerk.FileExists("/etc/nginx/dhparam.pem")
+	for _, dirPath := range cb.foundationalDirs {
+		if cb.fileClerk.FileExists(dirPath) {
+			return false
+		}
+	}
+	return true
+}
+
+func (cb *ContainerBootstrap) foundationalDirsCreator() {
+	for _, dirPath := range cb.foundationalDirs {
+		if !cb.fileClerk.FileExists(dirPath) {
+			createErr := cb.fileClerk.CreateDir(dirPath)
+			if createErr != nil {
+				slog.Error(
+					"CreateFoundationalDirFailed",
+					slog.String("path", dirPath),
+					slog.String("err", createErr.Error()),
+				)
+				os.Exit(1)
+			}
+		}
+	}
+
+	chownErr := infraHelper.UpdateOwnershipForWebServerUse(
+		infraEnvs.ApplicationRootDir, true, false,
+	)
+	if chownErr != nil {
+		slog.Error(
+			"ChownFoundationalDirFailed",
+			slog.String("path", infraEnvs.ApplicationRootDir),
+			slog.String("err", chownErr.Error()),
+		)
+		os.Exit(1)
+	}
 }
 
 func (cb *ContainerBootstrap) FirstBoot() {
@@ -64,10 +78,11 @@ func (cb *ContainerBootstrap) FirstBoot() {
 		return
 	}
 
-	cb.setupPrimaryPublicDir()
-	cb.webServerSetup.FirstSetup()
+	cb.foundationalDirsCreator()
+	cb.webServerSetup.firstSetupOrchestrator()
 }
 
 func (cb *ContainerBootstrap) OnStart() {
-	cb.webServerSetup.OnStartSetup()
+	cb.webServerSetup.onStartSetupOrchestrator()
+	NewPrimaryVirtualHostSynchronizer(cb.persistentDbSvc).Run()
 }

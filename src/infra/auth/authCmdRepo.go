@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/goinfinite/os/src/domain/entity"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"github.com/golang-jwt/jwt/v5"
 )
@@ -26,10 +26,8 @@ func (repo *AuthCmdRepo) CreateSessionToken(
 	accountId tkValueObject.AccountId,
 	expiresIn tkValueObject.UnixTime,
 	ipAddress tkValueObject.IpAddress,
-) (entity.AccessToken, error) {
-	var accessToken entity.AccessToken
-
-	apiURL, err := infraHelper.ReadPrimaryVirtualHostHostname()
+) (accessToken entity.AccessToken, err error) {
+	apiUrl, err := vhostInfra.NewVirtualHostHelpers().ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return accessToken, errors.New("PrimaryVirtualHostNotFound")
 	}
@@ -38,7 +36,7 @@ func (repo *AuthCmdRepo) CreateSessionToken(
 	tokenExpiration := time.Unix(expiresIn.Int64(), 0)
 
 	claims := jwt.MapClaims{
-		"iss":        apiURL,
+		"iss":        apiUrl,
 		"iat":        now.Unix(),
 		"nbf":        now.Unix(),
 		"exp":        tokenExpiration.Unix(),
@@ -62,9 +60,5 @@ func (repo *AuthCmdRepo) CreateSessionToken(
 		return accessToken, err
 	}
 
-	return entity.NewAccessToken(
-		tokenType,
-		expiresIn,
-		tokenStr,
-	), nil
+	return entity.NewAccessToken(tokenType, expiresIn, tokenStr), nil
 }

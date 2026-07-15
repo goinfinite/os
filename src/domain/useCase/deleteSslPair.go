@@ -19,13 +19,13 @@ func DeleteSslPair(
 		SslPairId: &deleteDto.SslPairId,
 	})
 	if err != nil {
-		slog.Error("ReadSslPairError", slog.String("error", err.Error()))
+		slog.Error("ReadSslPairError", slog.String("err", err.Error()))
 		return errors.New("SslPairNotFound")
 	}
 
 	err = sslCmdRepo.Delete(deleteDto.SslPairId)
 	if err != nil {
-		slog.Error("DeleteSslPairError", slog.String("error", err.Error()))
+		slog.Error("DeleteSslPairError", slog.String("err", err.Error()))
 		return errors.New("DeleteSslPairInfraError")
 	}
 

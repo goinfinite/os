@@ -85,7 +85,7 @@ func (uc *SslCertificateWatchdog) Execute() {
 	if err != nil {
 		slog.Error(
 			"ReadVirtualHostInfraError",
-			slog.String("error", err.Error()),
+			slog.String("err", err.Error()),
 			slog.String("method", "SslCertificateWatchdog"),
 		)
 		return
@@ -102,7 +102,7 @@ func (uc *SslCertificateWatchdog) Execute() {
 		if err != nil {
 			slog.Debug(
 				"ReadSslPairError",
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 				slog.String("method", "SslCertificateWatchdog"),
 				slog.String("hostname", vhostEntity.Hostname.String()),
 			)
@@ -119,7 +119,7 @@ func (uc *SslCertificateWatchdog) Execute() {
 		if err != nil {
 			slog.Debug(
 				"CreatePubliclyTrustedSslPairError",
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 				slog.String("method", "SslCertificateWatchdog"),
 				slog.String("hostname", vhostEntity.Hostname.String()),
 			)

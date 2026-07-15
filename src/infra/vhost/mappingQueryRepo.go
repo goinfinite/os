@@ -103,7 +103,7 @@ func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
 				"MappingModelToEntityError",
 				slog.Uint64("mappingId", mappingModel.ID),
 				slog.String("hostname", mappingModel.Hostname),
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}
@@ -181,7 +181,7 @@ func (repo *MappingQueryRepo) ReadSecurityRule(
 			slog.Debug(
 				"MappingSecurityRuleModelToEntityError",
 				slog.Uint64("mappingSecurityRuleId", securityRuleModel.ID),
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 			)
 			continue
 		}

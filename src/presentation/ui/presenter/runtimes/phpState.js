@@ -1,6 +1,7 @@
 UiToolset.RegisterAlpineState(() => {
   Alpine.data("php", () => ({
     // PrimaryState
+    vhostHostname: "",
     phpConfigs: {},
     resetPrimaryStates() {
       phpConfigsElement = document.getElementById("phpConfigs");
@@ -10,7 +11,11 @@ UiToolset.RegisterAlpineState(() => {
       this.phpConfigs = JSON.parse(phpConfigsElement.textContent);
     },
     init() {
+      this.vhostHostname = document.getElementById("vhostHostname").value;
       this.resetPrimaryStates();
+    },
+    updateVhostHostname(selectedHostname) {
+      this.vhostHostname = selectedHostname;
     },
     updatePhpConfigs() {
       UiToolset.JsonAjax(

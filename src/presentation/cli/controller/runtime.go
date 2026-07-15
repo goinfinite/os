@@ -4,10 +4,10 @@ import (
 	"errors"
 
 	"github.com/goinfinite/os/src/domain/entity"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
@@ -26,7 +26,8 @@ func NewRuntimeController(
 }
 
 func getHostname(hostnameStr string) (hostname tkValueObject.Fqdn, err error) {
-	primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	primaryVhost, err := vhostInfra.NewVirtualHostHelpers().
+		ReadPrimaryVirtualHostHostname()
 	if err != nil {
 		return hostname, errors.New("PrimaryVirtualHostNotFound")
 	}

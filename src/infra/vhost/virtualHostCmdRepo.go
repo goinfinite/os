@@ -15,8 +15,8 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type VirtualHostCmdRepo struct {
@@ -35,7 +35,7 @@ func NewVirtualHostCmdRepo(
 	}
 }
 
-func (repo *VirtualHostCmdRepo) webServerUnitFileFactory(
+func (repo *VirtualHostCmdRepo) WebServerUnitFileFactory(
 	vhostEntity entity.VirtualHost,
 	mappingFilePath tkValueObject.UnixAbsoluteFilePath,
 ) (string, error) {
@@ -135,7 +135,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
 	}
 
-	unitConfFileContent, err := repo.webServerUnitFileFactory(
+	unitConfFileContent, err := repo.WebServerUnitFileFactory(
 		vhostEntity, mappingsFilePath,
 	)
 	if err != nil {
@@ -160,7 +160,7 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return NewVirtualHostHelpers().ReloadWebServer()
 }
 
 func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
@@ -177,7 +177,7 @@ func (repo *VirtualHostCmdRepo) createVirtualHostPublicDirectory(
 		return parentVirtualHostEntity.RootDirectory, nil
 	}
 
-	rawPublicDir := infraEnvs.PrimaryPublicDir + "/" + createDto.Hostname.String()
+	rawPublicDir := infraEnvs.PrimaryVirtualHostPublicDir + "/" + createDto.Hostname.String()
 
 	publicDir, err = tkValueObject.NewUnixAbsoluteFilePath(rawPublicDir, false)
 	if err != nil {
@@ -297,7 +297,7 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname tkValueObject.Fqdn) error {
 			slog.Error(
 				"DeleteMappingError",
 				slog.String("mappingId", mappingEntity.Id.String()),
-				slog.String("error", err.Error()),
+				slog.String("err", err.Error()),
 			)
 		}
 	}
@@ -342,13 +342,13 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname tkValueObject.Fqdn) error {
 	vhostCertFilePath := pkiConfDirStr + "/" + vhostHostnameStr + ".crt"
 	err = os.Remove(vhostCertFilePath)
 	if err != nil {
-		slog.Error("RemoveSslCertFileError", slog.String("error", err.Error()))
+		slog.Error("RemoveSslCertFileError", slog.String("err", err.Error()))
 	}
 
 	vhostCertKeyFilePath := pkiConfDirStr + "/" + vhostHostnameStr + ".key"
 	err = os.Remove(vhostCertKeyFilePath)
 	if err != nil {
-		slog.Error("RemoveSslCertKeyFileError", slog.String("error", err.Error()))
+		slog.Error("RemoveSslCertKeyFileError", slog.String("err", err.Error()))
 	}
 
 	err = os.Remove(vhostWebServerConfFilePath.String())
@@ -356,5 +356,5 @@ func (repo *VirtualHostCmdRepo) Delete(vhostHostname tkValueObject.Fqdn) error {
 		return errors.New("RemoveWebServerUnitConfFileError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return NewVirtualHostHelpers().ReloadWebServer()
 }

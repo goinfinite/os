@@ -2,11 +2,13 @@ package testHelpers
 
 import (
 	"encoding/base64"
+	"log/slog"
+	"os"
 
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	cliMiddleware "github.com/goinfinite/os/src/presentation/cli/middleware"
-	"github.com/joho/godotenv"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 func GenerateString(desiredSize int) string {
@@ -17,11 +19,30 @@ func GenerateString(desiredSize int) string {
 }
 
 func LoadEnvVars() {
-	cliMiddleware.CheckEnvs()
+	envFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.InfiniteOsEnvFilePath, false,
+	)
+	if err != nil {
+		slog.Error("InvalidEnvFilePath", slog.String("err", err.Error()))
+		os.Exit(1)
+	}
 
-	loadEnvErr := godotenv.Load(infraEnvs.InfiniteOsEnvFilePath)
-	if loadEnvErr != nil {
-		panic("LoadingEnvFileError: " + loadEnvErr.Error())
+	requiredEnvVars := []string{
+		"ACCOUNT_API_KEY_SECRET",
+		"JWT_SECRET",
+	}
+	autoFillableEnvVars := []string{
+		"ACCOUNT_API_KEY_SECRET",
+		"JWT_SECRET",
+	}
+
+	envsInspector := tkPresentation.NewEnvsInspector(
+		&envFilePath, requiredEnvVars, autoFillableEnvVars,
+	)
+	inspectErr := envsInspector.Inspect()
+	if inspectErr != nil {
+		slog.Error("EnvsInspectorError", slog.String("err", inspectErr.Error()))
+		os.Exit(1)
 	}
 }
 

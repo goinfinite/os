@@ -6,7 +6,6 @@ import (
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
@@ -19,7 +18,7 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 	vhostCmdRepo := NewVirtualHostCmdRepo(persistentDbSvc)
 	vhostQueryRepo := NewVirtualHostQueryRepo(persistentDbSvc)
 
-	vhostName, _ := infraHelper.ReadPrimaryVirtualHostHostname()
+	vhostName, _ := NewVirtualHostHelpers().ReadPrimaryVirtualHostHostname()
 
 	t.Run("Create", func(t *testing.T) {
 		vhostType, _ := valueObject.NewVirtualHostType("top-level")

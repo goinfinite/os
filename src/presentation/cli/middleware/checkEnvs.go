@@ -1,33 +1,26 @@
 package cliMiddleware
 
 import (
-	"log"
+	"log/slog"
 	"os"
 
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 func CheckEnvs() {
-	primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
-	if err != nil {
-		log.Fatalf("PrimaryHostnameUnidentifiable")
-	}
-	os.Setenv("PRIMARY_VHOST", primaryHostname.String())
-
 	envFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
 		infraEnvs.InfiniteOsEnvFilePath, false,
 	)
 	if err != nil {
-		log.Fatalf("InvalidEnvFilePath: %v", err)
+		slog.Error("InvalidEnvFilePath", slog.String("err", err.Error()))
+		os.Exit(1)
 	}
 
 	requiredEnvVars := []string{
 		"ACCOUNT_API_KEY_SECRET",
 		"JWT_SECRET",
-		"PRIMARY_VHOST",
 	}
 	autoFillableEnvVars := []string{
 		"ACCOUNT_API_KEY_SECRET",
@@ -37,8 +30,9 @@ func CheckEnvs() {
 	envsInspector := tkPresentation.NewEnvsInspector(
 		&envFilePath, requiredEnvVars, autoFillableEnvVars,
 	)
-	err = envsInspector.Inspect()
-	if err != nil {
-		log.Fatalf("EnvsInspectorError: %v", err)
+	inspectErr := envsInspector.Inspect()
+	if inspectErr != nil {
+		slog.Error("EnvsInspectorError", slog.String("err", inspectErr.Error()))
+		os.Exit(1)
 	}
 }

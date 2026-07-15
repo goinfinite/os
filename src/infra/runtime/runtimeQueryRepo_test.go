@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
@@ -27,7 +27,8 @@ func TestRuntimeQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReturnPhpConfigs", func(t *testing.T) {
-		primaryVhost, err := infraHelper.ReadPrimaryVirtualHostHostname()
+		primaryVhost, err := vhostInfra.NewVirtualHostHelpers().
+			ReadPrimaryVirtualHostHostname()
 		if err != nil {
 			t.Errorf("PrimaryVirtualHostNotFound")
 		}

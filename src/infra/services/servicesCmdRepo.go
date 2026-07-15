@@ -21,9 +21,10 @@ import (
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
-const SupervisorCtlBin string = "/usr/bin/supervisorctl -c /infinite/supervisord.conf"
-
-var defaultServiceDirectories []string = []string{"conf", "logs"}
+var (
+	ErrProcessManagerAuthError error    = errors.New("ProcessManagerAuthenticationError")
+	defaultServiceDirectories  []string = []string{"conf", "logs"}
+)
 
 type ServicesCmdRepo struct {
 	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
@@ -112,22 +113,24 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 
 	serviceNameStr := serviceEntity.Name.String()
 	startOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           SupervisorCtlBin + " start " + serviceNameStr,
-		ShouldUseSubShell: true,
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"start", serviceNameStr},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if err != nil {
 		combinedOutput := startOutput + " " + err.Error()
 		if !strings.Contains(combinedOutput, "no such process") {
-			return errors.New("SupervisorStartError: " + combinedOutput)
+			return errors.New("ProcessManagerStartError: " + combinedOutput)
 		}
 
 		addOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-			Command:           SupervisorCtlBin + " add " + serviceNameStr,
-			ShouldUseSubShell: true,
+			Command:          infraEnvs.ProcessManagerBinaryPath,
+			Args:             []string{"add", serviceNameStr},
+			WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 		}).Run()
 		if err != nil {
 			combinedOutput = addOutput + " " + err.Error()
-			return errors.New("SupervisorAddError: " + combinedOutput)
+			return errors.New("ProcessManagerAddError: " + combinedOutput)
 		}
 	}
 
@@ -139,30 +142,28 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &name,
-	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readFirstInstalledRequestDto,
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &name},
 	)
 	if err != nil {
-		return err
+		return errors.New("ReadServiceEntityError: " + err.Error())
 	}
 
 	err = repo.runCmdSteps(
 		"PreStop", serviceEntity.PreStopCmdSteps, serviceEntity.PreStopTimeoutSecs,
 	)
 	if err != nil {
-		return err
+		return errors.New("PreStopError: " + err.Error())
 	}
 
 	stopOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           SupervisorCtlBin + " stop " + serviceEntity.Name.String(),
-		ShouldUseSubShell: true,
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"stop", serviceEntity.Name.String()},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if err != nil {
 		combinedOutput := stopOutput + " " + err.Error()
-		return errors.New("SupervisorStopError: " + combinedOutput)
+		return errors.New("ProcessManagerStopError: " + combinedOutput)
 	}
 
 	time.Sleep(1 * time.Second)
@@ -171,7 +172,7 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		"Stop", serviceEntity.StopCmdSteps, serviceEntity.StopTimeoutSecs,
 	)
 	if err != nil {
-		return err
+		return errors.New("StopError: " + err.Error())
 	}
 
 	return repo.runCmdSteps(
@@ -180,47 +181,64 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 }
 
 func (repo *ServicesCmdRepo) Restart(name valueObject.ServiceName) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &name,
-	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readFirstInstalledRequestDto,
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &name},
 	)
 	if err != nil {
-		return err
+		return errors.New("ReadServiceEntityError: " + err.Error())
 	}
 
-	if serviceEntity.Status.String() == "running" {
+	if serviceEntity.Status == valueObject.ServiceStatusRunning {
 		err = repo.Stop(name)
 		if err != nil {
-			return err
+			return errors.New("StopProcessError: " + err.Error())
 		}
 	}
 
 	return repo.Start(name)
 }
 
-func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
+func (repo *ServicesCmdRepo) ProcessManagerConfRebuilder() error {
 	shouldIncludeMetrics := false
-	readInstalledItemsDto := dto.ReadInstalledServicesItemsRequest{
-		Pagination: tkDto.Pagination{
-			ItemsPerPage: 1000,
-		},
-		ShouldIncludeMetrics: &shouldIncludeMetrics,
-	}
 	readInstalledItemsResponseDto, err := repo.servicesQueryRepo.ReadInstalledItems(
-		readInstalledItemsDto,
+		dto.ReadInstalledServicesItemsRequest{
+			Pagination:           tkDto.Pagination{ItemsPerPage: 1000},
+			ShouldIncludeMetrics: &shouldIncludeMetrics,
+		},
 	)
 	if err != nil {
-		return err
+		return errors.New("ReadInstalledItemsError: " + err.Error())
 	}
+
 	if len(readInstalledItemsResponseDto.InstalledServices) == 0 {
 		return errors.New("NoServicesFoundToUpdateProcessManager")
 	}
 
-	ctlPassword := infraHelper.GenStrongShortHash(
-		readInstalledItemsResponseDto.InstalledServices[0].CreatedAt.String(),
+	currentConfContent, err := repo.fileClerk.ReadFileContent(
+		infraEnvs.ProcessManagerConfFilePath, nil,
 	)
+	if err != nil {
+		slog.Debug(
+			"ReadCurrentProcessManagerConfError",
+			slog.String("error", err.Error()),
+		)
+		currentConfContent = ""
+	}
+
+	currentPassword := ""
+	for rawConfLineStr := range strings.SplitSeq(currentConfContent, "\n") {
+		if strings.Contains(rawConfLineStr, "password=") {
+			currentPassword = strings.TrimPrefix(rawConfLineStr, "password=")
+			currentPassword = strings.TrimSpace(currentPassword)
+			break
+		}
+	}
+
+	newPassword := currentPassword
+	if currentPassword == "replacedOnFirstBoot" || currentPassword == "" {
+		tkSynthesizer := tkInfra.Synthesizer{}
+		newPassword = tkSynthesizer.PasswordFactory(16, false)
+	}
 
 	// cSpell:disable
 	fileTemplate := `# AUTO GENERATED FILE. DO NOT EDIT.
@@ -228,7 +246,7 @@ func (repo *ServicesCmdRepo) updateProcessManagerConf() error {
 file=/run/supervisor.sock
 chmod=0700
 username=supervisord
-password=` + ctlPassword + `
+password=` + newPassword + `
 
 [supervisord]
 nodaemon=true
@@ -242,7 +260,7 @@ pidfile=/run/supervisord.pid
 [supervisorctl]
 serverurl=unix:///run/supervisor.sock
 username=supervisord
-password=` + ctlPassword + `
+password=` + newPassword + `
 
 [rpcinterface:supervisor]
 supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
@@ -288,7 +306,7 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 
 	templatePtr, err := template.New("supervisorConf").Parse(fileTemplate)
 	if err != nil {
-		return errors.New("TemplateParsingError: " + err.Error())
+		return errors.New("ProcessManagerTemplateParsingError: " + err.Error())
 	}
 
 	var supervisorConfFileContent strings.Builder
@@ -296,23 +314,27 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 		&supervisorConfFileContent, readInstalledItemsResponseDto.InstalledServices,
 	)
 	if err != nil {
-		return errors.New("TemplateExecutionError: " + err.Error())
+		return errors.New("ProcessManagerTemplateExecutionError: " + err.Error())
 	}
 
 	err = repo.fileClerk.UpdateFileContent(
-		"/infinite/supervisord.conf", supervisorConfFileContent.String(), true,
+		infraEnvs.ProcessManagerConfFilePath, supervisorConfFileContent.String(), true,
 	)
 	if err != nil {
 		return err
 	}
 
 	reReadOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           SupervisorCtlBin + " reread",
-		ShouldUseSubShell: true,
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"reread"},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if err != nil {
 		combinedOutput := reReadOutput + " " + err.Error()
-		return errors.New("SupervisorRereadError: " + combinedOutput)
+		if strings.Contains(combinedOutput, "authentication") {
+			return ErrProcessManagerAuthError
+		}
+		return errors.New("ProcessManagerRereadError: " + combinedOutput)
 	}
 
 	return nil
@@ -424,7 +446,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	if installableServiceEntity.Nature == valueObject.ServiceNatureMulti {
 		if createDto.StartupFile == nil {
 			if installableServiceEntity.StartupFile == nil {
-				return installedServiceName, errors.New("MultiNatureServiceRequiresStartupFile")
+				return installedServiceName, errors.New(
+					"MultiNatureServiceRequiresStartupFile",
+				)
 			}
 			createDto.StartupFile = installableServiceEntity.StartupFile
 		}
@@ -446,9 +470,16 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		serviceVersion = *createDto.Version
 	}
 
-	primaryHostname, err := infraHelper.ReadPrimaryVirtualHostHostname()
+	rawPrimaryHostnameStr := os.Getenv(infraEnvs.PrimaryVirtualHostEnvKey)
+	if rawPrimaryHostnameStr == "" {
+		return installedServiceName, errors.New("PrimaryVirtualHostUnset")
+	}
+
+	primaryHostname, err := tkValueObject.NewFqdn(rawPrimaryHostnameStr)
 	if err != nil {
-		return installedServiceName, err
+		return installedServiceName, errors.New(
+			"ParsePrimaryVirtualHostHostnameError: " + err.Error(),
+		)
 	}
 
 	synthesizer := tkInfra.Synthesizer{}
@@ -575,9 +606,9 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	err = repo.updateProcessManagerConf()
+	err = repo.ProcessManagerConfRebuilder()
 	if err != nil {
-		return installedServiceName, err
+		return installedServiceName, errors.New("ProcessManagerConfRebuilderError: " + err.Error())
 	}
 
 	return installedServiceName, repo.Start(installedServiceName)
@@ -640,20 +671,17 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		}
 	}
 
-	err = repo.updateProcessManagerConf()
+	err = repo.ProcessManagerConfRebuilder()
 	if err != nil {
-		return err
+		return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
 	}
 
 	return repo.Start(createDto.Name)
 }
 
 func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
-	readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &updateDto.Name,
-	}
 	serviceEntity, err := repo.servicesQueryRepo.ReadFirstInstalledItem(
-		readFirstInstalledRequestDto,
+		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &updateDto.Name},
 	)
 	if err != nil {
 		return err
@@ -770,32 +798,31 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 			return err
 		}
 
-		err = repo.updateProcessManagerConf()
+		err = repo.ProcessManagerConfRebuilder()
 		if err != nil {
-			return err
+			return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
 		}
 	}
 
 	shouldHandleStatus := updateDto.Status != nil
 	shouldSkipStatusChange := !shouldHandleStatus
 	if shouldHandleStatus {
-		desiredStatusStr := updateDto.Status.String()
-		shouldSkipStatusChange = serviceEntity.Status.String() == desiredStatusStr
+		shouldSkipStatusChange = serviceEntity.Status == *updateDto.Status
 		if !shouldSkipStatusChange {
-			switch desiredStatusStr {
-			case "running":
+			switch *updateDto.Status {
+			case valueObject.ServiceStatusRunning:
 				return repo.Start(updateDto.Name)
-			case "stopped":
+			case valueObject.ServiceStatusStopped:
 				return repo.Stop(updateDto.Name)
-			case "restarting":
+			case valueObject.ServiceStatusRestarting:
 				return repo.Restart(updateDto.Name)
 			default:
-				return errors.New("InvalidStatus: " + desiredStatusStr)
+				return errors.New("InvalidStatus: " + updateDto.Status.String())
 			}
 		}
 	}
 
-	if hasFieldUpdates && serviceEntity.Status.String() != "stopped" {
+	if hasFieldUpdates && serviceEntity.Status != valueObject.ServiceStatusStopped {
 		return repo.Restart(updateDto.Name)
 	}
 
@@ -813,7 +840,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	if serviceEntity.Status.String() != "stopped" {
+	if serviceEntity.Status != valueObject.ServiceStatusStopped {
 		err = repo.Stop(serviceEntity.Name)
 		if err != nil {
 			return err
@@ -822,12 +849,13 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 
 	serviceNameStr := serviceEntity.Name.String()
 	removeOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           SupervisorCtlBin + " remove " + serviceNameStr,
-		ShouldUseSubShell: true,
+		Command:          infraEnvs.ProcessManagerBinaryPath,
+		Args:             []string{"remove", serviceNameStr},
+		WorkingDirectory: infraEnvs.InfiniteOsMainDir,
 	}).Run()
 	if err != nil {
 		combinedOutput := removeOutput + " " + err.Error()
-		return errors.New("SupervisorRemoveError: " + combinedOutput)
+		return errors.New("ProcessManagerRemoveError: " + combinedOutput)
 	}
 
 	err = repo.persistentDbSvc.Handler.
@@ -837,9 +865,9 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 		return err
 	}
 
-	err = repo.updateProcessManagerConf()
+	err = repo.ProcessManagerConfRebuilder()
 	if err != nil {
-		return err
+		return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
 	}
 
 	if serviceEntity.Nature == valueObject.ServiceNatureCustom {

@@ -13,7 +13,6 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
-	runtimeInfra "github.com/goinfinite/os/src/infra/runtime"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
@@ -23,6 +22,7 @@ import (
 type MappingCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	mappingQueryRepo *MappingQueryRepo
+	vhostQueryRepo   *VirtualHostQueryRepo
 	fileClerk        tkInfra.FileClerk
 }
 
@@ -34,6 +34,7 @@ func NewMappingCmdRepo(
 	return &MappingCmdRepo{
 		persistentDbSvc:  persistentDbSvc,
 		mappingQueryRepo: mappingQueryRepo,
+		vhostQueryRepo:   NewVirtualHostQueryRepo(persistentDbSvc),
 		fileClerk:        tkInfra.FileClerk{},
 	}
 }
@@ -289,9 +290,7 @@ func (repo *MappingCmdRepo) locationUriConfigFactory(
 func (repo *MappingCmdRepo) RecreateMappingFile(
 	vhostHostname tkValueObject.Fqdn,
 ) error {
-	vhostQueryRepo := NewVirtualHostQueryRepo(repo.persistentDbSvc)
-
-	vhostEntity, err := vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+	vhostEntity, err := repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 		Hostname: &vhostHostname,
 	})
 	if err != nil {
@@ -303,7 +302,7 @@ func (repo *MappingCmdRepo) RecreateMappingFile(
 			return errors.New("AliasMissingParentHostname")
 		}
 
-		vhostEntity, err = vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
+		vhostEntity, err = repo.vhostQueryRepo.ReadFirst(dto.ReadVirtualHostsRequest{
 			Hostname: vhostEntity.ParentHostname,
 		})
 		if err != nil {
@@ -374,7 +373,7 @@ location {{ locationUriConfigFactory .MatchPattern .Path }} {
 		return errors.New("TemplateExecutionError: " + err.Error())
 	}
 
-	mappingFilePath, err := vhostQueryRepo.ReadVirtualHostMappingsFilePath(
+	mappingFilePath, err := repo.vhostQueryRepo.ReadVirtualHostMappingsFilePath(
 		vhostHostname,
 	)
 	if err != nil {
@@ -390,19 +389,9 @@ location {{ locationUriConfigFactory .MatchPattern .Path }} {
 func (repo *MappingCmdRepo) Create(
 	createDto dto.CreateMapping,
 ) (mappingId valueObject.MappingId, err error) {
-	err = infraHelper.ValidateWebServerConfig()
+	err = NewVirtualHostHelpers().ValidateWebServerConfig()
 	if err != nil {
 		return mappingId, err
-	}
-
-	isServiceMapping := createDto.TargetType.String() == "service"
-	isPhpServiceMapping := isServiceMapping && createDto.TargetValue.String() == "php-webserver"
-	if isPhpServiceMapping {
-		runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(repo.persistentDbSvc)
-		err := runtimeCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
-		if err != nil {
-			return mappingId, err
-		}
 	}
 
 	var targetValuePtr *string
@@ -448,7 +437,7 @@ func (repo *MappingCmdRepo) Create(
 		return mappingId, errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
-	err = infraHelper.ValidateWebServerConfig()
+	err = NewVirtualHostHelpers().ValidateWebServerConfig()
 	if err != nil {
 		err = repo.persistentDbSvc.Handler.Delete(&mappingModel).Error
 		if err != nil {
@@ -461,7 +450,7 @@ func (repo *MappingCmdRepo) Create(
 		}
 	}
 
-	return mappingId, infraHelper.ReloadWebServer()
+	return mappingId, NewVirtualHostHelpers().ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) UpdateMarketplaceItem(
@@ -481,7 +470,7 @@ func (repo *MappingCmdRepo) UpdateMarketplaceItem(
 }
 
 func (repo *MappingCmdRepo) Update(updateDto dto.UpdateMapping) error {
-	err := infraHelper.ValidateWebServerConfig()
+	err := NewVirtualHostHelpers().ValidateWebServerConfig()
 	if err != nil {
 		return err
 	}
@@ -541,11 +530,11 @@ func (repo *MappingCmdRepo) Update(updateDto dto.UpdateMapping) error {
 		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return NewVirtualHostHelpers().ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
-	err := infraHelper.ValidateWebServerConfig()
+	err := NewVirtualHostHelpers().ValidateWebServerConfig()
 	if err != nil {
 		return err
 	}
@@ -567,7 +556,7 @@ func (repo *MappingCmdRepo) Delete(mappingId valueObject.MappingId) error {
 		return errors.New("RecreateMappingFileError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return NewVirtualHostHelpers().ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) recreateSecurityRuleFile(
@@ -759,7 +748,7 @@ func (repo *MappingCmdRepo) CreateSecurityRule(
 		return ruleId, errors.New("RecreateMappingSecurityRuleFileError: " + err.Error())
 	}
 
-	err = infraHelper.ValidateWebServerConfig()
+	err = NewVirtualHostHelpers().ValidateWebServerConfig()
 	if err != nil {
 		err = repo.persistentDbSvc.Handler.Delete(&securityRuleModel).Error
 		if err != nil {
@@ -772,7 +761,7 @@ func (repo *MappingCmdRepo) CreateSecurityRule(
 		}
 	}
 
-	return ruleId, infraHelper.ReloadWebServer()
+	return ruleId, NewVirtualHostHelpers().ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) UpdateSecurityRule(
@@ -863,13 +852,13 @@ func (repo *MappingCmdRepo) UpdateSecurityRule(
 		return errors.New("RecreateMappingSecurityRuleFileError: " + err.Error())
 	}
 
-	return infraHelper.ReloadWebServer()
+	return NewVirtualHostHelpers().ReloadWebServer()
 }
 
 func (repo *MappingCmdRepo) DeleteSecurityRule(
 	ruleId valueObject.MappingSecurityRuleId,
 ) error {
-	err := infraHelper.ValidateWebServerConfig()
+	err := NewVirtualHostHelpers().ValidateWebServerConfig()
 	if err != nil {
 		return err
 	}
@@ -899,5 +888,5 @@ func (repo *MappingCmdRepo) DeleteSecurityRule(
 		}
 	}
 
-	return infraHelper.ReloadWebServer()
+	return NewVirtualHostHelpers().ReloadWebServer()
 }

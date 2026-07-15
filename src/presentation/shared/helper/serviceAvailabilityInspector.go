@@ -34,5 +34,5 @@ func (inspector *ServiceAvailabilityInspector) IsAvailable(
 		return false
 	}
 
-	return availableService.Status.String() == "running"
+	return availableService.Status == valueObject.ServiceStatusRunning
 }

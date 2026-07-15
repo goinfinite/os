@@ -3,7 +3,6 @@ package internalSetupInfra
 import (
 	"errors"
 	"log/slog"
-	"math"
 	"os"
 	"strconv"
 	"strings"
@@ -17,12 +16,16 @@ import (
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type WebServerSetup struct {
-	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
+	transientDbSvc    *internalDbInfra.TransientDatabaseService
+	servicesQueryRepo *servicesInfra.ServicesQueryRepo
+	servicesCmdRepo   *servicesInfra.ServicesCmdRepo
+	vhostHelpers      *vhostInfra.VirtualHostHelpers
 }
 
 func NewWebServerSetup(
@@ -30,63 +33,39 @@ func NewWebServerSetup(
 	transientDbSvc *internalDbInfra.TransientDatabaseService,
 ) *WebServerSetup {
 	return &WebServerSetup{
-		persistentDbSvc: persistentDbSvc,
-		transientDbSvc:  transientDbSvc,
+		persistentDbSvc:   persistentDbSvc,
+		transientDbSvc:    transientDbSvc,
+		servicesQueryRepo: servicesInfra.NewServicesQueryRepo(persistentDbSvc),
+		servicesCmdRepo:   servicesInfra.NewServicesCmdRepo(persistentDbSvc),
+		vhostHelpers:      vhostInfra.NewVirtualHostHelpers(),
 	}
 }
 
-func (ws *WebServerSetup) updatePrimaryVirtualHost() {
-	primaryVirtualHostHostname, readErr := infraHelper.ReadPrimaryVirtualHostHostname()
-	if readErr != nil {
-		slog.Error("PrimaryVirtualHostNotFound")
-		os.Exit(1)
-	}
-
-	slog.Info("UpdatingPrimaryVirtualHost")
-
-	primaryConfFilePath := infraEnvs.VirtualHostsConfDir + "/primary.conf"
-	_, updateErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-i",
-			"s/" + infraEnvs.DefaultPrimaryVhost + "/" + primaryVirtualHostHostname.String() + "/g",
-			primaryConfFilePath,
-		},
-	}).Run()
-	if updateErr != nil {
-		slog.Error("UpdatePrimaryVirtualHostFileFailed", slog.String("err", updateErr.Error()))
-		os.Exit(1)
-	}
-}
-
-func (ws *WebServerSetup) generateDhParams() {
-	slog.Info("GeneratingDhParams")
-
+func (ws *WebServerSetup) dhParamsGenerator() error {
 	_, dhparamErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "openssl",
 		Args: []string{
-			"dhparam", "-dsaparam", "-out", "/etc/nginx/dhparam.pem", "2048",
+			"dhparam", "-dsaparam", "-out", infraEnvs.WebServerDhParamFilePath, "2048",
 		},
 	}).Run()
 	if dhparamErr != nil {
-		slog.Error("GenerateDhparamFailed", slog.String("err", dhparamErr.Error()))
-		os.Exit(1)
+		return errors.New("DhParamsGeneratorError: " + dhparamErr.Error())
 	}
+
+	return nil
 }
 
-func (ws *WebServerSetup) generateSelfSignedCert() {
-	slog.Info("GeneratingSelfSignedCert")
-
-	primaryVirtualHostHostname, readErr := infraHelper.ReadPrimaryVirtualHostHostname()
+func (ws *WebServerSetup) selfSignedCertGenerator() error {
+	primaryVirtualHostHostname, readErr :=
+		ws.vhostHelpers.ReadPrimaryVirtualHostHostname()
 	if readErr != nil {
-		slog.Error("PrimaryVirtualHostNotFound")
-		os.Exit(1)
+		return errors.New("ReadPrimaryVirtualHostHostnameError: " + readErr.Error())
 	}
 
-	pkiConfDir, pkiErr := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
+	pkiConfDir, pkiErr :=
+		tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.PkiConfDir, false)
 	if pkiErr != nil {
-		slog.Error("PkiConfDirNotFound")
-		os.Exit(1)
+		return errors.New("PkiConfDirError: " + pkiErr.Error())
 	}
 
 	aliasesHostnames := []tkValueObject.Fqdn{}
@@ -94,76 +73,143 @@ func (ws *WebServerSetup) generateSelfSignedCert() {
 		pkiConfDir, primaryVirtualHostHostname, aliasesHostnames,
 	)
 	if certErr != nil {
-		slog.Error("GenerateSelfSignedCertFailed", slog.String("err", certErr.Error()))
-		os.Exit(1)
+		return errors.New("SelfSignedCertGeneratorError: " + certErr.Error())
 	}
+
+	return nil
 }
 
-func (ws *WebServerSetup) restorePrimaryIndexFile() {
+func (ws *WebServerSetup) primaryIndexFileRestorer() error {
 	restoreErr := infraHelper.RestorePrimaryIndexFile()
 	if restoreErr != nil {
-		slog.Error("RestorePrimaryIndexFileFailed", slog.String("err", restoreErr.Error()))
-		os.Exit(1)
+		return errors.New("PrimaryIndexFileRestorerError: " + restoreErr.Error())
 	}
+
+	return nil
 }
 
-func (ws *WebServerSetup) generateMappingSecurityRules() {
-	slog.Info("GeneratingMappingSecurityRules")
-
+func (ws *WebServerSetup) mappingSecurityRulesGenerator() error {
 	mappingCmdRepo := vhostInfra.NewMappingCmdRepo(ws.persistentDbSvc)
 	recreateErr := mappingCmdRepo.RecreateSecurityRuleFiles()
 	if recreateErr != nil {
-		slog.Error("GenerateMappingSecurityRulesFailed", slog.String("err", recreateErr.Error()))
-		os.Exit(1)
+		return errors.New("MappingSecurityRulesGeneratorError: " + recreateErr.Error())
 	}
+
+	return nil
 }
 
-func (ws *WebServerSetup) configureNginxAutoStart() {
-	slog.Info("ConfiguringNginxAutoStart")
-
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
-	nginxServiceName, _ := valueObject.NewServiceName("nginx")
-	nginxAutoStart := true
-	updateServiceDto := dto.NewUpdateService(
-		nginxServiceName, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil, nil,
-		nil, nil, &nginxAutoStart, nil, nil, nil, nil, nil, nil,
-		tkValueObject.AccountIdSystem, tkValueObject.IpAddressLocal,
+// The main web server is configured with auto-start disabled by default.
+// This method enables auto-start in the database after mapping and
+// configuration complete successfully.
+func (ws *WebServerSetup) webServerAutoStartConfigurator() error {
+	_, readErr := ws.servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{
+			ServiceName: &valueObject.ServiceNameMainWebServer,
+		},
 	)
-	updateErr := servicesCmdRepo.Update(updateServiceDto)
-	if updateErr != nil {
-		if !strings.Contains(updateErr.Error(), "Unauthorized") {
-			slog.Error("UpdateNginxAutoStartFailed", slog.String("err", updateErr.Error()))
+	if readErr != nil {
+		return errors.New("MainWebServerServiceNotFound: " + readErr.Error())
+	}
+
+	serviceAutoStart := true
+	updateServiceDto := dto.UpdateService{
+		Name:              valueObject.ServiceNameMainWebServer,
+		AutoStart:         &serviceAutoStart,
+		OperatorAccountId: tkValueObject.AccountIdSystem,
+		OperatorIpAddress: tkValueObject.IpAddressLocal,
+	}
+	err := ws.servicesCmdRepo.Update(updateServiceDto)
+	if err != nil {
+		// ProcessManagerAuthError is expected until processManagerStateGuarantor is
+		// called. strings.Contains is used as the error message may be appended with
+		// additional context.
+		if strings.Contains(err.Error(), servicesInfra.ErrProcessManagerAuthError.Error()) {
+			return nil
+		}
+
+		return errors.New("MainWebServerAutoStartUpdateError: " + err.Error())
+	}
+
+	return nil
+}
+
+// Important: Reloading the process manager (PID 1) restarts the container.
+// Do not expect any code after this method to execute.
+func (ws *WebServerSetup) processManagerStateGuarantor() error {
+	fileClerk := tkInfra.FileClerk{}
+	err := fileClerk.CreateSymlink(
+		infraEnvs.ProcessManagerConfFilePath, "/etc/supervisord.conf", true,
+	)
+	if err != nil {
+		return errors.New("ProcessManagerConfSymlinkError: " + err.Error())
+	}
+
+	err = ws.servicesCmdRepo.ProcessManagerConfRebuilder()
+	if err != nil {
+		if !errors.Is(err, servicesInfra.ErrProcessManagerAuthError) {
+			return errors.New("ProcessManagerConfRebuilderError: " + err.Error())
+		}
+
+		_, reloadErr := tkInfra.NewShell(tkInfra.ShellSettings{
+			Command:          infraEnvs.ProcessManagerBinaryPath,
+			Args:             []string{"-p", "replacedOnFirstBoot", "reload"},
+			WorkingDirectory: infraEnvs.InfiniteOsMainDir,
+		}).Run()
+		if reloadErr != nil {
+			return errors.New("ProcessManagerReloadError: " + reloadErr.Error())
+		}
+	}
+
+	return nil
+}
+
+func (ws *WebServerSetup) firstSetupOrchestrator() {
+	type firstSetupStep struct {
+		errorMessage string
+		executeFn    func() error
+	}
+
+	setupSteps := []firstSetupStep{
+		{
+			errorMessage: "DhParamsGeneratorError",
+			executeFn:    ws.dhParamsGenerator,
+		},
+		{
+			errorMessage: "SelfSignedCertGeneratorError",
+			executeFn:    ws.selfSignedCertGenerator,
+		},
+		{
+			errorMessage: "PrimaryIndexFileRestorerError",
+			executeFn:    ws.primaryIndexFileRestorer,
+		},
+		{
+			errorMessage: "MappingSecurityRulesGeneratorError",
+			executeFn:    ws.mappingSecurityRulesGenerator,
+		},
+		{
+			errorMessage: "WebServerAutoStartConfiguratorError",
+			executeFn:    ws.webServerAutoStartConfigurator,
+		},
+		{
+			errorMessage: "ProcessManagerStateGuarantorError",
+			executeFn:    ws.processManagerStateGuarantor,
+		},
+	}
+	for _, setupStep := range setupSteps {
+		executeErr := setupStep.executeFn()
+		if executeErr != nil {
+			slog.Error(
+				setupStep.errorMessage,
+				slog.String("err", executeErr.Error()),
+			)
 			os.Exit(1)
 		}
 	}
 }
 
-func (ws *WebServerSetup) reloadSupervisor() {
-	slog.Info("WebServerConfigured! RestartingServices")
-
-	_, reloadErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "supervisorctl",
-		Args:    []string{"-p", "replacedOnFirstBoot", "reload"},
-	}).Run()
-	if reloadErr != nil {
-		slog.Error("ReloadSupervisorFailed", slog.String("err", reloadErr.Error()))
-		os.Exit(1)
-	}
-}
-
-func (ws *WebServerSetup) FirstSetup() {
-	ws.updatePrimaryVirtualHost()
-	ws.generateDhParams()
-	ws.generateSelfSignedCert()
-	ws.restorePrimaryIndexFile()
-	ws.generateMappingSecurityRules()
-	ws.configureNginxAutoStart()
-	ws.reloadSupervisor()
-}
-
-func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal tkValueObject.Byte) error {
-	slog.Info("UpdatingMaxPhpChildProcessesInit")
-
+func (ws *WebServerSetup) phpMaxChildProcessesUpdater(
+	memoryTotal tkValueObject.Byte,
+) error {
 	childProcsHardCap := uint64(300)
 	childProcsPerGb := uint64(5)
 
@@ -183,123 +229,100 @@ func (ws *WebServerSetup) updatePhpMaxChildProcesses(memoryTotal tkValueObject.B
 		Args: []string{
 			"-i", "-E",
 			"s/PHP_LSAPI_CHILDREN=[0-9]+.*/" + childProcsNewValue + "/g",
-			infraEnvs.PhpWebserverMainConfFilePath,
+			infraEnvs.PhpWebServerMainConfFilePath,
 		},
 	}).Run()
 	if sedErr != nil {
-		return errors.New("UpdatePhpMaxChildProcessesFailed: " + sedErr.Error())
+		return errors.New("PhpMaxChildProcessesUpdaterError: " + sedErr.Error())
 	}
 
-	slog.Info("UpdateMaxPhpChildProcessesSuccess")
 	return nil
 }
 
-func (ws *WebServerSetup) startNginxIfNeeded(
-	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
-	servicesCmdRepo *servicesInfra.ServicesCmdRepo,
-) {
-	serviceName, _ := valueObject.NewServiceName("nginx")
-	readRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
-		ServiceName: &serviceName,
-	}
-	nginxService, readErr := servicesQueryRepo.ReadFirstInstalledItem(readRequestDto)
-	if readErr != nil {
-		slog.Error("ReadNginxServiceFailed", slog.String("err", readErr.Error()))
-		os.Exit(1)
-	}
-
-	if nginxService.Status.String() == "running" {
-		return
-	}
-
-	startErr := servicesCmdRepo.Start(serviceName)
-	if startErr != nil {
-		slog.Error("StartNginxServiceFailed", slog.String("err", startErr.Error()))
-		os.Exit(1)
-	}
-}
-
-func (ws *WebServerSetup) updateNginxWorkersCount(
-	cpuCoresStr string,
-	servicesCmdRepo *servicesInfra.ServicesCmdRepo,
-) {
-	slog.Info("UpdatingNginxWorkersCount")
-
-	nginxConfFilePath := "/etc/nginx/nginx.conf"
-	_, sedErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-i", "-e",
-			"s/^worker_processes.*/worker_processes " + cpuCoresStr + ";/g",
-			nginxConfFilePath,
+func (ws *WebServerSetup) webServerRunningEnsurer() error {
+	mainWebServerService, readErr := ws.servicesQueryRepo.ReadFirstInstalledItem(
+		dto.ReadFirstInstalledServiceItemsRequest{
+			ServiceName: &valueObject.ServiceNameMainWebServer,
 		},
-	}).Run()
-	if sedErr != nil {
-		slog.Error("UpdateNginxWorkersCountFailed", slog.String("err", sedErr.Error()))
-		os.Exit(1)
-	}
-
-	serviceName, _ := valueObject.NewServiceName("nginx")
-	restartErr := servicesCmdRepo.Restart(serviceName)
-	if restartErr != nil {
-		slog.Error("RestartNginxFailed", slog.String("err", restartErr.Error()))
-		os.Exit(1)
-	}
-}
-
-func (ws *WebServerSetup) configurePhpChildProcesses(
-	servicesQueryRepo *servicesInfra.ServicesQueryRepo,
-	memoryTotal tkValueObject.Byte,
-) {
-	phpWebServerSvcName, _ := valueObject.NewServiceName("php-webserver")
-	_, readErr := servicesQueryRepo.ReadFirstInstalledItem(
-		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &phpWebServerSvcName},
 	)
 	if readErr != nil {
-		slog.Debug("PhpWebServerNotInstalled. SkippingConfigurePhpChildProcesses")
-		return
+		return errors.New("MainWebServerServiceNotFound: " + readErr.Error())
 	}
 
-	err := ws.updatePhpMaxChildProcesses(memoryTotal)
-	if err != nil {
-		slog.Error("ConfigurePhpChildProcessesFailed", slog.String("err", err.Error()))
-		return
+	if mainWebServerService.Status == valueObject.ServiceStatusRunning {
+		return nil
 	}
+
+	startErr := ws.servicesCmdRepo.Start(valueObject.ServiceNameMainWebServer)
+	if startErr != nil {
+		return errors.New("WebServerStartError: " + startErr.Error())
+	}
+
+	return nil
 }
 
-func (ws *WebServerSetup) OnStartSetup() {
+func (ws *WebServerSetup) phpChildProcessesConfigurator(
+	memoryTotal tkValueObject.Byte,
+) error {
+	if !ws.servicesQueryRepo.IsInstalled(valueObject.ServiceNamePhpWebServer) {
+		slog.Debug(
+			"SkippingPhpChildProcessesConfigurator",
+			slog.String("reason", "PhpWebServerNotInstalled"),
+		)
+		return nil
+	}
+
+	skipProcUpdate := false
+	envSkipProcUpdate, err := tkVoUtil.InterfaceToBool(
+		os.Getenv(infraEnvs.PhpChildProcessesUpdateSkipEnvKey),
+	)
+	if err == nil && envSkipProcUpdate {
+		skipProcUpdate = true
+	}
+
+	if skipProcUpdate {
+		slog.Debug(
+			"SkippingPhpChildProcessesConfigurator",
+			slog.String("reason", "EnvVarSet"),
+		)
+		return nil
+	}
+
+	err = ws.phpMaxChildProcessesUpdater(memoryTotal)
+	if err != nil {
+		return errors.New("PhpChildProcessesConfiguratorError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (ws *WebServerSetup) onStartSetupOrchestrator() {
 	o11yQueryRepo := o11yInfra.NewO11yQueryRepo(ws.transientDbSvc)
 	containerResources, resourcesErr := o11yQueryRepo.ReadOverview(false)
 	if resourcesErr != nil {
-		slog.Error("ReadContainerResourcesFailed", slog.String("err", resourcesErr.Error()))
+		slog.Error(
+			"ReadContainerResourcesFailed",
+			slog.String("err", resourcesErr.Error()),
+		)
 		os.Exit(1)
 	}
 
-	cpuCores := containerResources.HardwareSpecs.CpuCores
-	cpuCoresStr := strconv.FormatInt(int64(math.Ceil(cpuCores)), 10)
-
-	nginxConfFilePath := "/etc/nginx/nginx.conf"
-	workerCount, awkErr := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "awk",
-		Args: []string{
-			"/worker_processes/{gsub(/[^0-9]+/, \"\"); print}", nginxConfFilePath,
-		},
-	}).Run()
-	if awkErr != nil {
-		slog.Error("ReadNginxWorkersCountFailed", slog.String("err", awkErr.Error()))
-		os.Exit(1)
-	}
-
-	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(ws.persistentDbSvc)
-	servicesCmdRepo := servicesInfra.NewServicesCmdRepo(ws.persistentDbSvc)
-
-	ws.configurePhpChildProcesses(
-		servicesQueryRepo, containerResources.HardwareSpecs.MemoryTotal,
+	phpChildProcessesConfiguratorErr := ws.phpChildProcessesConfigurator(
+		containerResources.HardwareSpecs.MemoryTotal,
 	)
-
-	if workerCount == cpuCoresStr {
-		ws.startNginxIfNeeded(servicesQueryRepo, servicesCmdRepo)
-		return
+	if phpChildProcessesConfiguratorErr != nil {
+		slog.Warn(
+			"PhpChildProcessesConfiguratorError",
+			slog.String("err", phpChildProcessesConfiguratorErr.Error()),
+		)
 	}
-	ws.updateNginxWorkersCount(cpuCoresStr, servicesCmdRepo)
+
+	webServerRunningEnsurerErr := ws.webServerRunningEnsurer()
+	if webServerRunningEnsurerErr != nil {
+		slog.Error(
+			"WebServerRunningEnsurerError",
+			slog.String("err", webServerRunningEnsurerErr.Error()),
+		)
+		os.Exit(1)
+	}
 }

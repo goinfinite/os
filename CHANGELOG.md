@@ -1,7 +1,29 @@
 # Changelog
 
 ```log
+0.3.1 - 2026/07/15
+feat: add PrimaryVirtualHostSynchronizer to sync env, conf, db, and PHP vhost on restart
+fix: harden primary vhost rename — ssl-safe, restart php-webserver after creation, alias search uses previous host
+refactor(vhost): rebuild primary vhost conf from template via VirtualHostHelpers and read server_name via tk FileClerk (no more sed)
+refactor(mapping): orchestrate PHP vhost creation in domain use case
+feat(runtime): enable php webserver wildcard for new vhosts
+fix(envs): rename PrimaryPublicDir, remove PRIMARY_VHOST from required, add SSL prefix to skip dns env
+feat: allow ssl delete to hard delete only
+fix(services): prevent restart on field-only updates, handle null values and persist fields
+fix(internalSetup): create /app/logs/cron, /app/logs/nginx, and /app/.trash at runtime to prevent fuse-overlayfs whiteout accumulation
+fix(ui): refresh stale mappings form state
+feat: add SKIP_PHP_PROCS_COUNT_UPDATE env var (skip PHP children recalc on startup)
+fix(cli): preserve commas in --envs values
+fix(api): adopt context-based request timeouts
+refactor(dev): upgrade hot-reload websocket handler and exempt it from UI auth
+refactor(services): normalize status values and finish process manager migration
+refactor(internalSetup): standardize error returns and slog keys
+test: normalize test error format and cover primary-vhost sync
+refactor(auth): extract AuthenticationHelper to presentation/shared/helper; use errors.Is for sentinel checks
+fix(ui): use tkPresentation.NewRequesterIpExtractor (consistent with API; TRUSTED_CIDRS now applies to UI)
+
 0.3.0 - 2026/07/03
+fix(internalSetup): lsapi counter and add last edit comment
 fix(internalSetup): create /app/html at runtime to prevent fuse-overlayfs whiteout accumulation
 refactor(infra): rename webServer package to internalSetup
 fix(db): enforce UTC timestamps in gorm NowFunc for all database services

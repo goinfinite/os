@@ -1,40 +1,15 @@
 package apiMiddleware
 
 import (
+	"errors"
 	"log/slog"
 	"net/http"
-	"strings"
 
-	"github.com/goinfinite/os/src/domain/repository"
-	"github.com/goinfinite/os/src/domain/useCase"
 	authInfra "github.com/goinfinite/os/src/infra/auth"
-	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkInfra "github.com/goinfinite/tk/src/infra"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
 	"github.com/labstack/echo/v4"
 )
-
-func extractAccountIdFromAccessToken(
-	authQueryRepo repository.AuthQueryRepo,
-	accessTokenStr tkValueObject.AccessTokenValue,
-	userIpAddress tkValueObject.IpAddress,
-) (accountId tkValueObject.AccountId, err error) {
-	trustedCidrs, err := tkInfra.TrustedCidrsReader()
-	if err != nil {
-		slog.Error("TrustedCidrsReaderError", slog.String("err", err.Error()))
-		trustedCidrs = []tkValueObject.CidrBlock{}
-	}
-
-	accessTokenDetails, err := useCase.ReadAccessTokenDetails(
-		authQueryRepo, accessTokenStr, trustedCidrs, userIpAddress,
-	)
-	if err != nil {
-		return accountId, err
-	}
-
-	return accessTokenDetails.AccountId, nil
-}
 
 func authError(message string) *echo.HTTPError {
 	return echo.NewHTTPError(http.StatusUnauthorized, map[string]interface{}{
@@ -54,43 +29,46 @@ func Authentication(
 				return subsequentHandler(echoContext)
 			}
 
-			rawAccessToken := ""
-			accessTokenCookie, err := echoContext.Cookie(infraEnvs.AccessTokenCookieKey)
-			if err == nil {
-				rawAccessToken = accessTokenCookie.Value
-			}
+			authHelper := sharedHelper.AuthenticationHelper{}
 
-			if rawAccessToken == "" {
-				rawAccessToken = echoContext.Request().Header.Get("Authorization")
-				if rawAccessToken == "" {
+			accessToken, err := authHelper.ExtractAccessToken(echoContext)
+			if err != nil {
+				switch {
+				case errors.Is(err, sharedHelper.ErrMissingAuthorizationHeader):
 					return authError("MissingAuthorizationHeader")
-				}
-				bearerPrefix := "Bearer "
-				if !strings.HasPrefix(rawAccessToken, bearerPrefix) {
+				case errors.Is(err, sharedHelper.ErrAuthorizationHeaderMissingBearerPrefix):
 					return authError("AuthorizationHeaderMissingBearerPrefix")
+				default:
+					return authError("InvalidAccessToken")
 				}
-				rawAccessToken = strings.TrimPrefix(rawAccessToken, bearerPrefix)
 			}
 
-			accessTokenStr, err := tkValueObject.NewAccessTokenValue(rawAccessToken)
-			if err != nil {
-				return authError("InvalidAccessToken")
+			operatorIpAddress, extractionErr := authHelper.ExtractIpAddress(echoContext)
+			if extractionErr != nil {
+				slog.Debug(
+					"InvalidOperatorIpAddress",
+					slog.String("source", "AuthenticationMiddleware"),
+					slog.String("err", extractionErr.Error()),
+				)
+				return authError("InvalidOperatorIpAddress")
 			}
 
-			userIpAddress, err := tkValueObject.NewIpAddress(echoContext.RealIP())
-			if err != nil {
-				return authError("InvalidIpAddress")
-			}
 			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
 
-			accountId, err := extractAccountIdFromAccessToken(
-				authQueryRepo, accessTokenStr, userIpAddress,
+			accountId, err := authHelper.ReadAccessTokenAccountId(
+				authQueryRepo, accessToken, operatorIpAddress,
 			)
 			if err != nil {
+				slog.Debug(
+					"InvalidAccessToken",
+					slog.String("source", "AuthenticationMiddleware"),
+					slog.String("err", err.Error()),
+				)
 				return authError("InvalidAccessToken")
 			}
 
-			echoContext.Set("operatorAccountId", accountId.String())
+			echoContext.Set("operatorAccountId", accountId)
+			echoContext.Set("operatorIpAddress", operatorIpAddress)
 			return subsequentHandler(echoContext)
 		}
 	}

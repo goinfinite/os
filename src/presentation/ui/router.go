@@ -8,7 +8,7 @@ import (
 	"os"
 	"strings"
 
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	presenterAccounts "github.com/goinfinite/os/src/presentation/ui/presenter/accounts"
 	presenterCrons "github.com/goinfinite/os/src/presentation/ui/presenter/crons"
@@ -22,8 +22,8 @@ import (
 	presenterRuntimes "github.com/goinfinite/os/src/presentation/ui/presenter/runtimes"
 	presenterSetup "github.com/goinfinite/os/src/presentation/ui/presenter/setup"
 	presenterSsls "github.com/goinfinite/os/src/presentation/ui/presenter/ssls"
+	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
-	"golang.org/x/net/websocket"
 )
 
 type Router struct {
@@ -172,25 +172,26 @@ func (router *Router) sslsRoutes() {
 	sslsGroup.GET("/", sslsPresenter.Handler)
 }
 
+var devWsUpgrader = websocket.Upgrader{}
+
 func (router *Router) devRoutes() {
 	devGroup := router.baseRoute.Group("/dev")
-	devGroup.GET("/hot-reload", func(c echo.Context) error {
-		websocket.Handler(func(ws *websocket.Conn) {
-			defer ws.Close()
-			for {
-				err := websocket.Message.Send(ws, "WS Hot Reload Activated!")
-				if err != nil {
-					break
-				}
+	devGroup.GET("/hot-reload", func(echoContext echo.Context) error {
+		hotReloadConn, err := devWsUpgrader.Upgrade(
+			echoContext.Response(), echoContext.Request(), nil,
+		)
+		if err != nil {
+			slog.Error("UpgradeHotReloadWsFailed", slog.String("err", err.Error()))
+			return nil
+		}
+		defer hotReloadConn.Close()
 
-				msgReceived := ""
-				err = websocket.Message.Receive(ws, &msgReceived)
-				if err != nil {
-					break
-				}
+		for {
+			_, _, readErr := hotReloadConn.ReadMessage()
+			if readErr != nil {
+				return nil
 			}
-		}).ServeHTTP(c.Response(), c.Request())
-		return nil
+		}
 	})
 }
 
@@ -217,7 +218,7 @@ func (router *Router) RegisterRoutes() {
 	router.setupRoutes()
 	router.sslsRoutes()
 
-	if isDevMode, _ := tkVoUtil.InterfaceToBool(os.Getenv("DEV_MODE")); isDevMode {
+	if infraHelper.IsDevMode() {
 		router.devRoutes()
 	}
 

@@ -115,20 +115,19 @@ UiToolset.RegisterAlpineState(() => {
       this.resetPrimaryStates();
       this.resetAuxiliaryStates();
 
+      this.isCreateMappingFromVirtualHost = false;
       this.isCreateMappingModalOpen = true;
     },
-    isCreateMappingFromVirtualHostModalOpen: false,
     openCreateMappingFromVirtualHostModal(vhostHostname) {
       this.resetPrimaryStates();
       this.resetAuxiliaryStates();
 
       this.virtualHost.hostname = vhostHostname;
-      this.isCreateMappingFromVirtualHostModalOpen = true;
       this.isCreateMappingFromVirtualHost = true;
+      this.isCreateMappingModalOpen = true;
     },
     closeCreateMappingModal() {
       this.isCreateMappingModalOpen = false;
-      this.isCreateMappingFromVirtualHostModalOpen = false;
     },
     isUpdateMappingModalOpen: false,
     openUpdateMappingModal(mappingId) {

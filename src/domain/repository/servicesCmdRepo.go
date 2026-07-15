@@ -10,5 +10,6 @@ type ServicesCmdRepo interface {
 	CreateCustom(dto.CreateCustomService) error
 	Update(dto.UpdateService) error
 	Delete(valueObject.ServiceName) error
+	Restart(valueObject.ServiceName) error
 	RefreshInstallableItems() error
 }
