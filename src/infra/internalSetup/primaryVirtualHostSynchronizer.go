@@ -17,6 +17,7 @@ import (
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	"gorm.io/gorm"
 )
 
 type PrimaryVirtualHostSynchronizer struct {
@@ -116,11 +117,24 @@ func (sync *PrimaryVirtualHostSynchronizer) dbUpdater() error {
 		return nil
 	}
 
-	updateErr := sync.persistentDbSvc.Handler.Model(
-		&primaryVirtualHostModel,
-	).Update("hostname", sync.newPrimaryHostname.String()).Error
-	if updateErr != nil {
-		return errors.New("DbWriteFailed: " + updateErr.Error())
+	transactionErr := sync.persistentDbSvc.Handler.Transaction(func(transaction *gorm.DB) error {
+		updateErr := transaction.Model(&primaryVirtualHostModel).
+			Update("hostname", sync.newPrimaryHostname.String()).Error
+		if updateErr != nil {
+			return updateErr
+		}
+
+		mappingsErr := transaction.Model(&dbModel.Mapping{}).
+			Where("hostname = ?", sync.previousPrimaryHostname.String()).
+			Update("hostname", sync.newPrimaryHostname.String()).Error
+		if mappingsErr != nil {
+			return mappingsErr
+		}
+
+		return nil
+	})
+	if transactionErr != nil {
+		return errors.New("MappingsHostnameUpdateError: " + transactionErr.Error())
 	}
 
 	return nil

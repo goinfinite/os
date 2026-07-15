@@ -190,9 +190,10 @@ Automatically generate and manage NGINX configuration for hosting multiple appli
 1. `src/infra/vhost/` — Virtual host configuration generator and manager
 2. `src/infra/internalSetup/primaryVirtualHostSynchronizer.go` — Detects `PRIMARY_VHOST` env changes and triggers sync
 3. `src/infra/internalSetup/` — Web server reload and NGINX integration
-4. `src/infra/runtime/runtimeCmdRepo.go:UpdatePhpVirtualHostHostname` — Primary PHP vhost hostname rename via in-place sed substitution (preserves user php_ini customizations); restarts `php-webserver`
-5. `src/presentation/api/controller/virtualHost.go` — API endpoints for vhost management
-6. `src/infra/internalDatabase/` — Vhost configuration metadata
+4. `src/infra/internalSetup/primaryVirtualHostSynchronizer.go:dbUpdater` — Atomically updates the primary vhost row and bulk-migrates matching mappings hostnames in one GORM transaction
+5. `src/infra/runtime/runtimeCmdRepo.go:UpdatePhpVirtualHostHostname` — Primary PHP vhost hostname rename via in-place sed substitution (preserves user php_ini customizations); restarts `php-webserver`
+6. `src/presentation/api/controller/virtualHost.go` — API endpoints for vhost management
+7. `src/infra/internalDatabase/` — Vhost configuration metadata
 
 ---
 
