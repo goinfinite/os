@@ -22,7 +22,6 @@ import (
 
 type PrimaryVirtualHostSynchronizer struct {
 	persistentDbSvc          *internalDbInfra.PersistentDatabaseService
-	previousPrimaryHostname  tkValueObject.Fqdn
 	newPrimaryHostname       tkValueObject.Fqdn
 	servicesQueryRepo        *servicesInfra.ServicesQueryRepo
 	runtimeCmdRepo           *runtimeInfra.RuntimeCmdRepo
@@ -55,14 +54,14 @@ func (sync *PrimaryVirtualHostSynchronizer) phpConfUpdater() error {
 	}
 
 	return sync.runtimeCmdRepo.UpdatePhpVirtualHostHostname(
-		sync.previousPrimaryHostname, sync.newPrimaryHostname,
+		sync.primaryVirtualHostEntity.Hostname, sync.newPrimaryHostname,
 		sync.primaryVirtualHostEntity.AliasesHostnames,
 	)
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) webServerConfUpdater() error {
 	mappingsFilePath, readErr := sync.vhostQueryRepo.ReadVirtualHostMappingsFilePath(
-		sync.previousPrimaryHostname,
+		sync.primaryVirtualHostEntity.Hostname,
 	)
 	if readErr != nil {
 		return errors.New("ReadMappingsFilePathFailed: " + readErr.Error())
@@ -125,7 +124,7 @@ func (sync *PrimaryVirtualHostSynchronizer) dbUpdater() error {
 		}
 
 		mappingsErr := transaction.Model(&dbModel.Mapping{}).
-			Where("hostname = ?", sync.previousPrimaryHostname.String()).
+			Where("hostname = ?", sync.primaryVirtualHostEntity.Hostname.String()).
 			Update("hostname", sync.newPrimaryHostname.String()).Error
 		if mappingsErr != nil {
 			return mappingsErr
@@ -176,21 +175,29 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	}
 
 	sync.newPrimaryHostname = primaryVirtualHostEnvValue
-	sync.previousPrimaryHostname = webServerPrimaryVirtualHost
+	webServerPrimaryVirtualHostStr := webServerPrimaryVirtualHost.String()
 	slog.Debug(
 		"UpdatingPrimaryVirtualHost",
 		slog.String("primaryVirtualHostEnvValue", primaryVirtualHostEnvValue.String()),
-		slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHost.String()),
+		slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHostStr),
 	)
 
+	isFirstBoot := webServerPrimaryVirtualHostStr == infraEnvs.PrimaryVirtualHostPlaceholderHostname
+
+	entityLookupHostname := webServerPrimaryVirtualHost
+	if isFirstBoot {
+		// Database is seeded with the env value, so we use it to lookup the entity.
+		entityLookupHostname = sync.newPrimaryHostname
+	}
+
 	primaryVirtualHostEntity, entityReadErr := sync.vhostQueryRepo.ReadFirst(
-		dto.ReadVirtualHostsRequest{Hostname: &sync.previousPrimaryHostname},
+		dto.ReadVirtualHostsRequest{Hostname: &entityLookupHostname},
 	)
 	if entityReadErr != nil {
 		slog.Error(
 			"ReadPreviousVirtualHostEntityFailed",
 			slog.String("primaryVirtualHostEnvValue", primaryVirtualHostEnvValue.String()),
-			slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHost.String()),
+			slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHostStr),
 			slog.String("err", entityReadErr.Error()),
 		)
 		return
@@ -199,13 +206,15 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 
 	// phpConfUpdater must be first, as it relies on the previous primary hostname being set
 	// on the web server config before other steps can be performed.
-	phpConfErr := sync.phpConfUpdater()
-	if phpConfErr != nil {
-		slog.Error(
-			"PrimaryPhpVirtualHostConfUpdaterFailed",
-			slog.String("err", phpConfErr.Error()),
-		)
-		return
+	if !isFirstBoot {
+		phpConfErr := sync.phpConfUpdater()
+		if phpConfErr != nil {
+			slog.Error(
+				"PrimaryPhpVirtualHostConfUpdaterFailed",
+				slog.String("err", phpConfErr.Error()),
+			)
+			return
+		}
 	}
 
 	wsConfErr := sync.webServerConfUpdater()
@@ -217,11 +226,14 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 		return
 	}
 
-	dbErr := sync.dbUpdater()
-	if dbErr != nil {
-		slog.Error(
-			"PrimaryVirtualHostDbUpdaterFailed", slog.String("err", dbErr.Error()),
-		)
-		return
+	if !isFirstBoot {
+		dbErr := sync.dbUpdater()
+		if dbErr != nil {
+			slog.Error(
+				"PrimaryVirtualHostDbUpdaterFailed",
+				slog.String("err", dbErr.Error()),
+			)
+			return
+		}
 	}
 }

@@ -507,7 +507,7 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) er
 	nonWildcardHostname := strings.Replace(hostname.String(), "*.", "", -1)
 	hostnameStr := nonWildcardHostname
 	err = repo.regexReplaceInFile(
-		infraEnvs.DefaultPrimaryVirtualHost, hostnameStr, phpConfFilePathStr,
+		infraEnvs.PrimaryVirtualHostPlaceholderHostname, hostnameStr, phpConfFilePathStr,
 	)
 	if err != nil {
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
