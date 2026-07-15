@@ -19,6 +19,8 @@ refactor(dev): upgrade hot-reload websocket handler and exempt it from UI auth
 refactor(services): normalize status values and finish process manager migration
 refactor(internalSetup): standardize error returns and slog keys
 test: normalize test error format and cover primary-vhost sync
+refactor(auth): extract AuthenticationHelper to presentation/shared/helper; use errors.Is for sentinel checks
+fix(ui): use tkPresentation.NewRequesterIpExtractor (consistent with API; TRUSTED_CIDRS now applies to UI)
 
 0.3.0 - 2026/07/03
 fix(internalSetup): lsapi counter and add last edit comment
