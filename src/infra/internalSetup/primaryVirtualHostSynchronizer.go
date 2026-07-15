@@ -188,7 +188,9 @@ func (sync *PrimaryVirtualHostSynchronizer) Run() {
 	)
 	if entityReadErr != nil {
 		slog.Error(
-			"ReadPrimaryVirtualHostEntityFailed",
+			"ReadPreviousVirtualHostEntityFailed",
+			slog.String("primaryVirtualHostEnvValue", primaryVirtualHostEnvValue.String()),
+			slog.String("webServerPrimaryVirtualHost", webServerPrimaryVirtualHost.String()),
 			slog.String("err", entityReadErr.Error()),
 		)
 		return
