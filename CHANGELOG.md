@@ -1,6 +1,9 @@
 # Changelog
 
 ```log
+0.3.2 - 2026/07/27
+chore: add root .context.md index
+
 0.3.1 - 2026/07/15
 feat: add PrimaryVirtualHostSynchronizer to sync env, conf, db, and PHP vhost on restart
 fix: harden primary vhost rename — ssl-safe, restart php-webserver after creation, alias search uses previous host
