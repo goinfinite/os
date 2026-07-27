@@ -153,6 +153,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 		@submit="closeImportSslCertificateModal()"
 		@htmx:after-request={ "$dispatch('" + SslPairsRecordsDisplayRefreshEventName + "')" }
 	>
+		@templ.JSONScript("importSslCertificateVhostHostnames", vhostsHostnames)
 		@componentForm.MultiSelectInput(
 			"virtualHostsHostnames", "Virtual Hosts Hostnames",
 			"sslPair.virtualHostsHostnames", vhostsHostnames,

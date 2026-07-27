@@ -41,10 +41,37 @@ UiToolset.RegisterAlpineState(() => {
     openImportSslCertificateModal(vhostHostname = "") {
       this.resetPrimaryStates();
 
-      if (vhostHostname) {
-        this.sslPair.virtualHostsHostnames = [vhostHostname];
-      }
+      this.sslPair.virtualHostsHostnames = this.resolveImportSslCertificateVhostHostnames(
+        vhostHostname,
+      );
       this.isImportSslCertificateModalOpen = true;
+    },
+    readImportSslCertificateAvailableHostnames() {
+      const hostnamesElement = document.getElementById(
+        "importSslCertificateVhostHostnames"
+      );
+      if (!hostnamesElement) {
+        return [];
+      }
+
+      try {
+        const parsedHostnames = JSON.parse(hostnamesElement.textContent);
+        return Array.isArray(parsedHostnames) ? parsedHostnames : [];
+      } catch (parseError) {
+        return [];
+      }
+    },
+    resolveImportSslCertificateVhostHostnames(vhostHostname) {
+      if (vhostHostname) {
+        return [vhostHostname];
+      }
+
+      const availableHostnames = this.readImportSslCertificateAvailableHostnames();
+      if (availableHostnames.length == 1) {
+        return availableHostnames;
+      }
+
+      return [];
     },
     closeImportSslCertificateModal() {
       this.isImportSslCertificateModalOpen = false;
