@@ -5,6 +5,8 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	uiControl "github.com/goinfinite/ui/src/control"
+	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 )
 
@@ -154,10 +156,16 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 		@htmx:after-request={ "$dispatch('" + SslPairsRecordsDisplayRefreshEventName + "')" }
 	>
 		@templ.JSONScript("importSslCertificateVhostHostnames", vhostsHostnames)
-		@componentForm.MultiSelectInput(
-			"virtualHostsHostnames", "Virtual Hosts Hostnames",
-			"sslPair.virtualHostsHostnames", vhostsHostnames,
-		)
+		@uiForm.MultiSelectInput(uiForm.MultiSelectInputSettings{
+			InputName:               "virtualHostsHostnames",
+			Label:                   "Virtual Hosts Hostnames",
+			FlatOptions:             vhostsHostnames,
+			TwoWayStatePath:         "sslPair.virtualHostsHostnames",
+			IsRequired:              true,
+			DropdownBackgroundColor: "os-400",
+			HintDisplay:             uiForm.InputTypeHintDisplayDescription,
+			HintValue:               "Select at least one hostname. The certificate will be installed for all selected vhosts.",
+		})
 		<input name="encodedCertificate" type="hidden" :value="btoa(sslPair.certificate)"/>
 		<input name="encodedChainCertificates" type="hidden" :value="btoa(sslPair.chainCertificates)"/>
 		<input name="encodedKey" type="hidden" :value="btoa(sslPair.key)"/>
@@ -195,10 +203,15 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 				BindModelPath: "shouldImportSslCertificateAsFile",
 			})
 		</div>
-		@componentForm.DeactivableSubmitButton(
-			"Import SSL certificate", "ph-check-fat", "",
-			"shouldDisableImportSslCertificateSubmitButton", false,
-		)
+		@uiControl.Button(uiControl.ButtonSettings{
+			Label:                     "import SSL certificate",
+			IconLeft:                  "ph-check-fat",
+			BackgroundColor:           "infinite-500",
+			BackgroundColorHover:      "infinite-300",
+			IsSubmit:                  true,
+			IsFullWidth:               true,
+			IsDisabledOneWayStatePath: "shouldDisableImportSslCertificateSubmitButton",
+		})
 	</form>
 }
 

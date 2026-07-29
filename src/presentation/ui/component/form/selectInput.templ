@@ -1,10 +1,5 @@
 package componentForm
 
-import (
-	_ "embed"
-	"github.com/goinfinite/ui/src/toolset"
-)
-
 templ SelectInput(
 	id, label, bindModelPath, onSelect string,
 	options []string,
@@ -126,54 +121,5 @@ templ SelectInputWithLabelValuePair(
 			</label>
 		}
 		<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
-	</div>
-}
-
-//go:embed multiSelectInputState.js
-var multiSelectInputAlpineState string
-
-templ MultiSelectInput(
-	id, label, bindModelPath string,
-	options []string,
-) {
-	<!-- MultiSelectInput JavaScript -->
-	@uiToolset.MinifierTemplateJs(&multiSelectInputAlpineState)
-	<!-- MultiSelectInput HTML -->
-	<div
-		class="relative w-full"
-		x-data="multiSelectInput"
-		@click.away="closeDropdown()"
-	>
-		<div
-			@click="toggleDropdownDisplay()"
-			class="border-os-200 hover:border-os-100 bg-os-300 autofill:bg-os-300 pt-2.3 peer relative h-10 w-full appearance-none rounded-md border px-3 text-sm text-neutral-100 placeholder-transparent outline-none transition-all"
-		>
-			<label
-				class="cursor-pointer text-neutral-100"
-				x-text={ "getFormattedSelectedItems(" + bindModelPath + ")" }
-			></label>
-		</div>
-		<label class="from-os-300 via-os-300 absolute -top-2 left-1.5 cursor-text bg-gradient-to-t to-transparent to-50% px-1.5 text-xs font-bold text-neutral-50 text-opacity-80">
-			{ label }
-		</label>
-		<i class="ph-bold ph-caret-down pointer-events-none absolute right-2.5 top-3.5 text-sm"></i>
-		<div x-show="shouldExpandOptions" class="bg-os-500 border-os-200 rounded-b-md border">
-			for _, option := range options {
-				<div class="px-3 pb-1.5 pt-1">
-					<label class="inline-flex w-full cursor-pointer items-center">
-						<span class="text-sm text-neutral-50">{ option }</span>
-						<input
-							type="checkbox"
-							id={ id }
-							name={ id }
-							value={ option }
-							x-model={ bindModelPath }
-							class="peer sr-only"
-						/>
-						<div class="h-4.5 peer-checked:bg-infinite-500 peer relative ml-auto w-8 rounded-full bg-gray-400 after:absolute after:start-[2px] after:top-0.5 after:h-3.5 after:w-3.5 after:rounded-full after:border after:bg-white after:transition-all after:content-[''] peer-checked:after:translate-x-full peer-checked:after:border-white"></div>
-					</label>
-				</div>
-			}
-		</div>
 	</div>
 }
