@@ -47,6 +47,20 @@ With this approach you don't need to rebuild the container every time you change
 1. You must run the script from the project's root directory;
 2. Until Echo v4.13.0 is released, you'll need to refresh the browser page during development to see the changes in the dashboard as we're not able to use the `DEV_MODE` auto refresh websocket trick for now. To understand how this trick used to work, check the UI router and main layout files.
 
+## Environment Variables
+
+| Variable                         | Required | Auto-generated | Description                                                                                                        |
+| -------------------------------- | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `PRIMARY_VHOST`                  | Yes      | Yes            | Primary virtual host. Auto-detected from hostname if unset; auto-syncs web server, PHP, and DB on boot if changed. |
+| `JWT_SECRET`                     | Yes      | Yes            | JWT session signing key. Auto-generated on first boot.                                                             |
+| `ACCOUNT_API_KEY_SECRET`         | Yes      | Yes            | API key generation/validation encryption key. Auto-generated on first boot.                                        |
+| `DEV_MODE`                       | No       | No             | Enables dev mode (startup banner, additional UI routes).                                                           |
+| `TRUSTED_CIDRS`                  | No       | No             | CIDRs that bypass auth origin validation and receive verbose API panic responses.                                  |
+| `READ_ONLY_MODE`                 | No       | No             | Blocks non-GET/HEAD/OPTIONS API requests (HTTP 423).                                                               |
+| `SKIP_SSL_DNS_OWNERSHIP_CHECK`   | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                                              |
+| `SKIP_PHP_PROCS_COUNT_UPDATE`    | No       | No             | Skips automatic PHP max children calculation on startup.                                                           |
+| `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
+
 ## Unit Testing
 
 Infinite OS commands can harm your system, so it's important to run the unit tests in a proper container:
