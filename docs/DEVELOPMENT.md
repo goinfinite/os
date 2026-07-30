@@ -60,6 +60,7 @@ With this approach you don't need to rebuild the container every time you change
 | `SKIP_SSL_DNS_OWNERSHIP_CHECK`   | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                                              |
 | `SKIP_PHP_PROCS_COUNT_UPDATE`    | No       | No             | Skips automatic PHP max children calculation on startup.                                                           |
 | `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
+| `LOG_LEVEL`                      | No       | No             | Sets the logging verbosity (debug, info, warn, error, fatal, panic). Defaults to warn.                             |
 
 ## Unit Testing
 
