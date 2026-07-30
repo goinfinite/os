@@ -70,7 +70,10 @@ func (repo *SslCmdRepo) dnsFunctionalHostnamesFilter(
 			continue
 		}
 
-		hostnameRecords, err := tkInfra.NewDnsLookup(tkInfra.DnsLookupSettings{}).Execute(
+		dnsLookupSettings := tkInfra.DnsLookupSettings{
+			ShouldBypassLocalResolver: true,
+		}
+		hostnameRecords, err := tkInfra.NewDnsLookup(dnsLookupSettings).Execute(
 			hostname, nil,
 		)
 		if err != nil {
