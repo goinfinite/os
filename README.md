@@ -55,11 +55,6 @@ A read-only demo of the dashboard is available at [https://os.demo.goinfinite.ne
 
 ## Get Started
 
-```
-This project is still under active development (beta stage).
-Expect bugs early on. Create issues so they can be fixed.
-```
-
 ### Deploying the Container
 
 Infinite OS is designed to be flexible, so you can run it with your preferred graphical user interface (GUI) or command line interface (CLI). This includes popular tools like Docker Desktop, Podman Desktop, Rancher Desktop, Orbstack, Portainer, Kubernetes, and any other OCI-compliant container manager.
@@ -100,20 +95,6 @@ os mktplace install -s wp \
   -f 'adminMailAddress:user@example.com'
 ```
 
-### Environment Variables
-
-| Variable                         | Required | Auto-generated | Description                                                                                                        |
-| -------------------------------- | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `PRIMARY_VHOST`                  | Yes      | Yes            | Primary virtual host. Auto-detected from hostname if unset; auto-syncs web server, PHP, and DB on boot if changed. |
-| `JWT_SECRET`                     | Yes      | Yes            | JWT session signing key. Auto-generated on first boot.                                                             |
-| `ACCOUNT_API_KEY_SECRET`         | Yes      | Yes            | API key generation/validation encryption key. Auto-generated on first boot.                                        |
-| `DEV_MODE`                       | No       | No             | Enables dev mode (startup banner, additional UI routes).                                                           |
-| `TRUSTED_CIDRS`                  | No       | No             | CIDRs that bypass auth origin validation and receive verbose API panic responses.                                  |
-| `READ_ONLY_MODE`                 | No       | No             | Blocks non-GET/HEAD/OPTIONS API requests (HTTP 423).                                                               |
-| `SKIP_SSL_DNS_OWNERSHIP_CHECK`   | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                                              |
-| `SKIP_PHP_PROCS_COUNT_UPDATE`    | No       | No             | Skips automatic PHP max children calculation on startup.                                                           |
-| `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
-
 ## Support
 
 Need help or have questions? We got you covered!
@@ -127,6 +108,11 @@ Your support means the world to us! If you find Infinite OS useful, please consi
 ## Contributing
 
 Ready to contribute to Infinite OS? Please refer to our [CONTRIBUTING.md](docs/CONTRIBUTING.md) file for more information on how to get involved.
+
+> [!IMPORTANT]
+> **Human Reviewed**: Although AI models are employed to assist development, every
+> line in our codebase is meticulously reviewed by senior developers who care
+> deeply about the software's coherence, readability, and maintainability.
 
 ## Roadmap
 

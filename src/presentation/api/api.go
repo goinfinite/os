@@ -10,7 +10,7 @@ import (
 )
 
 // @title			OsApi
-// @version			0.3.1
+// @version			0.3.2
 // @description		Infinite OS API
 // @termsOfService	https://goinfinite.net/tos/
 

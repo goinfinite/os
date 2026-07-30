@@ -60,7 +60,22 @@ func (repo *SslCmdRepo) dnsFunctionalHostnamesFilter(
 	for _, vhostHostname := range vhostHostnames {
 		vhostHostnameStr := vhostHostname.String()
 
-		hostnameRecords, err := infraHelper.DnsLookup(vhostHostnameStr, nil)
+		hostname, err := tkValueObject.NewUnixHostname(vhostHostnameStr)
+		if err != nil {
+			slog.Debug(
+				"FqdnNotUnixHostname",
+				slog.String("fqdn", vhostHostnameStr),
+				slog.String("err", err.Error()),
+			)
+			continue
+		}
+
+		dnsLookupSettings := tkInfra.DnsLookupSettings{
+			ShouldBypassLocalResolver: true,
+		}
+		hostnameRecords, err := tkInfra.NewDnsLookup(dnsLookupSettings).Execute(
+			hostname, nil,
+		)
 		if err != nil {
 			slog.Debug(
 				"DnsLookupFailed",

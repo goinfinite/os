@@ -1,6 +1,14 @@
 # Changelog
 
 ```log
+0.3.2 - 2026/07/29
+fix(ssl): auto-select sole vhost on SSL import modal
+fix(ssl): prevent `.crt` suffix on derived virtualHostHostname for multi-label hostnames
+fix: replace multi select input with goinfinite/ui
+fix: reduce tooltip textarea z-index
+refactor(ssl): inline dns lookup helper into SslCmdRepo
+chore: add root .context.md index
+
 0.3.1 - 2026/07/15
 feat: add PrimaryVirtualHostSynchronizer to sync env, conf, db, and PHP vhost on restart
 fix: harden primary vhost rename — ssl-safe, restart php-webserver after creation, alias search uses previous host
