@@ -6,7 +6,7 @@ require (
 	github.com/a-h/templ v0.3.1020
 	github.com/dustin/go-humanize v1.0.1
 	github.com/glebarez/sqlite v1.11.0
-	github.com/goinfinite/tk v0.3.1
+	github.com/goinfinite/tk v0.3.2
 	github.com/goinfinite/ui v0.1.7
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
