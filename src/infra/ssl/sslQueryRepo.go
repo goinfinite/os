@@ -108,8 +108,16 @@ func (repo *SslQueryRepo) sslPairFactory(
 		return sslPairEntity, err
 	}
 
-	crtFileNameWithoutExt := crtFilePath.ReadFileNameWithoutExtension(false)
-	virtualHostHostname, err := tkValueObject.NewFqdn(crtFileNameWithoutExt.String())
+	crtFileExtension, err := crtFilePath.ReadFileExtension()
+	if err != nil {
+		return sslPairEntity, errors.New("CrtFileExtensionError: " + err.Error())
+	}
+
+	crtFileNameWithoutExt := strings.TrimSuffix(
+		crtFilePath.ReadFileName(false).String(),
+		"."+crtFileExtension.String(),
+	)
+	virtualHostHostname, err := tkValueObject.NewFqdn(crtFileNameWithoutExt)
 	if err != nil {
 		if mainCert.CommonName == nil {
 			return sslPairEntity, errors.New("VirtualHostHostnameError: " + err.Error())

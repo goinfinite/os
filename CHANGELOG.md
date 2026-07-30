@@ -3,6 +3,7 @@
 ```log
 0.3.2 - 2026/07/29
 fix(ssl): auto-select sole vhost on SSL import modal
+fix(ssl): prevent `.crt` suffix on derived virtualHostHostname for multi-label hostnames
 fix: replace multi select input with goinfinite/ui
 fix: reduce tooltip textarea z-index
 refactor(ssl): inline dns lookup helper into SslCmdRepo
