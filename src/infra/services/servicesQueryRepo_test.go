@@ -103,7 +103,9 @@ func TestServicesQueryRepoParseManifestCmdStepsReplacesInstallPackages(
 	servicesQueryRepo := &ServicesQueryRepo{}
 	rawCmdSteps := []any{"install_packages -qqy jq"}
 
-	cmdSteps, err := servicesQueryRepo.parseManifestCmdSteps("Install", rawCmdSteps)
+	cmdSteps, err := servicesQueryRepo.parseManifestCmdSteps(
+		serviceCmdStepTypeInstall, rawCmdSteps,
+	)
 	if err != nil {
 		t.Fatalf("ParseManifestCmdStepsShouldSucceed: %v", err)
 	}

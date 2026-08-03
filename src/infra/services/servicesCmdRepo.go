@@ -32,6 +32,18 @@ type ServicesCmdRepo struct {
 	fileClerk         tkInfra.FileClerk
 }
 
+type serviceCmdStepType string
+
+const (
+	serviceCmdStepTypeInstall   serviceCmdStepType = "Install"
+	serviceCmdStepTypeUninstall serviceCmdStepType = "Uninstall"
+	serviceCmdStepTypeStop      serviceCmdStepType = "Stop"
+	serviceCmdStepTypePreStart  serviceCmdStepType = "PreStart"
+	serviceCmdStepTypePostStart serviceCmdStepType = "PostStart"
+	serviceCmdStepTypePreStop   serviceCmdStepType = "PreStop"
+	serviceCmdStepTypePostStop  serviceCmdStepType = "PostStop"
+)
+
 func NewServicesCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *ServicesCmdRepo {
@@ -43,13 +55,14 @@ func NewServicesCmdRepo(
 }
 
 func (repo *ServicesCmdRepo) runCmdSteps(
-	stepsType string,
+	stepsType serviceCmdStepType,
 	steps []tkValueObject.UnixCommand,
 	totalExecTimeoutSecs tkValueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
 	}
+	stepsTypeStr := string(stepsType)
 
 	totalExecTimeoutSecsUint := uint64(totalExecTimeoutSecs.Int64())
 	shellSettings := tkInfra.ShellSettings{
@@ -61,7 +74,7 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 	for stepIndex, step := range steps {
 		stepStr := step.String()
 
-		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
+		slog.Debug("Running"+stepsTypeStr+"Step", slog.String("step", stepStr))
 
 		shellSettings.Command = stepStr
 
@@ -70,19 +83,19 @@ func (repo *ServicesCmdRepo) runCmdSteps(
 		if err != nil {
 			errorMessage := stepOutput + " | " + err.Error()
 			if strings.Contains(err.Error(), "CommandDeadlineExceeded") {
-				errorMessage = "Service" + stepsType + "TimeoutExceeded"
+				errorMessage = "Service" + stepsTypeStr + "TimeoutExceeded"
 			}
 
 			return fmt.Errorf(
 				"%sCmdStepError (%s): %s",
-				stepsType, strconv.Itoa(stepIndex), errorMessage,
+				stepsTypeStr, strconv.Itoa(stepIndex), errorMessage,
 			)
 		}
 
 		stepExecElapsedTimeSecs := uint64(time.Since(execTimeStart).Seconds())
 		totalExecRemainingTime = totalExecRemainingTime - stepExecElapsedTimeSecs
 		if totalExecRemainingTime == 0 {
-			return errors.New("Service" + stepsType + "TimeoutExceeded")
+			return errors.New("Service" + stepsTypeStr + "TimeoutExceeded")
 		}
 
 		shellSettings.ExecutionTimeoutSecs = totalExecRemainingTime
@@ -105,7 +118,8 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 	}
 
 	err = repo.runCmdSteps(
-		"PreStart", serviceEntity.PreStartCmdSteps, serviceEntity.PreStartTimeoutSecs,
+		serviceCmdStepTypePreStart,
+		serviceEntity.PreStartCmdSteps, serviceEntity.PreStartTimeoutSecs,
 	)
 	if err != nil {
 		return err
@@ -137,7 +151,8 @@ func (repo *ServicesCmdRepo) Start(name valueObject.ServiceName) error {
 	time.Sleep(1 * time.Second)
 
 	return repo.runCmdSteps(
-		"PostStart", serviceEntity.PostStartCmdSteps, serviceEntity.PostStartTimeoutSecs,
+		serviceCmdStepTypePostStart,
+		serviceEntity.PostStartCmdSteps, serviceEntity.PostStartTimeoutSecs,
 	)
 }
 
@@ -150,7 +165,8 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 	}
 
 	err = repo.runCmdSteps(
-		"PreStop", serviceEntity.PreStopCmdSteps, serviceEntity.PreStopTimeoutSecs,
+		serviceCmdStepTypePreStop,
+		serviceEntity.PreStopCmdSteps, serviceEntity.PreStopTimeoutSecs,
 	)
 	if err != nil {
 		return errors.New("PreStopError: " + err.Error())
@@ -169,14 +185,16 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 	time.Sleep(1 * time.Second)
 
 	err = repo.runCmdSteps(
-		"Stop", serviceEntity.StopCmdSteps, serviceEntity.StopTimeoutSecs,
+		serviceCmdStepTypeStop,
+		serviceEntity.StopCmdSteps, serviceEntity.StopTimeoutSecs,
 	)
 	if err != nil {
 		return errors.New("StopError: " + err.Error())
 	}
 
 	return repo.runCmdSteps(
-		"PostStop", serviceEntity.PostStopCmdSteps, serviceEntity.PostStartTimeoutSecs,
+		serviceCmdStepTypePostStop,
+		serviceEntity.PostStopCmdSteps, serviceEntity.PostStartTimeoutSecs,
 	)
 }
 
@@ -514,7 +532,8 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	}
 
 	err = repo.runCmdSteps(
-		"Install", usableInstallCmdSteps, installableServiceEntity.InstallTimeoutSecs,
+		serviceCmdStepTypeInstall,
+		usableInstallCmdSteps, installableServiceEntity.InstallTimeoutSecs,
 	)
 	if err != nil {
 		return installedServiceName, err
@@ -894,7 +913,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 	}
 
 	err = repo.runCmdSteps(
-		"Uninstall", installableEntity.UninstallCmdSteps,
+		serviceCmdStepTypeUninstall, installableEntity.UninstallCmdSteps,
 		installableEntity.UninstallTimeoutSecs,
 	)
 	if err != nil {

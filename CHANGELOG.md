@@ -5,6 +5,8 @@
 fix: use debian slim trixie as base img
 fix: ignore logfile when redirected to /dev
 chore: bump version
+fix: migrate legacy manifest install commands
+refactor: use typed command step phases
 
 0.3.2 - 2026/07/29
 fix(ssl): auto-select sole vhost on SSL import modal

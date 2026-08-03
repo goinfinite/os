@@ -428,13 +428,14 @@ func (repo *ServicesQueryRepo) migrateLegacyManifestCmdStep(
 }
 
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(
-	stepsType string,
+	stepsType serviceCmdStepType,
 	rawCmdSteps any,
 ) (cmdSteps []tkValueObject.UnixCommand, err error) {
 	cmdStepsMap, assertOk := rawCmdSteps.([]any)
 	if !assertOk {
 		return cmdSteps, errors.New("InvalidCmdStepsStructure")
 	}
+	stepsTypeStr := string(stepsType)
 
 	for _, rawCmd := range cmdStepsMap {
 		rawCommandStr, err := repo.migrateLegacyManifestCmdStep(
@@ -443,7 +444,7 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 		if err != nil {
 			slog.Debug(
 				"ParseInvalidCmdStepError",
-				slog.String("stepsType", stepsType),
+				slog.String("stepsType", stepsTypeStr),
 				slog.Any("rawCmd", rawCmd),
 			)
 			return cmdSteps, err
@@ -453,7 +454,7 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 		if err != nil {
 			slog.Debug(
 				"ParseInvalidCmdStepError",
-				slog.String("stepsType", stepsType),
+				slog.String("stepsType", stepsTypeStr),
 				slog.Any("rawCmd", rawCmd),
 			)
 			return cmdSteps, err
@@ -593,7 +594,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	stopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["stopCmdSteps"] != nil {
 		stopCmdSteps, err = repo.parseManifestCmdSteps(
-			"Stop", serviceMap["stopCmdSteps"],
+			serviceCmdStepTypeStop, serviceMap["stopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -613,7 +614,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	installCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["installCmdSteps"] != nil {
 		installCmdSteps, err = repo.parseManifestCmdSteps(
-			"Install", serviceMap["installCmdSteps"],
+			serviceCmdStepTypeInstall, serviceMap["installCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -633,7 +634,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	uninstallCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["uninstallCmdSteps"] != nil {
 		uninstallCmdSteps, err = repo.parseManifestCmdSteps(
-			"Uninstall", serviceMap["uninstallCmdSteps"],
+			serviceCmdStepTypeUninstall, serviceMap["uninstallCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -673,7 +674,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	preStartCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["preStartCmdSteps"] != nil {
 		preStartCmdSteps, err = repo.parseManifestCmdSteps(
-			"PreStart", serviceMap["preStartCmdSteps"],
+			serviceCmdStepTypePreStart, serviceMap["preStartCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -693,7 +694,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	postStartCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["postStartCmdSteps"] != nil {
 		postStartCmdSteps, err = repo.parseManifestCmdSteps(
-			"PostStart", serviceMap["postStartCmdSteps"],
+			serviceCmdStepTypePostStart, serviceMap["postStartCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -713,7 +714,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	preStopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["preStopCmdSteps"] != nil {
 		preStopCmdSteps, err = repo.parseManifestCmdSteps(
-			"PreStop", serviceMap["preStopCmdSteps"],
+			serviceCmdStepTypePreStop, serviceMap["preStopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -733,7 +734,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	postStopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["postStopCmdSteps"] != nil {
 		postStopCmdSteps, err = repo.parseManifestCmdSteps(
-			"PostStop", serviceMap["postStopCmdSteps"],
+			serviceCmdStepTypePostStop, serviceMap["postStopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
