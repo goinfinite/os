@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.3.2"
+        "version": "0.3.3"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -3418,7 +3418,7 @@
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3432,7 +3432,7 @@
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3446,7 +3446,7 @@
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3474,7 +3474,7 @@
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3494,7 +3494,7 @@
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3508,7 +3508,7 @@
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3522,7 +3522,7 @@
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3536,7 +3536,7 @@
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3544,7 +3544,7 @@
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "tasks": {
                     "type": "array",
@@ -3558,7 +3558,7 @@
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "sslPairs": {
                     "type": "array",
@@ -3572,7 +3572,7 @@
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "virtualHostWithMappings": {
                     "type": "array",
@@ -4678,7 +4678,7 @@
                 }
             }
         },
-        "github_com_goinfinite_tk_src_domain_dto.Pagination": {
+        "tkDto.Pagination": {
             "type": "object",
             "properties": {
                 "itemsPerPage": {
