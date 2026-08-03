@@ -102,3 +102,27 @@ func TestVirtualHostQueryRepo(t *testing.T) {
 		}
 	})
 }
+
+func TestMarketplaceQueryRepoCatalogItemCmdStepsReplacesInstallPackages(
+	t *testing.T,
+) {
+	marketplaceQueryRepo := &MarketplaceQueryRepo{}
+	rawCmdSteps := []any{"install_packages -qq jq"}
+
+	cmdSteps, err := marketplaceQueryRepo.catalogItemCmdStepsFactory(rawCmdSteps)
+	if err != nil {
+		t.Fatalf("CatalogItemCmdStepsFactoryShouldSucceed: %v", err)
+	}
+
+	if len(cmdSteps) != 1 {
+		t.Fatalf("UnexpectedCmdStepsCount: %d", len(cmdSteps))
+	}
+
+	expectedCommand := "DEBIAN_FRONTEND=noninteractive apt-get install -y -qq jq"
+	if cmdSteps[0].String() != expectedCommand {
+		t.Errorf(
+			"UnexpectedCommand: %q; expected %q",
+			cmdSteps[0].String(), expectedCommand,
+		)
+	}
+}

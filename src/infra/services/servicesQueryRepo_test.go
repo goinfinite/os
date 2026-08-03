@@ -96,3 +96,27 @@ func TestServicesQueryRepo(t *testing.T) {
 		}
 	})
 }
+
+func TestServicesQueryRepoParseManifestCmdStepsReplacesInstallPackages(
+	t *testing.T,
+) {
+	servicesQueryRepo := &ServicesQueryRepo{}
+	rawCmdSteps := []any{"install_packages -qqy jq"}
+
+	cmdSteps, err := servicesQueryRepo.parseManifestCmdSteps("Install", rawCmdSteps)
+	if err != nil {
+		t.Fatalf("ParseManifestCmdStepsShouldSucceed: %v", err)
+	}
+
+	if len(cmdSteps) != 1 {
+		t.Fatalf("UnexpectedCmdStepsCount: %d", len(cmdSteps))
+	}
+
+	expectedCommand := "DEBIAN_FRONTEND=noninteractive apt-get install -y -qqy jq"
+	if cmdSteps[0].String() != expectedCommand {
+		t.Errorf(
+			"UnexpectedCommand: %q; expected %q",
+			cmdSteps[0].String(), expectedCommand,
+		)
+	}
+}

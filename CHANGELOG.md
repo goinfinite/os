@@ -1,6 +1,11 @@
 # Changelog
 
 ```log
+0.3.3 - 2026/08/04
+fix: use debian slim trixie as base img
+fix: ignore logfile when redirected to /dev
+chore: bump version
+
 0.3.2 - 2026/07/29
 fix(ssl): auto-select sole vhost on SSL import modal
 fix(ssl): prevent `.crt` suffix on derived virtualHostHostname for multi-label hostnames

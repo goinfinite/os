@@ -202,7 +202,8 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 			slog.Debug(
 				"MissingProcManagerStatusParts",
-				slog.String("name", serviceNameStr),
+				slog.String("serviceName", serviceNameStr),
+				slog.Any("procParts", procManagerStatusParts),
 			)
 			continue
 		}
@@ -411,17 +412,34 @@ func (repo *ServicesQueryRepo) IsInstalled(serviceName valueObject.ServiceName) 
 	return readErr == nil
 }
 
+func (repo *ServicesQueryRepo) migrateLegacyManifestCmdStep(
+	rawCmdStep any,
+) (string, error) {
+	rawCmdStepStr, err := tkVoUtil.InterfaceToString(rawCmdStep)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.ReplaceAll(
+		rawCmdStepStr,
+		"install_packages",
+		"DEBIAN_FRONTEND=noninteractive apt-get install -y",
+	), nil
+}
+
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 	stepsType string,
-	rawCmdSteps interface{},
+	rawCmdSteps any,
 ) (cmdSteps []tkValueObject.UnixCommand, err error) {
-	cmdStepsMap, assertOk := rawCmdSteps.([]interface{})
+	cmdStepsMap, assertOk := rawCmdSteps.([]any)
 	if !assertOk {
 		return cmdSteps, errors.New("InvalidCmdStepsStructure")
 	}
 
 	for _, rawCmd := range cmdStepsMap {
-		command, err := tkValueObject.NewUnixCommand(rawCmd)
+		rawCommandStr, err := repo.migrateLegacyManifestCmdStep(
+			rawCmd,
+		)
 		if err != nil {
 			slog.Debug(
 				"ParseInvalidCmdStepError",
@@ -430,6 +448,17 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 			)
 			return cmdSteps, err
 		}
+
+		command, err := tkValueObject.NewUnixCommand(rawCommandStr)
+		if err != nil {
+			slog.Debug(
+				"ParseInvalidCmdStepError",
+				slog.String("stepsType", stepsType),
+				slog.Any("rawCmd", rawCmd),
+			)
+			return cmdSteps, err
+		}
+
 		cmdSteps = append(cmdSteps, command)
 	}
 
@@ -493,7 +522,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	versions := []valueObject.ServiceVersion{}
 	if serviceMap["versions"] != nil {
-		versionsMap, assertOk := serviceMap["versions"].([]interface{})
+		versionsMap, assertOk := serviceMap["versions"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidServiceVersionsStructure")
 		}
@@ -513,7 +542,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	envs := []valueObject.ServiceEnv{}
 	if serviceMap["envs"] != nil {
-		envsMap, assertOk := serviceMap["envs"].([]interface{})
+		envsMap, assertOk := serviceMap["envs"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidEnvs")
 		}
@@ -533,7 +562,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	portBindings := []valueObject.PortBinding{}
 	if serviceMap["portBindings"] != nil {
-		portBindingsMap, assertOk := serviceMap["portBindings"].([]interface{})
+		portBindingsMap, assertOk := serviceMap["portBindings"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidPortBindingsStructure")
 		}
@@ -613,7 +642,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	uninstallFilePaths := []tkValueObject.UnixAbsoluteFilePath{}
 	if serviceMap["uninstallFilePaths"] != nil {
-		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]interface{})
+		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidUninstallFilePathsStructure")
 		}
