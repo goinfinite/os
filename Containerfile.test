@@ -1,15 +1,15 @@
-FROM docker.io/bitnami/minideb:bullseye-amd64
+FROM docker.io/debian:trixie-slim
 
 WORKDIR /infinite
 
 RUN apt-get update && apt-get upgrade -y \
-	&& install_packages bind9-dnsutils build-essential ca-certificates certbot cron \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y bind9-dnsutils build-essential ca-certificates certbot cron \
 	curl debian-archive-keyring git gnupg2 haveged lsb-release procps rsync supervisor \
-	tar unzip vim wget zip
+	tar unzip vim wget zip unattended-upgrades
 
 RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
 	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
-	&& install_packages nginx \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y nginx \
 	&& mkdir -p /app/conf/pki \
 	&& chown -R nobody:nogroup /app
 
@@ -26,7 +26,7 @@ COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
 
 COPY /container/supervisord.conf /infinite/supervisord.conf
 
-RUN wget -qO go.tar.gz "https://go.dev/dl/go1.22.5.linux-amd64.tar.gz" \
+RUN wget -qO go.tar.gz "https://go.dev/dl/go1.26.5.linux-amd64.tar.gz" \
 	&& tar -C /usr/local -xzf go.tar.gz
 
 ENV PATH="/usr/local/go/bin:${PATH}"
