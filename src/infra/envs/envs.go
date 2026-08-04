@@ -14,7 +14,7 @@ const (
 	MarketplaceCatalogItemsRepoBranch     string = "v2"
 	InstallableServicesItemsDir           string = InfiniteOsMainDir + "/services"
 	InstallableServicesItemsRepoUrl       string = "https://github.com/goinfinite/os-services"
-	InstallableServicesItemsRepoBranch    string = "v1"
+	InstallableServicesItemsRepoBranch    string = "v2"
 	ApplicationRootDir                    string = "/app"
 	VirtualHostsConfDir                   string = ApplicationRootDir + "/conf/nginx"
 	PrimaryVirtualHostEnvKey              string = "PRIMARY_VHOST"
