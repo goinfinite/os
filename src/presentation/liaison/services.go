@@ -4,19 +4,19 @@ import (
 	"strconv"
 	"strings"
 
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type ServicesLiaison struct {
@@ -245,6 +245,18 @@ func (liaison *ServicesLiaison) CreateInstallable(
 		versionPtr = &version
 	}
 
+	var startCmdPtr *tkValueObject.UnixCommand
+	if untrustedInput["startCmd"] != nil {
+		startCmd, err := tkValueObject.NewUnixCommand(untrustedInput["startCmd"])
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
+		}
+		startCmdPtr = &startCmd
+	}
+
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["startupFile"] != nil {
 		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["startupFile"], false)
@@ -439,12 +451,19 @@ func (liaison *ServicesLiaison) CreateInstallable(
 			installParams = append(installParams, "--version", versionPtr.String())
 		}
 
+		if startCmdPtr != nil {
+			escapedStartCmd := tkInfra.ShellEscape{}.Quote(startCmdPtr.String())
+			installParams = append(installParams, "--start-command", escapedStartCmd)
+		}
+
 		if startupFilePtr != nil {
-			installParams = append(installParams, "--startup-file", startupFilePtr.String())
+			escapedStartupFile := tkInfra.ShellEscape{}.Quote(startupFilePtr.String())
+			installParams = append(installParams, "--startup-file", escapedStartupFile)
 		}
 
 		if workingDirPtr != nil {
-			installParams = append(installParams, "--working-dir", workingDirPtr.String())
+			escapedWorkingDir := tkInfra.ShellEscape{}.Quote(workingDirPtr.String())
+			installParams = append(installParams, "--working-dir", escapedWorkingDir)
 		}
 
 		if autoStartPtr != nil {
@@ -511,7 +530,8 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	}
 
 	createDto := dto.NewCreateInstallableService(
-		name, envs, portBindings, versionPtr, startupFilePtr, workingDirPtr,
+		name, envs, portBindings, versionPtr, startCmdPtr, startupFilePtr,
+		workingDirPtr,
 		autoStartPtr, timeoutStartSecsPtr, autoRestartPtr, maxStartRetriesPtr,
 		&autoCreateMapping, mappingHostnamePtr, mappingPathPtr,
 		mappingUpgradeInsecureRequestsPtr, operatorAccountId, operatorIpAddress,
@@ -594,6 +614,20 @@ func (liaison *ServicesLiaison) CreateCustom(
 			)
 		}
 		execUserPtr = &execUser
+	}
+
+	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
+	if untrustedInput["workingDirectory"] != nil {
+		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
+			untrustedInput["workingDirectory"], false,
+		)
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
+		}
+		workingDirectoryPtr = &workingDirectory
 	}
 
 	envs := []valueObject.ServiceEnv{}
@@ -779,7 +813,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 
 	createCustomDto := dto.NewCreateCustomService(
 		name, svcType, startCmd, envs, portBindings, nil, nil, nil, nil, nil,
-		versionPtr, execUserPtr, nil, autoStartPtr, autoRestartPtr,
+		versionPtr, execUserPtr, workingDirectoryPtr, autoStartPtr, autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
 		avatarUrlPtr, &autoCreateMapping, mappingHostnamePtr, mappingPathPtr,
 		mappingUpgradeInsecureRequestsPtr, operatorAccountId, operatorIpAddress,

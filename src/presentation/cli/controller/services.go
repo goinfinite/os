@@ -192,7 +192,8 @@ func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 
 func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	var (
-		nameStr, versionStr, startupFileStr, workingDirStr, autoStartBoolStr,
+		nameStr, versionStr, startCmdStr, startupFileStr,
+		workingDirStr, autoStartBoolStr,
 		autoRestartBoolStr, autoCreateMappingBoolStr, mappingHostname, mappingPath,
 		mappingUpgradeInsecureRequestsBoolStr string
 		envsSlice, portBindingsSlice            []string
@@ -218,6 +219,9 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			}
 			if versionStr != "" {
 				requestBody["version"] = versionStr
+			}
+			if startCmdStr != "" {
+				requestBody["startCmd"] = startCmdStr
 			}
 			if startupFileStr != "" {
 				requestBody["startupFile"] = startupFileStr
@@ -255,6 +259,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
 	)
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
+	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
 	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDir")
 	cmd.Flags().StringSliceVarP(
@@ -293,7 +298,8 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 func (controller *ServicesController) CreateCustom() *cobra.Command {
 	var (
-		nameStr, typeStr, startCmdStr, versionStr, autoStartBoolStr, autoRestartBoolStr,
+		nameStr, typeStr, startCmdStr, versionStr, workingDirStr, autoStartBoolStr,
+		autoRestartBoolStr,
 		autoCreateMappingBoolStr, mappingHostname, mappingPath,
 		mappingUpgradeInsecureRequestsBoolStr string
 		envsSlice, portBindingsSlice            []string
@@ -321,6 +327,9 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			}
 			if versionStr != "" {
 				requestBody["version"] = versionStr
+			}
+			if workingDirStr != "" {
+				requestBody["workingDirectory"] = workingDirStr
 			}
 			if len(portBindingsSlice) > 0 {
 				requestBody["portBindings"] = tkPresentation.StringSliceValueObjectParser(
@@ -354,6 +363,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	cmd.MarkFlagRequired("type")
 	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.MarkFlagRequired("start-command")
+	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDir")
 	cmd.Flags().StringSliceVarP(
 		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
 	)

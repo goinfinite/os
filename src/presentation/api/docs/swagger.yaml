@@ -147,6 +147,8 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      startCmd:
+        type: string
       startupFile:
         type: string
       timeoutStartSecs:

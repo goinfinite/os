@@ -3135,6 +3135,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "startCmd": {
+                    "type": "string"
+                },
                 "startupFile": {
                     "type": "string"
                 },

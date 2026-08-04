@@ -285,6 +285,7 @@ supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
 {{ range . }}
 [program:{{.Name}}]
 command={{.StartCmd}}
+stopasgroup=true
 user={{ or .ExecUser "root" }}
 {{- if .WorkingDirectory}}
 directory={{.WorkingDirectory}}
@@ -548,7 +549,11 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		}
 	}
 
-	startCmdSteps := []tkValueObject.UnixCommand{installableServiceEntity.StartCmd}
+	startCommand := installableServiceEntity.StartCmd
+	if createDto.StartCmd != nil {
+		startCommand = *createDto.StartCmd
+	}
+	startCmdSteps := []tkValueObject.UnixCommand{startCommand}
 	usableCmdSteps := map[string][]tkValueObject.UnixCommand{
 		"start":     startCmdSteps,
 		"stop":      installableServiceEntity.StopCmdSteps,

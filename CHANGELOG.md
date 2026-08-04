@@ -2,6 +2,8 @@
 
 ```log
 0.3.3 - 2026/08/04
+feat(services): support custom start commands and working directories (Issue #274)
+fix(services): stop process groups and use suffixed service directories (Issues #293, #297)
 fix: use debian slim trixie as base img
 fix: ignore logfile when redirected to /dev
 chore: bump version
