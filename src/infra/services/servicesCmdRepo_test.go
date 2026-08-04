@@ -1,6 +1,7 @@
 package servicesInfra
 
 import (
+	"strings"
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
@@ -42,4 +43,28 @@ func TestServiceCmdRepo(t *testing.T) {
 			return
 		}
 	})
+}
+
+func TestServicesCmdRepoExecGroupExistence(t *testing.T) {
+	serviceName, err := valueObject.NewServiceName("test-service")
+	if err != nil {
+		t.Fatalf("NewServiceNameShouldSucceed: %v", err)
+	}
+
+	noGroupName, err := tkValueObject.NewUnixGroupName(
+		"goinfinite_no_such_group_293",
+	)
+	if err != nil {
+		t.Fatalf("NewGroupNameShouldSucceed: %v", err)
+	}
+
+	err = (&ServicesCmdRepo{}).updateDefaultDirectoriesPermissions(
+		serviceName, nil, &noGroupName,
+	)
+	if err == nil {
+		t.Fatal("MissingExecGroupShouldFail")
+	}
+	if !strings.Contains(err.Error(), "EnsureExecGroupExistenceError") {
+		t.Fatalf("UnexpectedExecGroupError: %v", err)
+	}
 }

@@ -2991,6 +2991,9 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "execGroup": {
+                    "type": "string"
+                },
                 "execUser": {
                     "type": "string"
                 },
@@ -3363,6 +3366,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "execGroup": {
+                    "type": "string"
                 },
                 "execUser": {
                     "type": "string"
@@ -4083,6 +4089,9 @@ const docTemplate = `{
                 "estimatedSizeBytes": {
                     "type": "integer"
                 },
+                "execGroup": {
+                    "type": "string"
+                },
                 "execUser": {
                     "type": "string"
                 },
@@ -4147,6 +4156,9 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "execGroup": {
+                    "type": "string"
                 },
                 "execUser": {
                     "type": "string"

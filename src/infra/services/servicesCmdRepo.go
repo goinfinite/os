@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	osUser "os/user"
 	"strconv"
 	"strings"
 	"text/template"
@@ -287,6 +288,9 @@ supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
 command={{.StartCmd}}
 stopasgroup=true
 user={{ or .ExecUser "root" }}
+{{- if .ExecGroup}}
+group={{.ExecGroup}}
+{{- end}}
 {{- if .WorkingDirectory}}
 directory={{.WorkingDirectory}}
 {{- end}}
@@ -384,24 +388,57 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 	return nil
 }
 
-func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
-	serviceName valueObject.ServiceName, execUser tkValueObject.UnixUsername,
+func execGroupExistenceValidator(
+	execGroup *tkValueObject.UnixGroupName,
 ) error {
-	execUserStr := execUser.String()
-	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "id",
-		Args:    []string{execUserStr},
-	}).Run()
+	if execGroup == nil {
+		return nil
+	}
+
+	_, err := osUser.LookupGroup(execGroup.String())
 	if err != nil {
-		return errors.New("EnsureExecUserExistenceError: " + err.Error())
+		return errors.New("EnsureExecGroupExistenceError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
+	serviceName valueObject.ServiceName,
+	execUser *tkValueObject.UnixUsername,
+	execGroup *tkValueObject.UnixGroupName,
+) error {
+	if execUser == nil && execGroup == nil {
+		return nil
+	}
+
+	ownershipSpec := "root"
+	if execUser != nil {
+		execUserStr := execUser.String()
+		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+			Command: "id",
+			Args:    []string{execUserStr},
+		}).Run()
+		if err != nil {
+			return errors.New("EnsureExecUserExistenceError: " + err.Error())
+		}
+		ownershipSpec = execUserStr
+	}
+
+	err := execGroupExistenceValidator(execGroup)
+	if err != nil {
+		return err
+	}
+	if execGroup != nil {
+		ownershipSpec += ":" + execGroup.String()
 	}
 
 	for _, defaultDir := range defaultServiceDirectories {
 		defaultDirPath := "/app/" + defaultDir + "/" + serviceName.String()
 
-		_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "chown",
-			Args:    []string{"-R", execUserStr, defaultDirPath},
+			Args:    []string{"-R", ownershipSpec, defaultDirPath},
 		}).Run()
 		if err != nil {
 			return errors.New("ChownDefaultDirsError: " + err.Error())
@@ -540,9 +577,13 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	if installableServiceEntity.ExecUser != nil {
+	shouldUpdateDefaultDirectoriesPermissions :=
+		installableServiceEntity.ExecUser != nil ||
+			installableServiceEntity.ExecGroup != nil
+	if shouldUpdateDefaultDirectoriesPermissions {
 		err = repo.updateDefaultDirectoriesPermissions(
-			installedServiceName, *installableServiceEntity.ExecUser,
+			installedServiceName, installableServiceEntity.ExecUser,
+			installableServiceEntity.ExecGroup,
 		)
 		if err != nil {
 			return installedServiceName, err
@@ -586,7 +627,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installableServiceEntity.Type.String(), serviceVersion.String(),
 		usableStartCmd.String(), createDto.Envs, createDto.PortBindings,
 		usableCmdSteps["stop"], usableCmdSteps["preStart"], usableCmdSteps["postStart"],
-		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil,
+		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil, nil,
 		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
 		createDto.MaxStartRetries, nil, nil, nil,
 	)
@@ -594,6 +635,11 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	if installableServiceEntity.ExecUser != nil {
 		execUserStr := installableServiceEntity.ExecUser.String()
 		installedServiceModel.ExecUser = &execUserStr
+	}
+
+	if installableServiceEntity.ExecGroup != nil {
+		execGroupStr := installableServiceEntity.ExecGroup.String()
+		installedServiceModel.ExecGroup = &execGroupStr
 	}
 
 	if installableServiceEntity.WorkingDirectory != nil {
@@ -640,13 +686,17 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) error {
 	customNature, _ := valueObject.NewServiceNature("custom")
+	err := execGroupExistenceValidator(createDto.ExecGroup)
+	if err != nil {
+		return err
+	}
 
 	installedServiceModel := dbModel.NewInstalledService(
 		createDto.Name.String(), customNature.String(), createDto.Type.String(),
 		createDto.Version.String(), createDto.StartCmd.String(),
 		createDto.Envs, createDto.PortBindings, createDto.StopCmdSteps,
 		createDto.PreStartCmdSteps, createDto.PostStartCmdSteps,
-		createDto.PreStopCmdSteps, createDto.PostStopCmdSteps, nil, nil, nil,
+		createDto.PreStopCmdSteps, createDto.PostStopCmdSteps, nil, nil, nil, nil,
 		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
 		createDto.MaxStartRetries, nil, nil, nil,
 	)
@@ -654,6 +704,11 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 	if createDto.ExecUser != nil {
 		execUserStr := createDto.ExecUser.String()
 		installedServiceModel.ExecUser = &execUserStr
+	}
+
+	if createDto.ExecGroup != nil {
+		execGroupStr := createDto.ExecGroup.String()
+		installedServiceModel.ExecGroup = &execGroupStr
 	}
 
 	if createDto.WorkingDirectory != nil {
@@ -676,7 +731,7 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		installedServiceModel.AvatarUrl = &avatarUrlStr
 	}
 
-	err := repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
+	err = repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
 	if err != nil {
 		return err
 	}
@@ -686,9 +741,11 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		return err
 	}
 
-	if createDto.ExecUser != nil {
+	shouldUpdateDefaultDirectoriesPermissions :=
+		createDto.ExecUser != nil || createDto.ExecGroup != nil
+	if shouldUpdateDefaultDirectoriesPermissions {
 		err = repo.updateDefaultDirectoriesPermissions(
-			createDto.Name, *createDto.ExecUser,
+			createDto.Name, createDto.ExecUser, createDto.ExecGroup,
 		)
 		if err != nil {
 			return err

@@ -616,6 +616,18 @@ func (liaison *ServicesLiaison) CreateCustom(
 		execUserPtr = &execUser
 	}
 
+	var execGroupPtr *tkValueObject.UnixGroupName
+	if untrustedInput["execGroup"] != nil {
+		execGroup, err := tkValueObject.NewUnixGroupName(untrustedInput["execGroup"])
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
+		}
+		execGroupPtr = &execGroup
+	}
+
 	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["workingDirectory"] != nil {
 		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
@@ -813,7 +825,8 @@ func (liaison *ServicesLiaison) CreateCustom(
 
 	createCustomDto := dto.NewCreateCustomService(
 		name, svcType, startCmd, envs, portBindings, nil, nil, nil, nil, nil,
-		versionPtr, execUserPtr, workingDirectoryPtr, autoStartPtr, autoRestartPtr,
+		versionPtr, execUserPtr, execGroupPtr, workingDirectoryPtr, autoStartPtr,
+		autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
 		avatarUrlPtr, &autoCreateMapping, mappingHostnamePtr, mappingPathPtr,
 		mappingUpgradeInsecureRequestsPtr, operatorAccountId, operatorIpAddress,

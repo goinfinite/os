@@ -6,37 +6,38 @@ import (
 )
 
 type InstallableService struct {
-	ManifestVersion      valueObject.ServiceManifestVersion    `json:"manifestVersion"`
-	Name                 valueObject.ServiceName               `json:"name"`
-	Nature               valueObject.ServiceNature             `json:"nature"`
-	Type                 valueObject.ServiceType               `json:"type"`
-	StartCmd             tkValueObject.UnixCommand             `json:"startCmd"`
-	Description          valueObject.ServiceDescription        `json:"description"`
-	Versions             []valueObject.ServiceVersion          `json:"versions"`
-	Envs                 []valueObject.ServiceEnv              `json:"envs"`
-	PortBindings         []valueObject.PortBinding             `json:"portBindings"`
-	StopTimeoutSecs      tkValueObject.UnixTime                `json:"-"`
-	StopCmdSteps         []tkValueObject.UnixCommand           `json:"-"`
-	InstallTimeoutSecs   tkValueObject.UnixTime                `json:"-"`
-	InstallCmdSteps      []tkValueObject.UnixCommand           `json:"-"`
-	UninstallTimeoutSecs tkValueObject.UnixTime                `json:"-"`
-	UninstallCmdSteps    []tkValueObject.UnixCommand           `json:"-"`
-	UninstallFilePaths   []tkValueObject.UnixAbsoluteFilePath  `json:"-"`
-	PreStartTimeoutSecs  tkValueObject.UnixTime                `json:"-"`
-	PreStartCmdSteps     []tkValueObject.UnixCommand           `json:"-"`
-	PostStartTimeoutSecs tkValueObject.UnixTime                `json:"-"`
-	PostStartCmdSteps    []tkValueObject.UnixCommand           `json:"-"`
-	PreStopTimeoutSecs   tkValueObject.UnixTime                `json:"-"`
-	PreStopCmdSteps      []tkValueObject.UnixCommand           `json:"-"`
-	PostStopTimeoutSecs  tkValueObject.UnixTime                `json:"-"`
-	PostStopCmdSteps     []tkValueObject.UnixCommand           `json:"-"`
-	ExecUser             *tkValueObject.UnixUsername            `json:"execUser"`
-	WorkingDirectory     *tkValueObject.UnixAbsoluteFilePath   `json:"workingDirectory"`
-	StartupFile          *tkValueObject.UnixAbsoluteFilePath   `json:"startupFile"`
-	LogOutputPath        *tkValueObject.UnixAbsoluteFilePath   `json:"logOutputPath"`
-	LogErrorPath         *tkValueObject.UnixAbsoluteFilePath   `json:"logErrorPath"`
-	AvatarUrl            *tkValueObject.Url                    `json:"avatarUrl"`
-	EstimatedSizeBytes   *tkValueObject.Byte                   `json:"estimatedSizeBytes"`
+	ManifestVersion      valueObject.ServiceManifestVersion   `json:"manifestVersion"`
+	Name                 valueObject.ServiceName              `json:"name"`
+	Nature               valueObject.ServiceNature            `json:"nature"`
+	Type                 valueObject.ServiceType              `json:"type"`
+	StartCmd             tkValueObject.UnixCommand            `json:"startCmd"`
+	Description          valueObject.ServiceDescription       `json:"description"`
+	Versions             []valueObject.ServiceVersion         `json:"versions"`
+	Envs                 []valueObject.ServiceEnv             `json:"envs"`
+	PortBindings         []valueObject.PortBinding            `json:"portBindings"`
+	StopTimeoutSecs      tkValueObject.UnixTime               `json:"-"`
+	StopCmdSteps         []tkValueObject.UnixCommand          `json:"-"`
+	InstallTimeoutSecs   tkValueObject.UnixTime               `json:"-"`
+	InstallCmdSteps      []tkValueObject.UnixCommand          `json:"-"`
+	UninstallTimeoutSecs tkValueObject.UnixTime               `json:"-"`
+	UninstallCmdSteps    []tkValueObject.UnixCommand          `json:"-"`
+	UninstallFilePaths   []tkValueObject.UnixAbsoluteFilePath `json:"-"`
+	PreStartTimeoutSecs  tkValueObject.UnixTime               `json:"-"`
+	PreStartCmdSteps     []tkValueObject.UnixCommand          `json:"-"`
+	PostStartTimeoutSecs tkValueObject.UnixTime               `json:"-"`
+	PostStartCmdSteps    []tkValueObject.UnixCommand          `json:"-"`
+	PreStopTimeoutSecs   tkValueObject.UnixTime               `json:"-"`
+	PreStopCmdSteps      []tkValueObject.UnixCommand          `json:"-"`
+	PostStopTimeoutSecs  tkValueObject.UnixTime               `json:"-"`
+	PostStopCmdSteps     []tkValueObject.UnixCommand          `json:"-"`
+	ExecUser             *tkValueObject.UnixUsername          `json:"execUser"`
+	ExecGroup            *tkValueObject.UnixGroupName         `json:"execGroup"`
+	WorkingDirectory     *tkValueObject.UnixAbsoluteFilePath  `json:"workingDirectory"`
+	StartupFile          *tkValueObject.UnixAbsoluteFilePath  `json:"startupFile"`
+	LogOutputPath        *tkValueObject.UnixAbsoluteFilePath  `json:"logOutputPath"`
+	LogErrorPath         *tkValueObject.UnixAbsoluteFilePath  `json:"logErrorPath"`
+	AvatarUrl            *tkValueObject.Url                   `json:"avatarUrl"`
+	EstimatedSizeBytes   *tkValueObject.Byte                  `json:"estimatedSizeBytes"`
 }
 
 func NewInstallableService(
@@ -65,6 +66,7 @@ func NewInstallableService(
 	postStopTimeoutSecs tkValueObject.UnixTime,
 	postStopSteps []tkValueObject.UnixCommand,
 	execUser *tkValueObject.UnixUsername,
+	execGroup *tkValueObject.UnixGroupName,
 	workingDirectory, startupFile, logOutputPath, logErrorPath *tkValueObject.UnixAbsoluteFilePath,
 	avatarUrl *tkValueObject.Url,
 	estimatedSizeBytes *tkValueObject.Byte,
@@ -95,6 +97,7 @@ func NewInstallableService(
 		PostStopTimeoutSecs:  postStopTimeoutSecs,
 		PostStopCmdSteps:     postStopSteps,
 		ExecUser:             execUser,
+		ExecGroup:            execGroup,
 		WorkingDirectory:     workingDirectory,
 		StartupFile:          startupFile,
 		LogOutputPath:        logOutputPath,

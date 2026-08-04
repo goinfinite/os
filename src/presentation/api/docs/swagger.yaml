@@ -52,6 +52,8 @@ definitions:
         items:
           type: string
         type: array
+      execGroup:
+        type: string
       execUser:
         type: string
       logErrorPath:
@@ -296,6 +298,8 @@ definitions:
         items:
           type: string
         type: array
+      execGroup:
+        type: string
       execUser:
         type: string
       logErrorPath:
@@ -765,6 +769,8 @@ definitions:
         type: array
       estimatedSizeBytes:
         type: integer
+      execGroup:
+        type: string
       execUser:
         type: string
       logErrorPath:
@@ -808,6 +814,8 @@ definitions:
         items:
           type: string
         type: array
+      execGroup:
+        type: string
       execUser:
         type: string
       logErrorPath:
