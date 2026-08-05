@@ -91,7 +91,7 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 					<th scope="col" class="w-[15%]">Created At</th>
 					<th scope="col" class="w-[20%]">
 						@componentForm.SubmitButton(
-							"", "Install catalog item", "ph-arrow-line-down",
+							"", "install catalog item", "ph-arrow-line-down",
 							"openMarketplaceItemInstallationModal()", false,
 						)
 					</th>
@@ -290,7 +290,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 			</template>
 		</div>
 		@componentForm.SubmitButton(
-			"install-marketplace-item-button", "Schedule installation",
+			"install-marketplace-item-button", "schedule installation",
 			"ph-queue", "closeMarketplaceItemInstallationModal()", false,
 		)
 	</form>
@@ -426,7 +426,7 @@ templ InstalledServicesItemsTable(
 						<th scope="col">Port Bindings</th>
 						<th scope="col" class="w-[20%]">
 							@componentForm.SubmitButton(
-								"", "Install service", "ph-arrow-line-down",
+								"", "install service", "ph-arrow-line-down",
 								"openServiceInstallationModal()", false,
 							)
 						</th>
@@ -615,6 +615,32 @@ func transformInstallableServicesIntoCarouselItems(
 	return carouselItems
 }
 
+templ ServiceAutomaticSettings() {
+	<div class="grid grid-cols-3 place-items-center gap-2">
+		@uiForm.ToggleSwitch(uiForm.ToggleSwitchSettings{
+			Label:                       "Auto Restart",
+			TwoWayStatePath:             "service.autoRestart",
+			InputName:                   "autoRestart",
+			TrackBackgroundColor:        "os-100",
+			TrackCheckedBackgroundColor: "infinite-500",
+		})
+		@uiForm.ToggleSwitch(uiForm.ToggleSwitchSettings{
+			Label:                       "Auto Start",
+			TwoWayStatePath:             "service.autoStart",
+			InputName:                   "autoStart",
+			TrackBackgroundColor:        "os-100",
+			TrackCheckedBackgroundColor: "infinite-500",
+		})
+		@uiForm.ToggleSwitch(uiForm.ToggleSwitchSettings{
+			Label:                       "Auto Create Mapping",
+			TwoWayStatePath:             "service.autoCreateMapping",
+			InputName:                   "autoCreateMapping",
+			TrackBackgroundColor:        "os-100",
+			TrackCheckedBackgroundColor: "infinite-500",
+		})
+	</div>
+}
+
 templ InstallableServiceAdvancedSettings(
 	installableServices *InstallableServicesGroupedByType,
 ) {
@@ -639,20 +665,7 @@ templ InstallableServiceAdvancedSettings(
 						InputNumberMin:  "0",
 					})
 				</div>
-				<div class="grid grid-cols-3 place-items-center gap-2">
-					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-						Label:         "Auto Restart",
-						BindModelPath: "service.autoRestart",
-					})
-					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-						Label:         "Auto Start",
-						BindModelPath: "service.autoStart",
-					})
-					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-						Label:         "Auto Create Mapping",
-						BindModelPath: "service.autoCreateMapping",
-					})
-				</div>
+				@ServiceAutomaticSettings()
 			</div>
 		</template>
 		@componentForm.MultiColumnRepeatableFieldset(
@@ -772,20 +785,22 @@ templ CustomServiceAdvancedSettings() {
 		})
 		<div class="grid grid-cols-2 gap-2">
 			@uiForm.InputField(uiForm.InputFieldSettings{
-				InputType:       uiForm.InputTypeText,
-				InputName:       "execUser",
-				Label:           "Exec User",
-				TwoWayStatePath: "service.execUser",
-				HintValue:       "Unix user that will be used to execute your service commands.",
-				HintDisplay:     uiForm.InputTypeHintDisplayTooltip,
+				InputType:                         uiForm.InputTypeText,
+				InputName:                         "execUser",
+				Label:                             "Exec User",
+				TwoWayStatePath:                   "service.execUser",
+				HintValue:                         "Unix user that will be used to execute your service commands.",
+				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 			@uiForm.InputField(uiForm.InputFieldSettings{
-				InputType:       uiForm.InputTypeText,
-				InputName:       "execGroup",
-				Label:           "Exec Group",
-				TwoWayStatePath: "service.execGroup",
-				HintValue:       "Unix group that will be used to execute your service commands.",
-				HintDisplay:     uiForm.InputTypeHintDisplayTooltip,
+				InputType:                         uiForm.InputTypeText,
+				InputName:                         "execGroup",
+				Label:                             "Exec Group",
+				TwoWayStatePath:                   "service.execGroup",
+				HintValue:                         "Unix group that will be used to execute your service commands.",
+				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 		</div>
 		<div class="grid grid-cols-2 gap-2">
@@ -806,36 +821,25 @@ templ CustomServiceAdvancedSettings() {
 		</div>
 		<div class="grid grid-cols-2 gap-2">
 			@uiForm.InputField(uiForm.InputFieldSettings{
-				InputType:       uiForm.InputTypeText,
-				InputName:       "logOutputPath",
-				Label:           "Log Output Path",
-				TwoWayStatePath: "service.logOutputPath",
-				HintValue:       "Path to the file that will receive the custom service output logs.",
-				HintDisplay:     uiForm.InputTypeHintDisplayTooltip,
+				InputType:                         uiForm.InputTypeText,
+				InputName:                         "logOutputPath",
+				Label:                             "Log Output Path",
+				TwoWayStatePath:                   "service.logOutputPath",
+				HintValue:                         "Path to the file that will receive the custom service output logs.",
+				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 			@uiForm.InputField(uiForm.InputFieldSettings{
-				InputType:       uiForm.InputTypeText,
-				InputName:       "logErrorPath",
-				Label:           "Log Error Path",
-				TwoWayStatePath: "service.logErrorPath",
-				HintValue:       "Path to the file that will receive the custom service error logs.",
-				HintDisplay:     uiForm.InputTypeHintDisplayTooltip,
+				InputType:                         uiForm.InputTypeText,
+				InputName:                         "logErrorPath",
+				Label:                             "Log Error Path",
+				TwoWayStatePath:                   "service.logErrorPath",
+				HintValue:                         "Path to the file that will receive the custom service error logs.",
+				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 		</div>
-		<div class="grid grid-cols-3 place-items-center gap-2">
-			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-				Label:         "Auto Restart",
-				BindModelPath: "service.autoRestart",
-			})
-			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-				Label:         "Auto Start",
-				BindModelPath: "service.autoStart",
-			})
-			@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-				Label:         "Auto Create Mapping",
-				BindModelPath: "service.autoCreateMapping",
-			})
-		</div>
+		@ServiceAutomaticSettings()
 		@componentForm.MultiColumnRepeatableFieldset(
 			"envs", "Environment Variables", "", "service.envs",
 			[]componentForm.RepeatableField{
@@ -882,12 +886,13 @@ templ CustomServiceForm(
 		<div class="flex justify-center">
 			<div class="w-2/3">
 				@uiForm.InputField(uiForm.InputFieldSettings{
-					InputType:       uiForm.InputTypeText,
-					InputName:       "startCmd",
-					Label:           "Start Command",
-					TwoWayStatePath: "service.startCmd",
-					HintValue:       `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
-					HintDisplay:     uiForm.InputTypeHintDisplayTooltip,
+					InputType:                         uiForm.InputTypeText,
+					InputName:                         "startCmd",
+					Label:                             "Start Command",
+					TwoWayStatePath:                   "service.startCmd",
+					HintValue:                         `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
+					HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+					HintDisplayTooltipBackgroundColor: "os-400",
 				})
 			</div>
 		</div>
@@ -952,7 +957,7 @@ templ ServiceInstallationModal(
 	installableServices InstallableServicesGroupedByType,
 ) {
 	@componentStructural.RegularModal(
-		"Install service", "isServiceInstallationModalOpen",
+		"Install Service", "isServiceInstallationModalOpen",
 		"closeServiceInstallationModal()", "",
 	) {
 		@ServiceInstallationForm(installableServices)
