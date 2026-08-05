@@ -388,21 +388,6 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 	return nil
 }
 
-func execGroupExistenceValidator(
-	execGroup *tkValueObject.UnixGroupName,
-) error {
-	if execGroup == nil {
-		return nil
-	}
-
-	_, err := osUser.LookupGroup(execGroup.String())
-	if err != nil {
-		return errors.New("EnsureExecGroupExistenceError: " + err.Error())
-	}
-
-	return nil
-}
-
 func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 	serviceName valueObject.ServiceName,
 	execUser *tkValueObject.UnixUsername,
@@ -425,11 +410,11 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 		ownershipSpec = execUserStr
 	}
 
-	err := execGroupExistenceValidator(execGroup)
-	if err != nil {
-		return err
-	}
 	if execGroup != nil {
+		_, err := osUser.LookupGroup(execGroup.String())
+		if err != nil {
+			return errors.New("EnsureExecGroupExistenceError: " + err.Error())
+		}
 		ownershipSpec += ":" + execGroup.String()
 	}
 
@@ -686,9 +671,11 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) error {
 	customNature, _ := valueObject.NewServiceNature("custom")
-	err := execGroupExistenceValidator(createDto.ExecGroup)
-	if err != nil {
-		return err
+	if createDto.ExecGroup != nil {
+		_, err := osUser.LookupGroup(createDto.ExecGroup.String())
+		if err != nil {
+			return errors.New("EnsureExecGroupExistenceError: " + err.Error())
+		}
 	}
 
 	installedServiceModel := dbModel.NewInstalledService(
@@ -731,7 +718,7 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		installedServiceModel.AvatarUrl = &avatarUrlStr
 	}
 
-	err = repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
+	err := repo.persistentDbSvc.Handler.Create(&installedServiceModel).Error
 	if err != nil {
 		return err
 	}

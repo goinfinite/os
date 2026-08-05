@@ -6,6 +6,7 @@ chore(services): use v2 manifests for OS v0.3.3+
 feat(services): support custom start commands and working directories (Issue #274)
 fix(services): stop process groups and use suffixed service directories (Issues #293, #297)
 feat(services): support execGroup in manifests and custom services (Issue #293)
+refactor(services): inline execGroup validation
 refactor(ui): use Infinite UI components for service forms
 refactor(ui): refine service form controls and tooltips
 fix: use debian slim trixie as base img
