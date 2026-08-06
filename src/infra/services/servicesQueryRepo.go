@@ -413,8 +413,13 @@ func (repo *ServicesQueryRepo) IsInstalled(serviceName valueObject.ServiceName) 
 }
 
 func (repo *ServicesQueryRepo) migrateLegacyManifestCmdStep(
+	stepsType serviceCmdStepType,
 	rawCmdStep any,
-) (string, error) {
+) (any, error) {
+	if stepsType != serviceCmdStepTypeInstall {
+		return rawCmdStep, nil
+	}
+
 	rawCmdStepStr, err := tkVoUtil.InterfaceToString(rawCmdStep)
 	if err != nil {
 		return "", err
@@ -435,26 +440,25 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 	if !assertOk {
 		return cmdSteps, errors.New("InvalidCmdStepsStructure")
 	}
-	stepsTypeStr := string(stepsType)
 
 	for _, rawCmd := range cmdStepsMap {
-		if stepsType == serviceCmdStepTypeInstall {
-			rawCmd, err = repo.migrateLegacyManifestCmdStep(rawCmd)
-			if err != nil {
-				slog.Debug(
-					"ParseInvalidCmdStepError",
-					slog.String("stepsType", stepsTypeStr),
-					slog.Any("rawCmd", rawCmd),
-				)
-				return cmdSteps, err
-			}
+		rawCmd, err = repo.migrateLegacyManifestCmdStep(
+			stepsType, rawCmd,
+		)
+		if err != nil {
+			slog.Debug(
+				"ParseInvalidCmdStepError",
+				slog.String("stepsType", string(stepsType)),
+				slog.Any("rawCmd", rawCmd),
+			)
+			return cmdSteps, err
 		}
 
 		command, err := tkValueObject.NewUnixCommand(rawCmd)
 		if err != nil {
 			slog.Debug(
 				"ParseInvalidCmdStepError",
-				slog.String("stepsType", stepsTypeStr),
+				slog.String("stepsType", string(stepsType)),
 				slog.Any("rawCmd", rawCmd),
 			)
 			return cmdSteps, err
