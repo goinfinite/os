@@ -73,7 +73,13 @@ templ SidebarMiddle() {
 				</a>
 			</li>
 		}
-		<li id="htmx-routing-attributes-element" class="hidden" hx-push-url="true"></li>
+		<li id="htmx-indicator-attributes-element" class="hidden" hx-indicator="#loading-overlay"></li>
+		<li
+			id="htmx-routing-attributes-element"
+			class="hidden"
+			hx-indicator="#loading-overlay"
+			hx-push-url="true"
+		></li>
 	</ul>
 }
 

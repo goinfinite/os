@@ -41,9 +41,9 @@ UiToolset.RegisterAlpineState(() => {
           "marketplace/?listType=" +
           encodeURIComponent(listType),
         {
+          source: "#htmx-indicator-attributes-element",
           select: "#marketplace-page-content",
           target: "#marketplace-page-content",
-          indicator: "#loading-overlay",
           swap: "outerHTML transition:true",
         }
       );
