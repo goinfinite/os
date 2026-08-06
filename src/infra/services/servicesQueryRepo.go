@@ -750,15 +750,6 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		execUserPtr = &execUser
 	}
 
-	var execGroupPtr *tkValueObject.UnixGroupName
-	if serviceMap["execGroup"] != nil {
-		execGroup, err := tkValueObject.NewUnixGroupName(serviceMap["execGroup"])
-		if err != nil {
-			return installableService, err
-		}
-		execGroupPtr = &execGroup
-	}
-
 	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if serviceMap["workingDirectory"] != nil {
 		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
@@ -821,7 +812,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 		installCmdSteps, uninstallTimeoutSecs, uninstallCmdSteps, uninstallFilePaths,
 		preStartTimeoutSecs, preStartCmdSteps, postStartTimeoutSecs, postStartCmdSteps,
 		preStopTimeoutSecs, preStopCmdSteps, postStopTimeoutSecs, postStopCmdSteps,
-		execUserPtr, execGroupPtr, workingDirectoryPtr, startupFilePtr, logOutputPathPtr,
+		execUserPtr, workingDirectoryPtr, startupFilePtr, logOutputPathPtr,
 		logErrorPathPtr, avatarUrlPtr, estimatedSizeBytesPtr,
 	), nil
 }

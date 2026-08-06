@@ -616,18 +616,6 @@ func (liaison *ServicesLiaison) CreateCustom(
 		execUserPtr = &execUser
 	}
 
-	var execGroupPtr *tkValueObject.UnixGroupName
-	if untrustedInput["execGroup"] != nil {
-		execGroup, err := tkValueObject.NewUnixGroupName(untrustedInput["execGroup"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-		execGroupPtr = &execGroup
-	}
-
 	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["workingDirectory"] != nil {
 		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
@@ -825,7 +813,7 @@ func (liaison *ServicesLiaison) CreateCustom(
 
 	createCustomDto := dto.NewCreateCustomService(
 		name, svcType, startCmd, envs, portBindings, nil, nil, nil, nil, nil,
-		versionPtr, execUserPtr, execGroupPtr, workingDirectoryPtr, autoStartPtr,
+		versionPtr, execUserPtr, workingDirectoryPtr, autoStartPtr,
 		autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
 		avatarUrlPtr, &autoCreateMapping, mappingHostnamePtr, mappingPathPtr,
@@ -939,6 +927,20 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) tkPresenta
 			)
 		}
 		portBindings = parsedPortBindings
+	}
+
+	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
+	if untrustedInput["workingDirectory"] != nil {
+		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
+			untrustedInput["workingDirectory"], false,
+		)
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
+		}
+		workingDirectoryPtr = &workingDirectory
 	}
 
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
@@ -1061,7 +1063,8 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) tkPresenta
 
 	updateDto := dto.NewUpdateService(
 		name, typePtr, versionPtr, statusPtr, startCmdPtr, envs, portBindings, nil,
-		nil, nil, nil, nil, nil, nil, startupFilePtr, autoStartPtr, autoRestartPtr,
+		nil, nil, nil, nil, nil, workingDirectoryPtr, startupFilePtr,
+		autoStartPtr, autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
 		avatarUrlPtr, operatorAccountId, operatorIpAddress,
 	)

@@ -2985,9 +2985,6 @@
                         "type": "string"
                     }
                 },
-                "execGroup": {
-                    "type": "string"
-                },
                 "execUser": {
                     "type": "string"
                 },
@@ -3360,9 +3357,6 @@
                     "items": {
                         "type": "string"
                     }
-                },
-                "execGroup": {
-                    "type": "string"
                 },
                 "execUser": {
                     "type": "string"
@@ -4083,9 +4077,6 @@
                 "estimatedSizeBytes": {
                     "type": "integer"
                 },
-                "execGroup": {
-                    "type": "string"
-                },
                 "execUser": {
                     "type": "string"
                 },
@@ -4150,9 +4141,6 @@
                     "items": {
                         "type": "string"
                     }
-                },
-                "execGroup": {
-                    "type": "string"
                 },
                 "execUser": {
                     "type": "string"

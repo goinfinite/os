@@ -299,7 +299,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 func (controller *ServicesController) CreateCustom() *cobra.Command {
 	var (
 		nameStr, typeStr, startCmdStr, versionStr, workingDirStr, execUserStr,
-		execGroupStr, autoStartBoolStr,
+		autoStartBoolStr,
 		autoRestartBoolStr,
 		autoCreateMappingBoolStr, mappingHostname, mappingPath,
 		mappingUpgradeInsecureRequestsBoolStr string
@@ -335,9 +335,6 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			if execUserStr != "" {
 				requestBody["execUser"] = execUserStr
 			}
-			if execGroupStr != "" {
-				requestBody["execGroup"] = execGroupStr
-			}
 			if len(portBindingsSlice) > 0 {
 				requestBody["portBindings"] = tkPresentation.StringSliceValueObjectParser(
 					portBindingsSlice, valueObject.NewPortBinding,
@@ -372,7 +369,6 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	cmd.MarkFlagRequired("start-command")
 	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDir")
 	cmd.Flags().StringVarP(&execUserStr, "exec-user", "U", "", "ExecUser")
-	cmd.Flags().StringVarP(&execGroupStr, "exec-group", "G", "", "ExecGroup")
 	cmd.Flags().StringSliceVarP(
 		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
 	)

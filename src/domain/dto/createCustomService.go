@@ -18,7 +18,6 @@ type CreateCustomService struct {
 	PostStopCmdSteps               []tkValueObject.UnixCommand         `json:"postStopCmdSteps"`
 	Version                        *valueObject.ServiceVersion         `json:"version"`
 	ExecUser                       *tkValueObject.UnixUsername         `json:"execUser"`
-	ExecGroup                      *tkValueObject.UnixGroupName        `json:"execGroup"`
 	WorkingDirectory               *tkValueObject.UnixAbsoluteFilePath `json:"workingDirectory"`
 	AutoStart                      *bool                               `json:"autoStart"`
 	AutoRestart                    *bool                               `json:"autoRestart"`
@@ -44,7 +43,6 @@ func NewCreateCustomService(
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []tkValueObject.UnixCommand,
 	version *valueObject.ServiceVersion,
 	execUser *tkValueObject.UnixUsername,
-	execGroup *tkValueObject.UnixGroupName,
 	workingDirectory *tkValueObject.UnixAbsoluteFilePath,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
@@ -70,7 +68,6 @@ func NewCreateCustomService(
 		PostStopCmdSteps:               postStopSteps,
 		Version:                        version,
 		ExecUser:                       execUser,
-		ExecGroup:                      execGroup,
 		WorkingDirectory:               workingDirectory,
 		AutoStart:                      autoStart,
 		TimeoutStartSecs:               timeoutStartSecs,

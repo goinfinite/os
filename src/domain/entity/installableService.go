@@ -31,7 +31,6 @@ type InstallableService struct {
 	PostStopTimeoutSecs  tkValueObject.UnixTime               `json:"-"`
 	PostStopCmdSteps     []tkValueObject.UnixCommand          `json:"-"`
 	ExecUser             *tkValueObject.UnixUsername          `json:"execUser"`
-	ExecGroup            *tkValueObject.UnixGroupName         `json:"execGroup"`
 	WorkingDirectory     *tkValueObject.UnixAbsoluteFilePath  `json:"workingDirectory"`
 	StartupFile          *tkValueObject.UnixAbsoluteFilePath  `json:"startupFile"`
 	LogOutputPath        *tkValueObject.UnixAbsoluteFilePath  `json:"logOutputPath"`
@@ -66,7 +65,6 @@ func NewInstallableService(
 	postStopTimeoutSecs tkValueObject.UnixTime,
 	postStopSteps []tkValueObject.UnixCommand,
 	execUser *tkValueObject.UnixUsername,
-	execGroup *tkValueObject.UnixGroupName,
 	workingDirectory, startupFile, logOutputPath, logErrorPath *tkValueObject.UnixAbsoluteFilePath,
 	avatarUrl *tkValueObject.Url,
 	estimatedSizeBytes *tkValueObject.Byte,
@@ -97,7 +95,6 @@ func NewInstallableService(
 		PostStopTimeoutSecs:  postStopTimeoutSecs,
 		PostStopCmdSteps:     postStopSteps,
 		ExecUser:             execUser,
-		ExecGroup:            execGroup,
 		WorkingDirectory:     workingDirectory,
 		StartupFile:          startupFile,
 		LogOutputPath:        logOutputPath,

@@ -783,22 +783,19 @@ templ CustomServiceAdvancedSettings() {
 			Label:           "Avatar URL",
 			TwoWayStatePath: "service.avatarUrl",
 		})
-		<div class="grid grid-cols-2 gap-2">
+		@uiForm.InputField(uiForm.InputFieldSettings{
+			InputType:       uiForm.InputTypeText,
+			InputName:       "workingDirectory",
+			Label:           "Working Directory",
+			TwoWayStatePath: "service.workingDirectory",
+		})
+		<div class="grid grid-cols-1 gap-2">
 			@uiForm.InputField(uiForm.InputFieldSettings{
 				InputType:                         uiForm.InputTypeText,
 				InputName:                         "execUser",
 				Label:                             "Exec User",
 				TwoWayStatePath:                   "service.execUser",
 				HintValue:                         "Unix user that will be used to execute your service commands.",
-				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
-				HintDisplayTooltipBackgroundColor: "os-400",
-			})
-			@uiForm.InputField(uiForm.InputFieldSettings{
-				InputType:                         uiForm.InputTypeText,
-				InputName:                         "execGroup",
-				Label:                             "Exec Group",
-				TwoWayStatePath:                   "service.execGroup",
-				HintValue:                         "Unix group that will be used to execute your service commands.",
 				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
 				HintDisplayTooltipBackgroundColor: "os-400",
 			})

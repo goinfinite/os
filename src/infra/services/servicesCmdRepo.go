@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
-	osUser "os/user"
 	"strconv"
 	"strings"
 	"text/template"
@@ -288,9 +287,6 @@ supervisor.rpcinterface_factory=supervisor.rpcinterface:make_main_rpcinterface
 command={{.StartCmd}}
 stopasgroup=true
 user={{ or .ExecUser "root" }}
-{{- if .ExecGroup}}
-group={{.ExecGroup}}
-{{- end}}
 {{- if .WorkingDirectory}}
 directory={{.WorkingDirectory}}
 {{- end}}
@@ -391,31 +387,18 @@ func (repo *ServicesCmdRepo) createDefaultDirectories(
 func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 	serviceName valueObject.ServiceName,
 	execUser *tkValueObject.UnixUsername,
-	execGroup *tkValueObject.UnixGroupName,
 ) error {
-	if execUser == nil && execGroup == nil {
+	if execUser == nil {
 		return nil
 	}
 
-	ownershipSpec := "root"
-	if execUser != nil {
-		execUserStr := execUser.String()
-		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
-			Command: "id",
-			Args:    []string{execUserStr},
-		}).Run()
-		if err != nil {
-			return errors.New("EnsureExecUserExistenceError: " + err.Error())
-		}
-		ownershipSpec = execUserStr
-	}
-
-	if execGroup != nil {
-		_, err := osUser.LookupGroup(execGroup.String())
-		if err != nil {
-			return errors.New("EnsureExecGroupExistenceError: " + err.Error())
-		}
-		ownershipSpec += ":" + execGroup.String()
+	execUserStr := execUser.String()
+	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: "id",
+		Args:    []string{execUserStr},
+	}).Run()
+	if err != nil {
+		return errors.New("EnsureExecUserExistenceError: " + err.Error())
 	}
 
 	for _, defaultDir := range defaultServiceDirectories {
@@ -423,7 +406,7 @@ func (repo *ServicesCmdRepo) updateDefaultDirectoriesPermissions(
 
 		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "chown",
-			Args:    []string{"-R", ownershipSpec, defaultDirPath},
+			Args:    []string{"-R", execUserStr, defaultDirPath},
 		}).Run()
 		if err != nil {
 			return errors.New("ChownDefaultDirsError: " + err.Error())
@@ -562,13 +545,10 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		return installedServiceName, err
 	}
 
-	shouldUpdateDefaultDirectoriesPermissions :=
-		installableServiceEntity.ExecUser != nil ||
-			installableServiceEntity.ExecGroup != nil
+	shouldUpdateDefaultDirectoriesPermissions := installableServiceEntity.ExecUser != nil
 	if shouldUpdateDefaultDirectoriesPermissions {
 		err = repo.updateDefaultDirectoriesPermissions(
 			installedServiceName, installableServiceEntity.ExecUser,
-			installableServiceEntity.ExecGroup,
 		)
 		if err != nil {
 			return installedServiceName, err
@@ -612,7 +592,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 		installableServiceEntity.Type.String(), serviceVersion.String(),
 		usableStartCmd.String(), createDto.Envs, createDto.PortBindings,
 		usableCmdSteps["stop"], usableCmdSteps["preStart"], usableCmdSteps["postStart"],
-		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil, nil,
+		usableCmdSteps["preStop"], usableCmdSteps["postStop"], nil, nil, nil,
 		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
 		createDto.MaxStartRetries, nil, nil, nil,
 	)
@@ -620,11 +600,6 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 	if installableServiceEntity.ExecUser != nil {
 		execUserStr := installableServiceEntity.ExecUser.String()
 		installedServiceModel.ExecUser = &execUserStr
-	}
-
-	if installableServiceEntity.ExecGroup != nil {
-		execGroupStr := installableServiceEntity.ExecGroup.String()
-		installedServiceModel.ExecGroup = &execGroupStr
 	}
 
 	if installableServiceEntity.WorkingDirectory != nil {
@@ -671,19 +646,13 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 
 func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) error {
 	customNature, _ := valueObject.NewServiceNature("custom")
-	if createDto.ExecGroup != nil {
-		_, err := osUser.LookupGroup(createDto.ExecGroup.String())
-		if err != nil {
-			return errors.New("EnsureExecGroupExistenceError: " + err.Error())
-		}
-	}
 
 	installedServiceModel := dbModel.NewInstalledService(
 		createDto.Name.String(), customNature.String(), createDto.Type.String(),
 		createDto.Version.String(), createDto.StartCmd.String(),
 		createDto.Envs, createDto.PortBindings, createDto.StopCmdSteps,
 		createDto.PreStartCmdSteps, createDto.PostStartCmdSteps,
-		createDto.PreStopCmdSteps, createDto.PostStopCmdSteps, nil, nil, nil, nil,
+		createDto.PreStopCmdSteps, createDto.PostStopCmdSteps, nil, nil, nil,
 		createDto.AutoStart, createDto.AutoRestart, createDto.TimeoutStartSecs,
 		createDto.MaxStartRetries, nil, nil, nil,
 	)
@@ -691,11 +660,6 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 	if createDto.ExecUser != nil {
 		execUserStr := createDto.ExecUser.String()
 		installedServiceModel.ExecUser = &execUserStr
-	}
-
-	if createDto.ExecGroup != nil {
-		execGroupStr := createDto.ExecGroup.String()
-		installedServiceModel.ExecGroup = &execGroupStr
 	}
 
 	if createDto.WorkingDirectory != nil {
@@ -728,11 +692,10 @@ func (repo *ServicesCmdRepo) CreateCustom(createDto dto.CreateCustomService) err
 		return err
 	}
 
-	shouldUpdateDefaultDirectoriesPermissions :=
-		createDto.ExecUser != nil || createDto.ExecGroup != nil
+	shouldUpdateDefaultDirectoriesPermissions := createDto.ExecUser != nil
 	if shouldUpdateDefaultDirectoriesPermissions {
 		err = repo.updateDefaultDirectoriesPermissions(
-			createDto.Name, createDto.ExecUser, createDto.ExecGroup,
+			createDto.Name, createDto.ExecUser,
 		)
 		if err != nil {
 			return err
@@ -1010,6 +973,8 @@ func (repo *ServicesCmdRepo) RefreshInstallableItems() error {
 		}
 	}
 
+	// Existing checkouts retain their release-pinned branch. Switching an
+	// older checkout to a newer manifest branch can break its install logic.
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "cd " + infraEnvs.InstallableServicesItemsDir + ";" +
 			"git clean -f -d; git reset --hard HEAD; git pull",

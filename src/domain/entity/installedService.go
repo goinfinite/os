@@ -25,7 +25,6 @@ type InstalledService struct {
 	PostStopTimeoutSecs  tkValueObject.UnixTime              `json:"-"`
 	PostStopCmdSteps     []tkValueObject.UnixCommand         `json:"-"`
 	ExecUser             *tkValueObject.UnixUsername         `json:"execUser"`
-	ExecGroup            *tkValueObject.UnixGroupName        `json:"execGroup"`
 	WorkingDirectory     *tkValueObject.UnixAbsoluteFilePath `json:"workingDirectory"`
 	StartupFile          *tkValueObject.UnixAbsoluteFilePath `json:"startupFile"`
 	AutoStart            *bool                               `json:"autoStart"`
@@ -59,7 +58,6 @@ func NewInstalledService(
 	postStopTimeoutSecs tkValueObject.UnixTime,
 	postStopSteps []tkValueObject.UnixCommand,
 	execUser *tkValueObject.UnixUsername,
-	execGroup *tkValueObject.UnixGroupName,
 	workingDirectory, startupFile *tkValueObject.UnixAbsoluteFilePath,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
@@ -88,7 +86,6 @@ func NewInstalledService(
 		PostStopTimeoutSecs:  postStopTimeoutSecs,
 		PostStopCmdSteps:     postStopSteps,
 		ExecUser:             execUser,
-		ExecGroup:            execGroup,
 		WorkingDirectory:     workingDirectory,
 		StartupFile:          startupFile,
 		AutoStart:            autoStart,

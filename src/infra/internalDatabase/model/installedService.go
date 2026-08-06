@@ -30,7 +30,6 @@ type InstalledService struct {
 	PostStopTimeoutSecs  int64
 	PostStopCmdSteps     *string
 	ExecUser             *string
-	ExecGroup            *string
 	WorkingDirectory     *string
 	StartupFile          *string
 	AutoStart            *bool
@@ -177,7 +176,7 @@ func NewInstalledService(
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	stopSteps, preStartSteps, postStartSteps, preStopSteps, postStopSteps []tkValueObject.UnixCommand,
-	execUser, execGroup, workingDirectory, startupFile *string,
+	execUser, workingDirectory, startupFile *string,
 	autoStart, autoRestart *bool,
 	timeoutStartSecs, maxStartRetries *uint,
 	logOutputPath, logErrorPath *string,
@@ -239,7 +238,6 @@ func NewInstalledService(
 		PreStopCmdSteps:   preStopStepsPtr,
 		PostStopCmdSteps:  postStopStepsPtr,
 		ExecUser:          execUser,
-		ExecGroup:         execGroup,
 		WorkingDirectory:  workingDirectory,
 		StartupFile:       startupFile,
 		AutoStart:         autoStart,
@@ -349,15 +347,6 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		execUserPtr = &execUser
 	}
 
-	var execGroupPtr *tkValueObject.UnixGroupName
-	if model.ExecGroup != nil {
-		execGroup, err := tkValueObject.NewUnixGroupName(*model.ExecGroup)
-		if err != nil {
-			return serviceEntity, err
-		}
-		execGroupPtr = &execGroup
-	}
-
 	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
 	if model.WorkingDirectory != nil {
 		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(*model.WorkingDirectory, false)
@@ -427,7 +416,7 @@ func (model InstalledService) ToEntity() (serviceEntity entity.InstalledService,
 		name, nature, serviceType, version, startCmd, status, envs,
 		portBindings, stopTimeoutSecs, stopCmdSteps, preStartTimeoutSecs,
 		preStartCmdSteps, postStartTimeoutSecs, postStartCmdSteps, preStopTimeoutSecs,
-		preStopCmdSteps, postStopTimeoutSecs, postStopCmdSteps, execUserPtr, execGroupPtr,
+		preStopCmdSteps, postStopTimeoutSecs, postStopCmdSteps, execUserPtr,
 		workingDirectoryPtr, startupFilePtr, autoStart, autoRestart, timeoutStartSecs,
 		maxStartRetries, logOutputPathPtr, logErrorPathPtr, avatarUrlPtr,
 		tkValueObject.NewUnixTimeWithGoTime(model.CreatedAt),
