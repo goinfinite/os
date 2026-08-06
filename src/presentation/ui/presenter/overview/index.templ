@@ -789,7 +789,7 @@ templ CustomServiceAdvancedSettings() {
 			Label:           "Working Directory",
 			TwoWayStatePath: "service.workingDirectory",
 		})
-		<div class="grid grid-cols-1 gap-2">
+		<div class="grid grid-cols-1 gap-2 md:grid-cols-3">
 			@uiForm.InputField(uiForm.InputFieldSettings{
 				InputType:                         uiForm.InputTypeText,
 				InputName:                         "execUser",
@@ -799,8 +799,6 @@ templ CustomServiceAdvancedSettings() {
 				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
 				HintDisplayTooltipBackgroundColor: "os-400",
 			})
-		</div>
-		<div class="grid grid-cols-2 gap-2">
 			@uiForm.InputField(uiForm.InputFieldSettings{
 				InputType:       uiForm.InputTypeNumber,
 				InputName:       "timeoutStartSecs",
