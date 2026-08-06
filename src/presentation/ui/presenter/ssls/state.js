@@ -107,9 +107,11 @@ UiToolset.RegisterAlpineState(() => {
     swapToSelfSigned() {
       this.closeSwapToSelfSignedModal();
       htmx
-        .ajax("DELETE", Infinite.OsApiBasePath + "/v1/ssl/" + this.sslPair.id + "/", {
-          swap: "none",
-        })
+        .ajax(
+          "DELETE",
+          Infinite.OsApiBasePath + "/v1/ssl/" + this.sslPair.id + "/",
+          { swap: "none" }
+        )
         .then(() => this.$dispatch("refresh:ssl-pairs-table"));
     },
     createPubliclyTrusted(vhostHostname) {
