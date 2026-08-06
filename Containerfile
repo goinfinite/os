@@ -17,10 +17,12 @@ RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattende
   && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local \
   && grep -q 'origin=nginx,archive=stable,label=nginx' /etc/apt/apt.conf.d/52unattended-upgrades-local || (echo "ErrorEditingUnattendedUpgradesConfigFile" && exit 1)
 
-RUN curl -skL "https://mise.run" | sh \
-	&& mv /root/.local/bin/mise /usr/bin/mise \
-	&& chmod +x /usr/bin/mise \
-	&& echo 'eval "$(/usr/bin/mise activate bash)"' >>/etc/profile
+RUN curl -skL "https://mise.run" \
+	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
+	&& chmod +x /usr/local/bin/mise \
+	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile
+
+ENV MISE_DATA_DIR=/usr/local/share/mise
 
 COPY /container/nginx/root/* /etc/nginx/
 

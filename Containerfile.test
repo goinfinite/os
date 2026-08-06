@@ -13,10 +13,12 @@ RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/
 	&& mkdir -p /app/conf/pki \
 	&& chown -R nobody:nogroup /app
 
-RUN curl -skL "https://mise.run" | sh \
-	&& mv /root/.local/bin/mise /usr/bin/mise \
-	&& chmod +x /usr/bin/mise \
-	&& echo 'eval "$(/usr/bin/mise activate bash)"' >>/etc/profile
+RUN curl -skL "https://mise.run" \
+	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
+	&& chmod +x /usr/local/bin/mise \
+	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile
+
+ENV MISE_DATA_DIR=/usr/local/share/mise
 
 COPY . .
 

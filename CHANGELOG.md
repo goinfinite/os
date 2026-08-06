@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+fix(container): share toolchain data with non-root services
 refactor(ui): align custom service execution fields
 fix(services): migrate legacy commands only for install steps
 refactor(services): gate legacy migration before command conversion
