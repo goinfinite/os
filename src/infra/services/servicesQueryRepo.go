@@ -438,19 +438,19 @@ func (repo *ServicesQueryRepo) parseManifestCmdSteps(
 	stepsTypeStr := string(stepsType)
 
 	for _, rawCmd := range cmdStepsMap {
-		rawCommandStr, err := repo.migrateLegacyManifestCmdStep(
-			rawCmd,
-		)
-		if err != nil {
-			slog.Debug(
-				"ParseInvalidCmdStepError",
-				slog.String("stepsType", stepsTypeStr),
-				slog.Any("rawCmd", rawCmd),
-			)
-			return cmdSteps, err
+		if stepsType == serviceCmdStepTypeInstall {
+			rawCmd, err = repo.migrateLegacyManifestCmdStep(rawCmd)
+			if err != nil {
+				slog.Debug(
+					"ParseInvalidCmdStepError",
+					slog.String("stepsType", stepsTypeStr),
+					slog.Any("rawCmd", rawCmd),
+				)
+				return cmdSteps, err
+			}
 		}
 
-		command, err := tkValueObject.NewUnixCommand(rawCommandStr)
+		command, err := tkValueObject.NewUnixCommand(rawCmd)
 		if err != nil {
 			slog.Debug(
 				"ParseInvalidCmdStepError",
