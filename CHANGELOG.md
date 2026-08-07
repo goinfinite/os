@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+feat(services): support legacy service version label
 fix(ui): show loading overlay during htmx navigation
 fix(ui): preserve API base path when deleting accounts
 fix(container): share toolchain data with non-root services
