@@ -2,6 +2,8 @@
 
 ```log
 0.3.3 - 2026/08/04
+fix(runtime): normalize PHP module discovery and skip section headers
+test(valueObject): reject compile-time PHP module names
 feat(services): support legacy service version label
 fix(ui): show loading overlay during htmx navigation
 fix(ui): preserve API base path when deleting accounts

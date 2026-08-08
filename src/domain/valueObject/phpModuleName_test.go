@@ -18,7 +18,8 @@ func TestPhpModuleName(t *testing.T) {
 
 	t.Run("InvalidPhpModuleNames", func(t *testing.T) {
 		invalidNames := []interface{}{
-			"ioncube_loader.so", "<script>alert('xss')</script>", "@blabla@",
+			"ioncube_loader.so", "posix", "pcntl", "posix/process",
+			"<script>alert('xss')</script>", "@blabla@",
 		}
 
 		for _, name := range invalidNames {
