@@ -2,6 +2,8 @@
 
 ```log
 0.3.3 - 2026/08/04
+docs: add project agent instructions
+chore: pin Go and golangci-lint with mise
 fix(runtime): use exact PHP module paths and APT packages
 fix(runtime): normalize PHP module discovery and skip section headers
 test(valueObject): reject compile-time PHP module names
