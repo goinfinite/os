@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+refactor(cli): centralize required flag registration errors
 docs: add project agent instructions
 chore: pin Go and golangci-lint with mise
 fix(runtime): use exact PHP module paths and APT packages

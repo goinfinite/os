@@ -3,6 +3,7 @@ package cliController
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -254,7 +255,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringSliceVarP(
 		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
 	)
@@ -360,13 +361,13 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringVarP(
 		&typeStr, "type", "t", "", "ServiceType (application|database|runtime|other)",
 	)
-	cmd.MarkFlagRequired("type")
+	cliHelper.MarkRequiredFlag(cmd, "type")
 	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
-	cmd.MarkFlagRequired("start-command")
+	cliHelper.MarkRequiredFlag(cmd, "start-command")
 	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDir")
 	cmd.Flags().StringVarP(&execUserStr, "exec-user", "U", "", "ExecUser")
 	cmd.Flags().StringSliceVarP(
@@ -457,7 +458,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType")
 	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "ServiceStatus")
@@ -491,6 +492,6 @@ func (controller *ServicesController) Delete() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	return cmd
 }

@@ -2,6 +2,7 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -119,9 +120,9 @@ func (controller *AccountController) Create() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
-	cmd.MarkFlagRequired("username")
+	cliHelper.MarkRequiredFlag(cmd, "username")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
-	cmd.MarkFlagRequired("password")
+	cliHelper.MarkRequiredFlag(cmd, "password")
 	cmd.Flags().StringVarP(
 		&isSuperAdminStr, "is-super-admin", "s", "false", "IsSuperAdmin",
 	)
@@ -190,7 +191,7 @@ func (controller *AccountController) Delete() *cobra.Command {
 	}
 
 	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "i", 0, "AccountId")
-	cmd.MarkFlagRequired("account-id")
+	cliHelper.MarkRequiredFlag(cmd, "account-id")
 	return cmd
 }
 
@@ -218,14 +219,14 @@ func (controller *AccountController) CreateSecureAccessPublicKey() *cobra.Comman
 	}
 
 	cmd.Flags().Uint64VarP(&accountIdUint64, "account-id", "u", 0, "AccountId")
-	cmd.MarkFlagRequired("account-id")
+	cliHelper.MarkRequiredFlag(cmd, "account-id")
 	cmd.Flags().StringVarP(
 		&keyNameStr, "public-key-name", "n", "", "SecureAccessPublicKeyName",
 	)
 	cmd.Flags().StringVarP(
 		&keyContentStr, "public-key-content", "c", "", "SecureAccessPublicKeyContent",
 	)
-	cmd.MarkFlagRequired("public-key-content")
+	cliHelper.MarkRequiredFlag(cmd, "public-key-content")
 	return cmd
 }
 
@@ -251,10 +252,10 @@ func (controller *AccountController) DeleteSecureAccessPublicKey() *cobra.Comman
 	cmd.Flags().Uint64VarP(
 		&accountIdUint64, "account-id", "u", 0, "AccountId",
 	)
-	cmd.MarkFlagRequired("account-id")
+	cliHelper.MarkRequiredFlag(cmd, "account-id")
 	cmd.Flags().Uint16VarP(
 		&keyIdUint16, "public-key-id", "i", 0, "SecureAccessPublicKeyId",
 	)
-	cmd.MarkFlagRequired("public-key-id")
+	cliHelper.MarkRequiredFlag(cmd, "public-key-id")
 	return cmd
 }
