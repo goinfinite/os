@@ -13,10 +13,7 @@ func TestUpdatePhpModulesResponseMarshals(t *testing.T) {
 	if err != nil {
 		t.Fatalf("PhpModuleNameCreationFailed: %v", err)
 	}
-	reason, err := valueObject.NewFailureReason("InstallPhpModulePackageFailed")
-	if err != nil {
-		t.Fatalf("FailureReasonCreationFailed: %v", err)
-	}
+	reason := valueObject.NewFailureReason("InstallPhpModulePackageFailed")
 
 	response := NewUpdatePhpModulesResponse(
 		[]PhpModuleUpdate{NewPhpModuleUpdate(moduleName, true)},

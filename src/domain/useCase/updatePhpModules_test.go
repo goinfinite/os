@@ -205,10 +205,7 @@ func TestUpdatePhpModulesReturnsReport(test *testing.T) {
 		test.Fatalf("PhpModuleNameCreationFailed: %v", err)
 	}
 
-	failureReason, err := valueObject.NewFailureReason("ModuleInstallFailed")
-	if err != nil {
-		test.Fatalf("FailureReasonCreationFailed: %v", err)
-	}
+	failureReason := valueObject.NewFailureReason("ModuleInstallFailed")
 	expectedResponse := dto.NewUpdatePhpModulesResponse(
 		[]dto.PhpModuleUpdate{},
 		[]dto.PhpModuleUpdateFailure{

@@ -15,10 +15,7 @@ func TestUpdatePhpConfigsResponseMarshalsTaskAndParsingFailures(
 	if err != nil {
 		test.Fatalf("TaskIdCreationFailed: %v", err)
 	}
-	reason, err := valueObject.NewFailureReason("InvalidPhpModuleName")
-	if err != nil {
-		test.Fatalf("FailureReasonCreationFailed: %v", err)
-	}
+	reason := valueObject.NewFailureReason("InvalidPhpModuleName")
 
 	response := NewUpdatePhpConfigsResponse(
 		&taskId,

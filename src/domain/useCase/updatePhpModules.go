@@ -93,7 +93,7 @@ func (uc UpdatePhpModules) ensurePhpModuleUpdatesAreAllowed(
 			slog.String("moduleName", moduleName),
 			slog.String("phpVersion", phpVersion.String()),
 		)
-		failureReason, _ := valueObject.NewFailureReason(
+		failureReason := valueObject.NewFailureReason(
 			repository.ErrPhpModuleNotSupportedForVersion.Error(),
 		)
 		unsupportedModuleFailures = append(

@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+refactor(valueObject): guarantee non-empty failure reasons
 feat(runtime): split PHP config updates into dedicated use cases
 feat(scheduledTask): return created task id to callers
 fix(valueObject): raise scheduled task output limit to 64KB
