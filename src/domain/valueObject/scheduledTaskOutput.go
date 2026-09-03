@@ -6,9 +6,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
+const maxScheduledTaskOutputBytes = 65536
+
 type ScheduledTaskOutput string
 
-func NewScheduledTaskOutput(value interface{}) (
+func NewScheduledTaskOutput(value any) (
 	scheduledTaskOutput ScheduledTaskOutput, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -16,8 +18,8 @@ func NewScheduledTaskOutput(value interface{}) (
 		return scheduledTaskOutput, errors.New("ScheduledTaskOutputMustBeString")
 	}
 
-	if len(stringValue) > 2048 {
-		stringValue = stringValue[:2048]
+	if len(stringValue) > maxScheduledTaskOutputBytes {
+		stringValue = stringValue[:maxScheduledTaskOutputBytes]
 	}
 
 	return ScheduledTaskOutput(stringValue), nil
