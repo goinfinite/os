@@ -12,5 +12,9 @@ type RuntimeCmdRepo interface {
 	RunPhpCommand(dto.RunPhpCommandRequest) (dto.RunPhpCommandResponse, error)
 	UpdatePhpVersion(tkValueObject.Fqdn, valueObject.PhpVersion) error
 	UpdatePhpSettings(tkValueObject.Fqdn, []entity.PhpSetting) error
-	UpdatePhpModules(tkValueObject.Fqdn, []entity.PhpModule) error
+	UpdatePhpModules(
+		tkValueObject.Fqdn,
+		valueObject.PhpVersion,
+		[]entity.PhpModule,
+	) (dto.UpdatePhpModulesResponse, error)
 }
