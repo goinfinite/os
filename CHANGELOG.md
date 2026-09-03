@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+feat(api): report partial success on php module updates
 refactor(valueObject): guarantee non-empty failure reasons
 feat(runtime): split PHP config updates into dedicated use cases
 feat(scheduledTask): return created task id to callers

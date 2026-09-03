@@ -1534,11 +1534,11 @@ const docTemplate = `{
                     },
                     {
                         "description": "modules and settings are optional.",
-                        "name": "updatePhpConfigsDto",
+                        "name": "updatePhpConfigsRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdatePhpConfigs"
+                            "$ref": "#/definitions/dto.UpdatePhpConfigsRequest"
                         }
                     }
                 ],
@@ -1547,6 +1547,18 @@ const docTemplate = `{
                         "description": "PhpConfigsUpdated",
                         "schema": {
                             "type": "object"
+                        }
+                    },
+                    "201": {
+                        "description": "PhpModuleUpdateScheduled",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePhpConfigsResponse"
+                        }
+                    },
+                    "207": {
+                        "description": "PhpModuleParsingFailuresReported",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePhpConfigsResponse"
                         }
                     }
                 }
@@ -3417,6 +3429,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.PhpModuleParsingFailure": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "boolean"
+                }
+            }
+        },
         "dto.ReadAccountsResponse": {
             "type": "object",
             "properties": {
@@ -3758,7 +3787,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdatePhpConfigs": {
+        "dto.UpdatePhpConfigsRequest": {
             "type": "object",
             "properties": {
                 "hostname": {
@@ -3778,6 +3807,20 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdatePhpConfigsResponse": {
+            "type": "object",
+            "properties": {
+                "failedModulesWithParsingErrors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PhpModuleParsingFailure"
+                    }
+                },
+                "taskId": {
+                    "type": "integer"
                 }
             }
         },
