@@ -1,21 +1,21 @@
 package liaison
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	databaseInfra "github.com/goinfinite/os/src/infra/database"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
+	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type DatabaseLiaison struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
-	availabilityInspector *sharedHelper.ServiceAvailabilityInspector
+	availabilityInspector *liaisonHelper.ServiceAvailabilityInspector
 }
 
 func NewDatabaseLiaison(
@@ -25,7 +25,7 @@ func NewDatabaseLiaison(
 	return &DatabaseLiaison{
 		persistentDbSvc:       persistentDbSvc,
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
-		availabilityInspector: sharedHelper.NewServiceAvailabilityInspector(
+		availabilityInspector: liaisonHelper.NewServiceAvailabilityInspector(
 			persistentDbSvc,
 		),
 	}
@@ -57,10 +57,7 @@ func (liaison *DatabaseLiaison) Read(untrustedInput map[string]any) tkPresentati
 		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(
-			tkPresentation.LiaisonResponseStatusInfraError,
-			sharedHelper.ServiceUnavailableError,
-		)
+		return liaisonHelper.NewServiceUnavailableResponse()
 	}
 
 	requestPagination, err := tkPresentation.PaginationParser(
@@ -154,32 +151,14 @@ func (liaison *DatabaseLiaison) Create(untrustedInput map[string]any) tkPresenta
 		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
+		return liaisonHelper.NewServiceUnavailableResponse()
+	}
+
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
 		return tkPresentation.NewLiaisonResponseNoMessage(
-			tkPresentation.LiaisonResponseStatusInfraError,
-			sharedHelper.ServiceUnavailableError,
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
 		)
-	}
-
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
 	}
 
 	createDto := dto.NewCreateDatabase(dbName, operatorAccountId, operatorIpAddress)
@@ -229,10 +208,7 @@ func (liaison *DatabaseLiaison) Delete(untrustedInput map[string]any) tkPresenta
 		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(
-			tkPresentation.LiaisonResponseStatusInfraError,
-			sharedHelper.ServiceUnavailableError,
-		)
+		return liaisonHelper.NewServiceUnavailableResponse()
 	}
 
 	dbName, err := valueObject.NewDatabaseName(untrustedInput["dbName"])
@@ -243,26 +219,11 @@ func (liaison *DatabaseLiaison) Delete(untrustedInput map[string]any) tkPresenta
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	deleteDto := dto.NewDeleteDatabase(dbName, operatorAccountId, operatorIpAddress)
@@ -314,10 +275,7 @@ func (liaison *DatabaseLiaison) CreateUser(
 		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(
-			tkPresentation.LiaisonResponseStatusInfraError,
-			sharedHelper.ServiceUnavailableError,
-		)
+		return liaisonHelper.NewServiceUnavailableResponse()
 	}
 
 	dbName, err := valueObject.NewDatabaseName(untrustedInput["dbName"])
@@ -358,26 +316,11 @@ func (liaison *DatabaseLiaison) CreateUser(
 		}
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	createDto := dto.NewCreateDatabaseUser(
@@ -432,10 +375,7 @@ func (liaison *DatabaseLiaison) DeleteUser(
 		)
 	}
 	if !liaison.availabilityInspector.IsAvailable(serviceName) {
-		return tkPresentation.NewLiaisonResponseNoMessage(
-			tkPresentation.LiaisonResponseStatusInfraError,
-			sharedHelper.ServiceUnavailableError,
-		)
+		return liaisonHelper.NewServiceUnavailableResponse()
 	}
 
 	dbName, err := valueObject.NewDatabaseName(untrustedInput["dbName"])
@@ -454,26 +394,11 @@ func (liaison *DatabaseLiaison) DeleteUser(
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	deleteDto := dto.NewDeleteDatabaseUser(

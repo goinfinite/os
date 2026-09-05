@@ -1,10 +1,10 @@
 package liaison
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/useCase"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type O11yLiaison struct {
