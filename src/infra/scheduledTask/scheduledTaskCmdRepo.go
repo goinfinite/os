@@ -8,9 +8,9 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type ScheduledTaskCmdRepo struct {
@@ -25,7 +25,7 @@ func NewScheduledTaskCmdRepo(
 
 func (repo *ScheduledTaskCmdRepo) Create(
 	createDto dto.CreateScheduledTask,
-) error {
+) (valueObject.ScheduledTaskId, error) {
 	newTaskStatus, _ := valueObject.NewScheduledTaskStatus("pending")
 
 	taskTagsModels := []dbModel.ScheduledTaskTag{}
@@ -47,7 +47,17 @@ func (repo *ScheduledTaskCmdRepo) Create(
 		taskTagsModels, createDto.TimeoutSecs, runAtPtr, nil, nil, nil, nil, nil,
 	)
 
-	return repo.persistentDbSvc.Handler.Create(&scheduledTaskModel).Error
+	err := repo.persistentDbSvc.Handler.Create(&scheduledTaskModel).Error
+	if err != nil {
+		return 0, err
+	}
+
+	taskId, err := valueObject.NewScheduledTaskId(scheduledTaskModel.ID)
+	if err != nil {
+		return 0, err
+	}
+
+	return taskId, nil
 }
 
 func (repo *ScheduledTaskCmdRepo) Update(
@@ -96,7 +106,8 @@ func (repo *ScheduledTaskCmdRepo) Run(
 
 	startedAtUnixTime := tkValueObject.NewUnixTimeNow()
 
-	cmdWithTimeout := "timeout --kill-after=10s " + timeoutStr + " " + pendingTask.Command.String()
+	cmdWithTimeout := "timeout --kill-after=10s " +
+		timeoutStr + " " + pendingTask.Command.String()
 	rawOutput, rawError := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           cmdWithTimeout,
 		ShouldUseSubShell: true,
