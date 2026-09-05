@@ -31,9 +31,12 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 			name, command, tags, &timeoutSecs, &runAt,
 		)
 
-		err := scheduledTaskCmdRepo.Create(createDto)
+		taskId, err := scheduledTaskCmdRepo.Create(createDto)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %v", err)
+		}
+		if taskId.Uint64() == 0 {
+			t.Error("ExpectedGeneratedTaskId")
 		}
 	})
 

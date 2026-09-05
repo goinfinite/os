@@ -4,11 +4,11 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/liaison"
+	sharedHelper "github.com/goinfinite/os/src/presentation/shared/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
@@ -71,7 +71,7 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 
 	isSuperAdmin := false
 
-	operatorIpAddress := liaison.LocalOperatorIpAddress
+	operatorIpAddress := sharedHelper.LocalOperatorIpAddress
 	if requestBody["operatorIpAddress"] != nil {
 		operatorIpAddress, err = tkValueObject.NewIpAddress(
 			requestBody["operatorIpAddress"],
@@ -87,7 +87,7 @@ func (controller *SetupController) Setup(echoContext echo.Context) error {
 	}
 
 	createDto := dto.NewCreateAccount(
-		username, password, isSuperAdmin, liaison.LocalOperatorAccountId,
+		username, password, isSuperAdmin, sharedHelper.LocalOperatorAccountId,
 		operatorIpAddress,
 	)
 

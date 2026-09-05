@@ -5,43 +5,88 @@ import (
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-func TestRuntimeQueryRepo(t *testing.T) {
-	t.Skip("SkipRuntimeQueryRepoTest")
+func TestRuntimeQueryRepo(test *testing.T) {
+	test.Skip("SkipRuntimeQueryRepoTest")
+
+	// The integration checks need the application environment when enabled.
 	testHelpers.LoadEnvVars()
 
-	repo := RuntimeQueryRepo{}
+	runtimeQueryRepo := NewRuntimeQueryRepo()
 
-	t.Run("ReturnPhpVersionsList", func(t *testing.T) {
-		phpVersions, err := repo.ReadPhpVersionsInstalled()
+	test.Run("ReadPhpVersionsInstalled", func(subtest *testing.T) {
+		phpVersions, err := runtimeQueryRepo.ReadPhpVersionsInstalled()
 
 		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+			subtest.Fatalf("ReadPhpVersionsInstalledFailed: %v", err)
 		}
 
 		if len(phpVersions) == 0 {
-			t.Errorf("Expected a list of php versions, got %v", phpVersions)
+			subtest.Fatal("ReadPhpVersionsInstalledReturnedNoVersions")
 		}
 	})
 
-	t.Run("ReturnPhpConfigs", func(t *testing.T) {
-		primaryVhost, err := vhostInfra.NewVirtualHostHelpers().
+	test.Run("ReadPhpConfigs", func(subtest *testing.T) {
+		primaryVirtualHost, err := vhostInfra.NewVirtualHostHelpers().
 			ReadPrimaryVirtualHostHostname()
 		if err != nil {
-			t.Errorf("PrimaryVirtualHostNotFound")
+			subtest.Fatalf("PrimaryVirtualHostNotFound: %v", err)
 		}
 
-		hostname, _ := tkValueObject.NewFqdn(primaryVhost.String())
-		phpConfigs, err := repo.ReadPhpConfigs(hostname)
+		phpConfigs, err := runtimeQueryRepo.ReadPhpConfigs(primaryVirtualHost)
 
 		if err != nil {
-			t.Errorf("Expected no error, got %v", err)
+			subtest.Fatalf("ReadPhpConfigsFailed: %v", err)
 		}
 
 		if len(phpConfigs.Modules) == 0 {
-			t.Errorf("Expected a list of php modules, got %v", phpConfigs)
+			subtest.Fatal("ReadPhpConfigsReturnedNoModules")
 		}
 	})
+}
+
+func TestNormalizedPhpModuleName(test *testing.T) {
+	runtimeQueryRepo := NewRuntimeQueryRepo()
+	testCases := []struct {
+		testName           string
+		rawModuleName      string
+		expectedModuleName string
+	}{
+		{
+			testName:           "ZendOpcache",
+			rawModuleName:      "Zend OPcache",
+			expectedModuleName: "opcache",
+		},
+		{
+			testName:           "IonCubeLoader",
+			rawModuleName:      "ionCube Loader",
+			expectedModuleName: "ioncube",
+		},
+		{
+			testName:           "TrimmedModuleName",
+			rawModuleName:      " pcntl ",
+			expectedModuleName: "pcntl",
+		},
+		{
+			testName:           "EmptyAfterPrefixRemoval",
+			rawModuleName:      "Zend",
+			expectedModuleName: "",
+		},
+	}
+
+	for _, testCase := range testCases {
+		test.Run(testCase.testName, func(subtest *testing.T) {
+			actualModuleName := runtimeQueryRepo.normalizedPhpModuleName(
+				testCase.rawModuleName,
+			)
+			if actualModuleName != testCase.expectedModuleName {
+				subtest.Errorf(
+					"NormalizedModuleNameMismatch: expected %q, got %q",
+					testCase.expectedModuleName,
+					actualModuleName,
+				)
+			}
+		})
+	}
 }

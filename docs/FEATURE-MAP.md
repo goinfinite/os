@@ -140,7 +140,7 @@ Browse, upload, download, delete, and compress files within the container filesy
 
 ## Runtime Management
 
-Configure programming language runtimes (PHP, Node.js, Python) including version selection and environment variables.
+Configure programming language runtimes (PHP, Node.js, Python) including version selection and environment variables. PHP version and settings changes are synchronous; valid PHP module changes requested through the API are scheduled, while malformed module entries are reported immediately.
 
 **Flow:**
 
@@ -148,9 +148,17 @@ Configure programming language runtimes (PHP, Node.js, Python) including version
 2. `src/presentation/cli/controller/runtime.go` — Runtime CLI commands
 3. `src/presentation/ui/presenter/runtimes/` — Web dashboard runtime configuration UI
 4. `src/domain/useCase/createInstallableService.go` — Runtime installation as a service
-5. `src/infra/runtime/` — Runtime environment setup and version management; runtime conf mutation methods (`UpdatePhpVersion`, `UpdatePhpSettings`, `UpdatePhpVirtualHostHostname`) use sed-based in-place substitution to preserve user customizations
-6. `src/infra/services/` — Service lifecycle (start/stop runtimes)
-7. `src/infra/internalDatabase/` — Runtime configuration persistence
+5. `src/domain/useCase/updatePhpVersion.go` — Validates the selected version and applies the version change synchronously
+6. `src/domain/useCase/updatePhpSettings.go` — Applies PHP settings synchronously
+7. `src/domain/useCase/updatePhpModules.go` — Validates the current PHP version and supported modules, discards duplicates, and returns per-module update results
+8. `src/domain/valueObject/phpModuleName.go` — Validates PHP module name syntax
+9. `src/infra/runtime/` — Runtime environment setup and version management; reads PHP module compatibility from the installed service assets, applies all module changes, restarts once, and verifies final module states; runtime conf mutation methods (`UpdatePhpVersion`, `UpdatePhpSettings`, `UpdatePhpVirtualHostHostname`) use sed-based in-place substitution to preserve user customizations
+10. `src/presentation/liaison/runtime.go` — Orchestrates version/settings updates and creates a scheduled task for API module changes
+11. `src/presentation/cli/controller/runtime.go` — Exposes the synchronous `runtime php update-modules` worker command
+12. `src/presentation/ui/presenter/runtimes/phpState.js` — Polls the scheduled task and displays module-level failures
+13. `tmp/os-services/runtime/php-webserver/assets/modules.yaml` — Development checkout of the PHP version/module compatibility catalog
+14. `src/infra/services/` — Service lifecycle (start/stop runtimes)
+15. `src/infra/internalDatabase/` — Runtime configuration persistence
 
 ---
 

@@ -6,6 +6,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -302,7 +303,7 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 	}
 
 	cmd.Flags().IntVarP(&installedIdInt, "installed-id", "i", 0, "InstalledItemId")
-	cmd.MarkFlagRequired("installed-id")
+	cliHelper.MarkRequiredFlag(cmd, "installed-id")
 	cmd.Flags().StringVarP(
 		&shouldUninstallServicesStr, "should-uninstall-services", "s", "true",
 		"ShouldUninstallUnusedServices",

@@ -260,10 +260,21 @@ func (repo RuntimeQueryRepo) ReadPhpSettings(
 	return phpSettings, nil
 }
 
+func (repo RuntimeQueryRepo) normalizedPhpModuleName(
+	rawModuleName string,
+) string {
+	normalizedModuleName := strings.ReplaceAll(rawModuleName, "Zend", "")
+	normalizedModuleName = strings.ReplaceAll(
+		normalizedModuleName, "Loader", "",
+	)
+
+	return strings.ToLower(strings.TrimSpace(normalizedModuleName))
+}
+
 func (repo RuntimeQueryRepo) ReadPhpModules(
 	version valueObject.PhpVersion,
 ) (phpModules []entity.PhpModule, err error) {
-	activeModuleList, err := tkInfra.NewShell(tkInfra.ShellSettings{
+	rawPhpModuleOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php",
 		Args:    []string{"-m"},
 	}).Run()
@@ -271,33 +282,32 @@ func (repo RuntimeQueryRepo) ReadPhpModules(
 		return phpModules, errors.New("GetActivePhpModulesFailed: " + err.Error())
 	}
 
-	activeModules := []string{}
-	for _, moduleName := range strings.Split(activeModuleList, "\n") {
-		if moduleName == "" {
+	activePhpModuleNames := []string{}
+	for rawModuleName := range strings.SplitSeq(rawPhpModuleOutput, "\n") {
+		if rawModuleName == "" {
+			continue
+		}
+		isModuleSectionHeader := strings.HasPrefix(rawModuleName, "[") &&
+			strings.HasSuffix(rawModuleName, "]")
+		if isModuleSectionHeader {
 			continue
 		}
 
-		moduleName = strings.Replace(moduleName, "Zend", "", -1)
-		moduleName = strings.Replace(moduleName, "Loader", "", -1)
-
-		phpModule, err := valueObject.NewPhpModuleName(moduleName)
-		if err != nil {
+		normalizedModuleName := repo.normalizedPhpModuleName(rawModuleName)
+		if normalizedModuleName == "" {
 			continue
 		}
 
-		activeModules = append(activeModules, phpModule.String())
+		activePhpModuleNames = append(activePhpModuleNames, normalizedModuleName)
 	}
-
-	for _, moduleName := range valueObject.ValidPhpModuleNames {
-		isModuleInstalled := false
-		if slices.Contains(activeModules, moduleName) {
-			isModuleInstalled = true
-		}
-
-		phpModule, err := valueObject.NewPhpModuleName(moduleName)
+	for _, rawModuleName := range valueObject.ValidPhpModuleNames {
+		phpModule, err := valueObject.NewPhpModuleName(rawModuleName)
 		if err != nil {
 			continue
 		}
+		isModuleInstalled := slices.Contains(
+			activePhpModuleNames, phpModule.String(),
+		)
 
 		phpModules = append(
 			phpModules, entity.NewPhpModule(phpModule, isModuleInstalled),

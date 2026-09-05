@@ -1,6 +1,46 @@
 # Changelog
 
 ```log
+0.3.3 - 2026/08/04
+fix(files): repair build after failure reason refactor
+chore: upgrade go-infinite toolkit to v0.3.3
+refactor(ui): delegate php module outcomes to the scheduled tasks popover
+refactor(runtime): plan php module updates from the current state in the use case
+refactor(mapping): use exported PHP webserver service-name constant
+feat(liaison): schedule PHP module updates and split config use cases
+refactor(liaison): extract liaison helpers and dedupe operator parsing
+docs(cli): record stderr logging constraint
+feat(cli): wire PHP update-modules worker command
+feat(api): report partial success on php module updates
+refactor(valueObject): guarantee non-empty failure reasons
+feat(runtime): split PHP config updates into dedicated use cases
+feat(scheduledTask): return created task id to callers
+fix(valueObject): raise scheduled task output limit to 64KB
+refactor(valueObject): validate PHP module names by pattern
+refactor(cli): centralize required flag registration errors
+docs: add project agent instructions
+chore: pin Go and golangci-lint with mise
+fix(runtime): use exact PHP module paths and APT packages
+fix(runtime): normalize PHP module discovery and skip section headers
+test(valueObject): reject compile-time PHP module names
+feat(services): support legacy service version label
+fix(ui): show loading overlay during htmx navigation
+fix(ui): preserve API base path when deleting accounts
+fix(container): share toolchain data with non-root services
+refactor(ui): align custom service execution fields
+fix(services): migrate legacy commands only for install steps
+refactor(services): gate legacy migration before command conversion
+chore(services): use v2 manifests for OS v0.3.3+
+feat(services): support custom start commands and working directories (Issue #274)
+fix(services): stop process groups and use suffixed service directories (Issues #293, #297)
+refactor(ui): use Infinite UI components for service forms
+refactor(ui): refine service form controls and tooltips
+fix: use debian slim trixie as base img
+fix: ignore logfile when redirected to /dev
+chore: bump version
+fix: migrate legacy manifest install commands
+refactor: use typed command step phases
+
 0.3.2 - 2026/07/29
 fix(ssl): auto-select sole vhost on SSL import modal
 fix(ssl): prevent `.crt` suffix on derived virtualHostHostname for multi-label hostnames

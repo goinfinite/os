@@ -11,8 +11,8 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type FilesCmdRepo struct {
@@ -30,15 +30,10 @@ func NewFilesCmdRepo() *FilesCmdRepo {
 func (repo FilesCmdRepo) uploadFailureFactory(
 	errMessage string,
 	fileStreamHandler valueObject.FileStreamHandler,
-) (uploadProcessFailure valueObject.UploadProcessFailure, err error) {
-	failureReason, err := valueObject.NewFailureReason(errMessage)
-	if err != nil {
-		return uploadProcessFailure, err
-	}
-
+) valueObject.UploadProcessFailure {
 	return valueObject.NewUploadProcessFailure(
-		fileStreamHandler.Name, failureReason,
-	), nil
+		fileStreamHandler.Name, valueObject.NewFailureReason(errMessage),
+	)
 }
 
 func (repo FilesCmdRepo) uploadSingleFile(
@@ -83,7 +78,7 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 
 	copyCmd := "rsync -avq " + sourcePathStr + " " + destinationAbsolutePath
 	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          copyCmd,
+		Command:           copyCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	return err
@@ -160,7 +155,7 @@ func (repo FilesCmdRepo) Compress(
 		newDestinationPath.String(), filesToCompress,
 	)
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          compressCmd,
+		Command:           compressCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
@@ -283,7 +278,7 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 		compressDestinationFlag, destinationPath.String(),
 	)
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          compressCmd,
+		Command:           compressCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
@@ -464,7 +459,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 	}
 
 	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          updatePermissionsCmd,
+		Command:           updatePermissionsCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
@@ -495,14 +490,9 @@ func (repo FilesCmdRepo) Upload(
 	for _, fileToUpload := range uploadDto.FileStreamHandlers {
 		err := repo.uploadSingleFile(uploadDto.DestinationPath, fileToUpload)
 		if err != nil {
-			uploadFailure, err := repo.uploadFailureFactory(err.Error(), fileToUpload)
-			if err != nil {
-				slog.Debug("ReportUploadFailureError", slog.String("err", err.Error()))
-			}
-
 			uploadProcessReport.FailedNamesWithReason = append(
 				uploadProcessReport.FailedNamesWithReason,
-				uploadFailure,
+				repo.uploadFailureFactory(err.Error(), fileToUpload),
 			)
 
 			continue

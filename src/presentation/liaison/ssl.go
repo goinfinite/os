@@ -1,7 +1,6 @@
 package liaison
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
 	"strings"
 
@@ -9,13 +8,15 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type SslLiaison struct {
@@ -179,24 +180,11 @@ func (liaison *SslLiaison) Create(untrustedInput map[string]any) tkPresentation.
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	createDto := dto.NewCreateSslPair(
@@ -247,24 +235,11 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	if shouldSchedule {
@@ -285,7 +260,7 @@ func (liaison *SslLiaison) CreatePubliclyTrusted(
 			taskName, taskCmd, taskTags, &timeoutSecs, nil,
 		)
 
-		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
+		_, err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
 			return tkPresentation.NewLiaisonResponseNoMessage(
 				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
@@ -338,24 +313,11 @@ func (liaison *SslLiaison) Delete(untrustedInput map[string]any) tkPresentation.
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	err = useCase.DeleteSslPair(

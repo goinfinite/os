@@ -202,7 +202,8 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 			slog.Debug(
 				"MissingProcManagerStatusParts",
-				slog.String("name", serviceNameStr),
+				slog.String("serviceName", serviceNameStr),
+				slog.Any("procParts", procManagerStatusParts),
 			)
 			continue
 		}
@@ -411,25 +412,58 @@ func (repo *ServicesQueryRepo) IsInstalled(serviceName valueObject.ServiceName) 
 	return readErr == nil
 }
 
+func (repo *ServicesQueryRepo) migrateLegacyManifestCmdStep(
+	stepsType serviceCmdStepType,
+	rawCmdStep any,
+) (any, error) {
+	if stepsType != serviceCmdStepTypeInstall {
+		return rawCmdStep, nil
+	}
+
+	rawCmdStepStr, err := tkVoUtil.InterfaceToString(rawCmdStep)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.ReplaceAll(
+		rawCmdStepStr,
+		"install_packages",
+		"DEBIAN_FRONTEND=noninteractive apt-get install -y",
+	), nil
+}
+
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(
-	stepsType string,
-	rawCmdSteps interface{},
+	stepsType serviceCmdStepType,
+	rawCmdSteps any,
 ) (cmdSteps []tkValueObject.UnixCommand, err error) {
-	cmdStepsMap, assertOk := rawCmdSteps.([]interface{})
+	cmdStepsMap, assertOk := rawCmdSteps.([]any)
 	if !assertOk {
 		return cmdSteps, errors.New("InvalidCmdStepsStructure")
 	}
 
 	for _, rawCmd := range cmdStepsMap {
-		command, err := tkValueObject.NewUnixCommand(rawCmd)
+		rawCmd, err = repo.migrateLegacyManifestCmdStep(
+			stepsType, rawCmd,
+		)
 		if err != nil {
 			slog.Debug(
 				"ParseInvalidCmdStepError",
-				slog.String("stepsType", stepsType),
+				slog.String("stepsType", string(stepsType)),
 				slog.Any("rawCmd", rawCmd),
 			)
 			return cmdSteps, err
 		}
+
+		command, err := tkValueObject.NewUnixCommand(rawCmd)
+		if err != nil {
+			slog.Debug(
+				"ParseInvalidCmdStepError",
+				slog.String("stepsType", string(stepsType)),
+				slog.Any("rawCmd", rawCmd),
+			)
+			return cmdSteps, err
+		}
+
 		cmdSteps = append(cmdSteps, command)
 	}
 
@@ -493,7 +527,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	versions := []valueObject.ServiceVersion{}
 	if serviceMap["versions"] != nil {
-		versionsMap, assertOk := serviceMap["versions"].([]interface{})
+		versionsMap, assertOk := serviceMap["versions"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidServiceVersionsStructure")
 		}
@@ -513,7 +547,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	envs := []valueObject.ServiceEnv{}
 	if serviceMap["envs"] != nil {
-		envsMap, assertOk := serviceMap["envs"].([]interface{})
+		envsMap, assertOk := serviceMap["envs"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidEnvs")
 		}
@@ -533,7 +567,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	portBindings := []valueObject.PortBinding{}
 	if serviceMap["portBindings"] != nil {
-		portBindingsMap, assertOk := serviceMap["portBindings"].([]interface{})
+		portBindingsMap, assertOk := serviceMap["portBindings"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidPortBindingsStructure")
 		}
@@ -564,7 +598,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	stopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["stopCmdSteps"] != nil {
 		stopCmdSteps, err = repo.parseManifestCmdSteps(
-			"Stop", serviceMap["stopCmdSteps"],
+			serviceCmdStepTypeStop, serviceMap["stopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -584,7 +618,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	installCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["installCmdSteps"] != nil {
 		installCmdSteps, err = repo.parseManifestCmdSteps(
-			"Install", serviceMap["installCmdSteps"],
+			serviceCmdStepTypeInstall, serviceMap["installCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -604,7 +638,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	uninstallCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["uninstallCmdSteps"] != nil {
 		uninstallCmdSteps, err = repo.parseManifestCmdSteps(
-			"Uninstall", serviceMap["uninstallCmdSteps"],
+			serviceCmdStepTypeUninstall, serviceMap["uninstallCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -613,7 +647,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	uninstallFilePaths := []tkValueObject.UnixAbsoluteFilePath{}
 	if serviceMap["uninstallFilePaths"] != nil {
-		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]interface{})
+		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidUninstallFilePathsStructure")
 		}
@@ -644,7 +678,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	preStartCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["preStartCmdSteps"] != nil {
 		preStartCmdSteps, err = repo.parseManifestCmdSteps(
-			"PreStart", serviceMap["preStartCmdSteps"],
+			serviceCmdStepTypePreStart, serviceMap["preStartCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -664,7 +698,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	postStartCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["postStartCmdSteps"] != nil {
 		postStartCmdSteps, err = repo.parseManifestCmdSteps(
-			"PostStart", serviceMap["postStartCmdSteps"],
+			serviceCmdStepTypePostStart, serviceMap["postStartCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -684,7 +718,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	preStopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["preStopCmdSteps"] != nil {
 		preStopCmdSteps, err = repo.parseManifestCmdSteps(
-			"PreStop", serviceMap["preStopCmdSteps"],
+			serviceCmdStepTypePreStop, serviceMap["preStopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -704,7 +738,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	postStopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["postStopCmdSteps"] != nil {
 		postStopCmdSteps, err = repo.parseManifestCmdSteps(
-			"PostStop", serviceMap["postStopCmdSteps"],
+			serviceCmdStepTypePostStop, serviceMap["postStopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err

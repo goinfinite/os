@@ -6,17 +6,18 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/repository"
+	"github.com/goinfinite/os/src/domain/valueObject"
 )
 
 func CreateScheduledTask(
 	scheduledTaskCmdRepo repository.ScheduledTaskCmdRepo,
 	dto dto.CreateScheduledTask,
-) error {
-	err := scheduledTaskCmdRepo.Create(dto)
+) (valueObject.ScheduledTaskId, error) {
+	taskId, err := scheduledTaskCmdRepo.Create(dto)
 	if err != nil {
 		slog.Error("CreateScheduledTaskError", slog.String("err", err.Error()))
-		return errors.New("CreateScheduledTaskInfraError")
+		return 0, errors.New("CreateScheduledTaskInfraError")
 	}
 
-	return nil
+	return taskId, nil
 }

@@ -10,6 +10,9 @@ import (
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
+	uiControl "github.com/goinfinite/ui/src/control"
+	uiDisplay "github.com/goinfinite/ui/src/display"
+	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 	"math"
 	"strconv"
@@ -88,7 +91,7 @@ templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInst
 					<th scope="col" class="w-[15%]">Created At</th>
 					<th scope="col" class="w-[20%]">
 						@componentForm.SubmitButton(
-							"", "Install catalog item", "ph-arrow-line-down",
+							"", "install catalog item", "ph-arrow-line-down",
 							"openMarketplaceItemInstallationModal()", false,
 						)
 					</th>
@@ -287,7 +290,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 			</template>
 		</div>
 		@componentForm.SubmitButton(
-			"install-marketplace-item-button", "Schedule installation",
+			"install-marketplace-item-button", "schedule installation",
 			"ph-queue", "closeMarketplaceItemInstallationModal()", false,
 		)
 	</form>
@@ -423,7 +426,7 @@ templ InstalledServicesItemsTable(
 						<th scope="col">Port Bindings</th>
 						<th scope="col" class="w-[20%]">
 							@componentForm.SubmitButton(
-								"", "Install service", "ph-arrow-line-down",
+								"", "install service", "ph-arrow-line-down",
 								"openServiceInstallationModal()", false,
 							)
 						</th>
@@ -612,6 +615,81 @@ func transformInstallableServicesIntoCarouselItems(
 	return carouselItems
 }
 
+templ ServiceAutomaticSettings() {
+	<div class="grid grid-cols-3 place-items-center gap-2">
+		@uiForm.ToggleSwitch(uiForm.ToggleSwitchSettings{
+			Label:                       "Auto Restart",
+			TwoWayStatePath:             "service.autoRestart",
+			InputName:                   "autoRestart",
+			TrackBackgroundColor:        "os-100",
+			TrackCheckedBackgroundColor: "infinite-500",
+		})
+		@uiForm.ToggleSwitch(uiForm.ToggleSwitchSettings{
+			Label:                       "Auto Start",
+			TwoWayStatePath:             "service.autoStart",
+			InputName:                   "autoStart",
+			TrackBackgroundColor:        "os-100",
+			TrackCheckedBackgroundColor: "infinite-500",
+		})
+		@uiForm.ToggleSwitch(uiForm.ToggleSwitchSettings{
+			Label:                       "Auto Create Mapping",
+			TwoWayStatePath:             "service.autoCreateMapping",
+			InputName:                   "autoCreateMapping",
+			TrackBackgroundColor:        "os-100",
+			TrackCheckedBackgroundColor: "infinite-500",
+		})
+	</div>
+}
+
+templ InstallableServiceAdvancedSettings(
+	installableServices *InstallableServicesGroupedByType,
+) {
+	<div class="flex w-full flex-col gap-4">
+		<template
+			x-if={ strconv.FormatBool(installableServices == nil) + " || selectedInstallableServiceName !== ''" }
+		>
+			<div class="mt-4 grid grid-rows-2 gap-2">
+				<div class="grid grid-cols-2 gap-2">
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:       uiForm.InputTypeNumber,
+						InputName:       "timeoutStartSecs",
+						Label:           "Timeout Start Secs",
+						TwoWayStatePath: "service.timeoutStartSecs",
+						InputNumberMin:  "0",
+					})
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:       uiForm.InputTypeNumber,
+						InputName:       "maxStartRetries",
+						Label:           "Max Start Retries",
+						TwoWayStatePath: "service.maxStartRetries",
+						InputNumberMin:  "0",
+					})
+				</div>
+				@ServiceAutomaticSettings()
+			</div>
+		</template>
+		@componentForm.MultiColumnRepeatableFieldset(
+			"envs", "Environment Variables", "", "service.envs",
+			[]componentForm.RepeatableField{
+				{InputType: "text", Id: "name", Label: "Name"},
+				{InputType: "text", Id: "value", Label: "Value"},
+			},
+		)
+		@componentForm.MultiColumnRepeatableFieldset(
+			"portBindings", "Port Bindings", "",
+			"service.portBindings", []componentForm.RepeatableField{
+				{InputType: "text", Id: "port", Label: "Public Port"},
+				{
+					InputType: "select",
+					Id:        "protocol",
+					Label:     "Protocol",
+					Options:   valueObject.ValidNetworkProtocols,
+				},
+			},
+		)
+	</div>
+}
+
 templ InstallableServiceForm(
 	submitButtonId, submitButtonText, submitButtonIcon, submitButtonOnClick string,
 	installableServices *InstallableServicesGroupedByType,
@@ -622,10 +700,13 @@ templ InstallableServiceForm(
 			<div class="flex justify-center gap-4">
 				for _, serviceType := range valueObject.ValidServiceTypes {
 					if serviceType != "system" {
-						@componentForm.RadioInput(
-							"targetType", serviceType, serviceType,
-							"selectedInstallableServiceType",
-						)
+						@uiForm.RadioInput(uiForm.RadioInputSettings{
+							Label:           serviceType,
+							StateValue:      serviceType,
+							TwoWayStatePath: "selectedInstallableServiceType",
+							InputId:         serviceType + "-service-type",
+							InputName:       "selectedInstallableServiceType",
+						})
 					}
 				}
 			</div>
@@ -672,65 +753,108 @@ templ InstallableServiceForm(
 		</div>
 	}
 	<div class="my-4">
-		@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
-			<div class="flex w-full flex-col gap-4">
-				<template
-					x-if={ strconv.FormatBool(installableServices == nil) + " || selectedInstallableServiceName !== ''" }
-				>
-					<div class="mt-4 grid grid-rows-2 gap-2">
-						<div class="grid grid-cols-2 gap-2">
-							@componentForm.InputField(componentForm.InputFieldDto{
-								Type:               "number",
-								Label:              "Timeout Start Secs",
-								BindModelValuePath: "service.timeoutStartSecs",
-							})
-							@componentForm.InputField(componentForm.InputFieldDto{
-								Type:               "number",
-								Label:              "Max Start Retries",
-								BindModelValuePath: "service.maxStartRetries",
-							})
-						</div>
-						<div class="grid grid-cols-3 place-items-center gap-2">
-							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-								Label:         "Auto Restart",
-								BindModelPath: "service.autoRestart",
-							})
-							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-								Label:         "Auto Start",
-								BindModelPath: "service.autoStart",
-							})
-							@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-								Label:         "Auto Create Mapping",
-								BindModelPath: "service.autoCreateMapping",
-							})
-						</div>
-					</div>
-				</template>
-				@componentForm.MultiColumnRepeatableFieldset(
-					"envs", "Environment Variables", "", "service.envs",
-					[]componentForm.RepeatableField{
-						{InputType: "text", Id: "name", Label: "Name"},
-						{InputType: "text", Id: "value", Label: "Value"},
-					},
-				)
-				@componentForm.MultiColumnRepeatableFieldset(
-					"portBindings", "Port Bindings", "",
-					"service.portBindings", []componentForm.RepeatableField{
-						{InputType: "text", Id: "port", Label: "Public Port"},
-						{
-							InputType: "select",
-							Id:        "protocol",
-							Label:     "Protocol",
-							Options:   valueObject.ValidNetworkProtocols,
-						},
-					},
-				)
-			</div>
-		}
+		@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+			Items: []uiDisplay.AccordionItemSettings{
+				{
+					Title:   "Advanced Settings",
+					Icon:    "ph-gear",
+					Content: InstallableServiceAdvancedSettings(installableServices),
+				},
+			},
+		})
 	</div>
-	@componentForm.SubmitButton(
-		submitButtonId, submitButtonText, submitButtonIcon, submitButtonOnClick, false,
-	)
+	@uiControl.Button(uiControl.ButtonSettings{
+		Label:                submitButtonText,
+		IconLeft:             submitButtonIcon,
+		Id:                   submitButtonId,
+		BackgroundColor:      "infinite-500",
+		BackgroundColorHover: "infinite-300",
+		IsFullWidth:          true,
+		IsSubmit:             true,
+		OnClickFunc:          submitButtonOnClick,
+	})
+}
+
+templ CustomServiceAdvancedSettings() {
+	<div class="flex w-full flex-col gap-4">
+		@uiForm.InputField(uiForm.InputFieldSettings{
+			InputType:       uiForm.InputTypeText,
+			InputName:       "avatarUrl",
+			Label:           "Avatar URL",
+			TwoWayStatePath: "service.avatarUrl",
+		})
+		@uiForm.InputField(uiForm.InputFieldSettings{
+			InputType:       uiForm.InputTypeText,
+			InputName:       "workingDirectory",
+			Label:           "Working Directory",
+			TwoWayStatePath: "service.workingDirectory",
+		})
+		<div class="grid grid-cols-1 gap-2 md:grid-cols-3">
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:                         uiForm.InputTypeText,
+				InputName:                         "execUser",
+				Label:                             "Exec User",
+				TwoWayStatePath:                   "service.execUser",
+				HintValue:                         "Unix user that will be used to execute your service commands.",
+				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplayTooltipBackgroundColor: "os-400",
+			})
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:       uiForm.InputTypeNumber,
+				InputName:       "timeoutStartSecs",
+				Label:           "Timeout Start Secs",
+				TwoWayStatePath: "service.timeoutStartSecs",
+				InputNumberMin:  "0",
+			})
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:       uiForm.InputTypeNumber,
+				InputName:       "maxStartRetries",
+				Label:           "Max Start Retries",
+				TwoWayStatePath: "service.maxStartRetries",
+				InputNumberMin:  "0",
+			})
+		</div>
+		<div class="grid grid-cols-2 gap-2">
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:                         uiForm.InputTypeText,
+				InputName:                         "logOutputPath",
+				Label:                             "Log Output Path",
+				TwoWayStatePath:                   "service.logOutputPath",
+				HintValue:                         "Path to the file that will receive the custom service output logs.",
+				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplayTooltipBackgroundColor: "os-400",
+			})
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:                         uiForm.InputTypeText,
+				InputName:                         "logErrorPath",
+				Label:                             "Log Error Path",
+				TwoWayStatePath:                   "service.logErrorPath",
+				HintValue:                         "Path to the file that will receive the custom service error logs.",
+				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplayTooltipBackgroundColor: "os-400",
+			})
+		</div>
+		@ServiceAutomaticSettings()
+		@componentForm.MultiColumnRepeatableFieldset(
+			"envs", "Environment Variables", "", "service.envs",
+			[]componentForm.RepeatableField{
+				{InputType: "text", Id: "name", Label: "Name"},
+				{InputType: "text", Id: "value", Label: "Value"},
+			},
+		)
+		@componentForm.MultiColumnRepeatableFieldset(
+			"portBindings", "Port Bindings", "",
+			"service.portBindings", []componentForm.RepeatableField{
+				{InputType: "text", Id: "port", Label: "Public Port"},
+				{
+					InputType: "select",
+					Id:        "protocol",
+					Label:     "Protocol",
+					Options:   valueObject.ValidNetworkProtocols,
+				},
+			},
+		)
+	</div>
 }
 
 templ CustomServiceForm(
@@ -739,123 +863,85 @@ templ CustomServiceForm(
 	<!-- CustomServiceForm -->
 	<div class="grid grid-rows-2 gap-4">
 		<div class="grid grid-cols-2 gap-x-2">
-			@componentForm.InputField(componentForm.InputFieldDto{
-				Type:               "text",
-				Label:              "Name",
-				BindModelValuePath: "service.name",
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:       uiForm.InputTypeText,
+				InputName:       "name",
+				Label:           "Name",
+				TwoWayStatePath: "service.name",
 			})
-			@componentForm.SelectInput(
-				"", "Type", "service.type", "", valueObject.ValidServiceTypes,
-				true,
-			)
+			@uiForm.SelectInput(uiForm.SelectInputSettings{
+				InputName:                "type",
+				Label:                    "Type",
+				FlatOptions:              valueObject.ValidServiceTypes,
+				TwoWayStatePath:          "service.type",
+				DropdownBackgroundColor:  "primary-500/95",
+				ShouldIncludeBlankOption: true,
+			})
 		</div>
 		<div class="flex justify-center">
 			<div class="w-2/3">
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Label:              "Start Command",
-					BindModelValuePath: "service.startCmd",
-					InfoTooltipContent: `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
+				@uiForm.InputField(uiForm.InputFieldSettings{
+					InputType:                         uiForm.InputTypeText,
+					InputName:                         "startCmd",
+					Label:                             "Start Command",
+					TwoWayStatePath:                   "service.startCmd",
+					HintValue:                         `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
+					HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+					HintDisplayTooltipBackgroundColor: "os-400",
 				})
 			</div>
 		</div>
 	</div>
 	<div class="my-4">
-		@componentStructural.CollapsibleSection("Advanced Settings", "ph-gear", false) {
-			<div class="flex w-full flex-col gap-4">
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Label:              "Avatar URL",
-					BindModelValuePath: "service.avatarUrl",
-				})
-				<div class="grid grid-cols-3 gap-2">
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "text",
-						Label:              "Exec User",
-						BindModelValuePath: "service.execUser",
-						InfoTooltipContent: "Unix user that will be used to execute your service commands.",
-					})
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "number",
-						Label:              "Timeout Start Secs",
-						BindModelValuePath: "service.timeoutStartSecs",
-					})
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "number",
-						Label:              "Max Start Retries",
-						BindModelValuePath: "service.maxStartRetries",
-					})
-				</div>
-				<div class="grid grid-cols-2 gap-2">
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "text",
-						Label:              "Log Output Path",
-						BindModelValuePath: "service.logOutputPath",
-						InfoTooltipContent: "Path to the file that will receive the custom service output logs.",
-					})
-					@componentForm.InputField(componentForm.InputFieldDto{
-						Type:               "text",
-						Label:              "Log Error Path",
-						BindModelValuePath: "service.logErrorPath",
-						InfoTooltipContent: "Path to the file that will receive the custom service error logs.",
-					})
-				</div>
-				<div class="grid grid-cols-3 place-items-center gap-2">
-					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-						Label:         "Auto Restart",
-						BindModelPath: "service.autoRestart",
-					})
-					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-						Label:         "Auto Start",
-						BindModelPath: "service.autoStart",
-					})
-					@componentForm.CheckboxInputSwitchToggle(componentForm.CheckboxInputSwitchToggleDto{
-						Label:         "Auto Create Mapping",
-						BindModelPath: "service.autoCreateMapping",
-					})
-				</div>
-				@componentForm.MultiColumnRepeatableFieldset(
-					"envs", "Environment Variables", "", "service.envs",
-					[]componentForm.RepeatableField{
-						{InputType: "text", Id: "name", Label: "Name"},
-						{InputType: "text", Id: "value", Label: "Value"},
-					},
-				)
-				@componentForm.MultiColumnRepeatableFieldset(
-					"portBindings", "Port Bindings", "",
-					"service.portBindings", []componentForm.RepeatableField{
-						{InputType: "text", Id: "port", Label: "Public Port"},
-						{
-							InputType: "select",
-							Id:        "protocol",
-							Label:     "Protocol",
-							Options:   valueObject.ValidNetworkProtocols,
-						},
-					},
-				)
-			</div>
-		}
+		@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+			Items: []uiDisplay.AccordionItemSettings{
+				{
+					Title:   "Advanced Settings",
+					Icon:    "ph-gear",
+					Content: CustomServiceAdvancedSettings(),
+				},
+			},
+		})
 	</div>
-	@componentForm.SubmitButton(
-		submitButtonId, submitButtonText, submitButtonIcon, submitButtonOnClick, false,
-	)
+	@uiControl.Button(uiControl.ButtonSettings{
+		Label:                submitButtonText,
+		IconLeft:             submitButtonIcon,
+		Id:                   submitButtonId,
+		BackgroundColor:      "infinite-500",
+		BackgroundColorHover: "infinite-300",
+		IsFullWidth:          true,
+		IsSubmit:             true,
+		OnClickFunc:          submitButtonOnClick,
+	})
 }
 
 templ ServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
 	<form @submit.prevent="">
 		<div class="-mt-4 mb-4 flex justify-start gap-4">
-			@componentForm.RadioInput("", "Installable", "installables", "targetServiceType")
-			@componentForm.RadioInput("", "Custom", "custom", "targetServiceType")
+			@uiForm.RadioInput(uiForm.RadioInputSettings{
+				Label:           "Installable",
+				StateValue:      "installables",
+				TwoWayStatePath: "targetServiceType",
+				InputId:         "service-installation-installables",
+				InputName:       "targetServiceType",
+			})
+			@uiForm.RadioInput(uiForm.RadioInputSettings{
+				Label:           "Custom",
+				StateValue:      "custom",
+				TwoWayStatePath: "targetServiceType",
+				InputId:         "service-installation-custom",
+				InputName:       "targetServiceType",
+			})
 		</div>
 		<div x-show="targetServiceType === 'installables'">
 			@InstallableServiceForm(
-				"schedule-service-installation-button", "Schedule installation",
+				"schedule-service-installation-button", "schedule installation",
 				"ph-queue", "installService()", &installableServices,
 			)
 		</div>
 		<div x-show="targetServiceType === 'custom'">
 			@CustomServiceForm(
-				"install-service-button", "Install Immediately", "ph-arrow-line-down",
+				"install-service-button", "install immediately", "ph-arrow-line-down",
 				"installService()",
 			)
 		</div>
@@ -866,7 +952,7 @@ templ ServiceInstallationModal(
 	installableServices InstallableServicesGroupedByType,
 ) {
 	@componentStructural.RegularModal(
-		"Install service", "isServiceInstallationModalOpen",
+		"Install Service", "isServiceInstallationModalOpen",
 		"closeServiceInstallationModal()", "",
 	) {
 		@ServiceInstallationForm(installableServices)
@@ -877,13 +963,13 @@ templ UpdateInstalledServiceForm() {
 	<form @submit.prevent="">
 		<div x-show="service.nature !== 'custom'">
 			@InstallableServiceForm(
-				"update-installed-service-button", "Update Service", "ph-check-fat",
+				"update-installed-service-button", "update service", "ph-check-fat",
 				"updateService()", nil,
 			)
 		</div>
 		<div x-show="service.nature === 'custom'">
 			@CustomServiceForm(
-				"update-installed-service-button", "Update Service", "ph-check-fat",
+				"update-installed-service-button", "update service", "ph-check-fat",
 				"updateService()",
 			)
 		</div>

@@ -2,6 +2,7 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -110,9 +111,9 @@ func (controller *CronController) Create() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&scheduleStr, "schedule", "s", "", "Schedule")
-	cmd.MarkFlagRequired("schedule")
+	cliHelper.MarkRequiredFlag(cmd, "schedule")
 	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command")
-	cmd.MarkFlagRequired("command")
+	cliHelper.MarkRequiredFlag(cmd, "command")
 	cmd.Flags().StringVarP(&commentStr, "comment", "d", "", "Comment")
 	return cmd
 }
@@ -147,7 +148,7 @@ func (controller *CronController) Update() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&idStr, "id", "i", "", "CronId")
-	cmd.MarkFlagRequired("id")
+	cliHelper.MarkRequiredFlag(cmd, "id")
 	cmd.Flags().StringVarP(&scheduleStr, "schedule", "s", "", "Schedule")
 	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command")
 	cmd.Flags().StringVarP(&commentStr, "comment", "d", "", "Comment")

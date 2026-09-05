@@ -1,33 +1,65 @@
 package valueObject
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
-func TestFailureReason(t *testing.T) {
-	t.Run("ValidFailureReason", func(t *testing.T) {
-		validFailureReasons := []interface{}{
-			"InvalidRecordId", "Container must be primary",
-			"Your currently vhost is not able to get a alias",
-			"This user should not be able to update API required policies",
-		}
+func TestNewFailureReason(t *testing.T) {
+	truncatedExpected := strings.Repeat("x", 2048)
+	truncatedInput := truncatedExpected + "overflow"
 
-		for _, reason := range validFailureReasons {
-			_, err := NewFailureReason(reason)
-			if err != nil {
-				t.Errorf("Expected no error for '%v', got '%s'", reason, err)
+	testCases := []struct {
+		name           string
+		inputValue     any
+		expectedOutput FailureReason
+	}{
+		{
+			name:           "NonEmptyStringIsKept",
+			inputValue:     "InvalidRecordId",
+			expectedOutput: "InvalidRecordId",
+		},
+		{
+			name:           "FreeFormSentenceIsKept",
+			inputValue:     "This user should not be able to update API required policies",
+			expectedOutput: "This user should not be able to update API required policies",
+		},
+		{
+			name:           "EmptyStringBecomesMalformed",
+			inputValue:     "",
+			expectedOutput: "MalformedFailureReason",
+		},
+		{
+			name:           "NonStringBecomesMalformed",
+			inputValue:     []string{"InvalidRecordId"},
+			expectedOutput: "MalformedFailureReason",
+		},
+		{
+			name:           "OversizedStringIsTruncated",
+			inputValue:     truncatedInput,
+			expectedOutput: FailureReason(truncatedExpected),
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			actualOutput := NewFailureReason(testCase.inputValue)
+			if actualOutput != testCase.expectedOutput {
+				t.Errorf(
+					"UnexpectedOutputValue: '%v' vs '%v' [%v]",
+					actualOutput, testCase.expectedOutput, testCase.inputValue,
+				)
 			}
-		}
-	})
+		})
+	}
+}
 
-	t.Run("InvalidFailureReason", func(t *testing.T) {
-		invalidFailureReasons := []interface{}{
-			"",
-		}
-
-		for _, reason := range invalidFailureReasons {
-			_, err := NewFailureReason(reason)
-			if err == nil {
-				t.Errorf("Expected error for '%v', got nil", reason)
-			}
-		}
-	})
+func TestFailureReasonStringMethod(t *testing.T) {
+	actualOutput := FailureReason("MalformedFailureReason").String()
+	if actualOutput != "MalformedFailureReason" {
+		t.Errorf(
+			"UnexpectedOutputValue: '%v' vs 'MalformedFailureReason'",
+			actualOutput,
+		)
+	}
 }

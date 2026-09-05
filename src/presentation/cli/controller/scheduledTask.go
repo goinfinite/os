@@ -2,6 +2,7 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -159,7 +160,7 @@ func (controller *ScheduledTaskController) Update() *cobra.Command {
 	}
 
 	cmd.Flags().Uint64VarP(&taskIdUint64, "task-id", "i", 0, "TaskId")
-	cmd.MarkFlagRequired("task-id")
+	cliHelper.MarkRequiredFlag(cmd, "task-id")
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "Status (pending/cancelled)")
 	cmd.Flags().Int64VarP(&runAtInt64, "run-at", "r", 0, "RunAt (UnixTime)")
 	return cmd

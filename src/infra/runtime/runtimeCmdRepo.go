@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"path/filepath"
 	"regexp"
 	"strings"
 
@@ -325,76 +326,67 @@ func (repo *RuntimeCmdRepo) UpdatePhpSettings(
 	return repo.restartPhpWebServer()
 }
 
+func (repo *RuntimeCmdRepo) phpExtensionPackageNameResolver(
+	phpVersion valueObject.PhpVersion,
+	moduleName string,
+) string {
+	lsphpPackagePrefix := "lsphp" + phpVersion.GetWithoutDots() + "-"
+	switch moduleName {
+	case "mysqli", "pdo_mysql":
+		return lsphpPackagePrefix + "mysql"
+	case "pdo_sqlite", "sqlite3":
+		return lsphpPackagePrefix + "sqlite3"
+	default:
+		return lsphpPackagePrefix + moduleName
+	}
+}
+
+func (repo *RuntimeCmdRepo) isPhpModuleIniFilePresent(
+	filePath string,
+) (bool, error) {
+	fileInfo, err := os.Lstat(filePath)
+	if err != nil {
+		if os.IsNotExist(err) {
+			return false, nil
+		}
+		return false, err
+	}
+
+	return !fileInfo.IsDir(), nil
+}
+
 func (repo *RuntimeCmdRepo) EnablePhpModule(
 	phpVersion valueObject.PhpVersion,
 	module entity.PhpModule,
 ) error {
+	moduleNameStr := module.Name.String()
 	lsphpDir := "/usr/local/lsws/lsphp" + phpVersion.GetWithoutDots()
 	iniRootDir := lsphpDir + "/etc/php/" + phpVersion.String()
 	modsAvailableDir := iniRootDir + "/mods-available"
 	modsDisabledDir := iniRootDir + "/mods-disabled"
 
-	moduleNameStr := module.Name.String()
-	disabledInitFile, err := infraHelper.GetFilePathWithMatch(
-		modsDisabledDir, moduleNameStr+".ini",
+	disabledIniFile := filepath.Join(modsDisabledDir, moduleNameStr+".ini")
+	isDisabledIniFilePresent, err := repo.isPhpModuleIniFilePresent(
+		disabledIniFile,
 	)
-	if err == nil {
-		enabledIniFile := strings.Replace(
-			disabledInitFile, modsDisabledDir, modsAvailableDir, 1,
-		)
-
-		os.Rename(disabledInitFile, enabledIniFile)
-		return nil
-	}
-
-	lsphpPkgPrefix := "lsphp" + phpVersion.GetWithoutDots() + "-"
-	err = infraHelper.InstallPkgs([]string{lsphpPkgPrefix + moduleNameStr})
-	if err == nil {
-		return nil
-	}
-
-	err = infraHelper.InstallPkgs([]string{lsphpPkgPrefix + "pear"})
 	if err != nil {
-		return errors.New("InstallPhpPearModuleFailed: " + err.Error())
+		return errors.New("ReadDisabledPhpModuleIniFileFailed: " + err.Error())
 	}
-
-	_ = os.Symlink("/bin/sed", "/usr/bin/sed")
-
-	dependenciesToInstall := []string{}
-	// cSpell:disable
-	switch moduleNameStr {
-	case "mcrypt":
-		dependenciesToInstall = []string{"libmcrypt-dev", "libmcrypt4"}
-	case "ssh2":
-		dependenciesToInstall = []string{"libssh2-1-dev", "libssh2-1"}
-	case "yaml":
-		dependenciesToInstall = []string{"libyaml-dev"}
-	case "xdebug", "parallel", "swoole", "sqlsrv":
-		if phpVersion == "7.4" {
-			return errors.New("PhpVersionUnsupportedByModule: " + phpVersion.String())
+	if isDisabledIniFilePresent {
+		enabledIniFile := filepath.Join(modsAvailableDir, moduleNameStr+".ini")
+		err = os.Rename(disabledIniFile, enabledIniFile)
+		if err != nil {
+			return errors.New("EnablePhpModuleFailed: " + err.Error())
 		}
-	}
-	// cSpell:enable
-	err = infraHelper.InstallPkgs(dependenciesToInstall)
-	if err != nil {
-		return errors.New("InstallModuleFailed: " + err.Error())
+
+		return nil
 	}
 
-	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           "echo | " + lsphpDir + "/bin/pecl install " + moduleNameStr,
-		ShouldUseSubShell: true,
-	}).Run()
+	err = infraHelper.InstallPkgs([]string{
+		repo.phpExtensionPackageNameResolver(phpVersion, moduleNameStr),
+	})
 	if err != nil {
-		return errors.New("InstallPeclModuleFailed: " + err.Error())
-	}
-
-	moduleConfigFilePath := modsAvailableDir + "/" + moduleNameStr + ".ini"
-	moduleConfigFileContent := "extension=" + moduleNameStr + ".so"
-	err = repo.fileClerk.UpdateFileContent(
-		moduleConfigFilePath, moduleConfigFileContent, true,
-	)
-	if err != nil {
-		return errors.New("CreatePhpModuleIniFileFailed: " + err.Error())
+		return errors.New("InstallPhpModulePackageFailed: " + err.Error())
 	}
 
 	return nil
@@ -404,23 +396,29 @@ func (repo *RuntimeCmdRepo) DisablePhpModule(
 	phpVersion valueObject.PhpVersion,
 	module entity.PhpModule,
 ) error {
+	moduleNameStr := module.Name.String()
 	iniRootDir := "/usr/local/lsws/lsphp" +
 		phpVersion.GetWithoutDots() + "/etc/php/" + phpVersion.String()
 	modsAvailableDir := iniRootDir + "/mods-available"
 	modsDisabledDir := iniRootDir + "/mods-disabled"
 
-	enabledIniFile, err := infraHelper.GetFilePathWithMatch(
-		modsAvailableDir,
-		module.Name.String()+".ini",
+	enabledIniFile := filepath.Join(modsAvailableDir, moduleNameStr+".ini")
+	isEnabledIniFilePresent, err := repo.isPhpModuleIniFilePresent(
+		enabledIniFile,
 	)
 	if err != nil {
-		return errors.New("PhpModuleIniFileNotFound: " + err.Error())
+		return errors.New("ReadEnabledPhpModuleIniFileFailed: " + err.Error())
 	}
-	disabledIniFile := strings.Replace(
-		enabledIniFile, modsAvailableDir, modsDisabledDir, 1,
-	)
+	if !isEnabledIniFilePresent {
+		return errors.New("PhpModuleIniFileNotFound: " + enabledIniFile)
+	}
 
-	os.Mkdir(modsDisabledDir, 0755)
+	disabledIniFile := filepath.Join(modsDisabledDir, moduleNameStr+".ini")
+	err = os.MkdirAll(modsDisabledDir, 0755)
+	if err != nil {
+		return errors.New("CreatePhpModulesDisabledDirFailed: " + err.Error())
+	}
+
 	err = os.Rename(enabledIniFile, disabledIniFile)
 	if err != nil {
 		return errors.New("DisablePhpModuleFailed: " + err.Error())
@@ -443,7 +441,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 		return err
 	}
 
-	activeModuleNames := map[string]interface{}{}
+	activeModuleNames := map[string]any{}
 	for _, module := range allModules {
 		if !module.Status {
 			continue
@@ -453,8 +451,9 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 	}
 
 	for _, module := range modules {
+		moduleNameStr := module.Name.String()
 		shouldEnable := module.Status
-		_, isModuleCurrentlyEnabled := activeModuleNames[module.Name.String()]
+		_, isModuleCurrentlyEnabled := activeModuleNames[moduleNameStr]
 
 		if shouldEnable {
 			if isModuleCurrentlyEnabled {
@@ -463,6 +462,11 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 
 			err := repo.EnablePhpModule(phpVersion.Value, module)
 			if err != nil {
+				slog.Error(
+					"EnablePhpModuleFailed",
+					slog.String("moduleName", moduleNameStr),
+					slog.String("err", err.Error()),
+				)
 				continue
 			}
 
@@ -475,6 +479,11 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 
 		err := repo.DisablePhpModule(phpVersion.Value, module)
 		if err != nil {
+			slog.Error(
+				"DisablePhpModuleFailed",
+				slog.String("moduleName", moduleNameStr),
+				slog.String("err", err.Error()),
+			)
 			continue
 		}
 	}

@@ -35,6 +35,13 @@ type MarketplaceCmdRepo struct {
 	fileClerk            tkInfra.FileClerk
 }
 
+type marketplaceCmdStepType string
+
+const (
+	marketplaceCmdStepTypeInstall   marketplaceCmdStepType = "Install"
+	marketplaceCmdStepTypeUninstall marketplaceCmdStepType = "Uninstall"
+)
+
 func NewMarketplaceCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 ) *MarketplaceCmdRepo {
@@ -202,13 +209,14 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 }
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
-	stepsType string,
+	stepsType marketplaceCmdStepType,
 	steps []tkValueObject.UnixCommand,
 	totalExecTimeoutSecs tkValueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
 	}
+	stepsTypeStr := string(stepsType)
 
 	totalExecTimeoutSecsUint := uint64(totalExecTimeoutSecs.Int64())
 	shellSettings := tkInfra.ShellSettings{
@@ -220,7 +228,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	for stepIndex, step := range steps {
 		stepStr := step.String()
 
-		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
+		slog.Debug("Running"+stepsTypeStr+"Step", slog.String("step", stepStr))
 
 		shellSettings.Command = stepStr
 
@@ -229,19 +237,19 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		if err != nil {
 			errorMessage := stepOutput + " | " + err.Error()
 			if strings.Contains(err.Error(), "CommandDeadlineExceeded") {
-				errorMessage = "MarketplaceItem" + stepsType + "TimeoutExceeded"
+				errorMessage = "MarketplaceItem" + stepsTypeStr + "TimeoutExceeded"
 			}
 
 			return fmt.Errorf(
 				"%sCmdStepError (%s): %s",
-				stepsType, strconv.Itoa(stepIndex), errorMessage,
+				stepsTypeStr, strconv.Itoa(stepIndex), errorMessage,
 			)
 		}
 
 		stepExecElapsedTimeSecs := uint64(time.Since(stepExecTimeStart).Seconds())
 		totalExecRemainingTime = totalExecRemainingTime - stepExecElapsedTimeSecs
 		if totalExecRemainingTime == 0 {
-			return errors.New("MarketplaceItem" + stepsType + "TimeoutExceeded")
+			return errors.New("MarketplaceItem" + stepsTypeStr + "TimeoutExceeded")
 		}
 
 		shellSettings.ExecutionTimeoutSecs = totalExecRemainingTime
@@ -498,7 +506,8 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	err = repo.runCmdSteps(
-		"Install", usableInstallCmdSteps, catalogItem.InstallTimeoutSecs,
+		marketplaceCmdStepTypeInstall,
+		usableInstallCmdSteps, catalogItem.InstallTimeoutSecs,
 	)
 	if err != nil {
 		return err
@@ -770,7 +779,8 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	err = repo.runCmdSteps(
-		"Uninstall", usableInstallCmdSteps, catalogItem.UninstallTimeoutSecs,
+		marketplaceCmdStepTypeUninstall,
+		usableInstallCmdSteps, catalogItem.UninstallTimeoutSecs,
 	)
 	if err != nil {
 		return err

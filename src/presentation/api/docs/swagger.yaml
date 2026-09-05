@@ -147,6 +147,8 @@ definitions:
         items:
           $ref: '#/definitions/valueObject.PortBinding'
         type: array
+      startCmd:
+        type: string
       startupFile:
         type: string
       timeoutStartSecs:
@@ -329,6 +331,17 @@ definitions:
       workingDirectory:
         type: string
     type: object
+  dto.PhpModuleParsingFailure:
+    properties:
+      index:
+        type: integer
+      name:
+        type: string
+      reason:
+        type: string
+      status:
+        type: boolean
+    type: object
   dto.ReadAccountsResponse:
     properties:
       accounts:
@@ -336,7 +349,7 @@ definitions:
           $ref: '#/definitions/entity.Account'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadCronsResponse:
     properties:
@@ -345,7 +358,7 @@ definitions:
           $ref: '#/definitions/entity.Cron'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadDatabasesResponse:
     properties:
@@ -354,7 +367,7 @@ definitions:
           $ref: '#/definitions/entity.Database'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadFilesResponse:
     properties:
@@ -372,7 +385,7 @@ definitions:
           $ref: '#/definitions/entity.InstallableService'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadInstalledServicesItemsResponse:
     properties:
@@ -385,7 +398,7 @@ definitions:
           $ref: '#/definitions/dto.InstalledServiceWithMetrics'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadMappingSecurityRulesResponse:
     properties:
@@ -394,7 +407,7 @@ definitions:
           $ref: '#/definitions/entity.MappingSecurityRule'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadMarketplaceCatalogItemsResponse:
     properties:
@@ -403,7 +416,7 @@ definitions:
           $ref: '#/definitions/entity.MarketplaceCatalogItem'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadMarketplaceInstalledItemsResponse:
     properties:
@@ -412,12 +425,12 @@ definitions:
           $ref: '#/definitions/entity.MarketplaceInstalledItem'
         type: array
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
     type: object
   dto.ReadScheduledTasksResponse:
     properties:
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
       tasks:
         items:
           $ref: '#/definitions/entity.ScheduledTask'
@@ -426,7 +439,7 @@ definitions:
   dto.ReadSslPairsResponse:
     properties:
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
       sslPairs:
         items:
           $ref: '#/definitions/entity.SslPair'
@@ -435,7 +448,7 @@ definitions:
   dto.ReadVirtualHostsResponse:
     properties:
       pagination:
-        $ref: '#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination'
+        $ref: '#/definitions/tkDto.Pagination'
       virtualHostWithMappings:
         items:
           $ref: '#/definitions/dto.VirtualHostWithMappings'
@@ -550,7 +563,7 @@ definitions:
       rpsSoftLimitPerIp:
         type: integer
     type: object
-  dto.UpdatePhpConfigs:
+  dto.UpdatePhpConfigsRequest:
     properties:
       hostname:
         type: string
@@ -564,6 +577,15 @@ definitions:
         type: array
       version:
         type: string
+    type: object
+  dto.UpdatePhpConfigsResponse:
+    properties:
+      failedModulesWithParsingErrors:
+        items:
+          $ref: '#/definitions/dto.PhpModuleParsingFailure'
+        type: array
+      taskId:
+        type: integer
     type: object
   dto.UpdateScheduledTask:
     properties:
@@ -1160,7 +1182,7 @@ definitions:
       type:
         $ref: '#/definitions/valueObject.VirtualHostType'
     type: object
-  github_com_goinfinite_tk_src_domain_dto.Pagination:
+  tkDto.Pagination:
     properties:
       itemsPerPage:
         type: integer
@@ -1349,7 +1371,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.3.2
+  version: 0.3.3
 paths:
   /v1/account/:
     get:
@@ -2282,10 +2304,10 @@ paths:
         type: string
       - description: modules and settings are optional.
         in: body
-        name: updatePhpConfigsDto
+        name: updatePhpConfigsRequest
         required: true
         schema:
-          $ref: '#/definitions/dto.UpdatePhpConfigs'
+          $ref: '#/definitions/dto.UpdatePhpConfigsRequest'
       produces:
       - application/json
       responses:
@@ -2293,6 +2315,14 @@ paths:
           description: PhpConfigsUpdated
           schema:
             type: object
+        "201":
+          description: PhpModuleUpdateScheduled
+          schema:
+            $ref: '#/definitions/dto.UpdatePhpConfigsResponse'
+        "207":
+          description: PhpModuleParsingFailuresReported
+          schema:
+            $ref: '#/definitions/dto.UpdatePhpConfigsResponse'
       security:
       - Bearer: []
       summary: UpdatePhpConfigs

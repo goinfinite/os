@@ -100,7 +100,8 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + `/v1/account/secure-access-public-key/${this.secureAccessPublicKey.id}/`,
+          Infinite.OsApiBasePath +
+            `/v1/account/secure-access-public-key/${this.secureAccessPublicKey.id}/`,
           { swap: "none" }
         )
         .then(() => this.$dispatch("delete:secure-access-public-key"))
@@ -121,7 +122,11 @@ UiToolset.RegisterAlpineState(() => {
     },
     deleteAccount() {
       htmx
-        .ajax("DELETE", Infinite.OsApiBasePath + `/v1/account/` + this.account.id, { swap: "none" })
+        .ajax(
+          "DELETE",
+          Infinite.OsApiBasePath + `/v1/account/` + this.account.id + "/",
+          { swap: "none" }
+        )
         .then(() => this.$dispatch("delete:account"))
         .finally(() => this.closeDeleteAccountModal());
     },

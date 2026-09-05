@@ -96,3 +96,75 @@ func TestServicesQueryRepo(t *testing.T) {
 		}
 	})
 }
+
+func TestServicesQueryRepoParseManifestCmdStepsReplacesInstallPackages(
+	t *testing.T,
+) {
+	servicesQueryRepo := &ServicesQueryRepo{}
+	rawCmdSteps := []any{"install_packages -qqy jq"}
+
+	cmdSteps, err := servicesQueryRepo.parseManifestCmdSteps(
+		serviceCmdStepTypeInstall, rawCmdSteps,
+	)
+	if err != nil {
+		t.Fatalf("ParseManifestCmdStepsShouldSucceed: %v", err)
+	}
+
+	if len(cmdSteps) != 1 {
+		t.Fatalf("UnexpectedCmdStepsCount: %d", len(cmdSteps))
+	}
+
+	expectedCommand := "DEBIAN_FRONTEND=noninteractive apt-get install -y -qqy jq"
+	if cmdSteps[0].String() != expectedCommand {
+		t.Errorf(
+			"UnexpectedCommand: %q; expected %q",
+			cmdSteps[0].String(), expectedCommand,
+		)
+	}
+}
+
+func TestServicesQueryRepoParseManifestCmdStepsPreservesNonInstallCommands(
+	t *testing.T,
+) {
+	servicesQueryRepo := &ServicesQueryRepo{}
+	testCases := []struct {
+		stepsType       serviceCmdStepType
+		rawCommand      string
+		expectedCommand string
+	}{
+		{
+			stepsType:       serviceCmdStepTypeUninstall,
+			rawCommand:      "install_packages -qqy jq",
+			expectedCommand: "install_packages -qqy jq",
+		},
+		{
+			stepsType:       serviceCmdStepTypeStop,
+			rawCommand:      "uninstall_packages -qqy jq",
+			expectedCommand: "uninstall_packages -qqy jq",
+		},
+	}
+
+	for _, testCase := range testCases {
+		t.Run(testCase.rawCommand, func(t *testing.T) {
+			rawCmdSteps := []any{testCase.rawCommand}
+
+			cmdSteps, err := servicesQueryRepo.parseManifestCmdSteps(
+				testCase.stepsType, rawCmdSteps,
+			)
+			if err != nil {
+				t.Fatalf("ParseManifestCmdStepsShouldSucceed: %v", err)
+			}
+
+			if len(cmdSteps) != 1 {
+				t.Fatalf("UnexpectedCmdStepsCount: %d", len(cmdSteps))
+			}
+
+			if cmdSteps[0].String() != testCase.expectedCommand {
+				t.Errorf(
+					"UnexpectedCommand: %q; expected %q",
+					cmdSteps[0].String(), testCase.expectedCommand,
+				)
+			}
+		})
+	}
+}

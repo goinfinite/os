@@ -1,10 +1,11 @@
 package cliController
 
 import (
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
+	"github.com/goinfinite/os/src/presentation/liaison"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
-	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
-	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
@@ -140,13 +141,13 @@ func (controller *SslController) Create() *cobra.Command {
 	cmd.Flags().StringSliceVarP(
 		&virtualHostsSlice, "virtualHosts", "v", []string{}, "VirtualHosts",
 	)
-	cmd.MarkFlagRequired("virtualHosts")
+	cliHelper.MarkRequiredFlag(cmd, "virtualHosts")
 	cmd.Flags().StringVarP(
 		&certFilePathStr, "certFilePath", "c", "", "SslCertificateFilePath",
 	)
-	cmd.MarkFlagRequired("certFilePath")
+	cliHelper.MarkRequiredFlag(cmd, "certFilePath")
 	cmd.Flags().StringVarP(&keyFilePathStr, "keyFilePath", "k", "", "SslKeyFilePath")
-	cmd.MarkFlagRequired("keyFilePath")
+	cliHelper.MarkRequiredFlag(cmd, "keyFilePath")
 	return cmd
 }
 
@@ -168,7 +169,7 @@ func (controller *SslController) CreatePubliclyTrusted() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
-	cmd.MarkFlagRequired("hostname")
+	cliHelper.MarkRequiredFlag(cmd, "hostname")
 	return cmd
 }
 
@@ -188,6 +189,6 @@ func (controller *SslController) Delete() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&sslPairIdStr, "pairId", "i", "", "SslPairId")
-	cmd.MarkFlagRequired("pairId")
+	cliHelper.MarkRequiredFlag(cmd, "pairId")
 	return cmd
 }

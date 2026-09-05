@@ -1534,11 +1534,11 @@ const docTemplate = `{
                     },
                     {
                         "description": "modules and settings are optional.",
-                        "name": "updatePhpConfigsDto",
+                        "name": "updatePhpConfigsRequest",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/dto.UpdatePhpConfigs"
+                            "$ref": "#/definitions/dto.UpdatePhpConfigsRequest"
                         }
                     }
                 ],
@@ -1547,6 +1547,18 @@ const docTemplate = `{
                         "description": "PhpConfigsUpdated",
                         "schema": {
                             "type": "object"
+                        }
+                    },
+                    "201": {
+                        "description": "PhpModuleUpdateScheduled",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePhpConfigsResponse"
+                        }
+                    },
+                    "207": {
+                        "description": "PhpModuleParsingFailuresReported",
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdatePhpConfigsResponse"
                         }
                     }
                 }
@@ -3135,6 +3147,9 @@ const docTemplate = `{
                         "$ref": "#/definitions/valueObject.PortBinding"
                     }
                 },
+                "startCmd": {
+                    "type": "string"
+                },
                 "startupFile": {
                     "type": "string"
                 },
@@ -3414,6 +3429,23 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.PhpModuleParsingFailure": {
+            "type": "object",
+            "properties": {
+                "index": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "reason": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "boolean"
+                }
+            }
+        },
         "dto.ReadAccountsResponse": {
             "type": "object",
             "properties": {
@@ -3424,7 +3456,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3438,7 +3470,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3452,7 +3484,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3480,7 +3512,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3500,7 +3532,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3514,7 +3546,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3528,7 +3560,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3542,7 +3574,7 @@ const docTemplate = `{
                     }
                 },
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 }
             }
         },
@@ -3550,7 +3582,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "tasks": {
                     "type": "array",
@@ -3564,7 +3596,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "sslPairs": {
                     "type": "array",
@@ -3578,7 +3610,7 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "pagination": {
-                    "$ref": "#/definitions/github_com_goinfinite_tk_src_domain_dto.Pagination"
+                    "$ref": "#/definitions/tkDto.Pagination"
                 },
                 "virtualHostWithMappings": {
                     "type": "array",
@@ -3755,7 +3787,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dto.UpdatePhpConfigs": {
+        "dto.UpdatePhpConfigsRequest": {
             "type": "object",
             "properties": {
                 "hostname": {
@@ -3775,6 +3807,20 @@ const docTemplate = `{
                 },
                 "version": {
                     "type": "string"
+                }
+            }
+        },
+        "dto.UpdatePhpConfigsResponse": {
+            "type": "object",
+            "properties": {
+                "failedModulesWithParsingErrors": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dto.PhpModuleParsingFailure"
+                    }
+                },
+                "taskId": {
+                    "type": "integer"
                 }
             }
         },
@@ -4684,7 +4730,7 @@ const docTemplate = `{
                 }
             }
         },
-        "github_com_goinfinite_tk_src_domain_dto.Pagination": {
+        "tkDto.Pagination": {
             "type": "object",
             "properties": {
                 "itemsPerPage": {
@@ -4950,7 +4996,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.2",
+	Version:          "0.3.3",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

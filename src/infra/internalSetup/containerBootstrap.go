@@ -3,6 +3,7 @@ package internalSetupInfra
 import (
 	"log/slog"
 	"os"
+	"slices"
 
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
@@ -32,17 +33,13 @@ func NewContainerBootstrap(
 			infraEnvs.CronLogDir,
 			infraEnvs.WebServerLogDir,
 			infraEnvs.TrashDir,
+			infraEnvs.ToolchainDataDir,
 		},
 	}
 }
 
 func (cb *ContainerBootstrap) isFirstBoot() bool {
-	for _, dirPath := range cb.foundationalDirs {
-		if cb.fileClerk.FileExists(dirPath) {
-			return false
-		}
-	}
-	return true
+	return !slices.ContainsFunc(cb.foundationalDirs, cb.fileClerk.FileExists)
 }
 
 func (cb *ContainerBootstrap) foundationalDirsCreator() {

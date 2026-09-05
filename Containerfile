@@ -1,15 +1,15 @@
-FROM docker.io/bitnami/minideb:bullseye-amd64
+FROM docker.io/debian:trixie-slim
 
 WORKDIR /infinite
 
 RUN apt-get update && apt-get upgrade -y \
-	&& install_packages bind9-dnsutils build-essential ca-certificates certbot cron \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y bind9-dnsutils build-essential ca-certificates certbot cron \
 	curl debian-archive-keyring git gnupg2 haveged lsb-release procps rsync supervisor \
 	tar unzip vim wget zip unattended-upgrades
 
 RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
 	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
-	&& install_packages nginx \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y nginx \
 	&& mkdir -p /app/conf/pki \
 	&& chown -R nobody:nogroup /app
 
@@ -17,10 +17,12 @@ RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattende
   && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local \
   && grep -q 'origin=nginx,archive=stable,label=nginx' /etc/apt/apt.conf.d/52unattended-upgrades-local || (echo "ErrorEditingUnattendedUpgradesConfigFile" && exit 1)
 
-RUN curl -skL "https://mise.run" | sh \
-	&& mv /root/.local/bin/mise /usr/bin/mise \
-	&& chmod +x /usr/bin/mise \
-	&& echo 'eval "$(/usr/bin/mise activate bash)"' >>/etc/profile
+RUN curl -skL "https://mise.run" \
+	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
+	&& chmod +x /usr/local/bin/mise \
+	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile
+
+ENV MISE_DATA_DIR=/usr/local/share/mise
 
 COPY /container/nginx/root/* /etc/nginx/
 
