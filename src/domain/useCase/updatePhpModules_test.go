@@ -535,3 +535,96 @@ func TestUpdatePhpSettingsUpdatesSettings(test *testing.T) {
 		test.Fatal("PhpSettingsUpdateWasNotCalled")
 	}
 }
+
+func TestPhpModuleUpdatesPlanner(test *testing.T) {
+	updatePhpModulesUseCase := UpdatePhpModules{}
+
+	phpModulesFactory := func(rawPhpModules []string) []entity.PhpModule {
+		modules := []entity.PhpModule{}
+		for _, rawPhpModule := range rawPhpModules {
+			module, err := entity.NewPhpModuleFromString(rawPhpModule)
+			if err != nil {
+				test.Fatalf("PhpModuleParsingFailed: %v", err)
+			}
+
+			modules = append(modules, module)
+		}
+
+		return modules
+	}
+
+	testCases := []struct {
+		testName                string
+		currentModules          []string
+		requestedModules        []string
+		expectedModulesToUpdate []string
+	}{
+		{
+			testName:                "EnablesCurrentlyInactiveModule",
+			currentModules:          []string{"ssh2:false"},
+			requestedModules:        []string{"ssh2:true"},
+			expectedModulesToUpdate: []string{"ssh2:true"},
+		},
+		{
+			testName:                "DisablesCurrentlyActiveModule",
+			currentModules:          []string{"opcache:true"},
+			requestedModules:        []string{"opcache:false"},
+			expectedModulesToUpdate: []string{"opcache:false"},
+		},
+		{
+			testName: "SkipsModulesAlreadyInDesiredState",
+			currentModules: []string{
+				"curl:true", "xdebug:false",
+			},
+			requestedModules: []string{
+				"curl:true", "xdebug:false",
+			},
+			expectedModulesToUpdate: []string{},
+		},
+		{
+			testName: "KeepsOnlyTheModulesThatDifferInAMixedBatch",
+			currentModules: []string{
+				"curl:true", "opcache:true", "xdebug:false",
+			},
+			requestedModules: []string{
+				"curl:true", "opcache:false", "xdebug:true",
+			},
+			expectedModulesToUpdate: []string{
+				"opcache:false", "xdebug:true",
+			},
+		},
+	}
+
+	for _, testCase := range testCases {
+		test.Run(testCase.testName, func(subtest *testing.T) {
+			actualModulesToUpdate := updatePhpModulesUseCase.phpModuleUpdatesPlanner(
+				phpModulesFactory(testCase.requestedModules),
+				phpModulesFactory(testCase.currentModules),
+			)
+			expectedModulesToUpdate := phpModulesFactory(
+				testCase.expectedModulesToUpdate,
+			)
+
+			if len(actualModulesToUpdate) != len(expectedModulesToUpdate) {
+				subtest.Fatalf(
+					"ModulesToUpdateCountMismatch: expected %d, got %d",
+					len(expectedModulesToUpdate),
+					len(actualModulesToUpdate),
+				)
+			}
+
+			for index, expectedModule := range expectedModulesToUpdate {
+				actualModule := actualModulesToUpdate[index]
+				if actualModule != expectedModule {
+					subtest.Errorf(
+						"ModuleToUpdateMismatch: expected %s=%v, got %s=%v",
+						expectedModule.Name.String(),
+						expectedModule.Status,
+						actualModule.Name.String(),
+						actualModule.Status,
+					)
+				}
+			}
+		})
+	}
+}

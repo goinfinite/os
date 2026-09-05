@@ -9,7 +9,6 @@ import (
 )
 
 var (
-	ErrDuplicatePhpModule              = errors.New("DuplicatePhpModule")
 	ErrPhpModuleNotSupportedForVersion = errors.New(
 		"PhpModuleNotSupportedForVersion",
 	)

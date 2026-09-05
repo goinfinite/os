@@ -68,14 +68,9 @@ func (uc UpdatePhpModules) discardDuplicatePhpModules(
 
 func (uc UpdatePhpModules) ensurePhpModuleUpdatesAreAllowed(
 	phpVersion valueObject.PhpVersion,
+	supportedPhpModules []entity.PhpModule,
 	requestedModules []entity.PhpModule,
 ) ([]dto.PhpModuleUpdateFailure, error) {
-	supportedPhpModules, err := uc.runtimeQueryRepo.ReadPhpModules(phpVersion)
-	if err != nil {
-		slog.Error("ReadPhpModulesError", slog.String("err", err.Error()))
-		return nil, errors.New("ReadPhpModulesInfraError")
-	}
-
 	supportedModuleNames := map[string]struct{}{}
 	for _, module := range supportedPhpModules {
 		supportedModuleNames[module.Name.String()] = struct{}{}
@@ -111,6 +106,27 @@ func (uc UpdatePhpModules) ensurePhpModuleUpdatesAreAllowed(
 	return nil, nil
 }
 
+func (uc UpdatePhpModules) phpModuleUpdatesPlanner(
+	requestedModules []entity.PhpModule,
+	currentPhpModules []entity.PhpModule,
+) []entity.PhpModule {
+	currentModuleStatuses := map[string]bool{}
+	for _, module := range currentPhpModules {
+		currentModuleStatuses[module.Name.String()] = module.Status
+	}
+
+	modulesToUpdate := []entity.PhpModule{}
+	for _, module := range requestedModules {
+		if currentModuleStatuses[module.Name.String()] == module.Status {
+			continue
+		}
+
+		modulesToUpdate = append(modulesToUpdate, module)
+	}
+
+	return modulesToUpdate
+}
+
 func (uc UpdatePhpModules) Execute(
 	requestDto dto.UpdatePhpModulesRequest,
 ) (responseDto dto.UpdatePhpModulesResponse, err error) {
@@ -139,18 +155,27 @@ func (uc UpdatePhpModules) Execute(
 		return responseDto, repository.ErrPhpVersionChanged
 	}
 
+	currentPhpModules, err := uc.runtimeQueryRepo.ReadPhpModules(
+		requestDto.PhpVersion,
+	)
+	if err != nil {
+		slog.Error("ReadPhpModulesError", slog.String("err", err.Error()))
+		return responseDto, errors.New("ReadPhpModulesInfraError")
+	}
+
 	requestedModules := uc.phpModuleEntitiesFactory(requestDto.PhpModules)
 	uniqueModules := uc.discardDuplicatePhpModules(requestedModules)
 	unsupportedModuleFailures, err := uc.ensurePhpModuleUpdatesAreAllowed(
-		requestDto.PhpVersion, uniqueModules,
+		requestDto.PhpVersion, currentPhpModules, uniqueModules,
 	)
 	if err != nil {
 		responseDto.FailedModulesWithReason = unsupportedModuleFailures
 		return responseDto, err
 	}
 
+	modulesToUpdate := uc.phpModuleUpdatesPlanner(uniqueModules, currentPhpModules)
 	responseDto, err = uc.runtimeCmdRepo.UpdatePhpModules(
-		requestDto.Hostname, requestDto.PhpVersion, uniqueModules,
+		requestDto.Hostname, requestDto.PhpVersion, modulesToUpdate,
 	)
 	if err != nil {
 		if errors.Is(err, repository.ErrPhpVersionChanged) {
