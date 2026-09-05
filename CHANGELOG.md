@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+feat(cli): wire PHP update-modules worker command
 feat(api): report partial success on php module updates
 refactor(valueObject): guarantee non-empty failure reasons
 feat(runtime): split PHP config updates into dedicated use cases
