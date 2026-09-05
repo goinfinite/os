@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+refactor(ui): delegate php module outcomes to the scheduled tasks popover
 refactor(runtime): plan php module updates from the current state in the use case
 refactor(mapping): use exported PHP webserver service-name constant
 feat(liaison): schedule PHP module updates and split config use cases
