@@ -150,7 +150,7 @@ Configure programming language runtimes (PHP, Node.js, Python) including version
 4. `src/domain/useCase/createInstallableService.go` — Runtime installation as a service
 5. `src/domain/useCase/updatePhpVersion.go` — Validates the selected version and applies the version change synchronously
 6. `src/domain/useCase/updatePhpSettings.go` — Applies PHP settings synchronously
-7. `src/domain/useCase/updatePhpModules.go` — Validates the current PHP version, rejects duplicate/unsupported modules, and returns per-module update results
+7. `src/domain/useCase/updatePhpModules.go` — Validates the current PHP version and supported modules, discards duplicates, and returns per-module update results
 8. `src/domain/valueObject/phpModuleName.go` — Validates PHP module name syntax
 9. `src/infra/runtime/` — Runtime environment setup and version management; reads PHP module compatibility from the installed service assets, applies all module changes, restarts once, and verifies final module states; runtime conf mutation methods (`UpdatePhpVersion`, `UpdatePhpSettings`, `UpdatePhpVirtualHostHostname`) use sed-based in-place substitution to preserve user customizations
 10. `src/presentation/liaison/runtime.go` — Orchestrates version/settings updates and creates a scheduled task for API module changes
