@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+feat(liaison): schedule PHP module updates and split config use cases
 refactor(liaison): extract liaison helpers and dedupe operator parsing
 docs(cli): record stderr logging constraint
 feat(cli): wire PHP update-modules worker command
