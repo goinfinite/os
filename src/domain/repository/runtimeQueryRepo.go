@@ -12,7 +12,8 @@ var (
 	ErrPhpModuleNotSupportedForVersion = errors.New(
 		"PhpModuleNotSupportedForVersion",
 	)
-	ErrPhpVersionChanged = errors.New("PhpVersionChanged")
+	ErrPhpVersionChanged      = errors.New("PhpVersionChanged")
+	ErrPhpVirtualHostNotFound = errors.New("PhpVirtualHostNotFound")
 )
 
 type RuntimeQueryRepo interface {
