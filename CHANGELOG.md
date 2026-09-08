@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+chore: pin additional dev tools in mise
 docs: require SIGTERM to stop a detached dev-build session
 fix(container): harden image build and dev script per SonarQube
 refactor(container): merge test image into multi-stage Containerfile and rework dev-build.sh
