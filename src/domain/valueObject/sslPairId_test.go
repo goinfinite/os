@@ -6,7 +6,7 @@ import (
 
 func TestNewSslPairId(t *testing.T) {
 	t.Run("ValidSslPairId", func(t *testing.T) {
-		validSslPairIds := []interface{}{
+		validSslPairIds := []any{
 			"a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4",
 			"a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4",
 			"1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
@@ -18,14 +18,14 @@ func TestNewSslPairId(t *testing.T) {
 			_, err := NewSslPairId(validSslPairId)
 			if err != nil {
 				t.Errorf(
-					"Expected no error for '%v', got '%s'", validSslPairId, err.Error(),
+					"UnexpectedError: %v, value: '%v'", err.Error(), validSslPairId,
 				)
 			}
 		}
 	})
 
 	t.Run("InvalidSslPairId", func(t *testing.T) {
-		invalidSslPairIds := []interface{}{
+		invalidSslPairIds := []any{
 			"g3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4",
 			"12345", "!@#$%^&*()_+|}{:?><,./;'[]=-",
 			"abcdefgh1234567890abcdefgh1234567890abcdefgh1234567890abcdefgh12",
@@ -35,7 +35,7 @@ func TestNewSslPairId(t *testing.T) {
 		for _, invalidSslPairId := range invalidSslPairIds {
 			_, err := NewSslPairId(invalidSslPairId)
 			if err == nil {
-				t.Errorf("Expected error for '%v', got nil", invalidSslPairId)
+				t.Errorf("MissingExpectedError: '%v' was accepted", invalidSslPairId)
 			}
 		}
 	})
@@ -64,7 +64,10 @@ TZZyzmEOyclm3UGFYe82P/iDFt+CeQ3NpmBg+GoaVCuWAARJN/KfglbLyyYygcQq
 RvOTa8hYiU6A475WuZKyEHcwnGYe57u2I2KbMgcKjPniocj4QzgYsVAVKW3IwaOh
 yE+vPxsiUkvQHdO2fojCkY8jg70jxM+gu59tPDNbw3Uh/2Ij310FgTHsnGQMyA==
 -----END CERTIFICATE-----`
-		validCertContent, _ := NewSslCertificateContent(validCert)
+		validCertContent, certErr := NewSslCertificateContent(validCert)
+		if certErr != nil {
+			t.Fatalf("SslCertificateContentParseFailed: %v", certErr)
+		}
 		validChainCertsContent := []SslCertificateContent{validCertContent}
 
 		validKey := `-----BEGIN PRIVATE KEY-----
@@ -95,15 +98,49 @@ a2KoB4GPzpiT8wKQ0X+CrYjT+VB3QTYPcIDZQKBHAoGAC8gDLUfHWDA+Ozuj7fZT
 5jXdBpt0nixwIinr970lG2kQc2Jf64VtS9KoRoO2qnHVfNcn0DnVoWTvRjjeqVxx
 PZIyej7kPh0NXWwDyV9uhyk=
 -----END PRIVATE KEY-----`
-		validKeyContent, _ := NewSslPrivateKey(validKey)
+		validKeyContent, keyErr := NewSslPrivateKey(validKey)
+		if keyErr != nil {
+			t.Fatalf("SslPrivateKeyParseFailed: %v", keyErr)
+		}
 
-		_, err := NewSslPairIdFromSslPairContent(
+		sslPairId, err := NewSslPairIdFromSslPairContent(
 			validCertContent, validChainCertsContent, validKeyContent,
 		)
 		if err != nil {
+			t.Errorf("SslPairIdBuildFailed: %v", err)
+			return
+		}
+
+		expectedSslPairId := "00ee69e08dcb343d392aa0adce9954f528d3bc4100ec372d4c0f6dba37cd764a"
+		if sslPairId.String() != expectedSslPairId {
 			t.Errorf(
-				"Expected no error for '%v', got '%s'", validCertContent, err.Error(),
+				"SslPairIdMismatch: expected '%s', got '%s'",
+				expectedSslPairId,
+				sslPairId.String(),
 			)
+		}
+	})
+
+	t.Run("ChainCertificateCountChangesPairId", func(t *testing.T) {
+		certContent := SslCertificateContent("chain-edge-fixture-cert")
+		keyContent := SslPrivateKey("chain-edge-fixture-key")
+
+		emptyChainSslPairId, err := NewSslPairIdFromSslPairContent(
+			certContent, []SslCertificateContent{}, keyContent,
+		)
+		if err != nil {
+			t.Fatalf("SslPairIdBuildFailed: %v", err)
+		}
+
+		singleChainSslPairId, err := NewSslPairIdFromSslPairContent(
+			certContent, []SslCertificateContent{certContent}, keyContent,
+		)
+		if err != nil {
+			t.Fatalf("SslPairIdBuildFailed: %v", err)
+		}
+
+		if emptyChainSslPairId == singleChainSslPairId {
+			t.Error("SslPairIdShouldChangeWithChainCount")
 		}
 	})
 }
