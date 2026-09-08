@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+fix(container): harden image build and dev script per SonarQube
 refactor(container): merge test image into multi-stage Containerfile and rework dev-build.sh
 fix(files): repair build after failure reason refactor
 chore: upgrade go-infinite toolkit to v0.3.3

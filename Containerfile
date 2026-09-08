@@ -4,17 +4,17 @@ FROM docker.io/debian:trixie-slim AS base
 WORKDIR /infinite
 
 RUN apt-get update && apt-get upgrade -y \
-	&& DEBIAN_FRONTEND=noninteractive apt-get install -y bind9-dnsutils build-essential ca-certificates certbot cron \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends bind9-dnsutils build-essential ca-certificates certbot cron \
 	curl debian-archive-keyring git gnupg2 haveged lsb-release procps rsync supervisor \
 	tar unzip vim wget zip unattended-upgrades
 
-RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
-	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
-	&& DEBIAN_FRONTEND=noninteractive apt-get install -y nginx \
+RUN curl -sL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
+	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nginx logrotate \
 	&& mkdir -p /app/conf/pki \
 	&& chown -R nobody:nogroup /app
 
-RUN curl -skL "https://mise.run" \
+RUN curl -sL "https://mise.run" \
 	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
 	&& chmod +x /usr/local/bin/mise \
 	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile

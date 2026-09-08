@@ -35,24 +35,24 @@ cliArgumentsResolver() {
   local resolvedPidFilePath=""
 
   for arg in "$@"; do
-    if [ "${arg}" == "--pid-only" ]; then
+    if [[ "${arg}" == "--pid-only" ]]; then
       resolvedPidFilePath="logs/dev-build.pid"
       continue
     fi
 
     argIsKnown="false"
     for mode in "${validBuildModes[@]}"; do
-      if [ "${arg}" == "${mode}" ]; then
+      if [[ "${arg}" == "${mode}" ]]; then
         argIsKnown="true"
       fi
     done
 
-    if [ "${argIsKnown}" == "false" ]; then
+    if [[ "${argIsKnown}" == "false" ]]; then
       resolvedBuildMode="rejectedArg:${arg}"
       break
     fi
 
-    if [ -z "${resolvedBuildMode}" ]; then
+    if [[ -z "${resolvedBuildMode}" ]]; then
       resolvedBuildMode="${arg}"
     fi
   done
@@ -61,7 +61,7 @@ cliArgumentsResolver() {
 }
 
 publishProcessId() {
-  if [ -z "${pidFilePath}" ]; then
+  if [[ -z "${pidFilePath}" ]]; then
     return 0
   fi
 
@@ -70,7 +70,7 @@ publishProcessId() {
 }
 
 removePublishedProcessId() {
-  if [ -z "${pidFilePath}" ]; then
+  if [[ -z "${pidFilePath}" ]]; then
     return 0
   fi
 
@@ -145,7 +145,7 @@ startDevContainer() {
 waitForApiToServe() {
   local deadline=$((SECONDS + apiServeWaitSeconds))
 
-  while [ ${SECONDS} -lt ${deadline} ]; do
+  while [[ ${SECONDS} -lt ${deadline} ]]; do
     if curl -ks -o /dev/null --max-time 2 "https://127.0.0.1:${devApiPort}/"; then
       return 0
     fi
@@ -168,7 +168,7 @@ createDevAccount() {
 }
 
 stopProcess() {
-  if [ -z "${1}" ]; then
+  if [[ -z "${1}" ]]; then
     return 0
   fi
 
@@ -176,7 +176,7 @@ stopProcess() {
 }
 
 stopDevBuildSession() {
-  if [ "${stopAlreadyRan}" == "true" ]; then
+  if [[ "${stopAlreadyRan}" == "true" ]]; then
     return 0
   fi
   stopAlreadyRan=true
@@ -223,11 +223,11 @@ fi
 
 publishProcessId
 
-if [ "${buildMode}" == "no-cache" ]; then
+if [[ "${buildMode}" == "no-cache" ]]; then
   clearContainerImageCache
 fi
 
-if [ "${buildMode}" == "http" ]; then
+if [[ "${buildMode}" == "http" ]]; then
   enablePrivilegedPortBinding
 fi
 
