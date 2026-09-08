@@ -36,7 +36,10 @@
 - Start it detached with `setsid`, so a foreground timeout cannot reach its process
   group. Wait for port 1618. The script builds the image, creates the `dev` account
   with the password `abc123!`, then keeps rebuilding on every code change.
-- Stop it by signalling the pid recorded in `logs/dev-build.pid`. Its trap stops the
+- Stop it with `SIGTERM` to the pid recorded in `logs/dev-build.pid`. Its trap stops the
   container, the rebuild watcher and the attach session, then removes the file. The
   container runs with `--rm`, so it leaves nothing behind.
+- Do not send `SIGINT` to a detached session. A `setsid … &` job inherits `SIGINT` as
+  ignored, and bash cannot trap a signal it started ignoring. `SIGTERM` is the reliable
+  stop for the detached launch. Ctrl-C still works in a foreground terminal.
 - Do not use the `http` argument: it changes host sysctl settings through `sudo`.
