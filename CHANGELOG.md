@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+test(valueObject): align fixtures and messages with current validation behavior
 fix(runtime): surface missing php virtual hosts from read configs use case
 fix(valueObject): harden php setting names and values against config injection
 refactor(valueObject): move strong string hashing from infra into the domain helper
