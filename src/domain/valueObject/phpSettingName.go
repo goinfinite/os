@@ -7,7 +7,7 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const phpSettingNameRegex string = `^\w[\w\.-]{1,62}\w$`
+const phpSettingNameRegex string = `^[a-zA-Z_][a-zA-Z0-9_.-]{1,62}[a-zA-Z0-9_]$`
 
 type PhpSettingName string
 

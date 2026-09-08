@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+fix(valueObject): harden php setting names and values against config injection
 refactor(valueObject): move strong string hashing from infra into the domain helper
 chore: pin additional dev tools in mise
 docs: require SIGTERM to stop a detached dev-build session
