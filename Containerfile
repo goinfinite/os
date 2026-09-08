@@ -1,4 +1,5 @@
-FROM docker.io/debian:trixie-slim
+# Base stage: OS packages, nginx, mise, and shared configuration.
+FROM docker.io/debian:trixie-slim AS base
 
 WORKDIR /infinite
 
@@ -13,10 +14,6 @@ RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/
 	&& mkdir -p /app/conf/pki \
 	&& chown -R nobody:nogroup /app
 
-RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattended-upgrades-local \
-  && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local \
-  && grep -q 'origin=nginx,archive=stable,label=nginx' /etc/apt/apt.conf.d/52unattended-upgrades-local || (echo "ErrorEditingUnattendedUpgradesConfigFile" && exit 1)
-
 RUN curl -skL "https://mise.run" \
 	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
 	&& chmod +x /usr/local/bin/mise \
@@ -29,6 +26,27 @@ COPY /container/nginx/root/* /etc/nginx/
 COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
 
 COPY /container/supervisord.conf /infinite/supervisord.conf
+
+# Test stage: builds from source and runs the Go test suite.
+FROM base AS test
+
+COPY . .
+
+ENV PATH="/usr/local/share/mise/shims:${PATH}"
+
+RUN mise trust \
+	&& mise install --yes \
+	&& go mod download \
+	&& go build -o os
+
+ENTRYPOINT ["go", "test", "-v", "./..."]
+
+# Runtime stage: ships the prebuilt binary and starts supervisord.
+FROM base AS runtime
+
+RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattended-upgrades-local \
+  && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local \
+  && grep -q 'origin=nginx,archive=stable,label=nginx' /etc/apt/apt.conf.d/52unattended-upgrades-local || (echo "ErrorEditingUnattendedUpgradesConfigFile" && exit 1)
 
 COPY /bin/os /infinite/os
 

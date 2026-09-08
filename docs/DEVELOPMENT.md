@@ -16,6 +16,8 @@ To build the project, run the command below. It takes two minutes to build the p
 podman build -t os:latest .
 ```
 
+`Containerfile` is a multi-stage build. The command above builds the last stage, `runtime`, which is the image you run and publish. To build the throwaway image used for unit tests, add `--target test`. See [Unit Testing](#unit-testing).
+
 To run the project you may use the following command:
 
 ```
@@ -33,8 +35,9 @@ To run the script you can simply use `bash dev-build.sh` (bash may be replaced b
 - If you pass `http`, it will expose ports 80 and 443; if you pass `http-unpriv`, it will expose ports 8080 and 8443;
 - If you pass the `ols` argument, it will expose port 7080 (used by OpenLiteSpeed admin);
 - If you pass the `no-cache` argument, it will remove the image cache and rebuild the image from scratch;
+- If you pass `--pid-only`, it will write its process id to `logs/dev-build.pid` so the session can be stopped from another shell; send `SIGINT` or `SIGTERM` to that pid and the script stops the container, the rebuild watcher, and removes the file;
 
-The script will also create a `dev` account with the password `123456!` so you can access the dashboard.
+The script will also create a `dev` account with the password `abc123!` so you can access the dashboard.
 
 When you need to stop the container, just CTRL+C to stop and remove it. If you don't want to remove it, just ditch the `--rm` flag from the `podman run` command in the script.
 
@@ -64,21 +67,25 @@ With this approach you don't need to rebuild the container every time you change
 
 ## Unit Testing
 
-Infinite OS commands can harm your system, so it's important to run the unit tests in a proper container:
+Infinite OS commands can harm your system, so the unit tests run only inside the
+`test` stage of `Containerfile`. There is no supported way to run them on
+your machine.
 
 ```
-podman build -t os-unit-test:latest -f Containerfile.test .
+podman build --target test -t os-unit-test:latest .
 podman run --rm -it os-unit-test:latest
 ```
 
+The image builds once and the Go module cache stays inside it, so you can re-test the
+working tree without rebuilding. Bind mount the project over the image's copy of the
+source and pass the packages you changed:
+
+```
+podman run --rm --entrypoint go -v "$PWD:/infinite:Z" -w /infinite \
+  os-unit-test:latest test ./src/infra/runtime/ ./src/domain/valueObject/
+```
+
 Make sure you have a `.env` file in the root of the git directory before running the tests.
-
-Some tests can run in your local machine, although it's not recommended. However, if you to give it a go, make sure to create the `/infinite/` directory before running the tests:
-
-```
-sudo mkdir /infinite
-sudo chown $(whoami):$(whoami) /infinite
-```
 
 ## Web UIs
 
