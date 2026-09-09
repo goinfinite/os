@@ -3,9 +3,9 @@ package componentMappings
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
-	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+	uiDisplay "github.com/goinfinite/ui/src/display"
 	"strings"
 )
 
@@ -26,18 +26,43 @@ templ MappingTypeRadioInput(id, label, bindModelPath string) {
 		}
 	</div>
 	<div x-show={ bindModelPath + " == 'url'" }>
-		@componentStructural.Alert("info", "Set up direct redirects to an URL, optionally with a custom HTTP response code.")
+		@uiDisplay.Alert(uiDisplay.AlertSettings{
+			Variation:   uiDisplay.AlertVariationInfo,
+			Description: "Set up direct redirects to an URL, optionally with a custom HTTP response code.",
+			Size:        uiDisplay.AlertSizeXs,
+			IsCloseable: false,
+		})
 	</div>
 	<div x-show={ bindModelPath + " == 'service'" }>
-		@componentStructural.Alert("info", "Configure a service to handle the incoming requests, such as a web server, REST API, or a gRPC service.")
+		@uiDisplay.Alert(uiDisplay.AlertSettings{
+			Variation:   uiDisplay.AlertVariationInfo,
+			Description: "Configure a service to handle the incoming requests, such as a web server, REST API, or a gRPC service.",
+			Size:        uiDisplay.AlertSizeXs,
+			IsCloseable: false,
+		})
 	</div>
 	<div x-show={ bindModelPath + " == 'response-code'" }>
-		@componentStructural.Alert("info", "Define custom responses for different HTTP status codes, such as 404 (Not Found) or 500 (Internal Server Error).")
+		@uiDisplay.Alert(uiDisplay.AlertSettings{
+			Variation:   uiDisplay.AlertVariationInfo,
+			Description: "Define custom responses for different HTTP status codes, such as 404 (Not Found) or 500 (Internal Server Error).",
+			Size:        uiDisplay.AlertSizeXs,
+			IsCloseable: false,
+		})
 	</div>
 	<div x-show={ bindModelPath + " == 'inline-html'" }>
-		@componentStructural.Alert("info", "Send a specific HTTP status code along with HTML content in the server's response.")
+		@uiDisplay.Alert(uiDisplay.AlertSettings{
+			Variation:   uiDisplay.AlertVariationInfo,
+			Description: "Send a specific HTTP status code along with HTML content in the server's response.",
+			Size:        uiDisplay.AlertSizeXs,
+			IsCloseable: false,
+		})
 	</div>
 	<div x-show={ bindModelPath + " == 'static-files'" }>
-		@componentStructural.Alert("info", "URLs will act as file paths, serving static files from the specified directory.")
+		@uiDisplay.Alert(uiDisplay.AlertSettings{
+			Variation:   uiDisplay.AlertVariationInfo,
+			Description: "URLs will act as file paths, serving static files from the specified directory.",
+			Size:        uiDisplay.AlertSizeXs,
+			IsCloseable: false,
+		})
 	</div>
 }

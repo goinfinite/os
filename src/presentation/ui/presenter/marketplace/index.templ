@@ -8,6 +8,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	uiDisplay "github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/toolset"
 )
 
@@ -284,10 +285,12 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 			</div>
 			<template x-if="marketplaceItem.id !== ''">
 				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
-					@componentStructural.Alert(
-						componentStructural.AlertTypeWarning,
-						"All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
-					)
+					@uiDisplay.Alert(uiDisplay.AlertSettings{
+						Variation:   uiDisplay.AlertVariationWarning,
+						Description: "All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
+						Size:        uiDisplay.AlertSizeXs,
+						IsCloseable: false,
+					})
 					<div class="mt-2 grid grid-cols-2 gap-4">
 						<template x-for="dataField in marketplaceItem.dataFields">
 							<div>
