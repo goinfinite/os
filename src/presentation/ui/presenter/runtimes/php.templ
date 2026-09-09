@@ -4,9 +4,10 @@ import (
 	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	uiDisplay "github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/toolset"
 	"strconv"
 )
@@ -31,10 +32,18 @@ templ PhpRuntimeHorizontalTabContent(
 						vhostsHostnames, false,
 					)
 				</div>
-				if runtimeOverview.IsVirtualHostUsingRuntime {
+				switch {
+				case runtimeOverview.PhpConfigsReadFailure != "":
+					@uiDisplay.Alert(uiDisplay.AlertSettings{
+						Variation:   uiDisplay.AlertVariationError,
+						Description: "The system could not read the PHP configuration of this virtual host. Check the system logs to find out why.",
+						Size:        uiDisplay.AlertSizeXs,
+						IsCloseable: false,
+					})
+				case runtimeOverview.IsVirtualHostUsingRuntime:
 					@FunctionalPhpRuntimeContent(runtimeOverview, vhostsHostnames)
 					@UpdatePhpVersionModal()
-				} else {
+				default:
 					@CreatePhpMappingForm(runtimeOverview.VirtualHostHostname)
 				}
 			} else {
@@ -83,7 +92,7 @@ templ PhpSettingsInputs(phpConfigs *entity.PhpConfigs) {
 		for settingIndex, settingEntity := range phpConfigs.Settings {
 			if settingEntity.Type.String() == "text" {
 				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               settingEntity.Value.GetType(),
+					Type:               settingEntity.Value.ReadType(),
 					Label:              settingEntity.Name.String(),
 					BindModelValuePath: "phpConfigs.settings[" + strconv.Itoa(settingIndex) + "].value",
 				})

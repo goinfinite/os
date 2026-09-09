@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+fix(ui): report php configs read failures instead of blaming the virtual host mapping
 refactor(ui): replace the local alert component with the infinite ui alert
 fix(container): enforce https on build curls and document root user per sonar
 test(valueObject): align fixtures and messages with current validation behavior

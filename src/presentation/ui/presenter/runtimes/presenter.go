@@ -1,9 +1,10 @@
 package uiPresenter
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
+
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -15,6 +16,8 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"github.com/labstack/echo/v4"
 )
+
+const unexpectedPhpConfigsResponseFormat string = "UnexpectedPhpConfigsResponseFormat"
 
 type RuntimesPresenter struct {
 	runtimeLiaison  *liaison.RuntimeLiaison
@@ -33,40 +36,72 @@ func NewRuntimesPresenter(
 	}
 }
 
+type phpRuntimeState struct {
+	isPhpWebServerInstalled   bool
+	isVirtualHostUsingRuntime bool
+	configsReadFailure        string
+	phpConfigsPtr             *entity.PhpConfigs
+}
+
+func (presenter *RuntimesPresenter) phpRuntimeStateFactory(
+	responseOutput tkPresentation.LiaisonResponse,
+) phpRuntimeState {
+	switch responseOutput.Status {
+	case tkPresentation.LiaisonResponseStatusSuccess:
+		phpConfigs, assertOk := responseOutput.Body.(entity.PhpConfigs)
+		if !assertOk {
+			return phpRuntimeState{
+				isPhpWebServerInstalled: true,
+				configsReadFailure:      unexpectedPhpConfigsResponseFormat,
+			}
+		}
+		return phpRuntimeState{
+			isPhpWebServerInstalled:   true,
+			isVirtualHostUsingRuntime: true,
+			phpConfigsPtr:             &phpConfigs,
+		}
+	case tkPresentation.LiaisonResponseStatusNotFound:
+		return phpRuntimeState{isPhpWebServerInstalled: true}
+	case tkPresentation.LiaisonResponseStatusServiceUnavailable:
+		return phpRuntimeState{}
+	default:
+		infraError, assertOk := responseOutput.Body.(string)
+		if !assertOk {
+			infraError = unexpectedPhpConfigsResponseFormat
+		}
+		return phpRuntimeState{
+			isPhpWebServerInstalled: true,
+			configsReadFailure:      infraError,
+		}
+	}
+}
+
 func (presenter *RuntimesPresenter) runtimeOverviewFactory(
 	runtimeType valueObject.RuntimeType,
 	selectedVhostHostname tkValueObject.Fqdn,
-) (runtimeOverview RuntimeOverview, err error) {
-	isInstalled := false
-	isVirtualHostUsingRuntime := false
-
-	var phpConfigsPtr *entity.PhpConfigs
+) RuntimeOverview {
+	phpState := phpRuntimeState{}
 	if runtimeType.String() == "php" {
-		requestBody := map[string]interface{}{"hostname": selectedVhostHostname.String()}
+		requestBody := map[string]any{"hostname": selectedVhostHostname.String()}
 		responseOutput := presenter.runtimeLiaison.ReadPhpConfigs(requestBody)
-
-		isInstalled = true
-		isVirtualHostUsingRuntime = true
-		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
-			isVirtualHostUsingRuntime = false
-			responseOutputBodyStr, assertOk := responseOutput.Body.(string)
-			if assertOk {
-				isInstalled = responseOutputBodyStr != "ServiceUnavailable"
-			}
-		}
-
-		if isInstalled {
-			phpConfigs, assertOk := responseOutput.Body.(entity.PhpConfigs)
-			if assertOk {
-				phpConfigsPtr = &phpConfigs
-			}
+		phpState = presenter.phpRuntimeStateFactory(responseOutput)
+		if phpState.configsReadFailure != "" {
+			slog.Error(
+				"PhpConfigsReadFailure",
+				slog.String("hostname", selectedVhostHostname.String()),
+				slog.String("reason", phpState.configsReadFailure),
+			)
 		}
 	}
 
 	return RuntimeOverview{
-		selectedVhostHostname, runtimeType, isInstalled,
-		isVirtualHostUsingRuntime, phpConfigsPtr,
-	}, nil
+		VirtualHostHostname:       selectedVhostHostname,
+		Type:                      runtimeType,
+		IsInstalled:               phpState.isPhpWebServerInstalled,
+		IsVirtualHostUsingRuntime: phpState.isVirtualHostUsingRuntime,
+		PhpConfigsReadFailure:     phpState.configsReadFailure,
+		PhpConfigs:                phpState.phpConfigsPtr,
+	}
 }
 
 func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
@@ -95,13 +130,7 @@ func (presenter *RuntimesPresenter) Handler(c echo.Context) error {
 		}
 	}
 
-	runtimeOverview, err := presenter.runtimeOverviewFactory(
-		runtimeType, selectedVhostHostname,
-	)
-	if err != nil {
-		slog.Error("RuntimeOverviewFactoryError", slog.String("err", err.Error()))
-		return nil
-	}
+	runtimeOverview := presenter.runtimeOverviewFactory(runtimeType, selectedVhostHostname)
 
 	vhostsHostnames, err := presenterHelper.ReadVirtualHostHostnames(
 		presenter.persistentDbSvc, presenter.trailDbSvc,

@@ -4,8 +4,8 @@ import (
 	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"github.com/goinfinite/ui/src/toolset"
 )
 
@@ -13,10 +13,11 @@ import (
 var runtimesIndexAlpineState string
 
 type RuntimeOverview struct {
-	VirtualHostHostname       tkValueObject.Fqdn        `json:"vhostHostname"`
+	VirtualHostHostname       tkValueObject.Fqdn      `json:"vhostHostname"`
 	Type                      valueObject.RuntimeType `json:"type"`
 	IsInstalled               bool                    `json:"-"`
 	IsVirtualHostUsingRuntime bool                    `json:"-"`
+	PhpConfigsReadFailure     string                  `json:"-"`
 	PhpConfigs                *entity.PhpConfigs      `json:"phpConfigs"`
 }
 

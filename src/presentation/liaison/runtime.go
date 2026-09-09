@@ -66,6 +66,12 @@ func (liaison *RuntimeLiaison) ReadPhpConfigs(
 	}
 
 	phpConfigs, err := useCase.ReadPhpConfigs(liaison.runtimeQueryRepo, hostname)
+	if errors.Is(err, domainRepository.ErrPhpVirtualHostNotFound) {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusNotFound,
+			domainRepository.ErrPhpVirtualHostNotFound.Error(),
+		)
+	}
 	if err != nil {
 		return tkPresentation.NewLiaisonResponseNoMessage(
 			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
