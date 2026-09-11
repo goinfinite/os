@@ -11,6 +11,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
@@ -609,28 +610,20 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		}
 	}
 
-	rawCatalogFilesList, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
-			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
-			"-not -path '*/.*' -not -name '.*'",
-		ShouldUseSubShell: true,
-	}).Run()
+	catalogItemFilePaths, err := infraHelper.FindCatalogItemFiles(
+		infraEnvs.MarketplaceCatalogItemsDir,
+	)
 	if err != nil {
 		return responseDto, errors.New("ReadMarketplaceFilesError: " + err.Error())
 	}
 
-	if len(rawCatalogFilesList) == 0 {
-		return responseDto, errors.New("NoMarketplaceFilesFound")
-	}
-
-	rawCatalogFilesListParts := strings.Split(rawCatalogFilesList, "\n")
-	if len(rawCatalogFilesListParts) == 0 {
+	if len(catalogItemFilePaths) == 0 {
 		return responseDto, errors.New("NoMarketplaceFilesFound")
 	}
 
 	catalogItems := []entity.MarketplaceCatalogItem{}
 	catalogItemsIdsMap := map[uint16]struct{}{}
-	for _, rawFilePath := range rawCatalogFilesListParts {
+	for _, rawFilePath := range catalogItemFilePaths {
 		itemFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawFilePath, false)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("filePath", rawFilePath))

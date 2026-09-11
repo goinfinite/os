@@ -13,6 +13,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
@@ -837,29 +838,21 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		}
 	}
 
-	rawInstallableFilesList, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
-			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
-			"-not -path '*/.*' -not -name '.*'",
-		ShouldUseSubShell: true,
-	}).Run()
+	catalogItemFilePaths, err := infraHelper.FindCatalogItemFiles(
+		infraEnvs.InstallableServicesItemsDir,
+	)
 	if err != nil {
 		return installableItemsDto, errors.New(
 			"ReadInstallableFilesError: " + err.Error(),
 		)
 	}
 
-	if len(rawInstallableFilesList) == 0 {
-		return installableItemsDto, errors.New("NoInstallableFilesFound")
-	}
-
-	rawInstallableFilesListParts := strings.Split(rawInstallableFilesList, "\n")
-	if len(rawInstallableFilesListParts) == 0 {
+	if len(catalogItemFilePaths) == 0 {
 		return installableItemsDto, errors.New("NoInstallableFilesFound")
 	}
 
 	installableServices := []entity.InstallableService{}
-	for _, rawFilePath := range rawInstallableFilesListParts {
+	for _, rawFilePath := range catalogItemFilePaths {
 		itemFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawFilePath, false)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("filePath", rawFilePath))

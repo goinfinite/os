@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+fix(catalog): scan only manifest files for catalog items
 refactor: adopt the tk v0.3.5 file clerk contract
 refactor: delegate pagination to tk
 refactor: move remaining hashing to the domain helper
