@@ -1,7 +1,6 @@
 package scheduledTaskInfra
 
 import (
-	"strconv"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -99,18 +98,18 @@ func (repo *ScheduledTaskCmdRepo) Run(
 		return err
 	}
 
-	timeoutStr := "300"
+	timeoutSecs := uint64(300)
 	if pendingTask.TimeoutSecs != nil {
-		timeoutStr = strconv.FormatUint(uint64(*pendingTask.TimeoutSecs), 10)
+		timeoutSecs = uint64(*pendingTask.TimeoutSecs)
 	}
 
 	startedAtUnixTime := tkValueObject.NewUnixTimeNow()
 
-	cmdWithTimeout := "timeout --kill-after=10s " +
-		timeoutStr + " " + pendingTask.Command.String()
 	rawOutput, rawError := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           cmdWithTimeout,
-		ShouldUseSubShell: true,
+		Command:                       pendingTask.Command.String(),
+		ShouldUseSubShell:             true,
+		ExecutionTimeoutSecs:          timeoutSecs,
+		ShouldDisableTimeoutHardLimit: true,
 	}).Run()
 
 	finalStatus, _ := valueObject.NewScheduledTaskStatus("completed")
