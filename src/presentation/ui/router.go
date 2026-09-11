@@ -22,6 +22,7 @@ import (
 	presenterRuntimes "github.com/goinfinite/os/src/presentation/ui/presenter/runtimes"
 	presenterSetup "github.com/goinfinite/os/src/presentation/ui/presenter/setup"
 	presenterSsls "github.com/goinfinite/os/src/presentation/ui/presenter/ssls"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
 )
@@ -29,14 +30,14 @@ import (
 type Router struct {
 	baseRoute       *echo.Group
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	transientDbSvc  *tkInfraDb.TransientDatabaseService
 	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewRouter(
 	baseRoute *echo.Group,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *Router {
 	return &Router{

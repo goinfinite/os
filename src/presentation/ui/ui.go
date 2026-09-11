@@ -5,6 +5,7 @@ import (
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	uiMiddleware "github.com/goinfinite/os/src/presentation/ui/middleware"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/labstack/echo/v4"
 )
 
@@ -15,7 +16,7 @@ func UiInit(
 	echoInstance *echo.Echo,
 	uiBasePath string,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
 	baseRoute := echoInstance.Group(uiBasePath)

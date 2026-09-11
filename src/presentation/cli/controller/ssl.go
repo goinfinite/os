@@ -6,6 +6,7 @@ import (
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
@@ -17,7 +18,7 @@ type SslController struct {
 
 func NewSslController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslController {
 	return &SslController{

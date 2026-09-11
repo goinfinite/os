@@ -6,20 +6,19 @@ require (
 	github.com/a-h/templ v0.3.1020
 	github.com/dustin/go-humanize v1.0.1
 	github.com/glebarez/sqlite v1.11.0
-	github.com/goinfinite/tk v0.3.3
+	github.com/goinfinite/tk v0.3.5
 	github.com/goinfinite/ui v0.1.8
 	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/uuid v1.6.0
 	github.com/gorilla/websocket v1.5.3
-	github.com/iancoleman/strcase v0.3.0
 	github.com/labstack/echo/v4 v4.15.4
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	github.com/spf13/cobra v1.10.2
 	github.com/swaggo/echo-swagger v1.5.2
 	github.com/swaggo/swag v1.16.6
-	golang.org/x/crypto v0.56.0
-	golang.org/x/net v0.58.0
-	golang.org/x/text v0.41.0
+	golang.org/x/crypto v0.57.0
+	golang.org/x/net v0.59.0
+	golang.org/x/text v0.42.0
 	gorm.io/gorm v1.31.2
 )
 
@@ -66,12 +65,12 @@ require (
 	github.com/yusufpapurcu/wmi v1.2.4 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/mod v0.40.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/time v0.15.0 // indirect
-	golang.org/x/tools v0.49.0 // indirect
+	golang.org/x/mod v0.41.0 // indirect
+	golang.org/x/sync v0.23.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
+	golang.org/x/term v0.46.0 // indirect
+	golang.org/x/time v0.16.0 // indirect
+	golang.org/x/tools v0.50.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	modernc.org/libc v1.75.7 // indirect
 	modernc.org/mathutil v1.7.1 // indirect

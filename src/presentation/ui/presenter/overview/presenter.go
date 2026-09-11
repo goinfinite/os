@@ -18,12 +18,13 @@ import (
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/labstack/echo/v4"
 )
 
 type OverviewPresenter struct {
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
-	transientDbSvc       *internalDbInfra.TransientDatabaseService
+	transientDbSvc       *tkInfraDb.TransientDatabaseService
 	trailDbSvc           *internalDbInfra.TrailDatabaseService
 	marketplacePresenter *presenterMarketplace.MarketplacePresenter
 	servicesLiaison      *liaison.ServicesLiaison
@@ -31,7 +32,7 @@ type OverviewPresenter struct {
 
 func NewOverviewPresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *OverviewPresenter {
 	return &OverviewPresenter{

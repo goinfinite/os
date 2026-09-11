@@ -10,6 +10,7 @@ import (
 	"github.com/goinfinite/os/src/presentation/liaison"
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/labstack/echo/v4"
 )
 
@@ -21,7 +22,7 @@ type SslsPresenter struct {
 
 func NewSslsPresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslsPresenter {
 	return &SslsPresenter{

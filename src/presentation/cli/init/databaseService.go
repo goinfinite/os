@@ -1,9 +1,12 @@
 package cliInit
 
-import internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+import (
+	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
+)
 
-func TransientDatabaseService() *internalDbInfra.TransientDatabaseService {
-	transientDbSvc, err := internalDbInfra.NewTransientDatabaseService()
+func TransientDatabaseService() *tkInfraDb.TransientDatabaseService {
+	transientDbSvc, err := tkInfraDb.NewTransientDatabaseService()
 	if err != nil {
 		panic("TransientDatabaseConnectionError: " + err.Error())
 	}

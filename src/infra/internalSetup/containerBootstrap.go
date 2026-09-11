@@ -9,11 +9,12 @@ import (
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type ContainerBootstrap struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
-	transientDbSvc   *internalDbInfra.TransientDatabaseService
+	transientDbSvc   *tkInfraDb.TransientDatabaseService
 	webServerSetup   *WebServerSetup
 	fileClerk        tkInfra.FileClerk
 	foundationalDirs []string
@@ -21,7 +22,7 @@ type ContainerBootstrap struct {
 
 func NewContainerBootstrap(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 ) *ContainerBootstrap {
 	return &ContainerBootstrap{
 		persistentDbSvc: persistentDbSvc,

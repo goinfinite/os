@@ -1,8 +1,8 @@
 package cliController
 
 import (
-	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
 )
@@ -12,7 +12,7 @@ type O11yController struct {
 }
 
 func NewO11yController(
-	transientDbService *internalDbInfra.TransientDatabaseService,
+	transientDbService *tkInfraDb.TransientDatabaseService,
 ) *O11yController {
 	return &O11yController{
 		o11yLiaison: liaison.NewO11yLiaison(transientDbService),

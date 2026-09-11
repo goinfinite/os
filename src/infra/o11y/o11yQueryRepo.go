@@ -15,21 +15,21 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 const PublicIpTransientKey string = "PublicIp"
 
 type O11yQueryRepo struct {
-	transientDbSvc *internalDbInfra.TransientDatabaseService
+	transientDbSvc *tkInfraDb.TransientDatabaseService
 	fileClerk      tkInfra.FileClerk
 }
 
 func NewO11yQueryRepo(
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 ) *O11yQueryRepo {
 	return &O11yQueryRepo{
 		transientDbSvc: transientDbSvc,
