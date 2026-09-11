@@ -9,6 +9,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
@@ -25,13 +26,11 @@ func NewCronCmdRepo() *CronCmdRepo {
 }
 
 func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
-	tmpCrontabFilePath := "/tmp/crontab"
-
-	if !repo.fileClerk.FileExists(tmpCrontabFilePath) {
-		_, err := os.Create(tmpCrontabFilePath)
-		if err != nil {
-			return errors.New("CreateCrontabTempFileError: " + err.Error())
-		}
+	tmpCrontabFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+		"/tmp/crontab", false,
+	)
+	if err != nil {
+		return errors.New("DefineCrontabTempFilePathError: " + err.Error())
 	}
 
 	crontabContent := ""
@@ -39,23 +38,26 @@ func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 		crontabContent += cronEntity.String() + "\n"
 	}
 
-	shouldOverwrite := true
-	err := repo.fileClerk.UpdateFileContent(
-		tmpCrontabFilePath, crontabContent, shouldOverwrite,
-	)
+	crontabFilePermissions := os.FileMode(0644)
+	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
+	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:        tmpCrontabFilePath,
+		Permissions:     &crontabFilePermissions,
+		OverwritePolicy: &overwritePolicy,
+	}, []byte(crontabContent))
 	if err != nil {
 		return errors.New("UpdateCrontabTempFileContentError: " + err.Error())
 	}
 
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           "crontab " + tmpCrontabFilePath,
+		Command:           "crontab " + tmpCrontabFilePath.String(),
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
 		return err
 	}
 
-	err = os.Remove(tmpCrontabFilePath)
+	err = os.Remove(tmpCrontabFilePath.String())
 	if err != nil {
 		return errors.New("DeleteCrontabTempFileError: " + err.Error())
 	}

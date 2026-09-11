@@ -12,6 +12,7 @@ import (
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -336,9 +337,22 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 		return errors.New("ProcessManagerTemplateExecutionError: " + err.Error())
 	}
 
-	err = repo.fileClerk.UpdateFileContent(
-		infraEnvs.ProcessManagerConfFilePath, supervisorConfFileContent.String(), true,
+	processManagerConfFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.ProcessManagerConfFilePath, false,
 	)
+	if err != nil {
+		return errors.New("DefineProcessManagerConfFilePathError: " + err.Error())
+	}
+
+	processManagerConfPermissions := os.FileMode(0644)
+	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
+	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
+	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:        processManagerConfFilePath,
+		Permissions:     &processManagerConfPermissions,
+		SymlinkPolicy:   &symlinkPolicy,
+		OverwritePolicy: &overwritePolicy,
+	}, []byte(supervisorConfFileContent.String()))
 	if err != nil {
 		return err
 	}
@@ -477,7 +491,7 @@ func (repo *ServicesCmdRepo) CreateInstallable(
 			createDto.StartupFile = installableServiceEntity.StartupFile
 		}
 
-		startupFileHash := infraHelper.GenStrongShortHash(createDto.StartupFile.String())
+		startupFileHash := voHelper.StrongStringShortHasher(createDto.StartupFile.String())
 		createDto.Name, err = valueObject.NewServiceName(
 			createDto.Name.String() + "_" + startupFileHash,
 		)
@@ -719,7 +733,7 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	}
 
 	installedServiceModel := dbModel.InstalledService{}
-	updateMap := map[string]interface{}{}
+	updateMap := map[string]any{}
 	if updateDto.Type != nil {
 		updateMap["type"] = updateDto.Type.String()
 	}
@@ -836,9 +850,8 @@ func (repo *ServicesCmdRepo) Update(updateDto dto.UpdateService) error {
 	}
 
 	shouldHandleStatus := updateDto.Status != nil
-	shouldSkipStatusChange := !shouldHandleStatus
 	if shouldHandleStatus {
-		shouldSkipStatusChange = serviceEntity.Status == *updateDto.Status
+		shouldSkipStatusChange := serviceEntity.Status == *updateDto.Status
 		if !shouldSkipStatusChange {
 			switch *updateDto.Status {
 			case valueObject.ServiceStatusRunning:
@@ -906,7 +919,7 @@ func (repo *ServicesCmdRepo) Delete(name valueObject.ServiceName) error {
 	}
 
 	if serviceEntity.Nature == valueObject.ServiceNatureMulti {
-		nameWithoutHashStr := strings.Split(serviceNameStr, "_")[0]
+		nameWithoutHashStr, _, _ := strings.Cut(serviceNameStr, "_")
 		nameWithoutHash, err := valueObject.NewServiceName(nameWithoutHashStr)
 		if err != nil {
 			return errors.New("CreateCustomServiceMultiNameError: " + err.Error())

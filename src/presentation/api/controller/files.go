@@ -8,11 +8,11 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	filesInfra "github.com/goinfinite/os/src/infra/files"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
@@ -1091,5 +1091,15 @@ func (controller *FilesController) Download(echoContext echo.Context) error {
 		)
 	}
 
-	return echoContext.Attachment(sourcePath.String(), sourcePath.ReadFileName(false).String())
+	sourceFileName, err := sourcePath.ReadFileName(false)
+	if err != nil {
+		return tkPresentation.LiaisonApiResponseEmitter(
+			echoContext,
+			tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			),
+		)
+	}
+
+	return echoContext.Attachment(sourcePath.String(), sourceFileName.String())
 }

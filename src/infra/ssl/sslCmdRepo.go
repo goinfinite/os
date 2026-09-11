@@ -4,9 +4,11 @@ import (
 	"errors"
 	"log/slog"
 	"os"
+	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -16,13 +18,14 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 const DomainOwnershipValidationUrlPath string = "/validateOwnership"
 
 type SslCmdRepo struct {
 	persistentDbSvc         *internalDbInfra.PersistentDatabaseService
-	transientDbSvc          *internalDbInfra.TransientDatabaseService
+	transientDbSvc          *tkInfraDb.TransientDatabaseService
 	sslQueryRepo            *SslQueryRepo
 	vhostHelpers            *vhostInfra.VirtualHostHelpers
 	vhostQueryRepo          *vhostInfra.VirtualHostQueryRepo
@@ -34,7 +37,7 @@ type SslCmdRepo struct {
 
 func NewSslCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 ) *SslCmdRepo {
 	ownershipValidationPath, _ := valueObject.NewMappingPath(DomainOwnershipValidationUrlPath)
 	return &SslCmdRepo{
@@ -232,11 +235,14 @@ func (repo *SslCmdRepo) issueValidSsl(
 		return errors.New("VirtualHostRootDirNotFound")
 	}
 
-	certbotCmd := "certbot certonly --webroot --webroot-path " + vhostRootDir +
-		" --agree-tos --register-unsafely-without-email --cert-name " + mainHostnameStr
-	for _, functionalHostname := range functionalHostnames {
-		certbotCmd += " -d " + functionalHostname.String()
+	certbotCmdParts := []string{
+		"certbot certonly --webroot --webroot-path " + vhostRootDir,
+		"--agree-tos --register-unsafely-without-email --cert-name " + mainHostnameStr,
 	}
+	for _, functionalHostname := range functionalHostnames {
+		certbotCmdParts = append(certbotCmdParts, "-d "+functionalHostname.String())
+	}
+	certbotCmd := strings.Join(certbotCmdParts, " ")
 
 	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           certbotCmd,
@@ -330,7 +336,7 @@ func (repo *SslCmdRepo) CreatePubliclyTrusted(
 
 	synthesizer := tkInfra.Synthesizer{}
 	dummyValue := synthesizer.PasswordFactory(32, false)
-	dummyHash := infraHelper.GenStrongHash(dummyValue)
+	dummyHash := voHelper.StrongStringHasher(dummyValue)
 
 	expectedOwnershipHash, err := tkValueObject.NewHash(dummyHash)
 	if err != nil {
@@ -369,25 +375,51 @@ func (repo *SslCmdRepo) Create(
 
 	for _, vhostHostname := range createDto.VirtualHostsHostnames {
 		vhostHostnameStr := vhostHostname.String()
-		vhostCertFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".crt"
-		vhostCertKeyFilePath := infraEnvs.PkiConfDir + "/" + vhostHostnameStr + ".key"
+		vhostCertFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+			infraEnvs.PkiConfDir+"/"+vhostHostnameStr+".crt", false,
+		)
+		if err != nil {
+			return sslPairId, errors.New("DefineCertFilePathError: " + err.Error())
+		}
+
+		vhostCertKeyFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+			infraEnvs.PkiConfDir+"/"+vhostHostnameStr+".key", false,
+		)
+		if err != nil {
+			return sslPairId, errors.New("DefineCertKeyFilePathError: " + err.Error())
+		}
 
 		certContentStr := createDto.Certificate.CertificateContent.String()
 		if createDto.ChainCertificates != nil {
 			certContentStr += "\n" + createDto.ChainCertificates.CertificateContent.String()
 		}
 
-		shouldOverwrite := true
-		err := repo.fileClerk.UpdateFileContent(
-			vhostCertFilePath, certContentStr, shouldOverwrite,
-		)
+		webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
+		symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
+		overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
+
+		vhostCertPermissions := os.FileMode(0644)
+		err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+			FilePath:                vhostCertFilePath,
+			Permissions:             &vhostCertPermissions,
+			SymlinkPolicy:           &symlinkPolicy,
+			OverwritePolicy:         &overwritePolicy,
+			OwnerUsername:           &webServerUsername,
+			TrustedDirOwnerUsername: &webServerUsername,
+		}, []byte(certContentStr))
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertFileError: " + err.Error())
 		}
 
-		err = repo.fileClerk.UpdateFileContent(
-			vhostCertKeyFilePath, createDto.Key.String(), shouldOverwrite,
-		)
+		vhostCertKeyPermissions := os.FileMode(0600)
+		err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+			FilePath:                vhostCertKeyFilePath,
+			Permissions:             &vhostCertKeyPermissions,
+			SymlinkPolicy:           &symlinkPolicy,
+			OverwritePolicy:         &overwritePolicy,
+			OwnerUsername:           &webServerUsername,
+			TrustedDirOwnerUsername: &webServerUsername,
+		}, []byte(createDto.Key.String()))
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertKeyFileError: " + err.Error())
 		}

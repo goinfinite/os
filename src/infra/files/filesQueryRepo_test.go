@@ -39,6 +39,17 @@ func TestFilesQueryRepo(t *testing.T) {
 		}
 	})
 
+	t.Run("SimplifiedRootBranchName", func(t *testing.T) {
+		rootPath, _ := tkValueObject.NewUnixAbsoluteFilePath("/", false)
+		simplifiedRoot, err := filesQueryRepo.simplifiedUnixFileFactory(rootPath)
+		if err != nil {
+			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
+		}
+		if simplifiedRoot.Name.String() != "root" {
+			t.Errorf("ExpectedRootNameButGot: %s", simplifiedRoot.Name.String())
+		}
+	})
+
 	t.Run("ReadFollowingSymlink", func(t *testing.T) {
 		downloadsDirPath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir+"/Downloads", false)
 		tmpSymlinkPath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir+"/tmpSymlink", false)

@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/user"
 	"strings"
+	"syscall"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -45,7 +46,16 @@ func (repo FilesCmdRepo) uploadSingleFile(
 	if err != nil {
 		return errors.New("CreateEmptyFileError: " + err.Error())
 	}
-	defer destinationEmptyFile.Close()
+	defer func() {
+		closeErr := destinationEmptyFile.Close()
+		if closeErr != nil {
+			slog.Error(
+				"DestinationFileCloseFailed",
+				slog.String("file", destinationFilePath),
+				slog.String("err", closeErr.Error()),
+			)
+		}
+	}()
 
 	fileToUploadStream, err := fileToUpload.Open()
 	if err != nil {
@@ -67,7 +77,11 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 		return errors.New("FileToCopyNotFound")
 	}
 
-	sourceFileName := copyDto.SourcePath.ReadFileName(false)
+	sourceFileName, err := copyDto.SourcePath.ReadFileName(false)
+	if err != nil {
+		return errors.New("ReadSourceFileNameError: " + err.Error())
+	}
+
 	destinationAbsolutePath := copyDto.DestinationPath.String() + "/" + sourceFileName.String()
 	if !copyDto.ShouldOverwrite {
 		destinationPathExists := repo.fileClerk.FileExists(destinationAbsolutePath)
@@ -77,7 +91,7 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 	}
 
 	copyCmd := "rsync -avq " + sourcePathStr + " " + destinationAbsolutePath
-	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           copyCmd,
 		ShouldUseSubShell: true,
 	}).Run()
@@ -88,7 +102,7 @@ func (repo FilesCmdRepo) Compress(
 	compressDto dto.CompressUnixFiles,
 ) (compressionProcessReport dto.CompressionProcessReport, err error) {
 	compressibleFilesStr := []string{}
-	incompressibleFilesStr := map[string]interface{}{}
+	incompressibleFilesStr := map[string]any{}
 	for _, sourcePath := range compressDto.SourcePaths {
 		sourcePathExists := repo.fileClerk.FileExists(sourcePath.String())
 		if !sourcePathExists {
@@ -109,7 +123,7 @@ func (repo FilesCmdRepo) Compress(
 	compressionTypeStr := "zip"
 
 	destinationPathExt, err := compressDto.DestinationPath.ReadFileExtension()
-	if err == nil {
+	if err == nil && destinationPathExt != "" {
 		destinationPathExtStr := destinationPathExt.String()
 		if destinationPathExtStr != "zip" {
 			compressionTypeStr = "tgz"
@@ -260,6 +274,9 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 	if err != nil {
 		return err
 	}
+	if unixFilePathExtension == "" {
+		return errors.New("UnsupportedFileExtension")
+	}
 
 	if unixFilePathExtension.String() == "zip" {
 		compressBinary = "unzip"
@@ -320,9 +337,13 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 	}
 
 	if moveDto.DestinationPath == valueObject.UnixFilePathTrashDir {
-		fileNameStr := moveDto.SourcePath.ReadFileName(false).String()
+		fileName, err := moveDto.SourcePath.ReadFileName(false)
+		if err != nil {
+			return errors.New("ReadSourceFileNameError: " + err.Error())
+		}
+
 		destinationPathStr := moveDto.DestinationPath.String()
-		rawTrashFilePath := destinationPathStr + "/" + fileNameStr
+		rawTrashFilePath := destinationPathStr + "/" + fileName.String()
 		trashFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawTrashFilePath, false)
 		if err != nil {
 			return errors.New("DefineTrashFilePathError: " + err.Error())
@@ -375,9 +396,33 @@ func (repo FilesCmdRepo) UpdateContent(
 		return err
 	}
 
-	return repo.fileClerk.UpdateFileContent(
-		updateContentDto.SourcePath.String(), decodedContent, true,
-	)
+	parentDirInfo, err := os.Stat(updateContentDto.SourcePath.ReadFileDir().String())
+	if err != nil {
+		return errors.New("ReadParentDirInfoError: " + err.Error())
+	}
+
+	parentDirStat, isStatOk := parentDirInfo.Sys().(*syscall.Stat_t)
+	if !isStatOk {
+		return errors.New("ReadParentDirOwnerError")
+	}
+
+	parentDirOwnerId, err := tkValueObject.NewUnixUserId(parentDirStat.Uid)
+	if err != nil {
+		return errors.New("ReadParentDirOwnerError: " + err.Error())
+	}
+
+	containingDirOwnerSource := tkInfra.FileClerkOwnerSourceContainingDirectory
+	filePermissions := fileToUpdate.Permissions.GetFileMode()
+	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
+	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
+	return repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:              updateContentDto.SourcePath,
+		Permissions:           &filePermissions,
+		SymlinkPolicy:         &symlinkPolicy,
+		OverwritePolicy:       &overwritePolicy,
+		OwnerSource:           &containingDirOwnerSource,
+		TrustedDirOwnerUserId: &parentDirOwnerId,
+	}, []byte(decodedContent))
 }
 
 func (repo FilesCmdRepo) UpdateOwnership(

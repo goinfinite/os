@@ -92,10 +92,26 @@ func (sync *PrimaryVirtualHostSynchronizer) webServerConfUpdater() error {
 		return errors.New("WebServerUnitFileFactoryFailed: " + factoryErr.Error())
 	}
 
-	fileClerk := tkInfra.FileClerk{}
-	writeErr := fileClerk.UpdateFileContent(
-		infraEnvs.PrimaryVirtualHostConfPath, confContent, true,
+	primaryVirtualHostConfFilePath, parseErr := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.PrimaryVirtualHostConfPath, false,
 	)
+	if parseErr != nil {
+		return errors.New("InvalidPrimaryVirtualHostConfPath: " + parseErr.Error())
+	}
+
+	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
+	fileClerk := tkInfra.FileClerk{}
+	confFilePermissions := os.FileMode(0644)
+	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
+	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
+	writeErr := fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:                primaryVirtualHostConfFilePath,
+		Permissions:             &confFilePermissions,
+		SymlinkPolicy:           &symlinkPolicy,
+		OverwritePolicy:         &overwritePolicy,
+		OwnerUsername:           &webServerUsername,
+		TrustedDirOwnerUsername: &webServerUsername,
+	}, []byte(confContent))
 	if writeErr != nil {
 		return errors.New("WritePrimaryVirtualHostConfFailed: " + writeErr.Error())
 	}

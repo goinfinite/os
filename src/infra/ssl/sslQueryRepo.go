@@ -112,10 +112,17 @@ func (repo *SslQueryRepo) sslPairFactory(
 	if err != nil {
 		return sslPairEntity, errors.New("CrtFileExtensionError: " + err.Error())
 	}
+	if crtFileExtension == "" {
+		return sslPairEntity, errors.New("CrtFileExtensionMissing")
+	}
+
+	crtFileName, err := crtFilePath.ReadFileName(false)
+	if err != nil {
+		return sslPairEntity, errors.New("CrtFileNameError: " + err.Error())
+	}
 
 	crtFileNameWithoutExt := strings.TrimSuffix(
-		crtFilePath.ReadFileName(false).String(),
-		"."+crtFileExtension.String(),
+		crtFileName.String(), "."+crtFileExtension.String(),
 	)
 	virtualHostHostname, err := tkValueObject.NewFqdn(crtFileNameWithoutExt)
 	if err != nil {
