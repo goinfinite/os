@@ -18,7 +18,10 @@ func TestAccountQueryRepo(t *testing.T) {
 
 	id, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
-	addDummyUser()
+	err := addDummyUser()
+	if err != nil {
+		t.Errorf("Expected no error, but got %s", err.Error())
+	}
 
 	t.Run("ReadValid", func(t *testing.T) {
 		requestDto := dto.ReadAccountsRequest{
@@ -67,5 +70,8 @@ func TestAccountQueryRepo(t *testing.T) {
 		}
 	})
 
-	deleteDummyUser()
+	err = deleteDummyUser()
+	if err != nil {
+		t.Errorf("Expected no error, but got %s", err.Error())
+	}
 }

@@ -5,6 +5,7 @@ import (
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 )
@@ -19,6 +20,7 @@ func TestServicesQueryRepo(t *testing.T) {
 
 		readInstallableItemsRequestDto := dto.ReadInstallableServicesItemsRequest{
 			ServiceName: &name,
+			Pagination:  useCase.ServicesDefaultPagination,
 		}
 
 		services, err := servicesQueryRepo.ReadInstallableItems(

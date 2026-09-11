@@ -162,7 +162,7 @@ func TestFilesCmdRepo(t *testing.T) {
 		if createErr != nil {
 			t.Skipf("CannotCreateTestFile: %v", createErr)
 		}
-		defer os.Remove(testFilePath)
+		defer func() { _ = os.Remove(testFilePath) }()
 
 		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(testFilePath, false)
 		err := filesCmdRepo.filePrivilegesNormalizer(
