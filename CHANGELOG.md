@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+refactor: report apt cache cleanup failures
 test: harden infra test setup
 refactor: use tk transient database service
 fix(ui): report php configs read failures instead of blaming the virtual host mapping

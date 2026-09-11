@@ -24,7 +24,7 @@ func InstallPkgs(packages []string) error {
 
 	var installErr error
 	nAttempts := 3
-	for i := 0; i < nAttempts; i++ {
+	for attemptNumber := range nAttempts {
 		_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 			Command: "apt-get",
 			Args:    installPackages,
@@ -35,13 +35,19 @@ func InstallPkgs(packages []string) error {
 
 		log.Printf("InstallPkgError: %s", err.Error())
 
-		if i == nAttempts-1 {
+		if attemptNumber == nAttempts-1 {
 			installErr = errors.New("InstallAttemptsFailed")
 		}
 	}
 
-	os.RemoveAll("/var/lib/apt/lists")
-	os.RemoveAll("/var/cache/apt/archives")
+	for _, aptCacheDir := range []string{
+		"/var/lib/apt/lists", "/var/cache/apt/archives",
+	} {
+		err := os.RemoveAll(aptCacheDir)
+		if err != nil {
+			log.Printf("AptCacheCleanupFailed: %s: %s", aptCacheDir, err.Error())
+		}
+	}
 
 	return installErr
 }
