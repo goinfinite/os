@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+refactor: move remaining hashing to the domain helper
 refactor: run scheduled tasks with the tk shell timeout
 refactor: report apt cache cleanup failures
 test: harden infra test setup

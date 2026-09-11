@@ -13,6 +13,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -142,7 +143,7 @@ func (repo *MarketplaceCmdRepo) interpolateMissingOptionalDataFields(
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 ) (missingDataFields []valueObject.MarketplaceInstallableItemDataField, err error) {
-	receivedDataFieldsNames := map[string]interface{}{}
+	receivedDataFieldsNames := map[string]any{}
 	for _, receivedDataField := range receivedDataFields {
 		receivedDataFieldsNames[receivedDataField.Name.String()] = nil
 	}
@@ -340,7 +341,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 	currentMappingsContentHashMap := map[string]entity.Mapping{}
 	for _, currentMapping := range mappingsReadResponse.Mappings {
-		contentHash := infraHelper.GenStrongShortHash(
+		contentHash := voHelper.StrongStringShortHasher(
 			currentMapping.Hostname.String() +
 				currentMapping.Path.String() +
 				currentMapping.MatchPattern.String() +
@@ -351,7 +352,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 	}
 
 	for _, itemMappingVo := range catalogMappings {
-		contentHash := infraHelper.GenStrongShortHash(
+		contentHash := voHelper.StrongStringShortHasher(
 			hostname.String() + itemMappingVo.Path.String() + itemMappingVo.MatchPattern.String() +
 				itemMappingVo.TargetType.String(),
 		)
@@ -468,7 +469,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	rawInstallUuid := uuid.New().String()[:16]
-	rawInstallUuidNoHyphens := strings.Replace(rawInstallUuid, "-", "", -1)
+	rawInstallUuidNoHyphens := strings.ReplaceAll(rawInstallUuid, "-", "")
 	installUuid, err := valueObject.NewMarketplaceInstalledItemUuid(rawInstallUuidNoHyphens)
 	if err != nil {
 		return err
@@ -570,9 +571,14 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 	fileNames []tkValueObject.UnixFileName,
 	keepOnlySelectedInstead bool,
 ) error {
-	fileNamesFilterParams := "-name \"" + fileNames[0].String() + "\""
+	var fileNamesFilterParams strings.Builder
+	fileNamesFilterParams.WriteString("-name \"")
+	fileNamesFilterParams.WriteString(fileNames[0].String())
+	fileNamesFilterParams.WriteString("\"")
 	for _, fileToIgnore := range fileNames[1:] {
-		fileNamesFilterParams += " -o -name \"" + fileToIgnore.String() + "\""
+		fileNamesFilterParams.WriteString(" -o -name \"")
+		fileNamesFilterParams.WriteString(fileToIgnore.String())
+		fileNamesFilterParams.WriteString("\"")
 	}
 
 	findCmdFlags := []string{"-mindepth 1", "-maxdepth 1"}
@@ -583,7 +589,7 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 
 	moveCmd := fmt.Sprintf(
 		"find %s/ %s \\( %s \\) -exec mv -t %s {} +",
-		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams, targetDir.String(),
+		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams.String(), targetDir.String(),
 	)
 	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           moveCmd,
