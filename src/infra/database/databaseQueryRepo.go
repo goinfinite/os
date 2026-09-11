@@ -2,12 +2,12 @@ package databaseInfra
 
 import (
 	"errors"
-	"math"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type DatabaseQueryRepo struct {
@@ -27,7 +27,7 @@ func (repo DatabaseQueryRepo) Read(
 		requestDto.DatabaseType = &repo.dbType
 	}
 
-	allDatabases := []entity.Database{}
+	var allDatabases []entity.Database
 	switch repo.dbType {
 	case "mariadb":
 		allDatabases, err = MysqlDatabaseQueryRepo{}.readAllDatabases()
@@ -81,7 +81,12 @@ func (repo DatabaseQueryRepo) Read(
 	}
 
 	itemsTotal := uint64(len(filteredDatabases))
-	pagesTotal := uint32(math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)))
+	pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+		itemsTotal, requestDto.Pagination.ItemsPerPage,
+	)
+	if pagesErr != nil {
+		return responseDto, pagesErr
+	}
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal

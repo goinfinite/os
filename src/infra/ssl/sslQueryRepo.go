@@ -5,7 +5,6 @@ import (
 	"encoding/hex"
 	"errors"
 	"log/slog"
-	"math"
 	"slices"
 	"strings"
 
@@ -16,6 +15,7 @@ import (
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type SslQueryRepo struct {
@@ -265,9 +265,12 @@ func (repo *SslQueryRepo) Read(
 	}
 
 	itemsTotal := uint64(len(sslPairEntities))
-	pagesTotal := uint32(math.Ceil(
-		float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage),
-	))
+	pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+		itemsTotal, requestDto.Pagination.ItemsPerPage,
+	)
+	if pagesErr != nil {
+		return responseDto, pagesErr
+	}
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal

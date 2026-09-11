@@ -71,7 +71,7 @@ func (repo *MappingQueryRepo) Read(requestDto dto.ReadMappingsRequest) (
 	if requestDto.Pagination.SortBy != nil {
 		sortByStr := requestDto.Pagination.SortBy.String()
 		switch sortByStr {
-		case "mappingId", "id":
+		case "mappingId":
 			sortByStr = "ID"
 		case "mappingPath":
 			sortByStr = "Path"

@@ -3,7 +3,6 @@ package marketplaceInfra
 import (
 	"errors"
 	"log/slog"
-	"math"
 	"os"
 	"slices"
 	"strings"
@@ -18,7 +17,7 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
-	"github.com/iancoleman/strcase"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type MarketplaceQueryRepo struct {
@@ -761,7 +760,12 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	}
 
 	itemsTotal := uint64(len(filteredCatalogItems))
-	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+	pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+		itemsTotal, requestDto.Pagination.ItemsPerPage,
+	)
+	if pagesErr != nil {
+		return responseDto, pagesErr
+	}
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal
@@ -814,37 +818,15 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		Where(&model).
 		Preload("Mappings")
 
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination, "id",
+	)
 	if err != nil {
-		return responseDto, errors.New(
-			"CountMarketplaceInstalledItemsTotalError: " + err.Error(),
-		)
-	}
-
-	dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
-	if requestDto.Pagination.LastSeenId == nil {
-		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
-		dbQuery = dbQuery.Offset(offset)
-	} else {
-		dbQuery = dbQuery.Where("id > ?", requestDto.Pagination.LastSeenId.String())
-	}
-	if requestDto.Pagination.SortBy != nil {
-		orderStatement := requestDto.Pagination.SortBy.String()
-		orderStatement = strcase.ToSnake(orderStatement)
-		if orderStatement == "id" {
-			orderStatement = "ID"
-		}
-
-		if requestDto.Pagination.SortDirection != nil {
-			orderStatement += " " + requestDto.Pagination.SortDirection.String()
-		}
-
-		dbQuery = dbQuery.Order(orderStatement)
+		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
 	}
 
 	models := []dbModel.MarketplaceInstalledItem{}
-	err = dbQuery.Find(&models).Error
+	err = paginatedDbQuery.Find(&models).Error
 	if err != nil {
 		return responseDto, errors.New("ReadMarketplaceInstalledItemsError")
 	}
@@ -861,19 +843,6 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		}
 
 		entities = append(entities, entity)
-	}
-
-	itemsTotalUint := uint64(itemsTotal)
-	pagesTotal := uint32(
-		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
-	)
-	responsePagination := tkDto.Pagination{
-		PageNumber:    requestDto.Pagination.PageNumber,
-		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
-		SortBy:        requestDto.Pagination.SortBy,
-		SortDirection: requestDto.Pagination.SortDirection,
-		PagesTotal:    &pagesTotal,
-		ItemsTotal:    &itemsTotalUint,
 	}
 
 	return dto.ReadMarketplaceInstalledItemsResponse{

@@ -146,8 +146,7 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	//cron
 	//nginx
 	//os-api
-	rawStoppedServicesLines := strings.Split(rawStoppedServices, "\n")
-	for _, rawStoppedService := range rawStoppedServicesLines {
+	for rawStoppedService := range strings.SplitSeq(rawStoppedServices, "\n") {
 		if rawStoppedService == "" {
 			continue
 		}
@@ -349,9 +348,12 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		itemsTotal := uint64(len(filteredServiceEntities))
 		responsePagination.ItemsTotal = &itemsTotal
 
-		pagesTotal := uint32(
-			math.Ceil(float64(itemsTotal) / float64(responsePagination.ItemsPerPage)),
+		pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+			itemsTotal, responsePagination.ItemsPerPage,
 		)
+		if pagesErr != nil {
+			return installedItemsDto, pagesErr
+		}
 		responsePagination.PagesTotal = &pagesTotal
 	}
 	responseDto := dto.ReadInstalledServicesItemsResponse{
@@ -940,7 +942,12 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	}
 
 	itemsTotal := uint64(len(filteredInstallableServices))
-	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+	pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+		itemsTotal, requestDto.Pagination.ItemsPerPage,
+	)
+	if pagesErr != nil {
+		return installableItemsDto, pagesErr
+	}
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal

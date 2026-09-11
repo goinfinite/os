@@ -11,9 +11,10 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type CronQueryRepo struct {
@@ -168,7 +169,12 @@ func (repo *CronQueryRepo) Read(
 	itemsTotal := uint64(len(filteredCrons))
 	paginationDto.ItemsTotal = &itemsTotal
 
-	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+	pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+		itemsTotal, requestDto.Pagination.ItemsPerPage,
+	)
+	if pagesErr != nil {
+		return responseDto, pagesErr
+	}
 	paginationDto.PagesTotal = &pagesTotal
 
 	return dto.ReadCronsResponse{

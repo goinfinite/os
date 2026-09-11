@@ -16,6 +16,7 @@ import (
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
@@ -28,7 +29,7 @@ type SslLiaison struct {
 
 func NewSslLiaison(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslLiaison {
 	return &SslLiaison{
