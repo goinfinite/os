@@ -45,10 +45,7 @@ If you look closely at the script, you'll see that it mounts the project's `bin`
 
 With this approach you don't need to rebuild the container every time you change the code. Although sometimes you may want to restart the container to apply some changes, specially when changing the dependencies or system configurations. In this case, just hit CTRL+C to stop the container and run the script again.
 
-**Notes:**
-
-1. You must run the script from the project's root directory;
-2. Until Echo v4.13.0 is released, you'll need to refresh the browser page during development to see the changes in the dashboard as we're not able to use the `DEV_MODE` auto refresh websocket trick for now. To understand how this trick used to work, check the UI router and main layout files.
+Run the script from the project's root directory.
 
 ## Environment Variables
 
@@ -64,6 +61,7 @@ With this approach you don't need to rebuild the container every time you change
 | `SKIP_PHP_PROCS_COUNT_UPDATE`    | No       | No             | Skips automatic PHP max children calculation on startup.                                                           |
 | `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
 | `LOG_LEVEL`                      | No       | No             | Sets the logging verbosity (debug, info, warn, error, fatal, panic). Defaults to warn.                             |
+| `SILENT_EXIT_MODE`               | No       | No             | Makes the CLI exit immediately. The dev-build rebuild trigger sets it.                                             |
 
 ## Unit Testing
 
@@ -71,21 +69,31 @@ Infinite OS commands can harm your system, so the unit tests run only inside the
 `test` stage of `Containerfile`. There is no supported way to run them on
 your machine.
 
-```
-podman build --target test -t os-unit-test:latest .
-podman run --rm -it os-unit-test:latest
-```
-
-The image builds once and the Go module cache stays inside it, so you can re-test the
-working tree without rebuilding. Bind mount the project over the image's copy of the
-source and pass the packages you changed:
+The suite entry point is `tests/tests.sh`. It builds the `test` stage image once and
+runs each registered entry in a disposable container:
 
 ```
-podman run --rm --entrypoint go -v "$PWD:/infinite:Z" -w /infinite \
+bash tests/tests.sh --scope=unit
+```
+
+Narrow the run with `--feature=<name>`, select the depth with
+`--level=<fast|standard|exhaustive>`, and rebuild the image with `--rebuild`. The
+runner mounts the working tree into the image, so a one-shot edit does not need a
+fresh build.
+
+Make sure you have a `.env` file in the root of the git directory before running the tests.
+
+To run a single package manually against the already-built image, bind mount the
+working tree and pass the packages you changed:
+
+```
+podman run --rm --entrypoint go -v "$PWD:/infinite:rw" \
+  --security-opt label=disable -w /infinite \
   os-unit-test:latest test ./src/infra/runtime/ ./src/domain/valueObject/
 ```
 
-Make sure you have a `.env` file in the root of the git directory before running the tests.
+Do not use the `:Z` relabel option: it breaks when the host rebuilds files between
+runs and when containers run in parallel.
 
 ## Web UIs
 
