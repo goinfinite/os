@@ -411,17 +411,16 @@ func (repo FilesCmdRepo) UpdateContent(
 		return errors.New("ReadParentDirOwnerError: " + err.Error())
 	}
 
-	containingDirOwnerSource := tkInfra.FileClerkOwnerSourceContainingDirectory
 	filePermissions := fileToUpdate.Permissions.GetFileMode()
-	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 	return repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-		FilePath:              updateContentDto.SourcePath,
-		Permissions:           &filePermissions,
-		SymlinkPolicy:         &symlinkPolicy,
-		OverwritePolicy:       &overwritePolicy,
-		OwnerSource:           &containingDirOwnerSource,
-		TrustedDirOwnerUserId: &parentDirOwnerId,
+		FilePath:        updateContentDto.SourcePath,
+		Permissions:     &filePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerSource:     &tkInfra.FileClerkOwnerSourceContainingDirectory,
+		TrustedDirOwnerUserIds: []tkValueObject.UnixUserId{
+			parentDirOwnerId,
+		},
 	}, []byte(decodedContent))
 }
 

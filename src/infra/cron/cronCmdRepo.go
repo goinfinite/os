@@ -39,11 +39,10 @@ func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 	}
 
 	crontabFilePermissions := os.FileMode(0644)
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
 		FilePath:        tmpCrontabFilePath,
 		Permissions:     &crontabFilePermissions,
-		OverwritePolicy: &overwritePolicy,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
 	}, []byte(crontabContent))
 	if err != nil {
 		return errors.New("UpdateCrontabTempFileContentError: " + err.Error())

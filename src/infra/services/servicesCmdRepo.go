@@ -345,13 +345,11 @@ environment={{range $index, $envVar := .Envs}}{{if $index}},{{end}}{{$envVar}}{{
 	}
 
 	processManagerConfPermissions := os.FileMode(0644)
-	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
 		FilePath:        processManagerConfFilePath,
 		Permissions:     &processManagerConfPermissions,
-		SymlinkPolicy:   &symlinkPolicy,
-		OverwritePolicy: &overwritePolicy,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
 	}, []byte(supervisorConfFileContent.String()))
 	if err != nil {
 		return err

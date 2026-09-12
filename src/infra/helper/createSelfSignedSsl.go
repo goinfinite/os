@@ -51,17 +51,17 @@ func CreateSelfSignedSsl(
 	}
 
 	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
-	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 
 	privateKeyPermissions := os.FileMode(0600)
 	err = fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-		FilePath:                keyFilePath,
-		Permissions:             &privateKeyPermissions,
-		SymlinkPolicy:           &symlinkPolicy,
-		OverwritePolicy:         &overwritePolicy,
-		OwnerUsername:           &webServerUsername,
-		TrustedDirOwnerUsername: &webServerUsername,
+		FilePath:        keyFilePath,
+		Permissions:     &privateKeyPermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &webServerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			webServerUsername,
+		},
 	}, []byte(keyPem))
 	if err != nil {
 		return errors.New("WritePrivateKeyError: " + err.Error())
@@ -69,12 +69,14 @@ func CreateSelfSignedSsl(
 
 	certificatePermissions := os.FileMode(0644)
 	err = fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-		FilePath:                certFilePath,
-		Permissions:             &certificatePermissions,
-		SymlinkPolicy:           &symlinkPolicy,
-		OverwritePolicy:         &overwritePolicy,
-		OwnerUsername:           &webServerUsername,
-		TrustedDirOwnerUsername: &webServerUsername,
+		FilePath:        certFilePath,
+		Permissions:     &certificatePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &webServerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			webServerUsername,
+		},
 	}, []byte(certPem))
 	if err != nil {
 		return errors.New("WriteCertificateError: " + err.Error())

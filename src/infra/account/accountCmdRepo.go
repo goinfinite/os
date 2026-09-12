@@ -90,13 +90,11 @@ func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 
 	sudoersLine := accountNameStr + " ALL=(ALL) NOPASSWD:ALL"
 	sudoersFilePermissions := os.FileMode(0644)
-	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 	return repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
 		FilePath:        sudoersDirAccountFilePathVo,
 		Permissions:     &sudoersFilePermissions,
-		SymlinkPolicy:   &symlinkPolicy,
-		OverwritePolicy: &overwritePolicy,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
 	}, []byte(sudoersLine))
 }
 
@@ -370,15 +368,15 @@ func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
 
 	authorizedKeysOwnerUsername := tkValueObject.UnixUsername(accountUsername.String())
 	authorizedKeysFilePermissions := os.FileMode(0644)
-	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-		FilePath:                authorizedKeysFilePath,
-		Permissions:             &authorizedKeysFilePermissions,
-		SymlinkPolicy:           &symlinkPolicy,
-		OverwritePolicy:         &overwritePolicy,
-		OwnerUsername:           &authorizedKeysOwnerUsername,
-		TrustedDirOwnerUsername: &authorizedKeysOwnerUsername,
+		FilePath:        authorizedKeysFilePath,
+		Permissions:     &authorizedKeysFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &authorizedKeysOwnerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			authorizedKeysOwnerUsername,
+		},
 	}, []byte(keysFileContent))
 	if err != nil {
 		return errors.New("UpdateAuthorizedKeysFileContentError: " + err.Error())

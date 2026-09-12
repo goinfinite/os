@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+refactor: adopt the tk v0.3.6 file clerk contract
 docs: add the agent usage skill and README pointer
 fix(catalog): scan only manifest files for catalog items
 refactor: adopt the tk v0.3.5 file clerk contract

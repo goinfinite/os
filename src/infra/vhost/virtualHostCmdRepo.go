@@ -154,15 +154,15 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 
 	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
 	unitConfFilePermissions := os.FileMode(0644)
-	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-		FilePath:                unitConfFilePath,
-		Permissions:             &unitConfFilePermissions,
-		SymlinkPolicy:           &symlinkPolicy,
-		OverwritePolicy:         &overwritePolicy,
-		OwnerUsername:           &webServerUsername,
-		TrustedDirOwnerUsername: &webServerUsername,
+		FilePath:        unitConfFilePath,
+		Permissions:     &unitConfFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &webServerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			webServerUsername,
+		},
 	}, []byte(unitConfFileContent))
 	if err != nil {
 		return errors.New("CreateWebServerConfUnitFileFailed: " + err.Error())

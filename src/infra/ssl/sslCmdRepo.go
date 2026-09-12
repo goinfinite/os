@@ -395,17 +395,17 @@ func (repo *SslCmdRepo) Create(
 		}
 
 		webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
-		symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-		overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 
 		vhostCertPermissions := os.FileMode(0644)
 		err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-			FilePath:                vhostCertFilePath,
-			Permissions:             &vhostCertPermissions,
-			SymlinkPolicy:           &symlinkPolicy,
-			OverwritePolicy:         &overwritePolicy,
-			OwnerUsername:           &webServerUsername,
-			TrustedDirOwnerUsername: &webServerUsername,
+			FilePath:        vhostCertFilePath,
+			Permissions:     &vhostCertPermissions,
+			SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+			OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+			OwnerUsername:   &webServerUsername,
+			TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+				webServerUsername,
+			},
 		}, []byte(certContentStr))
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertFileError: " + err.Error())
@@ -413,12 +413,14 @@ func (repo *SslCmdRepo) Create(
 
 		vhostCertKeyPermissions := os.FileMode(0600)
 		err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-			FilePath:                vhostCertKeyFilePath,
-			Permissions:             &vhostCertKeyPermissions,
-			SymlinkPolicy:           &symlinkPolicy,
-			OverwritePolicy:         &overwritePolicy,
-			OwnerUsername:           &webServerUsername,
-			TrustedDirOwnerUsername: &webServerUsername,
+			FilePath:        vhostCertKeyFilePath,
+			Permissions:     &vhostCertKeyPermissions,
+			SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+			OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+			OwnerUsername:   &webServerUsername,
+			TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+				webServerUsername,
+			},
 		}, []byte(createDto.Key.String()))
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertKeyFileError: " + err.Error())

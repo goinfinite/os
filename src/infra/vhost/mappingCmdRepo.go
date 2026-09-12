@@ -382,15 +382,15 @@ location {{ locationUriConfigFactory .MatchPattern .Path }} {
 
 	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
 	mappingFilePermissions := os.FileMode(0644)
-	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 	return repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-		FilePath:                mappingFilePath,
-		Permissions:             &mappingFilePermissions,
-		SymlinkPolicy:           &symlinkPolicy,
-		OverwritePolicy:         &overwritePolicy,
-		OwnerUsername:           &webServerUsername,
-		TrustedDirOwnerUsername: &webServerUsername,
+		FilePath:        mappingFilePath,
+		Permissions:     &mappingFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &webServerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			webServerUsername,
+		},
 	}, []byte(mappingFileContent.String()))
 }
 
@@ -606,8 +606,6 @@ limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m; #MaxConnectio
 	}
 
 	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
-	symlinkPolicy := tkInfra.FileClerkSymlinkPolicyResolve
-	overwritePolicy := tkInfra.FileClerkOverwritePolicyReplace
 
 	ruleGlobalFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
 		infraEnvs.MappingsSecurityRulesConfDir+"/"+
@@ -620,12 +618,14 @@ limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m; #MaxConnectio
 
 	ruleGlobalFilePermissions := os.FileMode(0644)
 	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-		FilePath:                ruleGlobalFilePath,
-		Permissions:             &ruleGlobalFilePermissions,
-		SymlinkPolicy:           &symlinkPolicy,
-		OverwritePolicy:         &overwritePolicy,
-		OwnerUsername:           &webServerUsername,
-		TrustedDirOwnerUsername: &webServerUsername,
+		FilePath:        ruleGlobalFilePath,
+		Permissions:     &ruleGlobalFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &webServerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			webServerUsername,
+		},
 	}, []byte(ruleGlobalFileContent.String()))
 	if err != nil {
 		return errors.New("CreateSecurityRuleGlobalFileError: " + err.Error())
@@ -689,12 +689,14 @@ deny {{ . }};
 
 	ruleEmbeddableFilePermissions := os.FileMode(0644)
 	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
-		FilePath:                ruleEmbeddableFilePath,
-		Permissions:             &ruleEmbeddableFilePermissions,
-		SymlinkPolicy:           &symlinkPolicy,
-		OverwritePolicy:         &overwritePolicy,
-		OwnerUsername:           &webServerUsername,
-		TrustedDirOwnerUsername: &webServerUsername,
+		FilePath:        ruleEmbeddableFilePath,
+		Permissions:     &ruleEmbeddableFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &webServerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			webServerUsername,
+		},
 	}, []byte(ruleEmbeddableFileContent.String()))
 	if err != nil {
 		return errors.New("CreateSecurityRuleEmbeddableFileError: " + err.Error())
