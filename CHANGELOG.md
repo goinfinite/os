@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+fix(envs): define the php webserver constants used by runtime
 refactor(runtime): adopt the tk v0.3.6 file clerk contract
 refactor: adopt the tk v0.3.6 file clerk contract
 docs: add the agent usage skill and README pointer
