@@ -2,11 +2,9 @@
 
 ## Before Changes
 
-- Read `README.md`.
 - Read `docs/DEVELOPMENT.md` before build, test, UI, or API work.
 - Read `docs/SECURITY.md` before changing authentication, secrets, filesystem access,
   command execution, or network behavior.
-- Read the nearest `.context.md` before opening code in a directory.
 - Use `docs/FEATURE-MAP.md` when tracing or changing a user-facing flow.
 
 ## Rules
@@ -21,10 +19,8 @@
 
 ## Unit Tests
 
-- Run Go tests inside the container described in `docs/DEVELOPMENT.md`, never on the
-  host: application tests change system state, and host results are not trustworthy.
-- Re-test the working tree against the already-built image with the bind-mounted
-  procedure in the same document, so a one-shot edit does not cost a fresh image.
+- Run Go tests through `tests/tests.sh --scope=unit`, never on the host:
+  application tests change system state, and host results are not trustworthy.
 - When a package fails, check the same package at the base commit before treating it
   as your regression. Report pre-existing failures instead of fixing them inside an
   unrelated change.

@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/09/12
+docs: trim the agent override
 docs: update the development guide
 test: make the services catalog test hermetic
 chore: ignore the local services checkout
