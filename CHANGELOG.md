@@ -1,7 +1,7 @@
 # Changelog
 
 ```log
-0.3.3 - 2026/08/04
+0.3.3 - 2026/09/12
 test: make the services catalog test hermetic
 chore: ignore the local services checkout
 docs: sync the runtime feature map
