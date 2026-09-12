@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+chore: ignore the local services checkout
 docs: sync the runtime feature map
 test: delegate the test fixtures to the tk synthesizer
 test: make the unit suites self-contained
