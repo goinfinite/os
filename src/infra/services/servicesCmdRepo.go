@@ -173,6 +173,14 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 		return errors.New("PreStopError: " + err.Error())
 	}
 
+	err = repo.runCmdSteps(
+		serviceCmdStepTypeStop,
+		serviceEntity.StopCmdSteps, serviceEntity.StopTimeoutSecs,
+	)
+	if err != nil {
+		return errors.New("StopError: " + err.Error())
+	}
+
 	stopOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:          infraEnvs.ProcessManagerBinaryPath,
 		Args:             []string{"stop", serviceEntity.Name.String()},
@@ -185,17 +193,9 @@ func (repo *ServicesCmdRepo) Stop(name valueObject.ServiceName) error {
 
 	time.Sleep(1 * time.Second)
 
-	err = repo.runCmdSteps(
-		serviceCmdStepTypeStop,
-		serviceEntity.StopCmdSteps, serviceEntity.StopTimeoutSecs,
-	)
-	if err != nil {
-		return errors.New("StopError: " + err.Error())
-	}
-
 	return repo.runCmdSteps(
 		serviceCmdStepTypePostStop,
-		serviceEntity.PostStopCmdSteps, serviceEntity.PostStartTimeoutSecs,
+		serviceEntity.PostStopCmdSteps, serviceEntity.PostStopTimeoutSecs,
 	)
 }
 
