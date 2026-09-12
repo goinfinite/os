@@ -20,6 +20,22 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 
 	vhostName, _ := NewVirtualHostHelpers().ReadPrimaryVirtualHostHostname()
 
+	// Note: Setup/teardown are intentionally inline — test independence
+	// requires each file to own its preconditions, even if it duplicates code.
+	existingVhosts, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+		Pagination: tkDto.PaginationSingleItem,
+		Hostname:   &vhostName,
+	})
+	if err != nil {
+		t.Fatalf("VirtualHostPreconditionReadFailed: %v", err)
+	}
+	if len(existingVhosts.VirtualHosts) > 0 {
+		err = vhostCmdRepo.Delete(vhostName)
+		if err != nil {
+			t.Fatalf("VirtualHostPreconditionDeleteFailed: %v", err)
+		}
+	}
+
 	t.Run("Create", func(t *testing.T) {
 		vhostType, _ := valueObject.NewVirtualHostType("top-level")
 		operatorAccountId, _ := tkValueObject.NewAccountId(0)
@@ -29,39 +45,61 @@ func TestVirtualHostCmdRepo(t *testing.T) {
 			vhostName, vhostType, nil, nil, operatorAccountId, ipAddress,
 		))
 		if err != nil {
-			t.Errorf("ExpectingNoErrorButGot: %v", err)
+			t.Fatalf("ExpectingNoErrorButGot: %v", err)
+		}
+
+		readResponse, readErr := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+			Pagination: tkDto.PaginationSingleItem,
+			Hostname:   &vhostName,
+		})
+		if readErr != nil {
+			t.Fatalf("VirtualHostReadFailed: %v", readErr)
+		}
+		if len(readResponse.VirtualHosts) == 0 {
+			t.Errorf("CreatedVirtualHostNotFound: %s", vhostName.String())
 		}
 	})
 
 	t.Run("Update", func(t *testing.T) {
-		vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-			Pagination: tkDto.PaginationUnpaginated,
-		})
-		if err != nil || len(vhostReadResponse.VirtualHosts) == 0 {
-			t.Errorf("ExpectingNoErrorButGot: %v", err)
-		}
-
 		isWildcard := true
-		err = vhostCmdRepo.Update(dto.UpdateVirtualHost{
-			Hostname:   vhostReadResponse.VirtualHosts[0].Hostname,
+		err := vhostCmdRepo.Update(dto.UpdateVirtualHost{
+			Hostname:   vhostName,
 			IsWildcard: &isWildcard,
 		})
 		if err != nil {
-			t.Errorf("ExpectingNoErrorButGot: %v", err)
+			t.Fatalf("ExpectingNoErrorButGot: %v", err)
+		}
+
+		readResponse, readErr := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+			Pagination: tkDto.PaginationSingleItem,
+			Hostname:   &vhostName,
+		})
+		if readErr != nil {
+			t.Fatalf("VirtualHostReadFailed: %v", readErr)
+		}
+		if len(readResponse.VirtualHosts) == 0 {
+			t.Fatalf("UpdatedVirtualHostNotFound: %s", vhostName.String())
+		}
+		if !readResponse.VirtualHosts[0].IsWildcard {
+			t.Errorf("VirtualHostShouldBeWildcard")
 		}
 	})
 
 	t.Run("Delete", func(t *testing.T) {
-		vhostReadResponse, err := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
-			Pagination: tkDto.PaginationUnpaginated,
-		})
-		if err != nil || len(vhostReadResponse.VirtualHosts) == 0 {
-			t.Errorf("ExpectingNoErrorButGot: %v", err)
+		err := vhostCmdRepo.Delete(vhostName)
+		if err != nil {
+			t.Fatalf("ExpectingNoErrorButGot: %v", err)
 		}
 
-		err = vhostCmdRepo.Delete(vhostReadResponse.VirtualHosts[0].Hostname)
-		if err != nil {
-			t.Errorf("ExpectingNoErrorButGot: %v", err)
+		readResponse, readErr := vhostQueryRepo.Read(dto.ReadVirtualHostsRequest{
+			Pagination: tkDto.PaginationSingleItem,
+			Hostname:   &vhostName,
+		})
+		if readErr != nil {
+			t.Fatalf("VirtualHostReadFailed: %v", readErr)
+		}
+		if len(readResponse.VirtualHosts) > 0 {
+			t.Errorf("DeletedVirtualHostStillFound: %s", vhostName.String())
 		}
 	})
 }

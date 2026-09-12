@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+test: make the unit suites self-contained
 test: add the container-backed test suite
 fix(services): run the stop steps before stopping the process
 fix(account): send the secure access key id on delete

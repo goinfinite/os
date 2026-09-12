@@ -7,7 +7,6 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
@@ -17,11 +16,13 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 	scheduledTaskCmdRepo := NewScheduledTaskCmdRepo(persistentDbSvc)
 	scheduledTaskQueryRepo := NewScheduledTaskQueryRepo(persistentDbSvc)
 
+	createdTaskId := valueObject.ScheduledTaskId(0)
+
+	// Note: Setup/teardown are intentionally inline — test independence
+	// requires each file to own its preconditions, even if it duplicates code.
 	t.Run("CreateScheduledTask", func(t *testing.T) {
 		name, _ := valueObject.NewScheduledTaskName("test")
-		command, _ := tkValueObject.NewUnixCommand(
-			infraEnvs.InfiniteOsBinary + " account get",
-		)
+		command, _ := tkValueObject.NewUnixCommand("echo scheduledTaskTest")
 		tag, _ := valueObject.NewScheduledTaskTag("account")
 		tags := []valueObject.ScheduledTaskTag{tag}
 		timeoutSecs := uint16(60)
@@ -33,76 +34,102 @@ func TestScheduledTaskCmdRepo(t *testing.T) {
 
 		taskId, err := scheduledTaskCmdRepo.Create(createDto)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
+			t.Fatalf("ExpectedNoErrorButGot: %v", err)
 		}
 		if taskId.Uint64() == 0 {
-			t.Error("ExpectedGeneratedTaskId")
+			t.Fatal("ExpectedGeneratedTaskId")
+		}
+
+		createdTaskId = taskId
+	})
+	if createdTaskId.Uint64() == 0 {
+		t.Fatal("ScheduledTaskCreationFailed: dependent tests skipped")
+	}
+	t.Cleanup(func() {
+		deleteErr := scheduledTaskCmdRepo.Delete(createdTaskId)
+		if deleteErr != nil {
+			t.Errorf("ScheduledTaskCleanupFailed: %v", deleteErr)
 		}
 	})
 
 	t.Run("UpdateScheduledTask", func(t *testing.T) {
-		scheduledTasks, err := readScheduledTasks()
+		completedStatus, _ := valueObject.NewScheduledTaskStatus("completed")
+		updateDto := dto.NewUpdateScheduledTask(
+			createdTaskId, &completedStatus, nil,
+		)
+
+		err := scheduledTaskCmdRepo.Update(updateDto)
 		if err != nil {
-			t.Error(err)
-			return
+			t.Fatalf("ExpectedNoErrorButGot: %v", err)
 		}
 
-		newStatus, _ := valueObject.NewScheduledTaskStatus("pending")
-		updateDto := dto.NewUpdateScheduledTask(scheduledTasks[0].Id, &newStatus, nil)
+		readDto := dto.ReadScheduledTasksRequest{
+			Pagination: useCase.ScheduledTasksDefaultPagination,
+			TaskId:     &createdTaskId,
+		}
+		responseDto, err := scheduledTaskQueryRepo.Read(readDto)
+		if err != nil {
+			t.Fatalf("ExpectedNoErrorButGot: %v", err)
+		}
+		if len(responseDto.Tasks) == 0 {
+			t.Fatal("NoTaskFound")
+		}
+		if responseDto.Tasks[0].Status.String() != "completed" {
+			t.Errorf(
+				"ExpectedCompletedButGot: %v",
+				responseDto.Tasks[0].Status.String(),
+			)
+		}
+
+		pendingStatus, _ := valueObject.NewScheduledTaskStatus("pending")
+		updateDto = dto.NewUpdateScheduledTask(createdTaskId, &pendingStatus, nil)
 
 		err = scheduledTaskCmdRepo.Update(updateDto)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
+			t.Fatalf("ExpectedNoErrorButGot: %v", err)
 		}
 	})
 
 	t.Run("RunScheduledTasks", func(t *testing.T) {
-		pendingStatus, _ := valueObject.NewScheduledTaskStatus("pending")
 		readDto := dto.ReadScheduledTasksRequest{
 			Pagination: useCase.ScheduledTasksDefaultPagination,
-			TaskStatus: &pendingStatus,
+			TaskId:     &createdTaskId,
 		}
 
 		responseDto, err := scheduledTaskQueryRepo.Read(readDto)
 		if err != nil {
-			t.Error(err)
-			return
+			t.Fatalf("ExpectedNoErrorButGot: %v", err)
 		}
 		if len(responseDto.Tasks) == 0 {
-			t.Error("NoPendingTasksFound")
-			return
+			t.Fatal("NoTaskFound")
 		}
 
-		err = scheduledTaskCmdRepo.Run(responseDto.Tasks[0])
+		pendingTask := responseDto.Tasks[0]
+		if pendingTask.Status.String() != "pending" {
+			t.Fatalf("ExpectedPendingButGot: %v", pendingTask.Status.String())
+		}
+
+		err = scheduledTaskCmdRepo.Run(pendingTask)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
-		}
-
-		readDto = dto.ReadScheduledTasksRequest{
-			Pagination: useCase.ScheduledTasksDefaultPagination,
-			TaskId:     &responseDto.Tasks[0].Id,
+			t.Fatalf("ExpectedNoErrorButGot: %v", err)
 		}
 
 		responseDto, err = scheduledTaskQueryRepo.Read(readDto)
 		if err != nil {
-			t.Error(err)
-			return
+			t.Fatalf("ExpectedNoErrorButGot: %v", err)
 		}
-
 		if len(responseDto.Tasks) == 0 {
-			t.Error("NoTaskFound")
-			return
+			t.Fatal("NoTaskFound")
 		}
 
 		completedTask := responseDto.Tasks[0]
-
 		if completedTask.Status.String() != "completed" {
 			t.Errorf("ExpectedCompletedButGot: %v", completedTask.Status.String())
 		}
 
 		err = scheduledTaskCmdRepo.Delete(completedTask.Id)
 		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %v", err)
+			t.Fatalf("ExpectedNoErrorButGot: %v", err)
 		}
 	})
 }

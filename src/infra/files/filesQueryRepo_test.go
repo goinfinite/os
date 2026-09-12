@@ -1,6 +1,7 @@
 package filesInfra
 
 import (
+	"os"
 	"os/user"
 	"testing"
 
@@ -14,6 +15,19 @@ func TestFilesQueryRepo(t *testing.T) {
 	fileClerk := tkInfra.FileClerk{}
 	currentUser, _ := user.Current()
 	userHomeDir := "/home/" + currentUser.Username
+
+	// Note: Setup/teardown are intentionally inline — test independence
+	// requires each file to own its preconditions, even if it duplicates code.
+	homeDirCreationErr := os.MkdirAll(userHomeDir, 0755)
+	if homeDirCreationErr != nil {
+		t.Fatalf("HomeDirCreationFailed: %v", homeDirCreationErr)
+	}
+	t.Cleanup(func() {
+		removeErr := os.RemoveAll(userHomeDir)
+		if removeErr != nil {
+			t.Errorf("HomeDirCleanupFailed: %v", removeErr)
+		}
+	})
 
 	t.Run("Read", func(t *testing.T) {
 		unixDirPath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir, false)
@@ -51,18 +65,47 @@ func TestFilesQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReadFollowingSymlink", func(t *testing.T) {
-		downloadsDirPath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir+"/Downloads", false)
-		tmpSymlinkPath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir+"/tmpSymlink", false)
+		downloadsDirPathStr := userHomeDir + "/Downloads"
+		downloadsDirCreationErr := os.MkdirAll(downloadsDirPathStr, 0755)
+		if downloadsDirCreationErr != nil {
+			t.Fatalf("DownloadsDirCreationFailed: %v", downloadsDirCreationErr)
+		}
+		downloadFilePathStr := downloadsDirPathStr + "/download.txt"
+		downloadFileWriteErr := os.WriteFile(
+			downloadFilePathStr, []byte("download"), 0644,
+		)
+		if downloadFileWriteErr != nil {
+			t.Fatalf("DownloadFileCreationFailed: %v", downloadFileWriteErr)
+		}
+		t.Cleanup(func() {
+			removeErr := os.RemoveAll(downloadsDirPathStr)
+			if removeErr != nil {
+				t.Errorf("DownloadsDirCleanupFailed: %v", removeErr)
+			}
+		})
+
+		downloadsDirPath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			downloadsDirPathStr, false,
+		)
+		tmpSymlinkPath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			userHomeDir+"/tmpSymlink", false,
+		)
 		requestDto := dto.ReadFilesRequest{
 			SourcePath: tmpSymlinkPath,
 		}
 
-		err := fileClerk.CreateSymlink(
+		symlinkCreationErr := fileClerk.CreateSymlink(
 			downloadsDirPath.String(), tmpSymlinkPath.String(), false,
 		)
-		if err != nil {
-			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())
+		if symlinkCreationErr != nil {
+			t.Fatalf("ExpectedNoErrorButGot: %s", symlinkCreationErr.Error())
 		}
+		t.Cleanup(func() {
+			removeErr := fileClerk.RemoveSymlink(tmpSymlinkPath.String())
+			if removeErr != nil {
+				t.Errorf("SymlinkCleanupFailed: %v", removeErr)
+			}
+		})
 
 		responseDto, err := filesQueryRepo.Read(requestDto)
 		if err != nil {
@@ -71,12 +114,26 @@ func TestFilesQueryRepo(t *testing.T) {
 		if len(responseDto.Files) == 0 {
 			t.Errorf("ExpectedNonEmptyFilesButGotEmpty")
 		}
-
-		_ = fileClerk.RemoveSymlink(tmpSymlinkPath.String())
 	})
 
 	t.Run("ReadFirstFile", func(t *testing.T) {
-		unixFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(userHomeDir+"/.bashrc", false)
+		unixFilePathStr := userHomeDir + "/filesQueryRepoTest.txt"
+		fileWriteErr := os.WriteFile(
+			unixFilePathStr, []byte("query test"), 0644,
+		)
+		if fileWriteErr != nil {
+			t.Fatalf("TestFileCreationFailed: %v", fileWriteErr)
+		}
+		t.Cleanup(func() {
+			removeErr := os.Remove(unixFilePathStr)
+			if removeErr != nil {
+				t.Errorf("TestFileCleanupFailed: %v", removeErr)
+			}
+		})
+
+		unixFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			unixFilePathStr, false,
+		)
 		_, err := filesQueryRepo.ReadFirst(unixFilePath)
 		if err != nil {
 			t.Errorf("ExpectedNoErrorButGot: %s", err.Error())

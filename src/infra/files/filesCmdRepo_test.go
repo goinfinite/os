@@ -12,7 +12,7 @@ import (
 )
 
 func TestFilesCmdRepo(t *testing.T) {
-	filesCmdRepo := FilesCmdRepo{}
+	filesCmdRepo := NewFilesCmdRepo()
 
 	currentUser, _ := user.Current()
 	fileBasePathStr := "/home/" + currentUser.Username
@@ -21,6 +21,22 @@ func TestFilesCmdRepo(t *testing.T) {
 	directoryDefaultPermissions := valueObject.NewUnixDirDefaultPermissions()
 	operatorAccountId, _ := tkValueObject.NewAccountId(0)
 	ipAddress := tkValueObject.IpAddressLocal
+
+	// Note: Setup/teardown are intentionally inline — test independence
+	// requires each file to own its preconditions, even if it duplicates code.
+	t.Cleanup(func() {
+		fixturePaths := []string{
+			fileBasePathStr + "/testDir",
+			fileBasePathStr + "/testDir_",
+			fileBasePathStr + "/filesCmdRepoTest.txt",
+		}
+		for _, fixturePath := range fixturePaths {
+			removeErr := os.RemoveAll(fixturePath)
+			if removeErr != nil {
+				t.Errorf("FixtureCleanupFailed: %v", removeErr)
+			}
+		}
+	})
 
 	t.Run("CreateUnixDirectory", func(t *testing.T) {
 		filePath, _ := tkValueObject.NewUnixAbsoluteFilePath(fileBasePathStr+"/testDir", false)
@@ -258,36 +274,59 @@ func TestFilesCmdRepo(t *testing.T) {
 	})
 
 	t.Run("CopyUnixDirectory", func(t *testing.T) {
-		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(fileBasePathStr+"/testDir_", false)
-		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+		destinationParentPath, _ := tkValueObject.NewUnixAbsoluteFilePath(
 			fileBasePathStr+"/testDir", false,
 		)
-
-		dto := dto.NewCopyUnixFile(
-			sourceFilePath, destinationFilePath, true, operatorAccountId, ipAddress,
+		createDto := dto.NewCreateUnixFile(
+			destinationParentPath, &directoryDefaultPermissions,
+			tkValueObject.MimeTypeDirectory, operatorAccountId, ipAddress,
 		)
 
-		err := filesCmdRepo.Copy(dto)
+		err := filesCmdRepo.Create(createDto)
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Fatalf("DestinationParentCreationFailed: %v", err)
+		}
+
+		sourcePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir_", false,
+		)
+		copyDto := dto.NewCopyUnixFile(
+			sourcePath, destinationParentPath, true, operatorAccountId, ipAddress,
+		)
+
+		err = filesCmdRepo.Copy(copyDto)
+		if err != nil {
+			t.Fatalf("UnexpectedError: %v", err)
+		}
+
+		copiedDirPath := fileBasePathStr + "/testDir/testDir_"
+		_, statErr := os.Stat(copiedDirPath)
+		if statErr != nil {
+			t.Errorf("ExpectedCopiedDirectoryButGot: %v", statErr)
 		}
 	})
 
 	t.Run("CopyUnixFile", func(t *testing.T) {
-		sourceFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+		sourcePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
 			fileBasePathStr+"/filesCmdRepoTest.txt", false,
 		)
-		destinationFilePath, _ := tkValueObject.NewUnixAbsoluteFilePath(
-			fileBasePathStr+"/testDir/filesCmdRepoTest.txt", false,
+		destinationParentPath, _ := tkValueObject.NewUnixAbsoluteFilePath(
+			fileBasePathStr+"/testDir", false,
 		)
 
-		dto := dto.NewCopyUnixFile(
-			sourceFilePath, destinationFilePath, false, operatorAccountId, ipAddress,
+		copyDto := dto.NewCopyUnixFile(
+			sourcePath, destinationParentPath, false, operatorAccountId, ipAddress,
 		)
 
-		err := filesCmdRepo.Copy(dto)
+		err := filesCmdRepo.Copy(copyDto)
 		if err != nil {
-			t.Errorf("UnexpectedError: %v", err)
+			t.Fatalf("UnexpectedError: %v", err)
+		}
+
+		copiedFilePath := fileBasePathStr + "/testDir/filesCmdRepoTest.txt"
+		_, statErr := os.Stat(copiedFilePath)
+		if statErr != nil {
+			t.Errorf("ExpectedCopiedFileButGot: %v", statErr)
 		}
 	})
 

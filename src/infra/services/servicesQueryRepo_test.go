@@ -51,9 +51,10 @@ func TestServicesQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReadInstalledItems", func(t *testing.T) {
-		name, _ := valueObject.NewServiceName("node")
+		name, _ := valueObject.NewServiceName("nginx")
 
 		readInstalledItemsRequestDto := dto.ReadInstalledServicesItemsRequest{
+			Pagination:  useCase.ServicesDefaultPagination,
 			ServiceName: &name,
 		}
 
@@ -70,7 +71,7 @@ func TestServicesQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ReadFirstInstalledItem", func(t *testing.T) {
-		name, _ := valueObject.NewServiceName("node")
+		name, _ := valueObject.NewServiceName("nginx")
 
 		readFirstInstalledRequestDto := dto.ReadFirstInstalledServiceItemsRequest{
 			ServiceName: &name,
@@ -85,7 +86,7 @@ func TestServicesQueryRepo(t *testing.T) {
 	})
 
 	t.Run("IsInstalled", func(t *testing.T) {
-		installedName, _ := valueObject.NewServiceName("node")
+		installedName, _ := valueObject.NewServiceName("nginx")
 		isInstalled := servicesQueryRepo.IsInstalled(installedName)
 		if !isInstalled {
 			t.Error("InstalledServiceShouldReturnTrue")
