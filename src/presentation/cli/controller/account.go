@@ -239,8 +239,8 @@ func (controller *AccountController) DeleteSecureAccessPublicKey() *cobra.Comman
 		Short: "DeleteSecureAccessPublicKey",
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]interface{}{
-				"accountId": accountIdUint64,
-				"id":        keyIdUint16,
+				"accountId":               accountIdUint64,
+				"secureAccessPublicKeyId": keyIdUint16,
 			}
 
 			tkPresentation.LiaisonCliResponseRenderer(
