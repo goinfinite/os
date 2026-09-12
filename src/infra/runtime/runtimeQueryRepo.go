@@ -3,20 +3,19 @@ package runtimeInfra
 import (
 	"encoding/json"
 	"errors"
-	"log"
+	"log/slog"
+	"regexp"
 	"slices"
 	"strings"
+	"unicode"
 
 	"github.com/goinfinite/os/src/domain/entity"
+	domainRepository "github.com/goinfinite/os/src/domain/repository"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
-)
-
-var (
-	ErrPhpVirtualHostNotFound error = errors.New("PhpVirtualHostNotFound")
 )
 
 type RuntimeQueryRepo struct {
@@ -30,8 +29,9 @@ func NewRuntimeQueryRepo() *RuntimeQueryRepo {
 func (repo RuntimeQueryRepo) ReadPhpVirtualHostConfFilePath(
 	vhostHostname tkValueObject.Fqdn,
 ) (phpVirtualHostConfFilePath tkValueObject.UnixAbsoluteFilePath, err error) {
-	nonWildcardHostname := strings.Replace(vhostHostname.String(), "*.", "", -1)
-	rawPhpVirtualHostConfFilePath := "/app/conf/php-webserver/" + nonWildcardHostname + ".conf"
+	nonWildcardHostname := strings.ReplaceAll(vhostHostname.String(), "*.", "")
+	rawPhpVirtualHostConfFilePath := infraEnvs.PhpWebServerConfDir + "/" +
+		nonWildcardHostname + ".conf"
 
 	primaryVirtualHostHostname, err := vhostInfra.NewVirtualHostHelpers().
 		ReadPrimaryVirtualHostHostnameFromWebServerConf()
@@ -41,7 +41,8 @@ func (repo RuntimeQueryRepo) ReadPhpVirtualHostConfFilePath(
 		)
 	}
 
-	primaryVirtualHostPhpConfFilePathStr := "/app/conf/php-webserver/primary.conf"
+	primaryVirtualHostPhpConfFilePathStr := infraEnvs.PhpWebServerConfDir +
+		"/primary.conf"
 	if vhostHostname == primaryVirtualHostHostname {
 		rawPhpVirtualHostConfFilePath = primaryVirtualHostPhpConfFilePathStr
 	}
@@ -56,7 +57,7 @@ func (repo RuntimeQueryRepo) ReadPhpVirtualHostConfFilePath(
 	}
 
 	if !repo.fileClerk.FileExists(phpVirtualHostConfFilePath.String()) {
-		return phpVirtualHostConfFilePath, ErrPhpVirtualHostNotFound
+		return phpVirtualHostConfFilePath, domainRepository.ErrPhpVirtualHostNotFound
 	}
 
 	return phpVirtualHostConfFilePath, nil
@@ -72,10 +73,12 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 		},
 	}).Run()
 	if err != nil {
-		return phpVersions, errors.New("GetPhpVersionFromFileFailed: " + err.Error())
+		return phpVersions, errors.New(
+			"ReadPhpVersionsInstalledFailed: " + err.Error(),
+		)
 	}
 
-	for _, version := range strings.Split(output, "\n") {
+	for version := range strings.SplitSeq(output, "\n") {
 		if version == "" {
 			continue
 		}
@@ -83,6 +86,10 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 		version = strings.Replace(version, "lsphp", "", 1)
 		phpVersion, err := valueObject.NewPhpVersion(version)
 		if err != nil {
+			slog.Debug(
+				"SkippingInvalidPhpVersion",
+				slog.String("phpVersion", version),
+			)
 			continue
 		}
 
@@ -94,10 +101,10 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 
 func (repo RuntimeQueryRepo) ReadPhpVersion(
 	hostname tkValueObject.Fqdn,
-) (phpVersion entity.PhpVersion, err error) {
+) (phpVersionEntity entity.PhpVersion, err error) {
 	phpVirtualHostConfFilePath, err := repo.ReadPhpVirtualHostConfFilePath(hostname)
 	if err != nil {
-		return phpVersion, err
+		return phpVersionEntity, err
 	}
 
 	currentPhpVersionStr, err := tkInfra.NewShell(tkInfra.ShellSettings{
@@ -108,27 +115,31 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 		},
 	}).Run()
 	if err != nil {
-		return phpVersion, errors.New("ReadCurrentPhpVersionFromFileFailed: " + err.Error())
+		return phpVersionEntity, errors.New(
+			"ReadCurrentPhpVersionFromFileFailed: " + err.Error(),
+		)
 	}
 
 	currentPhpVersion, err := valueObject.NewPhpVersion(currentPhpVersionStr)
 	if err != nil {
-		return phpVersion, errors.New("PhpVersionUnknown: " + err.Error())
+		return phpVersionEntity, errors.New("PhpVersionUnknown: " + err.Error())
 	}
 
 	phpVersions, err := repo.ReadPhpVersionsInstalled()
 	if err != nil {
-		return phpVersion, errors.New("ReadPhpVersionsInstalledFailed: " + err.Error())
+		return phpVersionEntity, err
 	}
 
-	phpVersion = entity.NewPhpVersion(currentPhpVersion, phpVersions)
-	return phpVersion, nil
+	phpVersionEntity = entity.NewPhpVersion(currentPhpVersion, phpVersions)
+	return phpVersionEntity, nil
 }
 
-func (repo RuntimeQueryRepo) getPhpTimezones() (timezones []string, err error) {
+func (repo RuntimeQueryRepo) readPhpTimezones() (timezones []string, err error) {
 	timezonesRaw, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "php",
-		Args:    []string{"-r", "echo json_encode(DateTimeZone::listIdentifiers());"},
+		Args: []string{
+			"-r", "echo json_encode(DateTimeZone::listIdentifiers());",
+		},
 	}).Run()
 	if err != nil {
 		return timezones, errors.New("ReadPhpTimezonesFailed: " + err.Error())
@@ -144,57 +155,59 @@ func (repo RuntimeQueryRepo) getPhpTimezones() (timezones []string, err error) {
 
 func (repo RuntimeQueryRepo) phpSettingFactory(
 	setting string,
-) (phpSetting entity.PhpSetting, err error) {
+) (phpSettingEntity entity.PhpSetting, err error) {
 	if setting == "" {
-		return phpSetting, errors.New("InvalidPhpSetting")
+		return phpSettingEntity, errors.New("InvalidPhpSetting")
 	}
 
-	settingParts := strings.Split(setting, " ")
-	if len(settingParts) != 2 {
-		return phpSetting, errors.New("InvalidPhpSetting")
+	separatorIndex := strings.IndexFunc(setting, unicode.IsSpace)
+	if separatorIndex < 0 {
+		return phpSettingEntity, errors.New("InvalidPhpSetting")
 	}
 
-	settingNameStr := settingParts[0]
-	settingValueStr := settingParts[1]
+	settingNameStr := strings.TrimSpace(setting[:separatorIndex])
+	settingValueStr := strings.TrimSpace(setting[separatorIndex:])
 	if settingNameStr == "" || settingValueStr == "" {
-		return phpSetting, errors.New("InvalidPhpSetting")
+		return phpSettingEntity, errors.New("InvalidPhpSetting")
 	}
 
 	settingName, err := valueObject.NewPhpSettingName(settingNameStr)
 	if err != nil {
-		return phpSetting, errors.New("InvalidPhpSettingName")
+		return phpSettingEntity, errors.New("InvalidPhpSettingName")
 	}
 
 	settingValue, err := valueObject.NewPhpSettingValue(settingValueStr)
 	if err != nil {
-		return phpSetting, errors.New("InvalidPhpSettingValue")
+		return phpSettingEntity, errors.New("InvalidPhpSettingValue")
 	}
 
 	settingOptions := []valueObject.PhpSettingOption{}
-	valuesToInject := []string{}
+	settingOptionValues := []string{}
 
-	switch settingValue.GetType() {
-	case "bool":
-		valuesToInject = []string{"On", "Off"}
-	case "number":
-		valuesToInject = []string{
+	switch settingValue.ReadType() {
+	case valueObject.PhpSettingValueTypeBool:
+		settingOptionValues = []string{"On", "Off"}
+	case valueObject.PhpSettingValueTypeNumber:
+		settingOptionValues = []string{
 			"0", "30", "60", "120", "300", "600", "900", "1800", "3600", "7200",
 		}
-	case "byteSize":
+	case valueObject.PhpSettingValueTypeByteSize:
 		lastChar := settingValue[len(settingValue)-1]
 		switch lastChar {
 		case 'K':
-			valuesToInject = []string{"4096K", "8192K", "16384K"}
+			settingOptionValues = []string{"4096K", "8192K", "16384K"}
 		case 'M':
-			valuesToInject = []string{"16M", "32M", "64M", "128M", "256M", "512M", "1024M", "2048M"}
+			settingOptionValues = []string{
+				"16M", "32M", "64M", "128M", "256M", "512M", "1024M", "2048M",
+			}
 		case 'G':
-			valuesToInject = []string{"1G", "2G", "4G"}
+			settingOptionValues = []string{"1G", "2G", "4G"}
 		}
 	}
 
 	switch settingName {
 	case "error_reporting":
-		valuesToInject = []string{
+		settingOptionValues = []string{
 			"E_ALL",
 			"~E_ALL",
 			"E_ALL & ~E_DEPRECATED & ~E_STRICT",
@@ -202,16 +215,29 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 			"E_ERROR|E_CORE_ERROR|E_COMPILE_ERROR",
 		}
 	case "date.timezone":
-		valuesToInject, err = repo.getPhpTimezones()
+		settingOptionValues, err = repo.readPhpTimezones()
 		if err != nil {
-			log.Printf("FailedToGetPhpTimezones: %s", err.Error())
-			valuesToInject = []string{}
+			slog.Error(
+				"ReadPhpTimezonesFailed",
+				slog.String("err", err.Error()),
+			)
+			settingOptionValues = []string{}
 		}
 	}
 
-	if len(valuesToInject) > 0 {
-		for _, valueToInject := range valuesToInject {
-			settingOption, _ := valueObject.NewPhpSettingOption(valueToInject)
+	if len(settingOptionValues) > 0 {
+		for _, optionValue := range settingOptionValues {
+			settingOption, optionErr := valueObject.NewPhpSettingOption(
+				optionValue,
+			)
+			if optionErr != nil {
+				slog.Debug(
+					"SkippingInvalidPhpSettingOption",
+					slog.String("option", optionValue),
+				)
+				continue
+			}
+
 			settingOptions = append(settingOptions, settingOption)
 		}
 	}
@@ -227,40 +253,63 @@ func (repo RuntimeQueryRepo) phpSettingFactory(
 	), nil
 }
 
+func (repo RuntimeQueryRepo) readPhpDirectiveSettingLines(
+	phpVirtualHostConfFilePath tkValueObject.UnixAbsoluteFilePath,
+) (settingLines []string, err error) {
+	directiveRegex := regexp.MustCompile(
+		`(?m)^[ \t]*` + phpDirectiveKeywordPattern +
+			`[ \t]+([^ \t]+)[ \t]+(.+)$`,
+	)
+
+	directiveFindings, err := repo.fileClerk.FileContentRegexSearch(
+		phpVirtualHostConfFilePath, directiveRegex,
+	)
+	if err != nil {
+		return nil, errors.New("ReadPhpSettingsFailed: " + err.Error())
+	}
+
+	for _, directiveFinding := range directiveFindings {
+		settingName := directiveFinding.Groups[0]
+		settingValue := strings.TrimSpace(directiveFinding.Groups[1])
+		settingLines = append(settingLines, settingName+" "+settingValue)
+	}
+
+	return settingLines, nil
+}
+
 func (repo RuntimeQueryRepo) ReadPhpSettings(
 	hostname tkValueObject.Fqdn,
-) (phpSettings []entity.PhpSetting, err error) {
+) (phpSettingsEntities []entity.PhpSetting, err error) {
 	phpVirtualHostConfFilePath, err := repo.ReadPhpVirtualHostConfFilePath(hostname)
 	if err != nil {
-		return phpSettings, err
+		return phpSettingsEntities, err
 	}
 
-	output, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "sed",
-		Args: []string{
-			"-n",
-			"/phpIniOverride\\s*{/,/}/ { /phpIniOverride\\s*{/d; /}/d; " +
-				"s/^[[:space:]]*//; s/[^[:space:]]*[[:space:]]//; p; }",
-			phpVirtualHostConfFilePath.String(),
-		},
-	}).Run()
-	if err != nil || output == "" {
-		return phpSettings, errors.New("GetPhpSettingsFailed: " + err.Error())
+	settingLines, err := repo.readPhpDirectiveSettingLines(
+		phpVirtualHostConfFilePath,
+	)
+	if err != nil {
+		return phpSettingsEntities, err
 	}
 
-	for _, setting := range strings.Split(output, "\n") {
-		phpSetting, err := repo.phpSettingFactory(setting)
+	for _, settingLine := range settingLines {
+		phpSettingEntity, err := repo.phpSettingFactory(settingLine)
 		if err != nil {
+			slog.Debug(
+				"SkippingInvalidPhpSettingLine",
+				slog.String("settingLine", settingLine),
+				slog.String("err", err.Error()),
+			)
 			continue
 		}
 
-		phpSettings = append(phpSettings, phpSetting)
+		phpSettingsEntities = append(phpSettingsEntities, phpSettingEntity)
 	}
 
-	return phpSettings, nil
+	return phpSettingsEntities, nil
 }
 
-func (repo RuntimeQueryRepo) normalizedPhpModuleName(
+func (repo RuntimeQueryRepo) normalizePhpModuleName(
 	rawModuleName string,
 ) string {
 	normalizedModuleName := strings.ReplaceAll(rawModuleName, "Zend", "")
@@ -271,17 +320,47 @@ func (repo RuntimeQueryRepo) normalizedPhpModuleName(
 	return strings.ToLower(strings.TrimSpace(normalizedModuleName))
 }
 
-func (repo RuntimeQueryRepo) ReadPhpModules(
+func (repo RuntimeQueryRepo) readSupportedPhpModuleNames(
+	assetFilePath string,
 	version valueObject.PhpVersion,
-) (phpModules []entity.PhpModule, err error) {
-	rawPhpModuleOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php",
-		Args:    []string{"-m"},
-	}).Run()
+) ([]valueObject.PhpModuleName, error) {
+	rawModulesAsset, err := tkInfra.FileDeserializer(assetFilePath)
 	if err != nil {
-		return phpModules, errors.New("GetActivePhpModulesFailed: " + err.Error())
+		return nil, errors.New("ReadPhpModulesAssetFailed: " + err.Error())
 	}
 
+	modulesByVersion, assertOk := rawModulesAsset["modules"].(map[string]any)
+	if !assertOk {
+		return nil, errors.New("InvalidPhpModulesAssetVersionsStructure")
+	}
+
+	rawModuleNames, exists := modulesByVersion[version.String()]
+	if !exists {
+		return nil, errors.New("PhpVersionNotFoundInPhpModulesAsset")
+	}
+
+	moduleNames, assertOk := rawModuleNames.([]any)
+	if !assertOk {
+		return nil, errors.New("InvalidPhpModulesAssetModuleNamesStructure")
+	}
+
+	supportedModuleNames := []valueObject.PhpModuleName{}
+	for _, rawModuleName := range moduleNames {
+		moduleName, err := valueObject.NewPhpModuleName(rawModuleName)
+		if err != nil {
+			return nil, errors.New("InvalidPhpModuleInAsset: " + err.Error())
+		}
+
+		supportedModuleNames = append(supportedModuleNames, moduleName)
+	}
+
+	return supportedModuleNames, nil
+}
+
+func (repo RuntimeQueryRepo) phpModulesFactory(
+	rawPhpModuleOutput string,
+	supportedModuleNames []valueObject.PhpModuleName,
+) []entity.PhpModule {
 	activePhpModuleNames := []string{}
 	for rawModuleName := range strings.SplitSeq(rawPhpModuleOutput, "\n") {
 		if rawModuleName == "" {
@@ -293,47 +372,69 @@ func (repo RuntimeQueryRepo) ReadPhpModules(
 			continue
 		}
 
-		normalizedModuleName := repo.normalizedPhpModuleName(rawModuleName)
+		normalizedModuleName := repo.normalizePhpModuleName(rawModuleName)
 		if normalizedModuleName == "" {
 			continue
 		}
 
 		activePhpModuleNames = append(activePhpModuleNames, normalizedModuleName)
 	}
-	for _, rawModuleName := range valueObject.ValidPhpModuleNames {
-		phpModule, err := valueObject.NewPhpModuleName(rawModuleName)
-		if err != nil {
-			continue
-		}
-		isModuleInstalled := slices.Contains(
-			activePhpModuleNames, phpModule.String(),
-		)
 
-		phpModules = append(
-			phpModules, entity.NewPhpModule(phpModule, isModuleInstalled),
+	phpModulesEntities := []entity.PhpModule{}
+	for _, moduleName := range supportedModuleNames {
+		isModuleInstalled := slices.Contains(
+			activePhpModuleNames, moduleName.String(),
+		)
+		phpModulesEntities = append(
+			phpModulesEntities, entity.NewPhpModule(moduleName, isModuleInstalled),
 		)
 	}
 
-	return phpModules, nil
+	return phpModulesEntities
+}
+
+func (repo RuntimeQueryRepo) ReadPhpModules(
+	version valueObject.PhpVersion,
+) (phpModulesEntities []entity.PhpModule, err error) {
+	supportedModuleNames, err := repo.readSupportedPhpModuleNames(
+		infraEnvs.PhpWebServerModulesAssetFilePath, version,
+	)
+	if err != nil {
+		return phpModulesEntities, err
+	}
+
+	rawPhpModuleOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php",
+		Args:    []string{"-m"},
+	}).Run()
+	if err != nil {
+		return phpModulesEntities, errors.New(
+			"ReadPhpModulesFailed: " + err.Error(),
+		)
+	}
+
+	return repo.phpModulesFactory(rawPhpModuleOutput, supportedModuleNames), nil
 }
 
 func (repo RuntimeQueryRepo) ReadPhpConfigs(
 	hostname tkValueObject.Fqdn,
-) (phpConfigs entity.PhpConfigs, err error) {
-	phpVersion, err := repo.ReadPhpVersion(hostname)
+) (phpConfigsEntity entity.PhpConfigs, err error) {
+	phpVersionEntity, err := repo.ReadPhpVersion(hostname)
 	if err != nil {
-		return phpConfigs, err
+		return phpConfigsEntity, err
 	}
 
-	phpSettings, err := repo.ReadPhpSettings(hostname)
+	phpSettingsEntities, err := repo.ReadPhpSettings(hostname)
 	if err != nil {
-		return phpConfigs, err
+		return phpConfigsEntity, err
 	}
 
-	phpModules, err := repo.ReadPhpModules(phpVersion.Value)
+	phpModulesEntities, err := repo.ReadPhpModules(phpVersionEntity.Value)
 	if err != nil {
-		return phpConfigs, err
+		return phpConfigsEntity, err
 	}
 
-	return entity.NewPhpConfigs(hostname, phpVersion, phpSettings, phpModules), nil
+	return entity.NewPhpConfigs(
+		hostname, phpVersionEntity, phpSettingsEntities, phpModulesEntities,
+	), nil
 }
