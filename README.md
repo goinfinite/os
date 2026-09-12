@@ -4,6 +4,9 @@ Infinite OS is **the simplest way to deploy containerized applications**. Even i
 
 ![Infinite OS Screenshots](docs/os-screenshots.webp)
 
+> [!TIP]
+> **Working with an AI agent?** Point it to [`SKILL.md`](SKILL.md) before it deploys or manages applications with Infinite OS. The skill maps the dashboard, CLI, and REST API, and gives the core deployment workflows.
+
 ### What's This All About Then?
 
 We've created something rather special: **a "wildcard" container image**. Yes, we made up that term because **nothing else quite does what Infinite OS does**!
