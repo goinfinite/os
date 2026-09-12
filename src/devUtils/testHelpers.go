@@ -1,7 +1,6 @@
 package testHelpers
 
 import (
-	"encoding/base64"
 	"log/slog"
 	"os"
 
@@ -10,13 +9,6 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
-
-func GenerateString(desiredSize int) string {
-	desiredSizeBytesLength := float64(desiredSize) * 3
-	desiredSizeStringLength := desiredSizeBytesLength / 4
-	randomBytes := make([]byte, uint(desiredSizeStringLength))
-	return base64.StdEncoding.EncodeToString(randomBytes)
-}
 
 func LoadEnvVars() {
 	envFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(

@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/08/04
+test: delegate the test fixtures to the tk synthesizer
 test: make the unit suites self-contained
 test: add the container-backed test suite
 fix(services): run the stop steps before stopping the process
