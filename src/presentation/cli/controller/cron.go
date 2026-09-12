@@ -165,7 +165,7 @@ func (controller *CronController) Delete() *cobra.Command {
 			requestBody := map[string]interface{}{}
 
 			if idStr != "" {
-				requestBody["id"] = idStr
+				requestBody["cronId"] = idStr
 			}
 
 			if commentStr != "" {

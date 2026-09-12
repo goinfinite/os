@@ -143,13 +143,21 @@ func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
 	if err != nil {
 		return errors.New("ReadCronsError: " + err.Error())
 	}
-	cronsEntities := readResponseDto.Crons
-	cronEntityIndex := cronId.Uint64() - 1
 
-	cronsEntitiesToKeep := append(
-		cronsEntities[:cronEntityIndex],
-		cronsEntities[cronEntityIndex+1:]...,
-	)
+	cronsEntitiesToKeep := []entity.Cron{}
+	cronFound := false
+	for _, cronEntity := range readResponseDto.Crons {
+		if cronEntity.Id == cronId {
+			cronFound = true
+			continue
+		}
+
+		cronsEntitiesToKeep = append(cronsEntitiesToKeep, cronEntity)
+	}
+
+	if !cronFound {
+		return errors.New("CronNotFound")
+	}
 
 	return repo.rebuildCrontab(cronsEntitiesToKeep)
 }
