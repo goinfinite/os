@@ -1,7 +1,9 @@
 Containerfile
 logs/
 tmp/
+.env
 .env.example
+tests/artifacts/
 .git
 .gitignore
 TODO.md

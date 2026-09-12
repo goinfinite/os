@@ -1,9 +1,16 @@
 [tools]
+# Product tooling.
 go = "1.27.1"
+
+# Development tooling.
 golangci-lint = "2.13.2"
 semgrep = "1.176.0"
-shellcheck = "0.11.0"
-staticcheck = "2026.2.1"
 # semgrep is a Python package; mise installs it through uv.
 uv = "0.10.4"
+shellcheck = "0.11.0"
+staticcheck = "2026.2.1"
 "go:golang.org/x/tools/gopls" = "v0.23.0"
+
+# Test suite tooling (tests/tests.sh). Not used by the product.
+jq = "1.8.1"
+yq = "4.52.4"

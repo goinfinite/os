@@ -1,0 +1,66 @@
+account.create:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 400
+  info_ms: 800
+  warn_ms: 1500
+  relative_warn_percent: 50
+account.get:
+  baseline_p50_ms: 150
+  baseline_p90_ms: 250
+  info_ms: 600
+  warn_ms: 1200
+  relative_warn_percent: 50
+account.update:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 400
+  info_ms: 800
+  warn_ms: 1500
+  relative_warn_percent: 50
+account.delete:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 400
+  info_ms: 800
+  warn_ms: 1500
+  relative_warn_percent: 50
+cron.create:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 400
+  info_ms: 800
+  warn_ms: 1500
+  relative_warn_percent: 50
+cron.update:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 400
+  info_ms: 800
+  warn_ms: 1500
+  relative_warn_percent: 50
+cron.delete:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 400
+  info_ms: 800
+  warn_ms: 1500
+  relative_warn_percent: 50
+vhost.create:
+  baseline_p50_ms: 150
+  baseline_p90_ms: 1200
+  info_ms: 2000
+  warn_ms: 4000
+  relative_warn_percent: 50
+vhost.mapping.create:
+  baseline_p50_ms: 150
+  baseline_p90_ms: 1200
+  info_ms: 2000
+  warn_ms: 4000
+  relative_warn_percent: 50
+services.create-custom:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 1700
+  info_ms: 3000
+  warn_ms: 6000
+  relative_warn_percent: 50
+ssl.create:
+  baseline_p50_ms: 400
+  baseline_p90_ms: 700
+  info_ms: 1500
+  warn_ms: 3000
+  relative_warn_percent: 50

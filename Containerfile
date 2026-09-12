@@ -30,6 +30,12 @@ COPY /container/supervisord.conf /infinite/supervisord.conf
 # Test stage: builds from source and runs the Go test suite.
 FROM base AS test
 
+# Unit tests run without runtime setup, so provide the nginx files it generates.
+RUN mkdir -p /app/html /app/logs/nginx \
+	&& touch /app/logs/nginx/nginx.log \
+	&& chown -R nobody:nogroup /app/html /app/logs \
+	&& openssl dhparam -dsaparam -out /etc/nginx/dhparam.pem 2048
+
 COPY . .
 
 ENV PATH="/usr/local/share/mise/shims:${PATH}"
