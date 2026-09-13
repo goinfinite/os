@@ -45,11 +45,13 @@ servedContent="$(curl -sL --max-time 15 -H "Host: ${vhostHostname}" \
 assertContains "${servedContent}" "WordPress" "wordpress content over HTTP"
 
 httpsCode="$(curl -sLk -o /dev/null -w '%{http_code}' --max-time 15 \
+	--proto '=https' --proto-redir '=https' \
 	--resolve "${vhostHostname}:${OS_TEST_HTTPS_PORT}:127.0.0.1" \
 	"https://${vhostHostname}:${OS_TEST_HTTPS_PORT}/wp-login.php")"
 assertEquals 200 "${httpsCode}" "wordpress answers over HTTPS"
 
 servedContentHttps="$(curl -sLk --max-time 15 \
+	--proto '=https' --proto-redir '=https' \
 	--resolve "${vhostHostname}:${OS_TEST_HTTPS_PORT}:127.0.0.1" \
 	"https://${vhostHostname}:${OS_TEST_HTTPS_PORT}/wp-login.php")"
 assertContains "${servedContentHttps}" "WordPress" "wordpress content over HTTPS"
