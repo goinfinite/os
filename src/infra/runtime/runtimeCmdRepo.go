@@ -792,17 +792,25 @@ virtualhost ` + hostname.String() + ` {
 		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
 	}
 
+	primaryHostname, err := repo.vhostHelpers.ReadPrimaryVirtualHostHostname()
+	if err != nil {
+		return errors.New("ReadPrimaryVirtualHostHostnameError: " + err.Error())
+	}
+	quotedPrimaryHostname := regexp.QuoteMeta(primaryHostname.String())
+	primaryListenerMapLineRegex := regexp.MustCompile(
+		"(?m)^[[:space:]]*map[[:space:]]+" + quotedPrimaryHostname +
+			"[[:space:]]+(\\*|" + quotedPrimaryHostname + ", \\*\\." +
+			quotedPrimaryHostname + ")[ \t]*$",
+	)
+
 	// The wildcard form makes this vhost the catch-all for the host and its
 	// subdomains. A subdomain with its own mapping takes precedence.
-	listenerMapLineRegex := regexp.MustCompile(
-		`(?m)^[[:space:]]*map[[:space:]]+[[:alnum:].-]+[[:space:]]+\*`,
-	)
 	newListenerMapLine := "  map                     " +
 		hostnameStr + " " + hostnameStr +
 		", *." + hostnameStr
 	_, err = repo.replaceFileContentByRegex(
 		phpWebServerMainConfFilePath, phpWebServerTrustedOwners,
-		listenerMapLineRegex, "${0}\n"+newListenerMapLine,
+		primaryListenerMapLineRegex, "${0}\n"+newListenerMapLine,
 	)
 	if err != nil {
 		return errors.New("UpdateListenerMapLineError: " + err.Error())
