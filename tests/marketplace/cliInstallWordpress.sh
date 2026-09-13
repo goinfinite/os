@@ -35,11 +35,24 @@ waitForCliJq 300 "php-webserver service reaches the running state" \
 	'.body.installedServices[] | select((.name | startswith("php-webserver")) and .status == "running")' \
 	services get -n php-webserver -m 50
 
-httpCode="$(curl -sL -o /dev/null -w '%{http_code}' --max-time 15 -H "Host: ${vhostHostname}" "http://127.0.0.1:${OS_TEST_HTTP_PORT}/wp-login.php")"
-assertEquals 200 "${httpCode}" "wordpress login page answers over its mapping"
+httpCode="$(curl -sL -o /dev/null -w '%{http_code}' --max-time 15 \
+	-H "Host: ${vhostHostname}" \
+	"http://127.0.0.1:${OS_TEST_HTTP_PORT}/wp-login.php")"
+assertEquals 200 "${httpCode}" "wordpress answers over HTTP"
 
-servedContent="$(curl -sL --max-time 15 -H "Host: ${vhostHostname}" "http://127.0.0.1:${OS_TEST_HTTP_PORT}/wp-login.php")"
-assertContains "${servedContent}" "WordPress" "wordpress login page identifies the application"
+servedContent="$(curl -sL --max-time 15 -H "Host: ${vhostHostname}" \
+	"http://127.0.0.1:${OS_TEST_HTTP_PORT}/wp-login.php")"
+assertContains "${servedContent}" "WordPress" "wordpress content over HTTP"
+
+httpsCode="$(curl -sLk -o /dev/null -w '%{http_code}' --max-time 15 \
+	--resolve "${vhostHostname}:${OS_TEST_HTTPS_PORT}:127.0.0.1" \
+	"https://${vhostHostname}:${OS_TEST_HTTPS_PORT}/wp-login.php")"
+assertEquals 200 "${httpsCode}" "wordpress answers over HTTPS"
+
+servedContentHttps="$(curl -sLk --max-time 15 \
+	--resolve "${vhostHostname}:${OS_TEST_HTTPS_PORT}:127.0.0.1" \
+	"https://${vhostHostname}:${OS_TEST_HTTPS_PORT}/wp-login.php")"
+assertContains "${servedContentHttps}" "WordPress" "wordpress content over HTTPS"
 
 osCliCapture mktplace delete -i "${installedId}"
 assertCliStatus success "delete installed wordpress item"
