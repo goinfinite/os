@@ -2,8 +2,10 @@ package cronInfra
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
@@ -26,16 +28,31 @@ func NewCronCmdRepo() *CronCmdRepo {
 }
 
 func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
+	tmpCrontabDirPath, err := os.MkdirTemp("", "crontab-")
+	if err != nil {
+		return errors.New("CreateCrontabTempDirError: " + err.Error())
+	}
+	defer func() {
+		removeErr := os.RemoveAll(tmpCrontabDirPath)
+		if removeErr != nil {
+			slog.Error(
+				"DeleteCrontabTempDirFailed",
+				slog.String("err", removeErr.Error()),
+			)
+		}
+	}()
+
 	tmpCrontabFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
-		"/tmp/crontab", false,
+		tmpCrontabDirPath+"/crontab", false,
 	)
 	if err != nil {
 		return errors.New("DefineCrontabTempFilePathError: " + err.Error())
 	}
 
-	crontabContent := ""
+	var crontabContent strings.Builder
 	for _, cronEntity := range cronsEntities {
-		crontabContent += cronEntity.String() + "\n"
+		crontabContent.WriteString(cronEntity.String())
+		crontabContent.WriteString("\n")
 	}
 
 	crontabFilePermissions := os.FileMode(0644)
@@ -43,7 +60,7 @@ func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 		FilePath:        tmpCrontabFilePath,
 		Permissions:     &crontabFilePermissions,
 		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-	}, []byte(crontabContent))
+	}, []byte(crontabContent.String()))
 	if err != nil {
 		return errors.New("UpdateCrontabTempFileContentError: " + err.Error())
 	}
@@ -54,11 +71,6 @@ func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
 	}).Run()
 	if err != nil {
 		return err
-	}
-
-	err = os.Remove(tmpCrontabFilePath.String())
-	if err != nil {
-		return errors.New("DeleteCrontabTempFileError: " + err.Error())
 	}
 
 	return nil

@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/09/12
+fix(cron): write the crontab in a private temp directory
 fix(php): match wildcard listener maps when creating virtual hosts
 docs: add the sonarqube quality gate badge
 docs: refresh the root context file
