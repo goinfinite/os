@@ -47,4 +47,5 @@ const (
 	SilentExitModeEnvKey                  string = "SILENT_EXIT_MODE"
 	ProcessManagerBinaryPath              string = "/usr/bin/supervisorctl"
 	ProcessManagerConfFilePath            string = InfiniteOsMainDir + "/supervisord.conf"
+	AwkBinaryPath                         string = "/usr/bin/awk"
 )

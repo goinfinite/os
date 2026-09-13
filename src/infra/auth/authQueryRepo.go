@@ -10,10 +10,11 @@ import (
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
-	tkInfra "github.com/goinfinite/tk/src/infra"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	"github.com/golang-jwt/jwt/v5"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -42,9 +43,9 @@ func NewAuthQueryRepo(
 
 func (repo *AuthQueryRepo) IsLoginValid(createDto dto.CreateSessionToken) bool {
 	readStoredPassHashCmd := "getent shadow " + createDto.Username.String() +
-		" | awk -F: '{print $2}'"
+		" | " + infraEnvs.AwkBinaryPath + " -F: '{print $2}'"
 	storedPassHash, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:            readStoredPassHashCmd,
+		Command:           readStoredPassHashCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
@@ -72,7 +73,7 @@ func (repo *AuthQueryRepo) readSessionTokenClaims(
 ) (claims jwt.MapClaims, err error) {
 	parsedToken, err := jwt.Parse(
 		sessionToken.String(),
-		func(token *jwt.Token) (interface{}, error) {
+		func(token *jwt.Token) (any, error) {
 			return repo.sessionTokenSecretBytes, nil
 		},
 		jwt.WithValidMethods([]string{jwt.SigningMethodHS256.Alg()}),

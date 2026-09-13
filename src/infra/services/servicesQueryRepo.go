@@ -124,7 +124,7 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	stoppedServicesNames := []string{}
 
 	readStoppedServicesCmd := infraEnvs.ProcessManagerBinaryPath +
-		" status | grep -v 'RUNNING' | awk '{print $1}'"
+		" status | grep -v 'RUNNING' | " + infraEnvs.AwkBinaryPath + " '{print $1}'"
 	rawStoppedServices, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           readStoppedServicesCmd,
 		WorkingDirectory:  infraEnvs.InfiniteOsMainDir,

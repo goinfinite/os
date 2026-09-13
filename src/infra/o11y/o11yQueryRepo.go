@@ -15,6 +15,7 @@ import (
 	"github.com/dustin/go-humanize"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
@@ -188,7 +189,7 @@ func (repo *O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
 
 func (repo *O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error) {
 	cmd := exec.Command(
-		"awk",
+		infraEnvs.AwkBinaryPath,
 		"-F:",
 		"/vendor_id/{vendor=$2} /cpu MHz/{freq=$2} END{print vendor freq}",
 		"/proc/cpuinfo",
@@ -308,7 +309,7 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 	memUsageStr, err := repo.getFileContent(memUsageFile)
 	if err != nil {
 		memUsageCmd := exec.Command(
-			"awk",
+			infraEnvs.AwkBinaryPath,
 			"/^MemTotal:/ {total=$2} /^MemAvailable:/ {available=$2} END {used=(total-available)*1024; printf \"%d\", used}",
 			"/proc/meminfo",
 		)

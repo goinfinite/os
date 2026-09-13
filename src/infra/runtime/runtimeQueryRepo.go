@@ -67,7 +67,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersionsInstalled() (
 	phpVersions []valueObject.PhpVersion, err error,
 ) {
 	output, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "awk",
+		Command: infraEnvs.AwkBinaryPath,
 		Args: []string{
 			"/extprocessor lsphp/{print $2}", infraEnvs.PhpWebServerMainConfFilePath,
 		},
@@ -108,7 +108,7 @@ func (repo RuntimeQueryRepo) ReadPhpVersion(
 	}
 
 	currentPhpVersionStr, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "awk",
+		Command: infraEnvs.AwkBinaryPath,
 		Args: []string{
 			"/lsapi:lsphp/ {gsub(/[^0-9]/, \"\", $2); print $2}",
 			phpVirtualHostConfFilePath.String(),

@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/09/12
+fix: resolve awk by absolute path
 refactor(ssl): drop the unused md5 ownership hash
 fix(cron): write the crontab in a private temp directory
 fix(php): match wildcard listener maps when creating virtual hosts
