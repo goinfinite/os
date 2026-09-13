@@ -55,6 +55,14 @@ assertCliStatus success "delete php mapping"
 osCliCapture vhost delete -n "${vhostHostname}"
 assertCliStatus success "delete php virtual host"
 
+lsConfPath="/usr/local/lsws/conf/httpd_config.conf"
+assertCommandSucceeds "deleted php virtual host block is removed" \
+	osBash "! grep -q 'virtualhost ${vhostHostname}' ${lsConfPath}"
+assertCommandSucceeds "deleted php virtual host map is removed" \
+	osBash "! grep -q 'map.*${vhostHostname}' ${lsConfPath}"
+assertCommandSucceeds "deleted php virtual host conf file is removed" \
+	osBash "test ! -f /app/conf/php-webserver/${vhostHostname}.conf"
+
 osCliCapture services delete -n "${serviceName}"
 assertCliStatus success "delete php-webserver service"
 waitForCliJq 300 "deleted php-webserver service is absent" \
