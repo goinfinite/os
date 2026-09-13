@@ -2,6 +2,7 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
@@ -123,7 +124,7 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
-	cmd.MarkFlagRequired("hostname")
+	cliHelper.MarkRequiredFlag(cmd, "hostname")
 	cmd.Flags().StringVarP(
 		&typeStr, "type", "t", "", "VirtualHostType (top-level|subdomain|alias)",
 	)
@@ -153,7 +154,7 @@ func (controller *VirtualHostController) Update() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
-	cmd.MarkFlagRequired("hostname")
+	cliHelper.MarkRequiredFlag(cmd, "hostname")
 	cmd.Flags().StringVarP(
 		&isWildcardBoolStr, "is-wildcard", "w", "false", "IsWildcard (true|false)",
 	)
@@ -178,7 +179,7 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "VirtualHostHostname")
-	cmd.MarkFlagRequired("hostname")
+	cliHelper.MarkRequiredFlag(cmd, "hostname")
 	return cmd
 }
 
@@ -294,9 +295,9 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
-	cmd.MarkFlagRequired("hostname")
+	cliHelper.MarkRequiredFlag(cmd, "hostname")
 	cmd.Flags().StringVarP(&pathStr, "path", "p", "", "MappingPath")
-	cmd.MarkFlagRequired("path")
+	cliHelper.MarkRequiredFlag(cmd, "path")
 	cmd.Flags().StringVarP(
 		&matchPatternStr, "match", "m", "",
 		"MatchPattern (begins-with|contains|ends-with)",
@@ -305,7 +306,7 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 		&targetTypeStr, "type", "t", "",
 		"MappingTargetType (url|service|response-code|inline-html|static-files)",
 	)
-	cmd.MarkFlagRequired("type")
+	cliHelper.MarkRequiredFlag(cmd, "type")
 	cmd.Flags().StringVarP(&targetValueStr, "value", "v", "", "MappingTargetValue")
 	cmd.Flags().UintVarP(
 		&targetHttpResponseCodeUint, "response-code", "r", 0, "TargetHttpResponseCode",
@@ -371,7 +372,7 @@ func (controller *VirtualHostController) UpdateMapping() *cobra.Command {
 	}
 
 	cmd.Flags().UintVarP(&mappingIdUint, "id", "i", 0, "MappingId")
-	cmd.MarkFlagRequired("id")
+	cliHelper.MarkRequiredFlag(cmd, "id")
 	cmd.Flags().StringVarP(&pathStr, "path", "p", "", "MappingPath")
 	cmd.Flags().StringVarP(
 		&matchPatternStr, "match", "m", "",
@@ -413,7 +414,7 @@ func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 	}
 
 	cmd.Flags().UintVarP(&mappingIdUint, "id", "i", 0, "MappingId")
-	cmd.MarkFlagRequired("id")
+	cliHelper.MarkRequiredFlag(cmd, "id")
 	return cmd
 }
 
@@ -567,7 +568,7 @@ func (controller *VirtualHostController) CreateMappingSecurityRule() *cobra.Comm
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "MappingSecurityRuleName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringVarP(
 		&descriptionStr, "description", "d", "", "MappingSecurityRuleDescription",
 	)
@@ -679,7 +680,7 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule() *cobra.Comm
 	}
 
 	cmd.Flags().UintVarP(&ruleIdUint, "id", "i", 0, "MappingSecurityRuleId")
-	cmd.MarkFlagRequired("id")
+	cliHelper.MarkRequiredFlag(cmd, "id")
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "MappingSecurityRuleName")
 	cmd.Flags().StringVarP(
 		&descriptionStr, "description", "d", "", "MappingSecurityRuleDescription",
@@ -738,6 +739,6 @@ func (controller *VirtualHostController) DeleteMappingSecurityRule() *cobra.Comm
 	}
 
 	cmd.Flags().UintVarP(&ruleIdUint, "id", "i", 0, "MappingSecurityRuleId")
-	cmd.MarkFlagRequired("id")
+	cliHelper.MarkRequiredFlag(cmd, "id")
 	return cmd
 }

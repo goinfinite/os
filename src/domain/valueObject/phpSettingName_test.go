@@ -6,12 +6,13 @@ func TestPhpSettingName(t *testing.T) {
 	t.Run("ValidPhpSettingNames", func(t *testing.T) {
 		validNames := []interface{}{
 			"ioncube", "apcu", "imagick", "opcache", "mysqli",
+			"date.timezone", "soap.wsdl_cache_enabled", "eaccelerator-off",
 		}
 
 		for _, name := range validNames {
 			_, err := NewPhpSettingName(name)
 			if err != nil {
-				t.Errorf("Expected no error for '%v', got '%s'", name, err.Error())
+				t.Errorf("UnexpectedError: %v, name: '%v'", err.Error(), name)
 			}
 		}
 	})
@@ -19,12 +20,13 @@ func TestPhpSettingName(t *testing.T) {
 	t.Run("InvalidPhpSettingNames", func(t *testing.T) {
 		invalidNames := []interface{}{
 			"ioncube_loader.so!", "<script>alert('xss')</script>", "@blabla@",
+			".leadingDot", "trailingDot.", "spaces in name",
 		}
 
 		for _, name := range invalidNames {
 			_, err := NewPhpSettingName(name)
 			if err == nil {
-				t.Errorf("Expected error for '%v', got nil", name)
+				t.Errorf("MissingExpectedError: '%v' was accepted", name)
 			}
 		}
 	})

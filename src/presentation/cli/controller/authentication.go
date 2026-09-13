@@ -2,6 +2,7 @@ package cliController
 
 import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -42,10 +43,10 @@ func (controller *AuthenticationController) Login() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "Username")
-	cmd.MarkFlagRequired("username")
+	cliHelper.MarkRequiredFlag(cmd, "username")
 	cmd.Flags().StringVarP(&passwordStr, "password", "p", "", "Password")
-	cmd.MarkFlagRequired("password")
+	cliHelper.MarkRequiredFlag(cmd, "password")
 	cmd.Flags().StringVarP(&ipAddressStr, "ip-address", "i", "", "IpAddress")
-	cmd.MarkFlagRequired("ip-address")
+	cliHelper.MarkRequiredFlag(cmd, "ip-address")
 	return cmd
 }

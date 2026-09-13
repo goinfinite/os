@@ -350,9 +350,9 @@ UiToolset.RegisterAlpineState(() => {
         "GET",
         document.baseURI + "overview/?" + filterQueryParams.toString(),
         {
+          source: "#htmx-indicator-attributes-element",
           select: "#installed-services-table",
           target: "#installed-services-table",
-          indicator: "#loading-overlay",
           swap: "outerHTML transition:true",
         }
       );

@@ -8,17 +8,18 @@ import (
 	internalSetupInfra "github.com/goinfinite/os/src/infra/internalSetup"
 	"github.com/goinfinite/os/src/presentation"
 	cliController "github.com/goinfinite/os/src/presentation/cli/controller"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/spf13/cobra"
 )
 
 type Router struct {
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	transientDbSvc  *tkInfraDb.TransientDatabaseService
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewRouter(
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *Router {
@@ -148,6 +149,7 @@ func (router Router) runtimeRoutes() {
 	phpCmd.AddCommand(runtimeController.UpdatePhpConfig())
 	phpCmd.AddCommand(runtimeController.UpdatePhpSetting())
 	phpCmd.AddCommand(runtimeController.UpdatePhpModule())
+	phpCmd.AddCommand(runtimeController.UpdatePhpModules())
 	phpCmd.AddCommand(runtimeController.RunPhpCommand())
 }
 

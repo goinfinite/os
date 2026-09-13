@@ -8,11 +8,12 @@ import (
 	"os"
 	"os/user"
 	"strings"
+	"syscall"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type FilesCmdRepo struct {
@@ -30,15 +31,10 @@ func NewFilesCmdRepo() *FilesCmdRepo {
 func (repo FilesCmdRepo) uploadFailureFactory(
 	errMessage string,
 	fileStreamHandler valueObject.FileStreamHandler,
-) (uploadProcessFailure valueObject.UploadProcessFailure, err error) {
-	failureReason, err := valueObject.NewFailureReason(errMessage)
-	if err != nil {
-		return uploadProcessFailure, err
-	}
-
+) valueObject.UploadProcessFailure {
 	return valueObject.NewUploadProcessFailure(
-		fileStreamHandler.Name, failureReason,
-	), nil
+		fileStreamHandler.Name, valueObject.NewFailureReason(errMessage),
+	)
 }
 
 func (repo FilesCmdRepo) uploadSingleFile(
@@ -50,7 +46,16 @@ func (repo FilesCmdRepo) uploadSingleFile(
 	if err != nil {
 		return errors.New("CreateEmptyFileError: " + err.Error())
 	}
-	defer destinationEmptyFile.Close()
+	defer func() {
+		closeErr := destinationEmptyFile.Close()
+		if closeErr != nil {
+			slog.Error(
+				"DestinationFileCloseFailed",
+				slog.String("file", destinationFilePath),
+				slog.String("err", closeErr.Error()),
+			)
+		}
+	}()
 
 	fileToUploadStream, err := fileToUpload.Open()
 	if err != nil {
@@ -72,7 +77,11 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 		return errors.New("FileToCopyNotFound")
 	}
 
-	sourceFileName := copyDto.SourcePath.ReadFileName(false)
+	sourceFileName, err := copyDto.SourcePath.ReadFileName(false)
+	if err != nil {
+		return errors.New("ReadSourceFileNameError: " + err.Error())
+	}
+
 	destinationAbsolutePath := copyDto.DestinationPath.String() + "/" + sourceFileName.String()
 	if !copyDto.ShouldOverwrite {
 		destinationPathExists := repo.fileClerk.FileExists(destinationAbsolutePath)
@@ -82,8 +91,8 @@ func (repo FilesCmdRepo) Copy(copyDto dto.CopyUnixFile) error {
 	}
 
 	copyCmd := "rsync -avq " + sourcePathStr + " " + destinationAbsolutePath
-	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          copyCmd,
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command:           copyCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	return err
@@ -93,7 +102,7 @@ func (repo FilesCmdRepo) Compress(
 	compressDto dto.CompressUnixFiles,
 ) (compressionProcessReport dto.CompressionProcessReport, err error) {
 	compressibleFilesStr := []string{}
-	incompressibleFilesStr := map[string]interface{}{}
+	incompressibleFilesStr := map[string]any{}
 	for _, sourcePath := range compressDto.SourcePaths {
 		sourcePathExists := repo.fileClerk.FileExists(sourcePath.String())
 		if !sourcePathExists {
@@ -114,7 +123,7 @@ func (repo FilesCmdRepo) Compress(
 	compressionTypeStr := "zip"
 
 	destinationPathExt, err := compressDto.DestinationPath.ReadFileExtension()
-	if err == nil {
+	if err == nil && destinationPathExt != "" {
 		destinationPathExtStr := destinationPathExt.String()
 		if destinationPathExtStr != "zip" {
 			compressionTypeStr = "tgz"
@@ -160,7 +169,7 @@ func (repo FilesCmdRepo) Compress(
 		newDestinationPath.String(), filesToCompress,
 	)
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          compressCmd,
+		Command:           compressCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
@@ -265,6 +274,9 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 	if err != nil {
 		return err
 	}
+	if unixFilePathExtension == "" {
+		return errors.New("UnsupportedFileExtension")
+	}
 
 	if unixFilePathExtension.String() == "zip" {
 		compressBinary = "unzip"
@@ -283,7 +295,7 @@ func (repo FilesCmdRepo) Extract(extractDto dto.ExtractUnixFiles) error {
 		compressDestinationFlag, destinationPath.String(),
 	)
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          compressCmd,
+		Command:           compressCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
@@ -325,9 +337,13 @@ func (repo FilesCmdRepo) Move(moveDto dto.MoveUnixFile) error {
 	}
 
 	if moveDto.DestinationPath == valueObject.UnixFilePathTrashDir {
-		fileNameStr := moveDto.SourcePath.ReadFileName(false).String()
+		fileName, err := moveDto.SourcePath.ReadFileName(false)
+		if err != nil {
+			return errors.New("ReadSourceFileNameError: " + err.Error())
+		}
+
 		destinationPathStr := moveDto.DestinationPath.String()
-		rawTrashFilePath := destinationPathStr + "/" + fileNameStr
+		rawTrashFilePath := destinationPathStr + "/" + fileName.String()
 		trashFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawTrashFilePath, false)
 		if err != nil {
 			return errors.New("DefineTrashFilePathError: " + err.Error())
@@ -380,9 +396,32 @@ func (repo FilesCmdRepo) UpdateContent(
 		return err
 	}
 
-	return repo.fileClerk.UpdateFileContent(
-		updateContentDto.SourcePath.String(), decodedContent, true,
-	)
+	parentDirInfo, err := os.Stat(updateContentDto.SourcePath.ReadFileDir().String())
+	if err != nil {
+		return errors.New("ReadParentDirInfoError: " + err.Error())
+	}
+
+	parentDirStat, isStatOk := parentDirInfo.Sys().(*syscall.Stat_t)
+	if !isStatOk {
+		return errors.New("ReadParentDirOwnerError")
+	}
+
+	parentDirOwnerId, err := tkValueObject.NewUnixUserId(parentDirStat.Uid)
+	if err != nil {
+		return errors.New("ReadParentDirOwnerError: " + err.Error())
+	}
+
+	filePermissions := fileToUpdate.Permissions.GetFileMode()
+	return repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:        updateContentDto.SourcePath,
+		Permissions:     &filePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerSource:     &tkInfra.FileClerkOwnerSourceContainingDirectory,
+		TrustedDirOwnerUserIds: []tkValueObject.UnixUserId{
+			parentDirOwnerId,
+		},
+	}, []byte(decodedContent))
 }
 
 func (repo FilesCmdRepo) UpdateOwnership(
@@ -464,7 +503,7 @@ func (repo FilesCmdRepo) UpdatePermissions(
 	}
 
 	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:          updatePermissionsCmd,
+		Command:           updatePermissionsCmd,
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
@@ -495,14 +534,9 @@ func (repo FilesCmdRepo) Upload(
 	for _, fileToUpload := range uploadDto.FileStreamHandlers {
 		err := repo.uploadSingleFile(uploadDto.DestinationPath, fileToUpload)
 		if err != nil {
-			uploadFailure, err := repo.uploadFailureFactory(err.Error(), fileToUpload)
-			if err != nil {
-				slog.Debug("ReportUploadFailureError", slog.String("err", err.Error()))
-			}
-
 			uploadProcessReport.FailedNamesWithReason = append(
 				uploadProcessReport.FailedNamesWithReason,
-				uploadFailure,
+				repo.uploadFailureFactory(err.Error(), fileToUpload),
 			)
 
 			continue

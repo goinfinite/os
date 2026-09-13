@@ -7,7 +7,7 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const serviceVersionRegex string = `^([\w\_\.\-]{1,64}|[\d\.\_\-]{1,20}|latest|lts|alpha|beta)$`
+const serviceVersionRegex string = `^([\w\_\.\-]{1,64}|[\d\.\_\-]{1,20}|latest|lts|alpha|beta|legacy)$`
 
 type ServiceVersion string
 

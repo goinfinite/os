@@ -16,11 +16,13 @@ import (
 
 func TestAuthQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	authQueryRepo := NewAuthQueryRepo(testHelpers.GetPersistentDbSvc())
-	accountCmdRepo := accountInfra.NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
+	persistentDbSvc := testHelpers.GetPersistentDbSvc()
+	authQueryRepo := NewAuthQueryRepo(persistentDbSvc)
+	accountCmdRepo := accountInfra.NewAccountCmdRepo(persistentDbSvc)
+	accountQueryRepo := accountInfra.NewAccountQueryRepo(persistentDbSvc)
 
 	accountId, _ := tkValueObject.NewAccountId(1001)
-	username, _ := valueObject.NewUsername("authDummyUser")
+	username, _ := valueObject.NewUsername("auth-dummy-user")
 	rawPassword := "q1w2e3r4!5y6"
 	accountPassword, _ := tkValueObject.NewPassword(rawPassword)
 	sessionPassword, _ := tkValueObject.NewWeakPassword(rawPassword)
@@ -29,10 +31,20 @@ func TestAuthQueryRepo(t *testing.T) {
 		username, accountPassword, false, accountId, localIpAddress,
 	)
 
-	_, err := accountCmdRepo.Create(createDto)
-	if err != nil {
-		t.Fatal("FailedToCreateDummyAccount")
+	existingAccount, err := accountQueryRepo.ReadFirst(dto.ReadAccountsRequest{
+		AccountUsername: &username,
+	})
+	if err == nil {
+		_ = accountCmdRepo.Delete(existingAccount.Id)
 	}
+
+	authAccountId, err := accountCmdRepo.Create(createDto)
+	if err != nil {
+		t.Fatalf("FailedToCreateDummyAccount: %s", err.Error())
+	}
+	defer func() {
+		_ = accountCmdRepo.Delete(authAccountId)
+	}()
 
 	t.Run("ValidLoginCredentials", func(t *testing.T) {
 		createDto := dto.NewCreateSessionToken(username, sessionPassword, localIpAddress)
@@ -78,8 +90,7 @@ func TestAuthQueryRepo(t *testing.T) {
 	})
 
 	t.Run("ValidAccountApiKey", func(t *testing.T) {
-		accountId, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
-		apiKey, err := accountCmdRepo.UpdateApiKey(accountId)
+		apiKey, err := accountCmdRepo.UpdateApiKey(authAccountId)
 		if err != nil {
 			t.Error(err)
 		}

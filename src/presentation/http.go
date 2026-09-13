@@ -17,6 +17,7 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	tkPresentationMiddleware "github.com/goinfinite/tk/src/presentation/middleware"
 	"github.com/labstack/echo/v4"
 )
@@ -63,7 +64,7 @@ func initialSslSetup() (
 }
 
 func initialBannerSetup(
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 ) {
 	osBanner := `Infinite OS server started on [::]:` + infraEnvs.InfiniteOsApiHttpPublicPort + `! 🎉`
 
@@ -92,7 +93,7 @@ func initialBannerSetup(
 
 func HttpServerInit(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
 	echoInstance := echo.New()

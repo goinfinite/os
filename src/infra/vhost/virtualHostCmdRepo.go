@@ -101,7 +101,12 @@ func (repo *VirtualHostCmdRepo) ReadVirtualHostWebServerUnitFileFilePath(
 		return unitFilePath, errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
 	}
 
-	mappingsFileNameStr := mappingsFilePath.ReadFileName(false).String()
+	mappingsFileName, err := mappingsFilePath.ReadFileName(false)
+	if err != nil {
+		return unitFilePath, errors.New("ReadMappingsFileNameError: " + err.Error())
+	}
+
+	mappingsFileNameStr := mappingsFileName.String()
 	rawUnitConfFilePath := infraEnvs.VirtualHostsConfDir + "/" + mappingsFileNameStr
 	return tkValueObject.NewUnixAbsoluteFilePath(rawUnitConfFilePath, false)
 }
@@ -147,9 +152,18 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("ReadWebServerUnitConfFilePathError: " + err.Error())
 	}
 
-	err = repo.fileClerk.UpdateFileContent(
-		unitConfFilePath.String(), unitConfFileContent, true,
-	)
+	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
+	unitConfFilePermissions := os.FileMode(0644)
+	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:        unitConfFilePath,
+		Permissions:     &unitConfFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &webServerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			webServerUsername,
+		},
+	}, []byte(unitConfFileContent))
 	if err != nil {
 		return errors.New("CreateWebServerConfUnitFileFailed: " + err.Error())
 	}

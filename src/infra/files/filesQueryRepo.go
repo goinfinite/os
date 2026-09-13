@@ -14,8 +14,8 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
 type FilesQueryRepo struct {
@@ -81,7 +81,7 @@ func (repo *FilesQueryRepo) unixFileFactory(
 
 	var unixFileExtensionPtr *tkValueObject.UnixFileExtension
 	unixFileExtension, err := unixFilePath.ReadFileExtension()
-	if err == nil {
+	if err == nil && unixFileExtension != "" {
 		unixFileExtensionPtr = &unixFileExtension
 	}
 
@@ -120,14 +120,21 @@ func (repo *FilesQueryRepo) unixFileFactory(
 
 	unixFileUpdatedAt := tkValueObject.NewUnixTimeWithGoTime(fileInfo.ModTime())
 
+	unixFileName, err := unixFilePath.ReadFileName(false)
+	if err != nil {
+		return unixFile, errors.New("ReadFileNameError: " + err.Error())
+	}
+
 	unixFile = entity.NewUnixFile(
-		unixFilePath.ReadFileName(false), unixFilePath, unixFileMimeType, unixFilePermissions,
+		unixFileName, unixFilePath, unixFileMimeType, unixFilePermissions,
 		unixFileSize, unixFileExtensionPtr, unixFileContentPtr, unixFileUid,
 		unixFileUsername, unixFileGid, unixFileGroup, unixFileUpdatedAt,
 	)
 
 	return unixFile, nil
 }
+
+const filesystemRootDisplayName string = "root"
 
 func (repo *FilesQueryRepo) simplifiedUnixFileFactory(
 	unixFilePath tkValueObject.UnixAbsoluteFilePath,
@@ -143,12 +150,21 @@ func (repo *FilesQueryRepo) simplifiedUnixFileFactory(
 	}
 
 	unixFileExtension, err := unixFilePath.ReadFileExtension()
-	if err == nil {
+	if err == nil && unixFileExtension != "" {
 		unixFileMimeType = unixFileExtension.ReadMimeType()
 	}
 
+	unixFileName, err := unixFilePath.ReadFileName(false)
+	if errors.Is(err, tkValueObject.ErrRootPathHasNoFileName) {
+		unixFileName = tkValueObject.UnixFileName(filesystemRootDisplayName)
+		err = nil
+	}
+	if err != nil {
+		return simplifiedUnixFile, errors.New("ReadFileNameError: " + err.Error())
+	}
+
 	return entity.NewSimplifiedUnixFile(
-		unixFilePath.ReadFileName(false), unixFilePath, unixFileMimeType,
+		unixFileName, unixFilePath, unixFileMimeType,
 	), nil
 }
 
@@ -238,14 +254,16 @@ func (repo *FilesQueryRepo) unixFileTreeFactory(
 	rawTreeBranches := strings.SplitSeq(leafAbsolutePath.String(), "/")
 
 	iterationBranch := treeTrunk
-	iterationBranchPath := ""
+	var iterationBranchPathBuilder strings.Builder
 	for rawBranchName := range rawTreeBranches {
 		rawBranchName = strings.TrimSpace(rawBranchName)
 		if rawBranchName == "" {
 			continue
 		}
 
-		iterationBranchPath += rawBranchName + "/"
+		iterationBranchPathBuilder.WriteString(rawBranchName)
+		iterationBranchPathBuilder.WriteString("/")
+		iterationBranchPath := iterationBranchPathBuilder.String()
 		branchFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(iterationBranchPath, false)
 		if err != nil {
 			slog.Debug(
@@ -319,10 +337,7 @@ func (repo *FilesQueryRepo) Read(
 		}
 	}
 
-	shouldReturnContent := false
-	if len(factorableFilePaths) == 1 {
-		shouldReturnContent = true
-	}
+	shouldReturnContent := len(factorableFilePaths) == 1
 
 	fileEntities := []entity.UnixFile{}
 	directoryEntities := []entity.UnixFile{}

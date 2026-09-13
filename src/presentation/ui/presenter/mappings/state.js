@@ -105,9 +105,11 @@ UiToolset.RegisterAlpineState(() => {
     deleteVirtualHostElement() {
       this.closeDeleteVirtualHostModal();
       htmx
-        .ajax("DELETE", Infinite.OsApiBasePath + "/v1/vhost/" + this.virtualHost.hostname + "/", {
-          swap: "none",
-        })
+        .ajax(
+          "DELETE",
+          Infinite.OsApiBasePath + "/v1/vhost/" + this.virtualHost.hostname + "/",
+          { swap: "none" }
+        )
         .then(() => this.$dispatch("refresh:mappings-table"));
     },
     isCreateMappingModalOpen: false,
@@ -157,9 +159,11 @@ UiToolset.RegisterAlpineState(() => {
     deleteMappingElement() {
       this.closeDeleteMappingModal();
       htmx
-        .ajax("DELETE", Infinite.OsApiBasePath + "/v1/vhost/mapping/" + this.mapping.id + "/", {
-          swap: "none",
-        })
+        .ajax(
+          "DELETE",
+          Infinite.OsApiBasePath + "/v1/vhost/mapping/" + this.mapping.id + "/",
+          { swap: "none" }
+        )
         .then(() => this.$dispatch("refresh:mappings-table"));
     },
   }));

@@ -4,19 +4,20 @@ import (
 	"strconv"
 	"strings"
 
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
-	tkInfra "github.com/goinfinite/tk/src/infra"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type ServicesLiaison struct {
@@ -245,6 +246,18 @@ func (liaison *ServicesLiaison) CreateInstallable(
 		versionPtr = &version
 	}
 
+	var startCmdPtr *tkValueObject.UnixCommand
+	if untrustedInput["startCmd"] != nil {
+		startCmd, err := tkValueObject.NewUnixCommand(untrustedInput["startCmd"])
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
+		}
+		startCmdPtr = &startCmd
+	}
+
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["startupFile"] != nil {
 		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["startupFile"], false)
@@ -392,26 +405,11 @@ func (liaison *ServicesLiaison) CreateInstallable(
 		mappingUpgradeInsecureRequestsPtr = &mappingUpgradeInsecureRequests
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	if shouldSchedule {
@@ -439,12 +437,19 @@ func (liaison *ServicesLiaison) CreateInstallable(
 			installParams = append(installParams, "--version", versionPtr.String())
 		}
 
+		if startCmdPtr != nil {
+			escapedStartCmd := tkInfra.ShellEscape{}.Quote(startCmdPtr.String())
+			installParams = append(installParams, "--start-command", escapedStartCmd)
+		}
+
 		if startupFilePtr != nil {
-			installParams = append(installParams, "--startup-file", startupFilePtr.String())
+			escapedStartupFile := tkInfra.ShellEscape{}.Quote(startupFilePtr.String())
+			installParams = append(installParams, "--startup-file", escapedStartupFile)
 		}
 
 		if workingDirPtr != nil {
-			installParams = append(installParams, "--working-dir", workingDirPtr.String())
+			escapedWorkingDir := tkInfra.ShellEscape{}.Quote(workingDirPtr.String())
+			installParams = append(installParams, "--working-dir", escapedWorkingDir)
 		}
 
 		if autoStartPtr != nil {
@@ -496,7 +501,7 @@ func (liaison *ServicesLiaison) CreateInstallable(
 			taskName, taskCmd, taskTags, &timeoutSecs, nil,
 		)
 
-		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
+		_, err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
 			return tkPresentation.NewLiaisonResponseNoMessage(
 				tkPresentation.LiaisonResponseStatusInfraError,
@@ -511,7 +516,8 @@ func (liaison *ServicesLiaison) CreateInstallable(
 	}
 
 	createDto := dto.NewCreateInstallableService(
-		name, envs, portBindings, versionPtr, startupFilePtr, workingDirPtr,
+		name, envs, portBindings, versionPtr, startCmdPtr, startupFilePtr,
+		workingDirPtr,
 		autoStartPtr, timeoutStartSecsPtr, autoRestartPtr, maxStartRetriesPtr,
 		&autoCreateMapping, mappingHostnamePtr, mappingPathPtr,
 		mappingUpgradeInsecureRequestsPtr, operatorAccountId, operatorIpAddress,
@@ -594,6 +600,20 @@ func (liaison *ServicesLiaison) CreateCustom(
 			)
 		}
 		execUserPtr = &execUser
+	}
+
+	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
+	if untrustedInput["workingDirectory"] != nil {
+		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
+			untrustedInput["workingDirectory"], false,
+		)
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
+		}
+		workingDirectoryPtr = &workingDirectory
 	}
 
 	envs := []valueObject.ServiceEnv{}
@@ -755,31 +775,17 @@ func (liaison *ServicesLiaison) CreateCustom(
 		mappingUpgradeInsecureRequestsPtr = &mappingUpgradeInsecureRequests
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	createCustomDto := dto.NewCreateCustomService(
 		name, svcType, startCmd, envs, portBindings, nil, nil, nil, nil, nil,
-		versionPtr, execUserPtr, nil, autoStartPtr, autoRestartPtr,
+		versionPtr, execUserPtr, workingDirectoryPtr, autoStartPtr,
+		autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
 		avatarUrlPtr, &autoCreateMapping, mappingHostnamePtr, mappingPathPtr,
 		mappingUpgradeInsecureRequestsPtr, operatorAccountId, operatorIpAddress,
@@ -894,6 +900,20 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) tkPresenta
 		portBindings = parsedPortBindings
 	}
 
+	var workingDirectoryPtr *tkValueObject.UnixAbsoluteFilePath
+	if untrustedInput["workingDirectory"] != nil {
+		workingDirectory, err := tkValueObject.NewUnixAbsoluteFilePath(
+			untrustedInput["workingDirectory"], false,
+		)
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError,
+				err.Error(),
+			)
+		}
+		workingDirectoryPtr = &workingDirectory
+	}
+
 	var startupFilePtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["startupFile"] != nil {
 		startupFile, err := tkValueObject.NewUnixAbsoluteFilePath(untrustedInput["startupFile"], false)
@@ -990,31 +1010,17 @@ func (liaison *ServicesLiaison) Update(untrustedInput map[string]any) tkPresenta
 		avatarUrlPtr = &avatarUrl
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	updateDto := dto.NewUpdateService(
 		name, typePtr, versionPtr, statusPtr, startCmdPtr, envs, portBindings, nil,
-		nil, nil, nil, nil, nil, nil, startupFilePtr, autoStartPtr, autoRestartPtr,
+		nil, nil, nil, nil, nil, workingDirectoryPtr, startupFilePtr,
+		autoStartPtr, autoRestartPtr,
 		timeoutStartSecsPtr, maxStartRetriesPtr, logOutputPathPtr, logErrorPathPtr,
 		avatarUrlPtr, operatorAccountId, operatorIpAddress,
 	)
@@ -1054,26 +1060,11 @@ func (liaison *ServicesLiaison) Delete(untrustedInput map[string]any) tkPresenta
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError,
-				err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	deleteDto := dto.NewDeleteService(name, operatorAccountId, operatorIpAddress)

@@ -5,12 +5,13 @@ import (
 
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	apiMiddleware "github.com/goinfinite/os/src/presentation/api/middleware"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
 )
 
 // @title			OsApi
-// @version			0.3.2
+// @version			0.3.3
 // @description		Infinite OS API
 // @termsOfService	https://goinfinite.net/tos/
 
@@ -32,7 +33,7 @@ func ApiInit(
 	echoInstance *echo.Echo,
 	apiBasePath string,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) {
 	baseRoute := echoInstance.Group(apiBasePath)

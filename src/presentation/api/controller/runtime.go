@@ -4,12 +4,12 @@ import (
 	"errors"
 	"log/slog"
 
-	_ "github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
@@ -50,42 +50,77 @@ func (controller *RuntimeController) ReadPhpConfigs(echoContext echo.Context) er
 }
 
 func (controller *RuntimeController) parsePhpModules(rawPhpModules any) (
-	[]entity.PhpModule, error,
+	[]entity.PhpModule, []dto.PhpModuleParsingFailure,
 ) {
 	modules := []entity.PhpModule{}
+	parsingFailures := []dto.PhpModuleParsingFailure{}
 
-	rawModulesSlice, assertOk := rawPhpModules.([]any)
-	if !assertOk {
-		rawUniqueModule, assertOk := rawPhpModules.(map[string]any)
-		if !assertOk {
-			return modules, errors.New("InvalidPhpModulesStructure")
+	rawModulesSlice, isModuleList := rawPhpModules.([]any)
+	if !isModuleList {
+		rawSingleModule, isSingleModule := rawPhpModules.(map[string]any)
+		if !isSingleModule {
+			parsingFailures = append(
+				parsingFailures,
+				dto.PhpModuleParsingFailure{
+					Index:  0,
+					Reason: valueObject.NewFailureReason("InvalidPhpModulesStructure"),
+				},
+			)
+			return modules, parsingFailures
 		}
-		rawModulesSlice = []any{rawUniqueModule}
+		rawModulesSlice = []any{rawSingleModule}
 	}
 
-	for _, rawModule := range rawModulesSlice {
-		rawModuleMap, assertOk := rawModule.(map[string]any)
-		if !assertOk {
-			slog.Debug("PhpModuleIsNotAnInterface")
+	for moduleIndex, rawModule := range rawModulesSlice {
+		failureIndex := uint(moduleIndex)
+
+		rawModuleMap, isModuleObject := rawModule.(map[string]any)
+		if !isModuleObject {
+			parsingFailures = append(
+				parsingFailures,
+				dto.PhpModuleParsingFailure{
+					Index:  failureIndex,
+					Reason: valueObject.NewFailureReason("InvalidPhpModuleStructure"),
+				},
+			)
 			continue
 		}
 
-		moduleName, err := valueObject.NewPhpModuleName(rawModuleMap["name"])
-		if err != nil {
-			slog.Debug(err.Error(), slog.Any("name", rawModuleMap["name"]))
+		moduleName, nameErr := valueObject.NewPhpModuleName(rawModuleMap["name"])
+		if nameErr != nil {
+			parsingFailure := dto.PhpModuleParsingFailure{
+				Index:  failureIndex,
+				Reason: valueObject.NewFailureReason(nameErr.Error()),
+			}
+			moduleStatus, statusErr := tkVoUtil.InterfaceToBool(
+				rawModuleMap["status"],
+			)
+			if statusErr == nil {
+				parsingFailure.Status = &moduleStatus
+			}
+			parsingFailures = append(parsingFailures, parsingFailure)
 			continue
 		}
 
-		moduleStatus, err := tkVoUtil.InterfaceToBool(rawModuleMap["status"])
-		if err != nil {
-			slog.Debug(err.Error(), slog.Any("status", rawModuleMap["status"]))
+		moduleStatus, statusErr := tkVoUtil.InterfaceToBool(
+			rawModuleMap["status"],
+		)
+		if statusErr != nil {
+			parsingFailures = append(
+				parsingFailures,
+				dto.PhpModuleParsingFailure{
+					Index:  failureIndex,
+					Name:   &moduleName,
+					Reason: valueObject.NewFailureReason("InvalidPhpModuleStatus"),
+				},
+			)
 			continue
 		}
 
 		modules = append(modules, entity.NewPhpModule(moduleName, moduleStatus))
 	}
 
-	return modules, nil
+	return modules, parsingFailures
 }
 
 func (controller *RuntimeController) parsePhpSettings(rawPhpSettings any) (
@@ -146,8 +181,10 @@ func (controller *RuntimeController) parsePhpSettings(rawPhpSettings any) (
 // @Produce      json
 // @Security     Bearer
 // @Param        hostname 	  path   string  true  "Hostname"
-// @Param        updatePhpConfigsDto	body dto.UpdatePhpConfigs	true	"modules and settings are optional."
+// @Param        updatePhpConfigsRequest	body dto.UpdatePhpConfigsRequest	true	"modules and settings are optional."
 // @Success      200 {object} object{} "PhpConfigsUpdated"
+// @Success      201 {object} dto.UpdatePhpConfigsResponse "PhpModuleUpdateScheduled"
+// @Success      207 {object} dto.UpdatePhpConfigsResponse "PhpModuleParsingFailuresReported"
 // @Router       /v1/runtime/php/{hostname}/ [put]
 func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) error {
 	inputReader := tkPresentation.ApiRequestInputReader{}
@@ -157,16 +194,11 @@ func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) 
 	}
 
 	if _, exists := requestData["modules"]; exists {
-		phpModules, err := controller.parsePhpModules(requestData["modules"])
-		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(
-				echoContext,
-				tkPresentation.NewLiaisonResponseNoMessage(
-					tkPresentation.LiaisonResponseStatusUserError, err,
-				),
-			)
-		}
+		phpModules, parsingFailures := controller.parsePhpModules(
+			requestData["modules"],
+		)
 		requestData["modules"] = phpModules
+		requestData["moduleParsingFailures"] = parsingFailures
 	}
 
 	if _, exists := requestData["settings"]; exists {
@@ -183,7 +215,7 @@ func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) 
 	}
 
 	return tkPresentation.LiaisonApiResponseEmitter(
-		echoContext, controller.runtimeLiaison.UpdatePhpConfigs(requestData),
+		echoContext, controller.runtimeLiaison.UpdatePhpConfigs(requestData, true),
 	)
 }
 

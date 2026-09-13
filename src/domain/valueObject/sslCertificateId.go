@@ -12,7 +12,7 @@ const sslCertificateIdExpression = "^[a-fA-F0-9]{64}$"
 
 type SslCertificateId string
 
-func NewSslCertificateId(value interface{}) (sslCertificateId SslCertificateId, err error) {
+func NewSslCertificateId(value any) (sslCertificateId SslCertificateId, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return sslCertificateId, errors.New("SslCertificateIdMustBeString")
@@ -29,14 +29,7 @@ func NewSslCertificateId(value interface{}) (sslCertificateId SslCertificateId, 
 func NewSslCertificateIdFromSslCertificateContent(
 	sslCertificate SslCertificateContent,
 ) (sslCertificateId SslCertificateId, err error) {
-	sslCertificateIdContent, err := voHelper.StrongStringHasher(
-		sslCertificate.String(),
-	)
-	if err != nil {
-		return sslCertificateId, errors.New(
-			"InvalidSslCertificateIdFromSslCertificateContent",
-		)
-	}
+	sslCertificateIdContent := voHelper.StrongStringHasher(sslCertificate.String())
 	return NewSslCertificateId(sslCertificateIdContent)
 }
 

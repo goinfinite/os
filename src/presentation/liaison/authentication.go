@@ -1,15 +1,15 @@
 package liaison
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	authInfra "github.com/goinfinite/os/src/infra/auth"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type AuthenticationLiaison struct {

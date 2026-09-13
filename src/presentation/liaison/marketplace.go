@@ -15,6 +15,7 @@ import (
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
@@ -216,7 +217,7 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 			taskName, taskCmd, taskTags, &timeoutSecs, nil,
 		)
 
-		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
+		_, err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
 			return tkPresentation.NewLiaisonResponseNoMessage(
 				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
@@ -229,24 +230,11 @@ func (liaison *MarketplaceLiaison) InstallCatalogItem(
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	installDto := dto.NewInstallMarketplaceCatalogItem(
@@ -381,24 +369,11 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 		}
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	if shouldSchedule {
@@ -423,7 +398,7 @@ func (liaison *MarketplaceLiaison) DeleteInstalledItem(
 			taskName, taskCmd, taskTags, &timeoutSeconds, nil,
 		)
 
-		err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
+		_, err = useCase.CreateScheduledTask(scheduledTaskCmdRepo, scheduledTaskCreateDto)
 		if err != nil {
 			return tkPresentation.NewLiaisonResponseNoMessage(
 				tkPresentation.LiaisonResponseStatusInfraError, err.Error(),

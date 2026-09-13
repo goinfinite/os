@@ -3,14 +3,12 @@ package scheduledTaskInfra
 import (
 	"errors"
 	"log/slog"
-	"math"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
-	tkDto "github.com/goinfinite/tk/src/domain/dto"
-	"github.com/iancoleman/strcase"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type ScheduledTaskQueryRepo struct {
@@ -72,35 +70,15 @@ func (repo *ScheduledTaskQueryRepo) Read(
 		dbQuery = dbQuery.Where("created_at > ?", readDto.CreatedAfterAt.ReadAsGoTime())
 	}
 
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
+		dbQuery, readDto.Pagination, "id",
+	)
 	if err != nil {
-		return responseDto, errors.New("CountItemsTotalError: " + err.Error())
-	}
-
-	dbQuery = dbQuery.Limit(int(readDto.Pagination.ItemsPerPage))
-	if readDto.Pagination.LastSeenId == nil {
-		offset := int(readDto.Pagination.PageNumber) * int(readDto.Pagination.ItemsPerPage)
-		dbQuery = dbQuery.Offset(offset)
-	} else {
-		dbQuery = dbQuery.Where("id > ?", readDto.Pagination.LastSeenId.String())
-	}
-	if readDto.Pagination.SortBy != nil {
-		orderStatement := readDto.Pagination.SortBy.String()
-		orderStatement = strcase.ToSnake(orderStatement)
-		if orderStatement == "id" {
-			orderStatement = "ID"
-		}
-
-		if readDto.Pagination.SortDirection != nil {
-			orderStatement += " " + readDto.Pagination.SortDirection.String()
-		}
-
-		dbQuery = dbQuery.Order(orderStatement)
+		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
 	}
 
 	scheduledTaskModels := []dbModel.ScheduledTask{}
-	err = dbQuery.Find(&scheduledTaskModels).Error
+	err = paginatedDbQuery.Find(&scheduledTaskModels).Error
 	if err != nil {
 		return responseDto, errors.New("FindScheduledTasksError: " + err.Error())
 	}
@@ -116,19 +94,6 @@ func (repo *ScheduledTaskQueryRepo) Read(
 			continue
 		}
 		scheduledTaskEntities = append(scheduledTaskEntities, scheduledTaskEntity)
-	}
-
-	itemsTotalUint := uint64(itemsTotal)
-	pagesTotal := uint32(
-		math.Ceil(float64(itemsTotal) / float64(readDto.Pagination.ItemsPerPage)),
-	)
-	responsePagination := tkDto.Pagination{
-		PageNumber:    readDto.Pagination.PageNumber,
-		ItemsPerPage:  readDto.Pagination.ItemsPerPage,
-		SortBy:        readDto.Pagination.SortBy,
-		SortDirection: readDto.Pagination.SortDirection,
-		PagesTotal:    &pagesTotal,
-		ItemsTotal:    &itemsTotalUint,
 	}
 
 	return dto.ReadScheduledTasksResponse{

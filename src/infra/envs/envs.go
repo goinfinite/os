@@ -1,7 +1,7 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion                     string = "0.3.2"
+	InfiniteOsVersion                     string = "0.3.3"
 	InfiniteOsMainDir                     string = "/infinite"
 	InfiniteOsBinary                      string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath                 string = InfiniteOsMainDir + "/.env"
@@ -14,7 +14,8 @@ const (
 	MarketplaceCatalogItemsRepoBranch     string = "v2"
 	InstallableServicesItemsDir           string = InfiniteOsMainDir + "/services"
 	InstallableServicesItemsRepoUrl       string = "https://github.com/goinfinite/os-services"
-	InstallableServicesItemsRepoBranch    string = "v1"
+	InstallableServicesItemsRepoBranch    string = "v2"
+	ToolchainDataDir                      string = "/usr/local/share/mise"
 	ApplicationRootDir                    string = "/app"
 	VirtualHostsConfDir                   string = ApplicationRootDir + "/conf/nginx"
 	PrimaryVirtualHostEnvKey              string = "PRIMARY_VHOST"
@@ -29,9 +30,12 @@ const (
 	WebServerBinaryPath                   string = "/usr/sbin/nginx"
 	WebServerMainConfPath                 string = "/etc/nginx/nginx.conf"
 	WebServerDhParamFilePath              string = "/etc/nginx/dhparam.pem"
+	PhpWebServerConfDir                   string = ApplicationRootDir + "/conf/php-webserver"
 	PhpWebServerMainConfFilePath          string = "/usr/local/lsws/conf/httpd_config.conf"
+	PhpWebServerModulesAssetFilePath      string = InstallableServicesItemsDir + "/runtime/php-webserver/assets/modules.yaml"
 	PhpWebServerUsername                  string = "nobody"
 	PhpWebServerGroupName                 string = "nogroup"
+	PhpWebServerConfOwnerUsername         string = "lsadm"
 	PhpWebServerConfigValidationCmd       string = "/usr/local/lsws/bin/openlitespeed -t"
 	PhpChildProcessesUpdateSkipEnvKey     string = "SKIP_PHP_PROCS_COUNT_UPDATE"
 	AccessTokenCookieKey                  string = "os-access-token"
@@ -43,4 +47,5 @@ const (
 	SilentExitModeEnvKey                  string = "SILENT_EXIT_MODE"
 	ProcessManagerBinaryPath              string = "/usr/bin/supervisorctl"
 	ProcessManagerConfFilePath            string = InfiniteOsMainDir + "/supervisord.conf"
+	AwkBinaryPath                         string = "/usr/bin/awk"
 )

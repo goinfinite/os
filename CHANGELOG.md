@@ -1,6 +1,98 @@
 # Changelog
 
 ```log
+0.3.3 - 2026/09/12
+test(marketplace): enforce https on wordpress redirects
+docs: remove the deprecated goreportcard badge
+test: add timing budgets for vhost delete and marketplace
+test(marketplace): assert wordpress serves over http and https
+test(runtime): assert the php virtual host config cleanup on delete
+fix(runtime): repair the php virtual host listener map and block
+fix(services): report installation check errors
+test: install wordpress and uptime kuma from the marketplace
+fix(ui): mark the htpasswd language key as a sonar false positive
+fix(container): add the language attribute to the welcome page
+fix: resolve awk by absolute path
+refactor(ssl): drop the unused md5 ownership hash
+fix(cron): write the crontab in a private temp directory
+fix(php): match wildcard listener maps when creating virtual hosts
+docs: add the sonarqube quality gate badge
+docs: refresh the root context file
+chore: organize the containerignore and exclude agent tooling
+chore: organize the gitignore and drop the services entry
+docs: trim the agent override
+docs: update the development guide
+test: make the services catalog test hermetic
+chore: ignore the local services checkout
+docs: sync the runtime feature map
+test: delegate the test fixtures to the tk synthesizer
+test: make the unit suites self-contained
+test: add the container-backed test suite
+fix(services): run the stop steps before stopping the process
+fix(account): send the secure access key id on delete
+fix(cron): delete the cron by id
+fix(envs): define the php webserver constants used by runtime
+refactor(runtime): adopt the tk v0.3.6 file clerk contract
+refactor: adopt the tk v0.3.6 file clerk contract
+docs: add the agent usage skill and README pointer
+fix(catalog): scan only manifest files for catalog items
+refactor: adopt the tk v0.3.5 file clerk contract
+refactor: delegate pagination to tk
+refactor: move remaining hashing to the domain helper
+refactor: run scheduled tasks with the tk shell timeout
+refactor: report apt cache cleanup failures
+test: harden infra test setup
+refactor: use tk transient database service
+fix(ui): report php configs read failures instead of blaming the virtual host mapping
+refactor(ui): replace the local alert component with the infinite ui alert
+fix(container): enforce https on build curls and document root user per sonar
+test(valueObject): align fixtures and messages with current validation behavior
+fix(runtime): surface missing php virtual hosts from read configs use case
+fix(valueObject): harden php setting names and values against config injection
+refactor(valueObject): move strong string hashing from infra into the domain helper
+chore: pin additional dev tools in mise
+docs: require SIGTERM to stop a detached dev-build session
+fix(container): harden image build and dev script per SonarQube
+refactor(container): merge test image into multi-stage Containerfile and rework dev-build.sh
+fix(files): repair build after failure reason refactor
+chore: upgrade go-infinite toolkit to v0.3.3
+refactor(ui): delegate php module outcomes to the scheduled tasks popover
+refactor(runtime): plan php module updates from the current state in the use case
+refactor(mapping): use exported PHP webserver service-name constant
+feat(liaison): schedule PHP module updates and split config use cases
+refactor(liaison): extract liaison helpers and dedupe operator parsing
+docs(cli): record stderr logging constraint
+feat(cli): wire PHP update-modules worker command
+feat(api): report partial success on php module updates
+refactor(valueObject): guarantee non-empty failure reasons
+feat(runtime): split PHP config updates into dedicated use cases
+feat(scheduledTask): return created task id to callers
+fix(valueObject): raise scheduled task output limit to 64KB
+refactor(valueObject): validate PHP module names by pattern
+refactor(cli): centralize required flag registration errors
+docs: add project agent instructions
+chore: pin Go and golangci-lint with mise
+fix(runtime): use exact PHP module paths and APT packages
+fix(runtime): normalize PHP module discovery and skip section headers
+test(valueObject): reject compile-time PHP module names
+feat(services): support legacy service version label
+fix(ui): show loading overlay during htmx navigation
+fix(ui): preserve API base path when deleting accounts
+fix(container): share toolchain data with non-root services
+refactor(ui): align custom service execution fields
+fix(services): migrate legacy commands only for install steps
+refactor(services): gate legacy migration before command conversion
+chore(services): use v2 manifests for OS v0.3.3+
+feat(services): support custom start commands and working directories (Issue #274)
+fix(services): stop process groups and use suffixed service directories (Issues #293, #297)
+refactor(ui): use Infinite UI components for service forms
+refactor(ui): refine service form controls and tooltips
+fix: use debian slim trixie as base img
+fix: ignore logfile when redirected to /dev
+chore: bump version
+fix: migrate legacy manifest install commands
+refactor: use typed command step phases
+
 0.3.2 - 2026/07/29
 fix(ssl): auto-select sole vhost on SSL import modal
 fix(ssl): prevent `.crt` suffix on derived virtualHostHostname for multi-label hostnames

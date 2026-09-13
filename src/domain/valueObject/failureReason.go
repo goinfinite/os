@@ -1,28 +1,30 @@
 package valueObject
 
 import (
-	"errors"
-
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
+const malformedFailureReason FailureReason = "MalformedFailureReason"
+
+const maxFailureReasonStringLength = 2048
+
 type FailureReason string
 
-func NewFailureReason(value interface{}) (failureReason FailureReason, err error) {
+func NewFailureReason(value any) FailureReason {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
-		return failureReason, errors.New("FailureReasonMustBeString")
+		return malformedFailureReason
 	}
 
 	if len(stringValue) == 0 {
-		return failureReason, errors.New("EmptyFailureReason")
+		return malformedFailureReason
 	}
 
-	if len(stringValue) > 2048 {
-		stringValue = stringValue[:2048]
+	if len(stringValue) > maxFailureReasonStringLength {
+		stringValue = stringValue[:maxFailureReasonStringLength]
 	}
 
-	return FailureReason(stringValue), nil
+	return FailureReason(stringValue)
 }
 
 func (vo FailureReason) String() string {

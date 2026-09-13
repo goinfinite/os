@@ -10,18 +10,19 @@ import (
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/labstack/echo/v4"
 )
 
 type FooterPresenter struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	transientDbSvc  *tkInfraDb.TransientDatabaseService
 	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewFooterPresenter(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *FooterPresenter {
 	return &FooterPresenter{

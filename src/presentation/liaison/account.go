@@ -6,15 +6,13 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	accountInfra "github.com/goinfinite/os/src/infra/account"
 	activityRecordInfra "github.com/goinfinite/os/src/infra/activityRecord"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
-
-var LocalOperatorAccountId = tkValueObject.AccountIdSystem
-var LocalOperatorIpAddress = tkValueObject.IpAddressLocal
 
 type AccountLiaison struct {
 	persistentDbSvc       *internalDbInfra.PersistentDatabaseService
@@ -136,24 +134,11 @@ func (liaison *AccountLiaison) Create(untrustedInput map[string]any) tkPresentat
 		}
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	createDto := dto.NewCreateAccount(
@@ -240,24 +225,11 @@ func (liaison *AccountLiaison) Update(untrustedInput map[string]any) tkPresentat
 		shouldUpdateApiKeyPtr = &shouldUpdateApiKey
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	updateDto := dto.NewUpdateAccount(
@@ -315,24 +287,11 @@ func (liaison *AccountLiaison) Delete(untrustedInput map[string]any) tkPresentat
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	deleteDto := dto.NewDeleteAccount(accountId, operatorAccountId, operatorIpAddress)
@@ -387,24 +346,11 @@ func (liaison *AccountLiaison) CreateSecureAccessPublicKey(
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	createDto := dto.NewCreateSecureAccessPublicKey(
@@ -445,24 +391,11 @@ func (liaison *AccountLiaison) DeleteSecureAccessPublicKey(
 		)
 	}
 
-	operatorAccountId := LocalOperatorAccountId
-	if untrustedInput["operatorAccountId"] != nil {
-		operatorAccountId, err = tkValueObject.NewAccountId(untrustedInput["operatorAccountId"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
-	}
-
-	operatorIpAddress := LocalOperatorIpAddress
-	if untrustedInput["operatorIpAddress"] != nil {
-		operatorIpAddress, err = tkValueObject.NewIpAddress(untrustedInput["operatorIpAddress"])
-		if err != nil {
-			return tkPresentation.NewLiaisonResponseNoMessage(
-				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-			)
-		}
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(untrustedInput)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
 	}
 
 	deleteDto := dto.NewDeleteSecureAccessPublicKey(

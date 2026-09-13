@@ -2,7 +2,7 @@ package useCase
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/repository"
@@ -12,11 +12,14 @@ import (
 func ReadPhpConfigs(
 	runtimeQueryRepo repository.RuntimeQueryRepo,
 	hostname tkValueObject.Fqdn,
-) (entity.PhpConfigs, error) {
-	phpConfigs, err := runtimeQueryRepo.ReadPhpConfigs(hostname)
+) (phpConfigs entity.PhpConfigs, err error) {
+	phpConfigs, err = runtimeQueryRepo.ReadPhpConfigs(hostname)
+	if errors.Is(err, repository.ErrPhpVirtualHostNotFound) {
+		return phpConfigs, err
+	}
 	if err != nil {
-		log.Printf("ReadPhpConfigsError: %s", err.Error())
-		return entity.PhpConfigs{}, errors.New("ReadPhpConfigsInfraError")
+		slog.Error("ReadPhpConfigsError", slog.String("err", err.Error()))
+		return phpConfigs, errors.New("ReadPhpConfigsFailed")
 	}
 
 	return phpConfigs, nil

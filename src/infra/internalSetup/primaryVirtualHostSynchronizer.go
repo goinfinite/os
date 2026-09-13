@@ -45,7 +45,13 @@ func NewPrimaryVirtualHostSynchronizer(
 }
 
 func (sync *PrimaryVirtualHostSynchronizer) phpConfUpdater() error {
-	if !sync.servicesQueryRepo.IsInstalled(valueObject.ServiceNamePhpWebServer) {
+	phpWebServerIsInstalled, err := sync.servicesQueryRepo.IsInstalled(
+		valueObject.ServiceNamePhpWebServer,
+	)
+	if err != nil {
+		return errors.New("ReadPhpWebServerInstallationError: " + err.Error())
+	}
+	if !phpWebServerIsInstalled {
 		slog.Debug(
 			"SkippingPrimaryVirtualHostPhpConfUpdater",
 			slog.String("reason", "PhpWebServerNotInstalled"),
@@ -92,10 +98,26 @@ func (sync *PrimaryVirtualHostSynchronizer) webServerConfUpdater() error {
 		return errors.New("WebServerUnitFileFactoryFailed: " + factoryErr.Error())
 	}
 
-	fileClerk := tkInfra.FileClerk{}
-	writeErr := fileClerk.UpdateFileContent(
-		infraEnvs.PrimaryVirtualHostConfPath, confContent, true,
+	primaryVirtualHostConfFilePath, parseErr := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.PrimaryVirtualHostConfPath, false,
 	)
+	if parseErr != nil {
+		return errors.New("InvalidPrimaryVirtualHostConfPath: " + parseErr.Error())
+	}
+
+	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
+	fileClerk := tkInfra.FileClerk{}
+	confFilePermissions := os.FileMode(0644)
+	writeErr := fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:        primaryVirtualHostConfFilePath,
+		Permissions:     &confFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &webServerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			webServerUsername,
+		},
+	}, []byte(confContent))
 	if writeErr != nil {
 		return errors.New("WritePrimaryVirtualHostConfFailed: " + writeErr.Error())
 	}

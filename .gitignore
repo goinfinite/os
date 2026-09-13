@@ -1,13 +1,22 @@
-tmp/
+# Build and runtime output.
 bin/
 logs/
-.env
-TODO.md
-*.db
+
+# Generated code.
 *_templ.go
+
+# Local configuration and state.
+.env
+*.db
+
+# Test artifacts.
+/tests/artifacts/
+
+# Local notes and tooling.
+tmp/
+TODO.md
 .agents/
 .memory/
-AGENTS.md
 opencode.json
 .claude/
 .ignore

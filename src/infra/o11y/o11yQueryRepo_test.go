@@ -4,13 +4,13 @@ import (
 	"testing"
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
-	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 func TestGetOverview(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	transientDbSvc, err := internalDbInfra.NewTransientDatabaseService()
+	transientDbSvc, err := tkInfraDb.NewTransientDatabaseService()
 	if err != nil {
 		t.Fatalf("Unexpected error: %s", err.Error())
 	}

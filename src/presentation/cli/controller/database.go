@@ -3,6 +3,7 @@ package cliController
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -72,7 +73,7 @@ func (controller *DatabaseController) Read() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&dbTypeStr, "db-type", "t", "", "DatabaseType")
-	cmd.MarkFlagRequired("db-type")
+	cliHelper.MarkRequiredFlag(cmd, "db-type")
 	cmd.Flags().StringVarP(&dbNameStr, "name", "n", "", "DatabaseName")
 	cmd.Flags().StringVarP(&usernameStr, "username", "u", "", "DatabaseUsername")
 	cmd.Flags().Uint32VarP(
@@ -112,9 +113,9 @@ func (controller *DatabaseController) Create() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&dbTypeStr, "db-type", "t", "", "DatabaseType")
-	cmd.MarkFlagRequired("db-type")
+	cliHelper.MarkRequiredFlag(cmd, "db-type")
 	cmd.Flags().StringVarP(&dbNameStr, "db-name", "n", "", "DatabaseName")
-	cmd.MarkFlagRequired("db-name")
+	cliHelper.MarkRequiredFlag(cmd, "db-name")
 	return cmd
 }
 
@@ -137,9 +138,9 @@ func (controller *DatabaseController) Delete() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&dbTypeStr, "db-type", "t", "", "DatabaseType")
-	cmd.MarkFlagRequired("db-type")
+	cliHelper.MarkRequiredFlag(cmd, "db-type")
 	cmd.Flags().StringVarP(&dbNameStr, "db-name", "n", "", "DatabaseName")
-	cmd.MarkFlagRequired("db-name")
+	cliHelper.MarkRequiredFlag(cmd, "db-name")
 	return cmd
 }
 
@@ -171,13 +172,13 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&dbTypeStr, "db-type", "t", "", "DatabaseType")
-	cmd.MarkFlagRequired("db-type")
+	cliHelper.MarkRequiredFlag(cmd, "db-type")
 	cmd.Flags().StringVarP(&dbNameStr, "db-name", "n", "", "DatabaseName")
-	cmd.MarkFlagRequired("db-name")
+	cliHelper.MarkRequiredFlag(cmd, "db-name")
 	cmd.Flags().StringVarP(&dbUserStr, "username", "u", "", "Username")
-	cmd.MarkFlagRequired("username")
+	cliHelper.MarkRequiredFlag(cmd, "username")
 	cmd.Flags().StringVarP(&dbPassStr, "password", "p", "", "Password")
-	cmd.MarkFlagRequired("password")
+	cliHelper.MarkRequiredFlag(cmd, "password")
 	cmd.Flags().StringSliceVarP(
 		&privilegesSlice, "privileges", "r", []string{},
 		"DatabasePrivileges (Comma or semicolon separated)",
@@ -206,10 +207,10 @@ func (controller *DatabaseController) DeleteUser() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&dbTypeStr, "db-type", "t", "", "DatabaseType")
-	cmd.MarkFlagRequired("db-type")
+	cliHelper.MarkRequiredFlag(cmd, "db-type")
 	cmd.Flags().StringVarP(&dbNameStr, "db-name", "n", "", "DatabaseName")
-	cmd.MarkFlagRequired("db-name")
+	cliHelper.MarkRequiredFlag(cmd, "db-name")
 	cmd.Flags().StringVarP(&dbUsernameStr, "db-username", "u", "", "DatabaseUsername")
-	cmd.MarkFlagRequired("db-username")
+	cliHelper.MarkRequiredFlag(cmd, "db-username")
 	return cmd
 }

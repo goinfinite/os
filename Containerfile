@@ -1,32 +1,59 @@
-FROM docker.io/bitnami/minideb:bullseye-amd64
+# Base stage: OS packages, nginx, mise, and shared configuration.
+FROM docker.io/debian:trixie-slim AS base
 
 WORKDIR /infinite
 
 RUN apt-get update && apt-get upgrade -y \
-	&& install_packages bind9-dnsutils build-essential ca-certificates certbot cron \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends bind9-dnsutils build-essential ca-certificates certbot cron \
 	curl debian-archive-keyring git gnupg2 haveged lsb-release procps rsync supervisor \
 	tar unzip vim wget zip unattended-upgrades
 
-RUN curl -skL "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
-	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] http://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
-	&& install_packages nginx \
+RUN curl -sL --proto '=https' --tlsv1.2 "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
+	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
+	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nginx logrotate \
 	&& mkdir -p /app/conf/pki \
 	&& chown -R nobody:nogroup /app
 
-RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattended-upgrades-local \
-  && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local \
-  && grep -q 'origin=nginx,archive=stable,label=nginx' /etc/apt/apt.conf.d/52unattended-upgrades-local || (echo "ErrorEditingUnattendedUpgradesConfigFile" && exit 1)
+RUN curl -sL --proto '=https' --tlsv1.2 "https://mise.run" \
+	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
+	&& chmod +x /usr/local/bin/mise \
+	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile
 
-RUN curl -skL "https://mise.run" | sh \
-	&& mv /root/.local/bin/mise /usr/bin/mise \
-	&& chmod +x /usr/bin/mise \
-	&& echo 'eval "$(/usr/bin/mise activate bash)"' >>/etc/profile
+ENV MISE_DATA_DIR=/usr/local/share/mise
 
 COPY /container/nginx/root/* /etc/nginx/
 
 COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
 
 COPY /container/supervisord.conf /infinite/supervisord.conf
+
+# Test stage: builds from source and runs the Go test suite.
+FROM base AS test
+
+# Unit tests run without runtime setup, so provide the nginx files it generates.
+RUN mkdir -p /app/html /app/logs/nginx \
+	&& touch /app/logs/nginx/nginx.log \
+	&& chown -R nobody:nogroup /app/html /app/logs \
+	&& openssl dhparam -dsaparam -out /etc/nginx/dhparam.pem 2048
+
+COPY . .
+
+ENV PATH="/usr/local/share/mise/shims:${PATH}"
+
+RUN mise trust \
+	&& mise install --yes \
+	&& go mod download \
+	&& go build -o os
+
+ENTRYPOINT ["go", "test", "-v", "./..."]
+
+# Runtime stage: ships the prebuilt binary and starts supervisord.
+# NOSONAR - supervisord runs as root on purpose: it binds privileged ports and manages system services (nginx, cron, sshd, certbot)
+FROM base AS runtime
+
+RUN cp /etc/apt/apt.conf.d/50unattended-upgrades /etc/apt/apt.conf.d/52unattended-upgrades-local \
+  && sed -i '/codename=\${distro_codename}-security,label=Debian-Security";/a\\        "origin=nginx,archive=stable,label=nginx";' /etc/apt/apt.conf.d/52unattended-upgrades-local \
+  && grep -q 'origin=nginx,archive=stable,label=nginx' /etc/apt/apt.conf.d/52unattended-upgrades-local || (echo "ErrorEditingUnattendedUpgradesConfigFile" && exit 1)
 
 COPY /bin/os /infinite/os
 

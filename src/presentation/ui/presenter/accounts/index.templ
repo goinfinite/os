@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	uiDisplay "github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/toolset"
 	"strconv"
 )
@@ -220,10 +221,12 @@ templ UpdateApiKeyContent() {
 			BindModelValuePath: "account.apiKey",
 		})
 		<div x-show="account.apiKey !== ''">
-			@componentStructural.Alert(
-				componentStructural.AlertTypeWarning,
-				"This API key will not be stored on the server side. Please save it securely, as you will not be able to retrieve it again if lost. If you need to access your API key in the future, you will need to generate a new one.",
-			)
+			@uiDisplay.Alert(uiDisplay.AlertSettings{
+				Variation:   uiDisplay.AlertVariationWarning,
+				Description: "This API key will not be stored on the server side. Please save it securely, as you will not be able to retrieve it again if lost. If you need to access your API key in the future, you will need to generate a new one.",
+				Size:        uiDisplay.AlertSizeXs,
+				IsCloseable: false,
+			})
 		</div>
 	</div>
 	@componentForm.SubmitButton(
@@ -243,10 +246,12 @@ templ UpdateApiKeyModal() {
 
 templ SecureAccessPublicKeysList() {
 	<!-- SecureAccessPublicKeysList -->
-	@componentStructural.Alert(
-		componentStructural.AlertTypeInfo,
-		"These keys will be used by the secure remote connection service for user authentication. If the OpenSSH service is not installed, this connection will not be possible, making the keys irrelevant. But you cant still manage them.",
-	)
+	@uiDisplay.Alert(uiDisplay.AlertSettings{
+		Variation:   uiDisplay.AlertVariationInfo,
+		Description: "These keys will be used by the secure remote connection service for user authentication. If the OpenSSH service is not installed, this connection will not be possible, making the keys irrelevant. But you cant still manage them.",
+		Size:        uiDisplay.AlertSizeXs,
+		IsCloseable: false,
+	})
 	<div class="mt-2">
 		<div id="account-secure-access-public-keys-list">
 			<template x-for="key of account.secureAccessPublicKeys">

@@ -7,24 +7,25 @@ import (
 	_ "github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	sslInfra "github.com/goinfinite/os/src/infra/ssl"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
 
 type SslController struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	transientDbSvc  *tkInfraDb.TransientDatabaseService
 	sslLiaison      *liaison.SslLiaison
 }
 
 func NewSslController(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *SslController {
 	return &SslController{

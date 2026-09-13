@@ -12,9 +12,9 @@ UiToolset.RegisterAlpineState(() => {
           "&runtimeType=" +
           runtimeType,
         {
+          source: "#htmx-indicator-attributes-element",
           select: "#runtimes-page-content",
           target: "#runtimes-page-content",
-          indicator: "#loading-overlay",
           swap: "outerHTML transition:true",
         }
       );

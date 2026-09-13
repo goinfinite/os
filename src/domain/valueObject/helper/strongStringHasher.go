@@ -1,20 +1,17 @@
 package voHelper
 
 import (
+	"crypto/sha3"
 	"encoding/hex"
-	"errors"
-
-	"golang.org/x/crypto/sha3"
 )
 
-func StrongStringHasher(
-	stringToHash string,
-) (strongHash string, err error) {
-	hash := sha3.New256()
-	_, err = hash.Write([]byte(stringToHash))
-	if err != nil {
-		return strongHash, errors.New("InvalidStringToHash")
-	}
-	encodedContentBytes := hash.Sum(nil)
-	return hex.EncodeToString(encodedContentBytes), nil
+const shortHashLength = 12
+
+func StrongStringHasher(stringToHash string) (strongHash string) {
+	digest := sha3.Sum256([]byte(stringToHash))
+	return hex.EncodeToString(digest[:])
+}
+
+func StrongStringShortHasher(stringToHash string) (shortHash string) {
+	return StrongStringHasher(stringToHash)[:shortHashLength]
 }

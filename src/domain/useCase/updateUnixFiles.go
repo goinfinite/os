@@ -33,13 +33,9 @@ func (uc UpdateUnixFiles) updateFailureFactory(
 	filePath tkValueObject.UnixAbsoluteFilePath,
 	errMessage string,
 ) valueObject.UpdateProcessFailure {
-	failureReason, err := valueObject.NewFailureReason(errMessage)
-	if err != nil {
-		slog.Debug(err.Error(), slog.String("errMessage", errMessage))
-		failureReason, _ = valueObject.NewFailureReason("MalformedFailureReason")
-	}
-
-	return valueObject.NewUpdateProcessFailure(filePath, failureReason)
+	return valueObject.NewUpdateProcessFailure(
+		filePath, valueObject.NewFailureReason(errMessage),
+	)
 }
 
 func (uc UpdateUnixFiles) updateFilePermissions(

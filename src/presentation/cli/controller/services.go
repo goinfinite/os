@@ -3,6 +3,7 @@ package cliController
 import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/spf13/cobra"
@@ -192,7 +193,8 @@ func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 
 func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	var (
-		nameStr, versionStr, startupFileStr, workingDirStr, autoStartBoolStr,
+		nameStr, versionStr, startCmdStr, startupFileStr,
+		workingDirStr, autoStartBoolStr,
 		autoRestartBoolStr, autoCreateMappingBoolStr, mappingHostname, mappingPath,
 		mappingUpgradeInsecureRequestsBoolStr string
 		envsSlice, portBindingsSlice            []string
@@ -218,6 +220,9 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 			}
 			if versionStr != "" {
 				requestBody["version"] = versionStr
+			}
+			if startCmdStr != "" {
+				requestBody["startCmd"] = startCmdStr
 			}
 			if startupFileStr != "" {
 				requestBody["startupFile"] = startupFileStr
@@ -250,11 +255,12 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringSliceVarP(
 		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
 	)
 	cmd.Flags().StringVarP(&versionStr, "version", "v", "", "ServiceVersion")
+	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.Flags().StringVarP(&startupFileStr, "startup-file", "f", "", "StartupFile")
 	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDir")
 	cmd.Flags().StringSliceVarP(
@@ -293,7 +299,9 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 
 func (controller *ServicesController) CreateCustom() *cobra.Command {
 	var (
-		nameStr, typeStr, startCmdStr, versionStr, autoStartBoolStr, autoRestartBoolStr,
+		nameStr, typeStr, startCmdStr, versionStr, workingDirStr, execUserStr,
+		autoStartBoolStr,
+		autoRestartBoolStr,
 		autoCreateMappingBoolStr, mappingHostname, mappingPath,
 		mappingUpgradeInsecureRequestsBoolStr string
 		envsSlice, portBindingsSlice            []string
@@ -322,6 +330,12 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 			if versionStr != "" {
 				requestBody["version"] = versionStr
 			}
+			if workingDirStr != "" {
+				requestBody["workingDirectory"] = workingDirStr
+			}
+			if execUserStr != "" {
+				requestBody["execUser"] = execUserStr
+			}
 			if len(portBindingsSlice) > 0 {
 				requestBody["portBindings"] = tkPresentation.StringSliceValueObjectParser(
 					portBindingsSlice, valueObject.NewPortBinding,
@@ -347,13 +361,15 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringVarP(
 		&typeStr, "type", "t", "", "ServiceType (application|database|runtime|other)",
 	)
-	cmd.MarkFlagRequired("type")
+	cliHelper.MarkRequiredFlag(cmd, "type")
 	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
-	cmd.MarkFlagRequired("start-command")
+	cliHelper.MarkRequiredFlag(cmd, "start-command")
+	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDir")
+	cmd.Flags().StringVarP(&execUserStr, "exec-user", "U", "", "ExecUser")
 	cmd.Flags().StringSliceVarP(
 		&envsSlice, "envs", "e", []string{}, "Envs (name=value)",
 	)
@@ -442,7 +458,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringVarP(&typeStr, "type", "t", "", "ServiceType")
 	cmd.Flags().StringVarP(&startCmdStr, "start-command", "c", "", "StartCommand")
 	cmd.Flags().StringVarP(&statusStr, "status", "s", "", "ServiceStatus")
@@ -476,6 +492,6 @@ func (controller *ServicesController) Delete() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "ServiceName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	return cmd
 }

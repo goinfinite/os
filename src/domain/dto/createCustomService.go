@@ -6,32 +6,32 @@ import (
 )
 
 type CreateCustomService struct {
-	Name                           valueObject.ServiceName     `json:"name"`
-	Type                           valueObject.ServiceType     `json:"type"`
-	StartCmd                       tkValueObject.UnixCommand   `json:"startCmd"`
-	Envs                           []valueObject.ServiceEnv    `json:"envs"`
-	PortBindings                   []valueObject.PortBinding   `json:"portBindings"`
-	StopCmdSteps                   []tkValueObject.UnixCommand `json:"stopCmdSteps"`
-	PreStartCmdSteps               []tkValueObject.UnixCommand `json:"preStartCmdSteps"`
-	PostStartCmdSteps              []tkValueObject.UnixCommand `json:"postStartCmdSteps"`
-	PreStopCmdSteps                []tkValueObject.UnixCommand `json:"preStopCmdSteps"`
-	PostStopCmdSteps               []tkValueObject.UnixCommand `json:"postStopCmdSteps"`
-	Version                        *valueObject.ServiceVersion `json:"version"`
-	ExecUser                       *tkValueObject.UnixUsername                `json:"execUser"`
-	WorkingDirectory               *tkValueObject.UnixAbsoluteFilePath       `json:"workingDirectory"`
-	AutoStart                      *bool                       `json:"autoStart"`
-	AutoRestart                    *bool                       `json:"autoRestart"`
-	TimeoutStartSecs               *uint                       `json:"timeoutStartSecs"`
-	MaxStartRetries                *uint                       `json:"maxStartRetries"`
-	LogOutputPath                  *tkValueObject.UnixAbsoluteFilePath       `json:"logOutputPath"`
-	LogErrorPath                   *tkValueObject.UnixAbsoluteFilePath       `json:"logErrorPath"`
-	AvatarUrl                      *tkValueObject.Url          `json:"avatarUrl"`
-	AutoCreateMapping              *bool                       `json:"autoCreateMapping"`
-	MappingHostname                *tkValueObject.Fqdn         `json:"mappingHostname"`
-	MappingPath                    *valueObject.MappingPath    `json:"mappingPath"`
-	MappingUpgradeInsecureRequests *bool                       `json:"mappingUpgradeInsecureRequests"`
-	OperatorAccountId              tkValueObject.AccountId     `json:"-"`
-	OperatorIpAddress              tkValueObject.IpAddress     `json:"-"`
+	Name                           valueObject.ServiceName             `json:"name"`
+	Type                           valueObject.ServiceType             `json:"type"`
+	StartCmd                       tkValueObject.UnixCommand           `json:"startCmd"`
+	Envs                           []valueObject.ServiceEnv            `json:"envs"`
+	PortBindings                   []valueObject.PortBinding           `json:"portBindings"`
+	StopCmdSteps                   []tkValueObject.UnixCommand         `json:"stopCmdSteps"`
+	PreStartCmdSteps               []tkValueObject.UnixCommand         `json:"preStartCmdSteps"`
+	PostStartCmdSteps              []tkValueObject.UnixCommand         `json:"postStartCmdSteps"`
+	PreStopCmdSteps                []tkValueObject.UnixCommand         `json:"preStopCmdSteps"`
+	PostStopCmdSteps               []tkValueObject.UnixCommand         `json:"postStopCmdSteps"`
+	Version                        *valueObject.ServiceVersion         `json:"version"`
+	ExecUser                       *tkValueObject.UnixUsername         `json:"execUser"`
+	WorkingDirectory               *tkValueObject.UnixAbsoluteFilePath `json:"workingDirectory"`
+	AutoStart                      *bool                               `json:"autoStart"`
+	AutoRestart                    *bool                               `json:"autoRestart"`
+	TimeoutStartSecs               *uint                               `json:"timeoutStartSecs"`
+	MaxStartRetries                *uint                               `json:"maxStartRetries"`
+	LogOutputPath                  *tkValueObject.UnixAbsoluteFilePath `json:"logOutputPath"`
+	LogErrorPath                   *tkValueObject.UnixAbsoluteFilePath `json:"logErrorPath"`
+	AvatarUrl                      *tkValueObject.Url                  `json:"avatarUrl"`
+	AutoCreateMapping              *bool                               `json:"autoCreateMapping"`
+	MappingHostname                *tkValueObject.Fqdn                 `json:"mappingHostname"`
+	MappingPath                    *valueObject.MappingPath            `json:"mappingPath"`
+	MappingUpgradeInsecureRequests *bool                               `json:"mappingUpgradeInsecureRequests"`
+	OperatorAccountId              tkValueObject.AccountId             `json:"-"`
+	OperatorIpAddress              tkValueObject.IpAddress             `json:"-"`
 }
 
 func NewCreateCustomService(

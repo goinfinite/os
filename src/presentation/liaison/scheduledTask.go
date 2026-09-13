@@ -1,15 +1,15 @@
 package liaison
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	scheduledTaskInfra "github.com/goinfinite/os/src/infra/scheduledTask"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )

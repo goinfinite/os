@@ -30,7 +30,7 @@ func UploadUnixFiles(
 			continue
 		}
 
-		failureReason, _ := valueObject.NewFailureReason(failureReasonStr)
+		failureReason := valueObject.NewFailureReason(failureReasonStr)
 		processFailure := valueObject.NewUploadProcessFailure(
 			fileStream.Name, failureReason,
 		)

@@ -6,22 +6,23 @@ import (
 )
 
 type CreateInstallableService struct {
-	Name                           valueObject.ServiceName              `json:"name"`
-	Envs                           []valueObject.ServiceEnv             `json:"envs"`
-	PortBindings                   []valueObject.PortBinding            `json:"portBindings"`
-	Version                        *valueObject.ServiceVersion          `json:"version"`
-	StartupFile                    *tkValueObject.UnixAbsoluteFilePath  `json:"startupFile"`
-	WorkingDir                     *tkValueObject.UnixAbsoluteFilePath  `json:"workingDir"`
-	AutoStart                      *bool                                `json:"autoStart"`
-	TimeoutStartSecs               *uint                                `json:"timeoutStartSecs"`
-	AutoRestart                    *bool                                `json:"autoRestart"`
-	MaxStartRetries                *uint                                `json:"maxStartRetries"`
-	AutoCreateMapping              *bool                                `json:"autoCreateMapping"`
-	MappingHostname                *tkValueObject.Fqdn                  `json:"mappingHostname"`
-	MappingPath                    *valueObject.MappingPath             `json:"mappingPath"`
-	MappingUpgradeInsecureRequests *bool                                `json:"mappingUpgradeInsecureRequests"`
-	OperatorAccountId              tkValueObject.AccountId              `json:"-"`
-	OperatorIpAddress              tkValueObject.IpAddress              `json:"-"`
+	Name                           valueObject.ServiceName             `json:"name"`
+	Envs                           []valueObject.ServiceEnv            `json:"envs"`
+	PortBindings                   []valueObject.PortBinding           `json:"portBindings"`
+	Version                        *valueObject.ServiceVersion         `json:"version"`
+	StartCmd                       *tkValueObject.UnixCommand          `json:"startCmd"`
+	StartupFile                    *tkValueObject.UnixAbsoluteFilePath `json:"startupFile"`
+	WorkingDir                     *tkValueObject.UnixAbsoluteFilePath `json:"workingDir"`
+	AutoStart                      *bool                               `json:"autoStart"`
+	TimeoutStartSecs               *uint                               `json:"timeoutStartSecs"`
+	AutoRestart                    *bool                               `json:"autoRestart"`
+	MaxStartRetries                *uint                               `json:"maxStartRetries"`
+	AutoCreateMapping              *bool                               `json:"autoCreateMapping"`
+	MappingHostname                *tkValueObject.Fqdn                 `json:"mappingHostname"`
+	MappingPath                    *valueObject.MappingPath            `json:"mappingPath"`
+	MappingUpgradeInsecureRequests *bool                               `json:"mappingUpgradeInsecureRequests"`
+	OperatorAccountId              tkValueObject.AccountId             `json:"-"`
+	OperatorIpAddress              tkValueObject.IpAddress             `json:"-"`
 }
 
 func NewCreateInstallableService(
@@ -29,6 +30,7 @@ func NewCreateInstallableService(
 	envs []valueObject.ServiceEnv,
 	portBindings []valueObject.PortBinding,
 	version *valueObject.ServiceVersion,
+	startCmd *tkValueObject.UnixCommand,
 	startupFile *tkValueObject.UnixAbsoluteFilePath,
 	workingDir *tkValueObject.UnixAbsoluteFilePath,
 	autoStart *bool,
@@ -47,6 +49,7 @@ func NewCreateInstallableService(
 		Envs:                           envs,
 		PortBindings:                   portBindings,
 		Version:                        version,
+		StartCmd:                       startCmd,
 		StartupFile:                    startupFile,
 		WorkingDir:                     workingDir,
 		AutoStart:                      autoStart,

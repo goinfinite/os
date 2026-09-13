@@ -1,30 +1,74 @@
 package valueObject
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
-func TestPhpModuleName(t *testing.T) {
-	t.Run("ValidPhpModuleNames", func(t *testing.T) {
-		validNames := []interface{}{
-			"ioncube", "apcu", "imagick", "opcache", "mysqli",
+func TestNewPhpModuleName(t *testing.T) {
+	t.Run("StringInput", func(t *testing.T) {
+		maximumLengthName := strings.Repeat("a", 64)
+
+		testCases := []struct {
+			inputValue     any
+			expectedOutput PhpModuleName
+			expectError    bool
+		}{
+			{"ioncube", "ioncube", false},
+			{"apcu", "apcu", false},
+			{"pdo_sqlite", "pdo_sqlite", false},
+			{"PHP_MODULE", "php_module", false},
+			{maximumLengthName, PhpModuleName(maximumLengthName), false},
+			{"", "", true},
+			{"1module", "", true},
+			{"ioncube_loader.so", "", true},
+			{"posix/process", "", true},
+			{"<script>alert('xss')</script>", "", true},
+			{strings.Repeat("a", 65), "", true},
+			{[]string{"pcntl"}, "", true},
 		}
 
-		for _, name := range validNames {
-			_, err := NewPhpModuleName(name)
-			if err != nil {
-				t.Errorf("Expected no error for '%v', got '%s'", name, err.Error())
+		for _, testCase := range testCases {
+			actualOutput, conversionErr := NewPhpModuleName(testCase.inputValue)
+			if testCase.expectError && conversionErr == nil {
+				t.Errorf("MissingExpectedError: [%v]", testCase.inputValue)
+			}
+			if !testCase.expectError && conversionErr != nil {
+				t.Errorf(
+					"UnexpectedError: '%s' [%v]",
+					conversionErr.Error(),
+					testCase.inputValue,
+				)
+			}
+			if !testCase.expectError && actualOutput != testCase.expectedOutput {
+				t.Errorf(
+					"UnexpectedOutputValue: '%v' vs '%v' [%v]",
+					actualOutput,
+					testCase.expectedOutput,
+					testCase.inputValue,
+				)
 			}
 		}
 	})
 
-	t.Run("InvalidPhpModuleNames", func(t *testing.T) {
-		invalidNames := []interface{}{
-			"ioncube_loader.so", "<script>alert('xss')</script>", "@blabla@",
+	t.Run("StringMethod", func(t *testing.T) {
+		testCases := []struct {
+			inputValue     PhpModuleName
+			expectedOutput string
+		}{
+			{"ioncube", "ioncube"},
+			{"pdo_sqlite", "pdo_sqlite"},
 		}
 
-		for _, name := range invalidNames {
-			_, err := NewPhpModuleName(name)
-			if err == nil {
-				t.Errorf("Expected error for '%v', got nil", name)
+		for _, testCase := range testCases {
+			actualOutput := testCase.inputValue.String()
+			if actualOutput != testCase.expectedOutput {
+				t.Errorf(
+					"UnexpectedOutputValue: '%v' vs '%v' [%v]",
+					actualOutput,
+					testCase.expectedOutput,
+					testCase.inputValue,
+				)
 			}
 		}
 	})

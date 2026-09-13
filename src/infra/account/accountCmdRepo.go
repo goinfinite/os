@@ -14,11 +14,11 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
-	tkDto "github.com/goinfinite/tk/src/domain/dto"
-	tkInfra "github.com/goinfinite/tk/src/infra"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
 	"github.com/google/uuid"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -81,8 +81,21 @@ func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 		return nil
 	}
 
+	sudoersDirAccountFilePathVo, err := tkValueObject.NewUnixAbsoluteFilePath(
+		sudoersDirAccountFilePath, false,
+	)
+	if err != nil {
+		return errors.New("DefineSudoersFilePathError: " + err.Error())
+	}
+
 	sudoersLine := accountNameStr + " ALL=(ALL) NOPASSWD:ALL"
-	return repo.fileClerk.UpdateFileContent(sudoersDirAccountFilePath, sudoersLine, true)
+	sudoersFilePermissions := os.FileMode(0644)
+	return repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:        sudoersDirAccountFilePathVo,
+		Permissions:     &sudoersFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+	}, []byte(sudoersLine))
 }
 
 func (repo *AccountCmdRepo) createAuthorizedKeysFile(
@@ -324,6 +337,7 @@ func (repo *AccountCmdRepo) UpdateApiKey(
 
 func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
 	accountId tkValueObject.AccountId,
+	accountUsername valueObject.Username,
 	accountHomeDirectory tkValueObject.UnixAbsoluteFilePath,
 ) error {
 	readPublicKeysRequestDto := dto.ReadSecureAccessPublicKeysRequest{
@@ -345,11 +359,25 @@ func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
 			keyEntity.Name.String() + "\n"
 	}
 
-	authorizedKeysFilePath := accountHomeDirectory.String() + "/.ssh/authorized_keys"
-	shouldOverwrite := true
-	err = repo.fileClerk.UpdateFileContent(
-		authorizedKeysFilePath, keysFileContent, shouldOverwrite,
+	authorizedKeysFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+		accountHomeDirectory.String()+"/.ssh/authorized_keys", false,
 	)
+	if err != nil {
+		return errors.New("DefineAuthorizedKeysFilePathError: " + err.Error())
+	}
+
+	authorizedKeysOwnerUsername := tkValueObject.UnixUsername(accountUsername.String())
+	authorizedKeysFilePermissions := os.FileMode(0644)
+	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:        authorizedKeysFilePath,
+		Permissions:     &authorizedKeysFilePermissions,
+		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+		OwnerUsername:   &authorizedKeysOwnerUsername,
+		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
+			authorizedKeysOwnerUsername,
+		},
+	}, []byte(keysFileContent))
 	if err != nil {
 		return errors.New("UpdateAuthorizedKeysFileContentError: " + err.Error())
 	}
@@ -384,7 +412,7 @@ func (repo *AccountCmdRepo) CreateSecureAccessPublicKey(
 	}
 
 	return keyId, repo.rebuildAuthorizedKeysFile(
-		accountEntity.Id, accountEntity.HomeDirectory,
+		accountEntity.Id, accountEntity.Username, accountEntity.HomeDirectory,
 	)
 }
 
@@ -417,6 +445,6 @@ func (repo *AccountCmdRepo) DeleteSecureAccessPublicKey(
 	}
 
 	return repo.rebuildAuthorizedKeysFile(
-		accountEntity.Id, accountEntity.HomeDirectory,
+		accountEntity.Id, accountEntity.Username, accountEntity.HomeDirectory,
 	)
 }

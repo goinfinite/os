@@ -14,18 +14,19 @@ import (
 	echoSwagger "github.com/swaggo/echo-swagger"
 
 	_ "github.com/goinfinite/os/src/presentation/api/docs"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type Router struct {
 	baseRoute       *echo.Group
-	transientDbSvc  *internalDbInfra.TransientDatabaseService
+	transientDbSvc  *tkInfraDb.TransientDatabaseService
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	trailDbSvc      *internalDbInfra.TrailDatabaseService
 }
 
 func NewRouter(
 	baseRoute *echo.Group,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *Router {

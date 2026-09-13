@@ -13,6 +13,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
@@ -123,7 +124,7 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	stoppedServicesNames := []string{}
 
 	readStoppedServicesCmd := infraEnvs.ProcessManagerBinaryPath +
-		" status | grep -v 'RUNNING' | awk '{print $1}'"
+		" status | grep -v 'RUNNING' | " + infraEnvs.AwkBinaryPath + " '{print $1}'"
 	rawStoppedServices, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           readStoppedServicesCmd,
 		WorkingDirectory:  infraEnvs.InfiniteOsMainDir,
@@ -146,8 +147,7 @@ func (repo *ServicesQueryRepo) readStoppedServicesNames() ([]string, error) {
 	//cron
 	//nginx
 	//os-api
-	rawStoppedServicesLines := strings.Split(rawStoppedServices, "\n")
-	for _, rawStoppedService := range rawStoppedServicesLines {
+	for rawStoppedService := range strings.SplitSeq(rawStoppedServices, "\n") {
 		if rawStoppedService == "" {
 			continue
 		}
@@ -202,7 +202,8 @@ func (repo *ServicesQueryRepo) installedServicesMetricsFactory(
 
 			slog.Debug(
 				"MissingProcManagerStatusParts",
-				slog.String("name", serviceNameStr),
+				slog.String("serviceName", serviceNameStr),
+				slog.Any("procParts", procManagerStatusParts),
 			)
 			continue
 		}
@@ -348,9 +349,12 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 		itemsTotal := uint64(len(filteredServiceEntities))
 		responsePagination.ItemsTotal = &itemsTotal
 
-		pagesTotal := uint32(
-			math.Ceil(float64(itemsTotal) / float64(responsePagination.ItemsPerPage)),
+		pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+			itemsTotal, responsePagination.ItemsPerPage,
 		)
+		if pagesErr != nil {
+			return installedItemsDto, pagesErr
+		}
 		responsePagination.PagesTotal = &pagesTotal
 	}
 	responseDto := dto.ReadInstalledServicesItemsResponse{
@@ -404,32 +408,74 @@ func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
 	return responseDto.InstalledServices[0], nil
 }
 
-func (repo *ServicesQueryRepo) IsInstalled(serviceName valueObject.ServiceName) bool {
+func (repo *ServicesQueryRepo) IsInstalled(
+	serviceName valueObject.ServiceName,
+) (bool, error) {
 	_, readErr := repo.ReadFirstInstalledItem(
 		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &serviceName},
 	)
-	return readErr == nil
+	if readErr != nil {
+		if errors.Is(readErr, ErrInstalledServiceNotFound) {
+			return false, nil
+		}
+		return false, readErr
+	}
+
+	return true, nil
+}
+
+func (repo *ServicesQueryRepo) migrateLegacyManifestCmdStep(
+	stepsType serviceCmdStepType,
+	rawCmdStep any,
+) (any, error) {
+	if stepsType != serviceCmdStepTypeInstall {
+		return rawCmdStep, nil
+	}
+
+	rawCmdStepStr, err := tkVoUtil.InterfaceToString(rawCmdStep)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.ReplaceAll(
+		rawCmdStepStr,
+		"install_packages",
+		"DEBIAN_FRONTEND=noninteractive apt-get install -y",
+	), nil
 }
 
 func (repo *ServicesQueryRepo) parseManifestCmdSteps(
-	stepsType string,
-	rawCmdSteps interface{},
+	stepsType serviceCmdStepType,
+	rawCmdSteps any,
 ) (cmdSteps []tkValueObject.UnixCommand, err error) {
-	cmdStepsMap, assertOk := rawCmdSteps.([]interface{})
+	cmdStepsMap, assertOk := rawCmdSteps.([]any)
 	if !assertOk {
 		return cmdSteps, errors.New("InvalidCmdStepsStructure")
 	}
 
 	for _, rawCmd := range cmdStepsMap {
-		command, err := tkValueObject.NewUnixCommand(rawCmd)
+		rawCmd, err = repo.migrateLegacyManifestCmdStep(
+			stepsType, rawCmd,
+		)
 		if err != nil {
 			slog.Debug(
 				"ParseInvalidCmdStepError",
-				slog.String("stepsType", stepsType),
+				slog.String("stepsType", string(stepsType)),
 				slog.Any("rawCmd", rawCmd),
 			)
 			return cmdSteps, err
 		}
+
+		command, err := tkValueObject.NewUnixCommand(rawCmd)
+		if err != nil {
+			slog.Debug(
+				"ParseInvalidCmdStepError",
+				slog.String("stepsType", string(stepsType)),
+				slog.Any("rawCmd", rawCmd),
+			)
+			return cmdSteps, err
+		}
+
 		cmdSteps = append(cmdSteps, command)
 	}
 
@@ -493,7 +539,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	versions := []valueObject.ServiceVersion{}
 	if serviceMap["versions"] != nil {
-		versionsMap, assertOk := serviceMap["versions"].([]interface{})
+		versionsMap, assertOk := serviceMap["versions"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidServiceVersionsStructure")
 		}
@@ -513,7 +559,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	envs := []valueObject.ServiceEnv{}
 	if serviceMap["envs"] != nil {
-		envsMap, assertOk := serviceMap["envs"].([]interface{})
+		envsMap, assertOk := serviceMap["envs"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidEnvs")
 		}
@@ -533,7 +579,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	portBindings := []valueObject.PortBinding{}
 	if serviceMap["portBindings"] != nil {
-		portBindingsMap, assertOk := serviceMap["portBindings"].([]interface{})
+		portBindingsMap, assertOk := serviceMap["portBindings"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidPortBindingsStructure")
 		}
@@ -564,7 +610,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	stopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["stopCmdSteps"] != nil {
 		stopCmdSteps, err = repo.parseManifestCmdSteps(
-			"Stop", serviceMap["stopCmdSteps"],
+			serviceCmdStepTypeStop, serviceMap["stopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -584,7 +630,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	installCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["installCmdSteps"] != nil {
 		installCmdSteps, err = repo.parseManifestCmdSteps(
-			"Install", serviceMap["installCmdSteps"],
+			serviceCmdStepTypeInstall, serviceMap["installCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -604,7 +650,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	uninstallCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["uninstallCmdSteps"] != nil {
 		uninstallCmdSteps, err = repo.parseManifestCmdSteps(
-			"Uninstall", serviceMap["uninstallCmdSteps"],
+			serviceCmdStepTypeUninstall, serviceMap["uninstallCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -613,7 +659,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 
 	uninstallFilePaths := []tkValueObject.UnixAbsoluteFilePath{}
 	if serviceMap["uninstallFilePaths"] != nil {
-		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]interface{})
+		filesMap, assertOk := serviceMap["uninstallFilePaths"].([]any)
 		if !assertOk {
 			return installableService, errors.New("InvalidUninstallFilePathsStructure")
 		}
@@ -644,7 +690,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	preStartCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["preStartCmdSteps"] != nil {
 		preStartCmdSteps, err = repo.parseManifestCmdSteps(
-			"PreStart", serviceMap["preStartCmdSteps"],
+			serviceCmdStepTypePreStart, serviceMap["preStartCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -664,7 +710,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	postStartCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["postStartCmdSteps"] != nil {
 		postStartCmdSteps, err = repo.parseManifestCmdSteps(
-			"PostStart", serviceMap["postStartCmdSteps"],
+			serviceCmdStepTypePostStart, serviceMap["postStartCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -684,7 +730,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	preStopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["preStopCmdSteps"] != nil {
 		preStopCmdSteps, err = repo.parseManifestCmdSteps(
-			"PreStop", serviceMap["preStopCmdSteps"],
+			serviceCmdStepTypePreStop, serviceMap["preStopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -704,7 +750,7 @@ func (repo *ServicesQueryRepo) installableServiceFactory(
 	postStopCmdSteps := []tkValueObject.UnixCommand{}
 	if serviceMap["postStopCmdSteps"] != nil {
 		postStopCmdSteps, err = repo.parseManifestCmdSteps(
-			"PostStop", serviceMap["postStopCmdSteps"],
+			serviceCmdStepTypePostStop, serviceMap["postStopCmdSteps"],
 		)
 		if err != nil {
 			return installableService, err
@@ -801,29 +847,21 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 		}
 	}
 
-	rawInstallableFilesList, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "find " + infraEnvs.InstallableServicesItemsDir + " -type f " +
-			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
-			"-not -path '*/.*' -not -name '.*'",
-		ShouldUseSubShell: true,
-	}).Run()
+	catalogItemFilePaths, err := infraHelper.FindCatalogItemFiles(
+		infraEnvs.InstallableServicesItemsDir,
+	)
 	if err != nil {
 		return installableItemsDto, errors.New(
 			"ReadInstallableFilesError: " + err.Error(),
 		)
 	}
 
-	if len(rawInstallableFilesList) == 0 {
-		return installableItemsDto, errors.New("NoInstallableFilesFound")
-	}
-
-	rawInstallableFilesListParts := strings.Split(rawInstallableFilesList, "\n")
-	if len(rawInstallableFilesListParts) == 0 {
+	if len(catalogItemFilePaths) == 0 {
 		return installableItemsDto, errors.New("NoInstallableFilesFound")
 	}
 
 	installableServices := []entity.InstallableService{}
-	for _, rawFilePath := range rawInstallableFilesListParts {
+	for _, rawFilePath := range catalogItemFilePaths {
 		itemFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawFilePath, false)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("filePath", rawFilePath))
@@ -906,7 +944,12 @@ func (repo *ServicesQueryRepo) ReadInstallableItems(
 	}
 
 	itemsTotal := uint64(len(filteredInstallableServices))
-	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+	pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+		itemsTotal, requestDto.Pagination.ItemsPerPage,
+	)
+	if pagesErr != nil {
+		return installableItemsDto, pagesErr
+	}
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal

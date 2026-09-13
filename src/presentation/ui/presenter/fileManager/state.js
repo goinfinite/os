@@ -312,7 +312,7 @@ UiToolset.RegisterAlpineState(() => {
           const desiredFile = readFilesResponseDto.files[0];
           const supportedLanguages = {
             ".gitignore": "text",
-            ".htpasswd": "apache_conf",
+            ".htpasswd": "apache_conf", // NOSONAR - file extension key, not a credential
             ".htaccess": "apache_conf",
             ".env": "text",
             astro: "astro",

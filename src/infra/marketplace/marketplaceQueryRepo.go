@@ -3,7 +3,6 @@ package marketplaceInfra
 import (
 	"errors"
 	"log/slog"
-	"math"
 	"os"
 	"slices"
 	"strings"
@@ -12,13 +11,14 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	tkDto "github.com/goinfinite/tk/src/domain/dto"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
-	"github.com/iancoleman/strcase"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type MarketplaceQueryRepo struct {
@@ -34,9 +34,9 @@ func NewMarketplaceQueryRepo(
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemServicesFactory(
-	catalogItemServices interface{},
+	catalogItemServices any,
 ) (serviceNamesWithVersions []valueObject.ServiceNameWithVersion, err error) {
-	rawServiceNamesWithVersion, assertOk := catalogItemServices.([]interface{})
+	rawServiceNamesWithVersion, assertOk := catalogItemServices.([]any)
 	if !assertOk {
 		return serviceNamesWithVersions, errors.New(
 			"InvalidCatalogItemServicesStructure",
@@ -64,9 +64,9 @@ func (repo *MarketplaceQueryRepo) catalogItemServicesFactory(
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
-	catalogItemMappingsMap interface{},
+	catalogItemMappingsMap any,
 ) (itemMappings []valueObject.MarketplaceItemMapping, err error) {
-	rawItemMappings, assertOk := catalogItemMappingsMap.([]interface{})
+	rawItemMappings, assertOk := catalogItemMappingsMap.([]any)
 	if !assertOk {
 		return itemMappings, errors.New(
 			"InvalidMarketplaceCatalogItemMappingsStructure",
@@ -74,7 +74,7 @@ func (repo *MarketplaceQueryRepo) catalogItemMappingsFactory(
 	}
 
 	for mappingIndex, rawItemMapping := range rawItemMappings {
-		rawItemMappingMap, assertOk := rawItemMapping.(map[string]interface{})
+		rawItemMappingMap, assertOk := rawItemMapping.(map[string]any)
 		if !assertOk {
 			slog.Debug(
 				"InvalidMarketplaceCatalogItemMapping", slog.Int("index", mappingIndex),
@@ -169,9 +169,9 @@ func (repo *MarketplaceQueryRepo) specificTypeDataFieldValueGenerator(
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
-	catalogItemDataFieldsMap interface{},
+	catalogItemDataFieldsMap any,
 ) (itemDataFields []valueObject.MarketplaceCatalogItemDataField, err error) {
-	rawItemDataFields, assertOk := catalogItemDataFieldsMap.([]interface{})
+	rawItemDataFields, assertOk := catalogItemDataFieldsMap.([]any)
 	if !assertOk {
 		return itemDataFields, errors.New(
 			"InvalidMarketplaceCatalogItemDataFieldsStructure",
@@ -179,7 +179,7 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 	}
 
 	for _, rawItemDataField := range rawItemDataFields {
-		rawItemDataFieldMap, assertOk := rawItemDataField.(map[string]interface{})
+		rawItemDataFieldMap, assertOk := rawItemDataField.(map[string]any)
 		if !assertOk {
 			slog.Debug(
 				"InvalidMarketplaceCatalogItemDataField",
@@ -284,7 +284,7 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 
 		options := []valueObject.DataFieldValue{}
 		if rawItemDataFieldMap["options"] != nil {
-			rawOptions, assertOk := rawItemDataFieldMap["options"].([]interface{})
+			rawOptions, assertOk := rawItemDataFieldMap["options"].([]any)
 			if !assertOk {
 				slog.Debug(
 					"InvalidMarketplaceCatalogItemDataFieldOptions",
@@ -320,10 +320,25 @@ func (repo *MarketplaceQueryRepo) catalogItemDataFieldsFactory(
 	return itemDataFields, nil
 }
 
+func (repo *MarketplaceQueryRepo) migrateLegacyManifestCmdStep(
+	rawCmdStep any,
+) (string, error) {
+	rawCmdStepStr, err := tkVoUtil.InterfaceToString(rawCmdStep)
+	if err != nil {
+		return "", err
+	}
+
+	return strings.ReplaceAll(
+		rawCmdStepStr,
+		"install_packages",
+		"DEBIAN_FRONTEND=noninteractive apt-get install -y",
+	), nil
+}
+
 func (repo *MarketplaceQueryRepo) catalogItemCmdStepsFactory(
-	catalogItemCmdStepsMap interface{},
+	catalogItemCmdStepsMap any,
 ) (itemCmdSteps []tkValueObject.UnixCommand, err error) {
-	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]interface{})
+	rawItemCmdSteps, assertOk := catalogItemCmdStepsMap.([]any)
 	if !assertOk {
 		return itemCmdSteps, errors.New(
 			"InvalidMarketplaceCatalogItemCmdStepsStructure",
@@ -331,7 +346,15 @@ func (repo *MarketplaceQueryRepo) catalogItemCmdStepsFactory(
 	}
 
 	for _, rawItemCmdStep := range rawItemCmdSteps {
-		itemCmdStep, err := tkValueObject.NewUnixCommand(rawItemCmdStep)
+		rawItemCmdStepStr, err := repo.migrateLegacyManifestCmdStep(
+			rawItemCmdStep,
+		)
+		if err != nil {
+			slog.Debug(err.Error(), slog.Any("cmdStep", rawItemCmdStep))
+			continue
+		}
+
+		itemCmdStep, err := tkValueObject.NewUnixCommand(rawItemCmdStepStr)
 		if err != nil {
 			slog.Debug(err.Error(), slog.Any("cmdStep", rawItemCmdStep))
 			continue
@@ -344,9 +367,9 @@ func (repo *MarketplaceQueryRepo) catalogItemCmdStepsFactory(
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemUninstallFileNamesFactory(
-	catalogItemUninstallFileNames interface{},
+	catalogItemUninstallFileNames any,
 ) (itemUninstallFileNames []tkValueObject.UnixFileName, err error) {
-	rawItemUninstallFileNames, assertOk := catalogItemUninstallFileNames.([]interface{})
+	rawItemUninstallFileNames, assertOk := catalogItemUninstallFileNames.([]any)
 	if !assertOk {
 		return itemUninstallFileNames, errors.New(
 			"InvalidMarketplaceCatalogItemUninstallFileNamesStructure",
@@ -371,13 +394,13 @@ func (repo *MarketplaceQueryRepo) catalogItemUninstallFileNamesFactory(
 }
 
 func (repo *MarketplaceQueryRepo) catalogItemScreenshotUrlsFactory(
-	catalogItemUrlsMap interface{},
+	catalogItemUrlsMap any,
 ) (itemUrls []tkValueObject.Url, err error) {
 	if catalogItemUrlsMap == nil {
 		return itemUrls, nil
 	}
 
-	rawItemUrls, assertOk := catalogItemUrlsMap.([]interface{})
+	rawItemUrls, assertOk := catalogItemUrlsMap.([]any)
 	if !assertOk {
 		return itemUrls, errors.New(
 			"InvalidMarketplaceCatalogItemUrlsStructure",
@@ -438,7 +461,7 @@ func (repo *MarketplaceQueryRepo) catalogItemFactory(
 
 	itemSlugs := []valueObject.MarketplaceItemSlug{}
 	if itemMap["slugs"] != nil {
-		rawItemSlugs, assertOk := itemMap["slugs"].([]interface{})
+		rawItemSlugs, assertOk := itemMap["slugs"].([]any)
 		if !assertOk {
 			return catalogItem, errors.New("InvalidMarketplaceItemSlugsStructure")
 		}
@@ -587,28 +610,20 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 		}
 	}
 
-	rawCatalogFilesList, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "find " + infraEnvs.MarketplaceCatalogItemsDir + " -type f " +
-			"\\( -name '*.json' -o -name '*.yaml' -o -name '*.yml' \\) " +
-			"-not -path '*/.*' -not -name '.*'",
-		ShouldUseSubShell: true,
-	}).Run()
+	catalogItemFilePaths, err := infraHelper.FindCatalogItemFiles(
+		infraEnvs.MarketplaceCatalogItemsDir,
+	)
 	if err != nil {
 		return responseDto, errors.New("ReadMarketplaceFilesError: " + err.Error())
 	}
 
-	if len(rawCatalogFilesList) == 0 {
-		return responseDto, errors.New("NoMarketplaceFilesFound")
-	}
-
-	rawCatalogFilesListParts := strings.Split(rawCatalogFilesList, "\n")
-	if len(rawCatalogFilesListParts) == 0 {
+	if len(catalogItemFilePaths) == 0 {
 		return responseDto, errors.New("NoMarketplaceFilesFound")
 	}
 
 	catalogItems := []entity.MarketplaceCatalogItem{}
 	catalogItemsIdsMap := map[uint16]struct{}{}
-	for _, rawFilePath := range rawCatalogFilesListParts {
+	for _, rawFilePath := range catalogItemFilePaths {
 		itemFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(rawFilePath, false)
 		if err != nil {
 			slog.Debug(err.Error(), slog.String("filePath", rawFilePath))
@@ -738,7 +753,12 @@ func (repo *MarketplaceQueryRepo) ReadCatalogItems(
 	}
 
 	itemsTotal := uint64(len(filteredCatalogItems))
-	pagesTotal := uint32(itemsTotal / uint64(requestDto.Pagination.ItemsPerPage))
+	pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+		itemsTotal, requestDto.Pagination.ItemsPerPage,
+	)
+	if pagesErr != nil {
+		return responseDto, pagesErr
+	}
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal
@@ -791,37 +811,15 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		Where(&model).
 		Preload("Mappings")
 
-	var itemsTotal int64
-	err = dbQuery.Count(&itemsTotal).Error
+	paginatedDbQuery, responsePagination, err := tkInfraDb.PaginationQueryBuilder(
+		dbQuery, requestDto.Pagination, "id",
+	)
 	if err != nil {
-		return responseDto, errors.New(
-			"CountMarketplaceInstalledItemsTotalError: " + err.Error(),
-		)
-	}
-
-	dbQuery.Limit(int(requestDto.Pagination.ItemsPerPage))
-	if requestDto.Pagination.LastSeenId == nil {
-		offset := int(requestDto.Pagination.PageNumber) * int(requestDto.Pagination.ItemsPerPage)
-		dbQuery = dbQuery.Offset(offset)
-	} else {
-		dbQuery = dbQuery.Where("id > ?", requestDto.Pagination.LastSeenId.String())
-	}
-	if requestDto.Pagination.SortBy != nil {
-		orderStatement := requestDto.Pagination.SortBy.String()
-		orderStatement = strcase.ToSnake(orderStatement)
-		if orderStatement == "id" {
-			orderStatement = "ID"
-		}
-
-		if requestDto.Pagination.SortDirection != nil {
-			orderStatement += " " + requestDto.Pagination.SortDirection.String()
-		}
-
-		dbQuery = dbQuery.Order(orderStatement)
+		return responseDto, errors.New("PaginationQueryBuilderError: " + err.Error())
 	}
 
 	models := []dbModel.MarketplaceInstalledItem{}
-	err = dbQuery.Find(&models).Error
+	err = paginatedDbQuery.Find(&models).Error
 	if err != nil {
 		return responseDto, errors.New("ReadMarketplaceInstalledItemsError")
 	}
@@ -838,19 +836,6 @@ func (repo *MarketplaceQueryRepo) ReadInstalledItems(
 		}
 
 		entities = append(entities, entity)
-	}
-
-	itemsTotalUint := uint64(itemsTotal)
-	pagesTotal := uint32(
-		math.Ceil(float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage)),
-	)
-	responsePagination := tkDto.Pagination{
-		PageNumber:    requestDto.Pagination.PageNumber,
-		ItemsPerPage:  requestDto.Pagination.ItemsPerPage,
-		SortBy:        requestDto.Pagination.SortBy,
-		SortDirection: requestDto.Pagination.SortDirection,
-		PagesTotal:    &pagesTotal,
-		ItemsTotal:    &itemsTotalUint,
 	}
 
 	return dto.ReadMarketplaceInstalledItemsResponse{

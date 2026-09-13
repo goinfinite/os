@@ -323,39 +323,68 @@ func (uc *CreateSecurityActivityRecord) DeleteMarketplaceInstalledItem(
 	uc.createActivityRecord(createRecordDto)
 }
 
-func (uc *CreateSecurityActivityRecord) UpdatePhpConfigs(
-	updateDto dto.UpdatePhpConfigs,
-	configType string,
+func (uc *CreateSecurityActivityRecord) createPhpRuntimeUpdateActivityRecord(
+	hostname tkValueObject.Fqdn,
+	operatorAccountId tkValueObject.AccountId,
+	operatorIpAddress tkValueObject.IpAddress,
+	recordCodeString string,
+	recordDetails interface{},
 ) {
-	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	operatorSri := tkValueObject.NewSriAccount(operatorAccountId)
 	createRecordDto := tkDto.CreateActivityRecord{
 		RecordLevel: uc.recordLevel,
 		AffectedResources: []tkValueObject.SystemResourceIdentifier{
-			valueObject.NewPhpRuntimeSri(updateDto.OperatorAccountId, updateDto.Hostname),
+			valueObject.NewPhpRuntimeSri(operatorAccountId, hostname),
 		},
 		OperatorSri:       &operatorSri,
-		OperatorIpAddress: &updateDto.OperatorIpAddress,
+		OperatorIpAddress: &operatorIpAddress,
 	}
 
-	codeStr := "PhpVersionUpdated"
-	var details interface{} = map[string]string{
-		"version": updateDto.PhpVersion.String(),
-	}
-
-	switch configType {
-	case "modules":
-		codeStr = "PhpModulesUpdated"
-		details = updateDto.PhpModules
-	case "settings":
-		codeStr = "PhpSettingsUpdated"
-		details = updateDto.PhpSettings
-	}
-
-	recordCode, _ := tkValueObject.NewActivityRecordCode(codeStr)
+	recordCode, _ := tkValueObject.NewActivityRecordCode(recordCodeString)
 	createRecordDto.RecordCode = recordCode
-	createRecordDto.RecordDetails = details
-
+	createRecordDto.RecordDetails = recordDetails
 	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) UpdatePhpVersion(
+	request dto.UpdatePhpVersionRequest,
+) {
+	recordDetails := map[string]string{
+		"version": request.PhpVersion.String(),
+	}
+
+	uc.createPhpRuntimeUpdateActivityRecord(
+		request.Hostname,
+		request.OperatorAccountId,
+		request.OperatorIpAddress,
+		"PhpVersionUpdated",
+		recordDetails,
+	)
+}
+
+func (uc *CreateSecurityActivityRecord) UpdatePhpSettings(
+	request dto.UpdatePhpSettingsRequest,
+) {
+	uc.createPhpRuntimeUpdateActivityRecord(
+		request.Hostname,
+		request.OperatorAccountId,
+		request.OperatorIpAddress,
+		"PhpSettingsUpdated",
+		request.PhpSettings,
+	)
+}
+
+func (uc *CreateSecurityActivityRecord) UpdatePhpModules(
+	request dto.UpdatePhpModulesRequest,
+	responseDto dto.UpdatePhpModulesResponse,
+) {
+	uc.createPhpRuntimeUpdateActivityRecord(
+		request.Hostname,
+		request.OperatorAccountId,
+		request.OperatorIpAddress,
+		"PhpModulesUpdated",
+		responseDto,
+	)
 }
 
 func (uc *CreateSecurityActivityRecord) CreateInstallableService(

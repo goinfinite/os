@@ -1,0 +1,128 @@
+version: 1
+levels: [fast, standard, exhaustive]
+features:
+  account:
+    - scope: cli
+      level: fast
+      run: tests/account/cliLifecycle.sh
+    - scope: cli
+      level: standard
+      run: tests/account/cliValidation.sh
+    - scope: cli
+      level: exhaustive
+      run: tests/account/cliConcurrency.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/account/...
+      provisional: true
+  api:
+    - scope: unit
+      level: standard
+      run: go test ./src/presentation/api/...
+      provisional: true
+  auth:
+    - scope: cli
+      level: fast
+      run: tests/auth/cliLogin.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/auth/...
+      provisional: true
+  cron:
+    - scope: cli
+      level: fast
+      run: tests/cron/cliLifecycle.sh
+    - scope: cli
+      level: standard
+      run: tests/cron/cliValidation.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/cron/...
+      provisional: true
+  database:
+    - scope: cli
+      level: exhaustive
+      run: tests/database/cliLifecycle.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/database/...
+      provisional: true
+  domain:
+    - scope: unit
+      level: standard
+      run: go test ./src/domain/...
+      provisional: true
+  files:
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/files/...
+      provisional: true
+  marketplace:
+    - scope: cli
+      level: standard
+      run: tests/marketplace/cliCatalog.sh
+    - scope: cli
+      level: exhaustive
+      run: tests/marketplace/cliInstall.sh
+    - scope: cli
+      level: exhaustive
+      run: tests/marketplace/cliInstallWordpress.sh
+    - scope: cli
+      level: exhaustive
+      run: tests/marketplace/cliInstallNodeApp.sh
+  o11y:
+    - scope: cli
+      level: fast
+      run: tests/o11y/cliOverview.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/o11y/...
+      provisional: true
+  platform:
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/activityRecord/... ./src/infra/helper/... ./src/infra/internalSetup/...
+      provisional: true
+  runtime:
+    - scope: cli
+      level: exhaustive
+      run: tests/runtime/cliPhpLifecycle.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/runtime/...
+      provisional: true
+  scheduledTask:
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/scheduledTask/...
+      provisional: true
+  services:
+    - scope: cli
+      level: standard
+      run: tests/services/cliCustomLifecycle.sh
+    - scope: cli
+      level: exhaustive
+      run: tests/services/cliInstallableLifecycle.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/services/...
+      provisional: true
+  ssl:
+    - scope: cli
+      level: standard
+      run: tests/ssl/cliLifecycle.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/ssl/...
+      provisional: true
+  vhost:
+    - scope: cli
+      level: fast
+      run: tests/vhost/cliLifecycle.sh
+    - scope: cli
+      level: standard
+      run: tests/vhost/cliMappingSecurity.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/vhost/...
+      provisional: true

@@ -6,6 +6,7 @@ import (
 
 	testHelpers "github.com/goinfinite/os/src/devUtils"
 	"github.com/goinfinite/os/src/domain/dto"
+	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
@@ -18,11 +19,17 @@ func TestAccountQueryRepo(t *testing.T) {
 
 	id, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
-	addDummyUser()
+	_ = deleteDummyUser()
+
+	err := addDummyUser()
+	if err != nil {
+		t.Errorf("Expected no error, but got %s", err.Error())
+	}
 
 	t.Run("ReadValid", func(t *testing.T) {
 		requestDto := dto.ReadAccountsRequest{
-			AccountId: &id,
+			Pagination: useCase.AccountsDefaultPagination,
+			AccountId:  &id,
 		}
 		_, err := accountQueryRepo.Read(requestDto)
 		if err != nil {
@@ -33,7 +40,8 @@ func TestAccountQueryRepo(t *testing.T) {
 	t.Run("ReadInvalid", func(t *testing.T) {
 		username, _ := valueObject.NewUsername("invalid")
 		requestDto := dto.ReadAccountsRequest{
-			AccountId: &id,
+			Pagination:      useCase.AccountsDefaultPagination,
+			AccountUsername: &username,
 		}
 
 		_, err := accountQueryRepo.ReadFirst(requestDto)
@@ -45,6 +53,7 @@ func TestAccountQueryRepo(t *testing.T) {
 	t.Run("ReadFirstValid", func(t *testing.T) {
 		username, _ := valueObject.NewUsername(os.Getenv("DUMMY_USER_NAME"))
 		requestDto := dto.ReadAccountsRequest{
+			Pagination:      useCase.AccountsDefaultPagination,
 			AccountUsername: &username,
 		}
 		_, err := accountQueryRepo.ReadFirst(requestDto)
@@ -58,6 +67,7 @@ func TestAccountQueryRepo(t *testing.T) {
 	t.Run("ReadFirstInvalid", func(t *testing.T) {
 		username, _ := valueObject.NewUsername("invalid")
 		requestDto := dto.ReadAccountsRequest{
+			Pagination:      useCase.AccountsDefaultPagination,
 			AccountUsername: &username,
 		}
 
@@ -67,5 +77,8 @@ func TestAccountQueryRepo(t *testing.T) {
 		}
 	})
 
-	deleteDummyUser()
+	err = deleteDummyUser()
+	if err != nil {
+		t.Errorf("Expected no error, but got %s", err.Error())
+	}
 }

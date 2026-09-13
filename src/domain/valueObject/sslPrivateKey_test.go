@@ -1,68 +1,27 @@
 package valueObject
 
-import "testing"
+import (
+	"testing"
+
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkInfra "github.com/goinfinite/tk/src/infra"
+)
 
 func TestSslPrivateKey(t *testing.T) {
 	t.Run("ValidSslPrivateKey", func(t *testing.T) {
-		validKeys := []string{
-			`-----BEGIN RSA PRIVATE KEY-----
-MIIEpAIBAAKCAQEAyL5s/St5se72Z/n4Rbvb2lIT5EP0cE7XHsyevTZPBzgZJNUa
-gLf8PEmcikTtsOzX3S4kHKZjOq9CND33BhMXVRtHeSJWJGB/CnpF6khkTAMvBzfG
-GtyqZ8LkymQPKrg9y5yxEJUDuHl2+PNQeKBXE1MPbcoi67hiyzooe5xrxIn4MLNh
-EUSoXFONHghh+47BS3xB8lSkUARmO1Tg7NO6CmEzZ6WD0+LWygwCtX6vecnuSeh7
-QnXm38alJbKJTDNhVhqsQ4AsB4G2lWbBnuQI9lPV8l79Zzjupu1CLAZV4/MZRR3N
-pslKxSH2+6PQnx+zCJercIKDCXLpXeYY3jmehwIDAQABAoIBAEfSNZ1IqjQaimc9
-/HE6mpicSAihtXlfA8E9tUd+AD1VeU1/vwkxilmpfovLyHzF6B92rC3h69upq5aU
-WuZ9+xmUdnhk7Av8yEcf4xbEyrmVZASBlGu06nTQOloc/X4rx9Qq3gDQR7H/Jy0/
-pFlcCHtd+sWtjdvnLtWGG8jJ+JaqoNNACNV1EYG4IWXwrtcci4F4apdRRE/16+rC
-IWnAcYd9ueX33GHkenAMCAQmSbwp0XF42AC1urM8TvOe2q/tftZZaDSprVFiaeKH
-CZFdAXLuzmbDXqj+CiFd7OUB7ZRrGcAHvHoNCHm9cWi5/dkrbekYJzewaFZqJJ/s
-bIIN2zECgYEA/5V2zaobiLZ5O/NVE+ZwkOZILY8zZr7QQtNI09q9I12QjQYJ5cJ4
-ECcVzXDWGx0CzOlEf0LH24SbeHGa8+g7S6Fnp5HZoEsO3VFwoZTKKJMhu5ybmXKr
-yQfIM5d6/MYOa9Awk0Fbm9cRyAYxRtZKd5BlR4YbtfNiZbIC3IsqUHcCgYEAyRIa
-PkJMC5adfzwMWWa4amF1m93ByznTBLxcYkatJ9/WanSmycft88KrAQ/P4VLwrX2X
-jI12y3V4VIRLkl5cViVIetTcyAC7l6pOxHXVbv5kdWKOYmVAFLMj9lk09sCtxkcE
-P6fSHMG0SPEZARhAwecXIU0WjEotJt+DTijFNnECgYEA+U4bF9xhhUaxFUhzabjz
-fnQSXdZ8hjGExlqAhJ6uteuTj+wfBW5fXSoy+zWgs8vlqmmz9gr3FmrQmHkAdADI
-ripgCLWdOd1dP4csPYD8fP2f/vhxUwnnBW5A3Apb3mt3L7VhXJJ5QJdWce2QbY+k
-DeLc2Bq5tw8UoSw13FknSlsCgYA2DxvnKUPwyanGj4pybt+eGl3YbiKwVPebCll8
-QqxDUDcBoCNHlO0w4GHBg1LMrdPvkRixvUb3JLoZXwhCbgQ9VQDLpXdGfovxFuTe
-hR/BG7w+oyTM55P2/MLqdMl8ngkaifVmd+RRvvKNueSTGsYuW8coOOWbCkZhcS6I
-UQXUwQKBgQCeJ0lSt3fdgE4fPVcd0kggWMD/H6J9W3IKsxqegkKRHv/6BwJ4ogNk
-6pbF0picFayT99XyKWR/Oz5+fxI42ZsYLUjnxPwcsocNByty0blOQuo5hb7lKTLk
-ZrBUC3x7Z1Ex9qgz3p/Y/WxHDRrHDuuByGazDVhyDyXECWxpDYEK3g==
------END RSA PRIVATE KEY-----`,
-			`-----BEGIN RSA PRIVATE KEY-----
-MIIEpQIBAAKCAQEAziJ8BEmVq/cSznb7aYRL5YBJjhMZVxC/jqT2Q/LKWFjX38Er
-LHT3khhdlKyrh/7AgfN+Us1Q7/eHq3PKX7Z0lgk+9LssNnaH67bj9lqJcILlToc5
-UrhZLHe2Q3xUlfyveDoheepcbBiqO7xzuUNl53KpT4FlF3DBO94wMNNqOjeNslHv
-lfpc/gJlZ5IBuxGG1+xjA75bGqDnFqyjEyUxrNxJyM70NAL4J+3rScdvXpdMKbMn
-IqC2s0mrK1iuPL4tryOG5/dES5BPJdRIrEAC/G4Kf6h8xD/QI9zzPmiZ4UJqb0A2
-TcmYexc40BnkgHO7XWr1zP20oZvSS46C/v3kAwIDAQABAoIBAQCd02Vk2vpP2jJ6
-BjtkhLiflWO79f+W2+nuy3sKd2BZ2Fwgo4Ps2/mZ0DIGXVZQH8tBNC9qMm1f7gPg
-UB2Ivufw4E9ljdHCOWrEHRnZS2Sj0nTDdWF8Zk1QcLAKZ61T0U6AHPH4qGnvEct1
-RUrNdD8XwIDFsOq30csBjZMULyrMOtC5B39mi46cWiQVjoabiOm7IDZFUFEq9Oy9
-ZGcyUWRce60NVcUgYiH1OTY3JNSdAIWXyeaViGNvIdQFt9XLnWkSCF2OZ+WzANy1
-2GePJdG6Jnn2XYsvpKy2mQXp+ULwejPN/KTcuIKPAL29B/wCOtZAXCiE6yib5g9a
-98YlWcjBAoGBAO2NWG7hOFyveijjJNEq9MyhhALu/o3xM8HwPQJOL1moWt4uySUc
-nbnl14YiuZjpoGbuL5143NXN2sJA+XnTBq2pRAPBJS1OLLkY1W+BVEOAc72TRV9v
-egWOHomgUqyInfRTmutnFCVyaAOURRpiXkPBMRLfN9WemVBBbuOAxO/zAoGBAN4k
-i4FEXqHFKp2OR7iRQenP/mSQGTQcQ1zUeWun02nEfMzosFcyioFZwQi3NMvtdC7u
-meHDuoGwLH+YcoM3/5NKUn1Kccl3x3tIbRy9GhavX2NBQ4v0DX2h7acpN4soWlHs
-v07AUMiYHvxEi+t2R7UptUufiwIwSlCmBQwGGE+xAoGBAOYu4FIQypyFLMoRz8se
-5Laki1aMXv0LjCuQro1dVWR7ThGdJCth3zQTExRW8aDKQTN7+YeNZe+G2UMB0rvJ
-T99W9SDuNyf/aDazaZ3yo8QE5CH+YmpnisV3QP/66iFlACmQGb2g1FS01zUgpxU5
-3D2rJfIzedb1J3os7VZloG8hAoGBANFxJ07DhW2Elf9izGBKJBksj6+E5R5qn2CA
-u9Iys3N/XCNeKBSuhEQcuZFcGp1Czk4JjHB9t/Tag7nxo9XwEDlw04FplQrcsemc
-ibOU32oQAyFzwRnNCoMvDwCSLdo4O6AOVPkM/Z2DP4OdpUZliIpYPqSEUe3IVejf
-/tYtUPKhAoGAQBzkCzCunVBtSuVLPT5/9NVVCj1nfxmXdLq1+0bD5q6m2XiW1G7T
-YvdMz2Th5XVtTfNHhLIKpMyrq7sstb6lsQPKNKSpBuyHa8oooWHrkxf7VVBrN7v8
-en/D01Fd9hVhXyGKaOk/nEDxB8fTgQ1dE9JhxUiqHN4Po1ktNG/P8aU=
------END RSA PRIVATE KEY-----`,
+		synthesizer := &tkInfra.Synthesizer{}
+		keySettings := []tkInfra.PrivateKeySettings{
+			{Algorithm: tkValueObject.PrivateKeyAlgorithmRSA, BitSize: 2048},
+			{Algorithm: tkValueObject.PrivateKeyAlgorithmECDSA, BitSize: 256},
 		}
 
-		for keyIndex, key := range validKeys {
-			_, err := NewSslPrivateKey(key)
+		for keyIndex, settings := range keySettings {
+			validKey, err := synthesizer.PrivateKeyPemFactory(settings)
+			if err != nil {
+				t.Fatalf("FailedToGenerateSslPrivateKey: %s", err.Error())
+			}
+
+			_, err = NewSslPrivateKey(validKey)
 			if err != nil {
 				t.Errorf(
 					"Expected no error for '%v', got '%s'", keyIndex, err.Error(),

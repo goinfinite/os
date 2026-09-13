@@ -1,18 +1,18 @@
 package liaison
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/useCase"
-	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	o11yInfra "github.com/goinfinite/os/src/infra/o11y"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 type O11yLiaison struct {
-	transientDbSvc *internalDbInfra.TransientDatabaseService
+	transientDbSvc *tkInfraDb.TransientDatabaseService
 }
 
 func NewO11yLiaison(
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 ) *O11yLiaison {
 	return &O11yLiaison{
 		transientDbSvc: transientDbSvc,

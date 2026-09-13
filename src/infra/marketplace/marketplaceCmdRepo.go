@@ -13,6 +13,7 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
+	voHelper "github.com/goinfinite/os/src/domain/valueObject/helper"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
@@ -34,6 +35,13 @@ type MarketplaceCmdRepo struct {
 	mappingCmdRepo       *vhostInfra.MappingCmdRepo
 	fileClerk            tkInfra.FileClerk
 }
+
+type marketplaceCmdStepType string
+
+const (
+	marketplaceCmdStepTypeInstall   marketplaceCmdStepType = "Install"
+	marketplaceCmdStepTypeUninstall marketplaceCmdStepType = "Uninstall"
+)
 
 func NewMarketplaceCmdRepo(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
@@ -135,7 +143,7 @@ func (repo *MarketplaceCmdRepo) interpolateMissingOptionalDataFields(
 	receivedDataFields []valueObject.MarketplaceInstallableItemDataField,
 	catalogDataFields []valueObject.MarketplaceCatalogItemDataField,
 ) (missingDataFields []valueObject.MarketplaceInstallableItemDataField, err error) {
-	receivedDataFieldsNames := map[string]interface{}{}
+	receivedDataFieldsNames := map[string]any{}
 	for _, receivedDataField := range receivedDataFields {
 		receivedDataFieldsNames[receivedDataField.Name.String()] = nil
 	}
@@ -202,13 +210,14 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 }
 
 func (repo *MarketplaceCmdRepo) runCmdSteps(
-	stepsType string,
+	stepsType marketplaceCmdStepType,
 	steps []tkValueObject.UnixCommand,
 	totalExecTimeoutSecs tkValueObject.UnixTime,
 ) error {
 	if len(steps) == 0 {
 		return nil
 	}
+	stepsTypeStr := string(stepsType)
 
 	totalExecTimeoutSecsUint := uint64(totalExecTimeoutSecs.Int64())
 	shellSettings := tkInfra.ShellSettings{
@@ -220,7 +229,7 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 	for stepIndex, step := range steps {
 		stepStr := step.String()
 
-		slog.Debug("Running"+stepsType+"Step", slog.String("step", stepStr))
+		slog.Debug("Running"+stepsTypeStr+"Step", slog.String("step", stepStr))
 
 		shellSettings.Command = stepStr
 
@@ -229,19 +238,19 @@ func (repo *MarketplaceCmdRepo) runCmdSteps(
 		if err != nil {
 			errorMessage := stepOutput + " | " + err.Error()
 			if strings.Contains(err.Error(), "CommandDeadlineExceeded") {
-				errorMessage = "MarketplaceItem" + stepsType + "TimeoutExceeded"
+				errorMessage = "MarketplaceItem" + stepsTypeStr + "TimeoutExceeded"
 			}
 
 			return fmt.Errorf(
 				"%sCmdStepError (%s): %s",
-				stepsType, strconv.Itoa(stepIndex), errorMessage,
+				stepsTypeStr, strconv.Itoa(stepIndex), errorMessage,
 			)
 		}
 
 		stepExecElapsedTimeSecs := uint64(time.Since(stepExecTimeStart).Seconds())
 		totalExecRemainingTime = totalExecRemainingTime - stepExecElapsedTimeSecs
 		if totalExecRemainingTime == 0 {
-			return errors.New("MarketplaceItem" + stepsType + "TimeoutExceeded")
+			return errors.New("MarketplaceItem" + stepsTypeStr + "TimeoutExceeded")
 		}
 
 		shellSettings.ExecutionTimeoutSecs = totalExecRemainingTime
@@ -332,7 +341,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 
 	currentMappingsContentHashMap := map[string]entity.Mapping{}
 	for _, currentMapping := range mappingsReadResponse.Mappings {
-		contentHash := infraHelper.GenStrongShortHash(
+		contentHash := voHelper.StrongStringShortHasher(
 			currentMapping.Hostname.String() +
 				currentMapping.Path.String() +
 				currentMapping.MatchPattern.String() +
@@ -343,7 +352,7 @@ func (repo *MarketplaceCmdRepo) createMappings(
 	}
 
 	for _, itemMappingVo := range catalogMappings {
-		contentHash := infraHelper.GenStrongShortHash(
+		contentHash := voHelper.StrongStringShortHasher(
 			hostname.String() + itemMappingVo.Path.String() + itemMappingVo.MatchPattern.String() +
 				itemMappingVo.TargetType.String(),
 		)
@@ -460,7 +469,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	rawInstallUuid := uuid.New().String()[:16]
-	rawInstallUuidNoHyphens := strings.Replace(rawInstallUuid, "-", "", -1)
+	rawInstallUuidNoHyphens := strings.ReplaceAll(rawInstallUuid, "-", "")
 	installUuid, err := valueObject.NewMarketplaceInstalledItemUuid(rawInstallUuidNoHyphens)
 	if err != nil {
 		return err
@@ -498,7 +507,8 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 	}
 
 	err = repo.runCmdSteps(
-		"Install", usableInstallCmdSteps, catalogItem.InstallTimeoutSecs,
+		marketplaceCmdStepTypeInstall,
+		usableInstallCmdSteps, catalogItem.InstallTimeoutSecs,
 	)
 	if err != nil {
 		return err
@@ -561,9 +571,14 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 	fileNames []tkValueObject.UnixFileName,
 	keepOnlySelectedInstead bool,
 ) error {
-	fileNamesFilterParams := "-name \"" + fileNames[0].String() + "\""
+	var fileNamesFilterParams strings.Builder
+	fileNamesFilterParams.WriteString("-name \"")
+	fileNamesFilterParams.WriteString(fileNames[0].String())
+	fileNamesFilterParams.WriteString("\"")
 	for _, fileToIgnore := range fileNames[1:] {
-		fileNamesFilterParams += " -o -name \"" + fileToIgnore.String() + "\""
+		fileNamesFilterParams.WriteString(" -o -name \"")
+		fileNamesFilterParams.WriteString(fileToIgnore.String())
+		fileNamesFilterParams.WriteString("\"")
 	}
 
 	findCmdFlags := []string{"-mindepth 1", "-maxdepth 1"}
@@ -574,7 +589,7 @@ func (repo *MarketplaceCmdRepo) moveSelectedFiles(
 
 	moveCmd := fmt.Sprintf(
 		"find %s/ %s \\( %s \\) -exec mv -t %s {} +",
-		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams, targetDir.String(),
+		sourceDir.String(), findCmdFlagsStr, fileNamesFilterParams.String(), targetDir.String(),
 	)
 	_, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           moveCmd,
@@ -770,7 +785,8 @@ func (repo *MarketplaceCmdRepo) UninstallItem(
 	}
 
 	err = repo.runCmdSteps(
-		"Uninstall", usableInstallCmdSteps, catalogItem.UninstallTimeoutSecs,
+		marketplaceCmdStepTypeUninstall,
+		usableInstallCmdSteps, catalogItem.UninstallTimeoutSecs,
 	)
 	if err != nil {
 		return err

@@ -116,7 +116,7 @@ func CreateMapping(
 	}
 
 	isPhpServiceMapping := createDto.TargetType == valueObject.MappingTargetTypeService &&
-		createDto.TargetValue.String() == "php-webserver"
+		createDto.TargetValue.String() == valueObject.ServiceNamePhpWebServer.String()
 	if isPhpServiceMapping {
 		err = runtimeCmdRepo.CreatePhpVirtualHost(createDto.Hostname)
 		if err != nil {

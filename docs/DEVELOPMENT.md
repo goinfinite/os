@@ -16,6 +16,8 @@ To build the project, run the command below. It takes two minutes to build the p
 podman build -t os:latest .
 ```
 
+`Containerfile` is a multi-stage build. The command above builds the last stage, `runtime`, which is the image you run and publish. To build the throwaway image used for unit tests, add `--target test`. See [Unit Testing](#unit-testing).
+
 To run the project you may use the following command:
 
 ```
@@ -33,8 +35,9 @@ To run the script you can simply use `bash dev-build.sh` (bash may be replaced b
 - If you pass `http`, it will expose ports 80 and 443; if you pass `http-unpriv`, it will expose ports 8080 and 8443;
 - If you pass the `ols` argument, it will expose port 7080 (used by OpenLiteSpeed admin);
 - If you pass the `no-cache` argument, it will remove the image cache and rebuild the image from scratch;
+- If you pass `--pid-only`, it will write its process id to `logs/dev-build.pid` so the session can be stopped from another shell; send `SIGINT` or `SIGTERM` to that pid and the script stops the container, the rebuild watcher, and removes the file;
 
-The script will also create a `dev` account with the password `123456!` so you can access the dashboard.
+The script will also create a `dev` account with the password `abc123!` so you can access the dashboard.
 
 When you need to stop the container, just CTRL+C to stop and remove it. If you don't want to remove it, just ditch the `--rm` flag from the `podman run` command in the script.
 
@@ -42,10 +45,7 @@ If you look closely at the script, you'll see that it mounts the project's `bin`
 
 With this approach you don't need to rebuild the container every time you change the code. Although sometimes you may want to restart the container to apply some changes, specially when changing the dependencies or system configurations. In this case, just hit CTRL+C to stop the container and run the script again.
 
-**Notes:**
-
-1. You must run the script from the project's root directory;
-2. Until Echo v4.13.0 is released, you'll need to refresh the browser page during development to see the changes in the dashboard as we're not able to use the `DEV_MODE` auto refresh websocket trick for now. To understand how this trick used to work, check the UI router and main layout files.
+Run the script from the project's root directory.
 
 ## Environment Variables
 
@@ -61,24 +61,39 @@ With this approach you don't need to rebuild the container every time you change
 | `SKIP_PHP_PROCS_COUNT_UPDATE`    | No       | No             | Skips automatic PHP max children calculation on startup.                                                           |
 | `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
 | `LOG_LEVEL`                      | No       | No             | Sets the logging verbosity (debug, info, warn, error, fatal, panic). Defaults to warn.                             |
+| `SILENT_EXIT_MODE`               | No       | No             | Makes the CLI exit immediately. The dev-build rebuild trigger sets it.                                             |
 
 ## Unit Testing
 
-Infinite OS commands can harm your system, so it's important to run the unit tests in a proper container:
+Infinite OS commands can harm your system, so the unit tests run only inside the
+`test` stage of `Containerfile`. There is no supported way to run them on
+your machine.
+
+The suite entry point is `tests/tests.sh`. It builds the `test` stage image once and
+runs each registered entry in a disposable container:
 
 ```
-podman build -t os-unit-test:latest -f Containerfile.test .
-podman run --rm -it os-unit-test:latest
+bash tests/tests.sh --scope=unit
 ```
+
+Narrow the run with `--feature=<name>`, select the depth with
+`--level=<fast|standard|exhaustive>`, and rebuild the image with `--rebuild`. The
+runner mounts the working tree into the image, so a one-shot edit does not need a
+fresh build.
 
 Make sure you have a `.env` file in the root of the git directory before running the tests.
 
-Some tests can run in your local machine, although it's not recommended. However, if you to give it a go, make sure to create the `/infinite/` directory before running the tests:
+To run a single package manually against the already-built image, bind mount the
+working tree and pass the packages you changed:
 
 ```
-sudo mkdir /infinite
-sudo chown $(whoami):$(whoami) /infinite
+podman run --rm --entrypoint go -v "$PWD:/infinite:rw" \
+  --security-opt label=disable -w /infinite \
+  os-unit-test:latest test ./src/infra/runtime/ ./src/domain/valueObject/
 ```
+
+Do not use the `:Z` relabel option: it breaks when the host rebuilds files between
+runs and when containers run in parallel.
 
 ## Web UIs
 

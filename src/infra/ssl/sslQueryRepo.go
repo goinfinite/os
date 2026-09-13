@@ -1,11 +1,8 @@
 package sslInfra
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"log/slog"
-	"math"
 	"slices"
 	"strings"
 
@@ -16,6 +13,7 @@ import (
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type SslQueryRepo struct {
@@ -112,10 +110,17 @@ func (repo *SslQueryRepo) sslPairFactory(
 	if err != nil {
 		return sslPairEntity, errors.New("CrtFileExtensionError: " + err.Error())
 	}
+	if crtFileExtension == "" {
+		return sslPairEntity, errors.New("CrtFileExtensionMissing")
+	}
+
+	crtFileName, err := crtFilePath.ReadFileName(false)
+	if err != nil {
+		return sslPairEntity, errors.New("CrtFileNameError: " + err.Error())
+	}
 
 	crtFileNameWithoutExt := strings.TrimSuffix(
-		crtFilePath.ReadFileName(false).String(),
-		"."+crtFileExtension.String(),
+		crtFileName.String(), "."+crtFileExtension.String(),
 	)
 	virtualHostHostname, err := tkValueObject.NewFqdn(crtFileNameWithoutExt)
 	if err != nil {
@@ -265,9 +270,12 @@ func (repo *SslQueryRepo) Read(
 	}
 
 	itemsTotal := uint64(len(sslPairEntities))
-	pagesTotal := uint32(math.Ceil(
-		float64(itemsTotal) / float64(requestDto.Pagination.ItemsPerPage),
-	))
+	pagesTotal, pagesErr := tkInfraDb.PaginationPagesTotalResolver(
+		itemsTotal, requestDto.Pagination.ItemsPerPage,
+	)
+	if pagesErr != nil {
+		return responseDto, pagesErr
+	}
 
 	paginationDto := requestDto.Pagination
 	paginationDto.ItemsTotal = &itemsTotal
@@ -293,13 +301,4 @@ func (repo *SslQueryRepo) ReadFirst(
 	}
 
 	return responseDto.SslPairs[0], nil
-}
-
-func (repo SslQueryRepo) GetOwnershipValidationHash(
-	sslCrtContent valueObject.SslCertificateContent,
-) (tkValueObject.Hash, error) {
-	sslCrtContentBytes := []byte(sslCrtContent.String())
-	sslCrtContentHash := md5.Sum(sslCrtContentBytes)
-	sslCrtContentHashStr := hex.EncodeToString(sslCrtContentHash[:])
-	return tkValueObject.NewHash(sslCrtContentHashStr)
 }

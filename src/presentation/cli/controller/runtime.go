@@ -6,6 +6,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	vhostInfra "github.com/goinfinite/os/src/infra/vhost"
+	cliHelper "github.com/goinfinite/os/src/presentation/cli/helper"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
@@ -46,10 +47,12 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "get",
 		Short: "GetPhpConfigs",
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+				return
 			}
 
 			requestBody := map[string]interface{}{
@@ -73,10 +76,12 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update",
 		Short: "UpdatePhpConfigs",
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+				return
 			}
 
 			requestBody := map[string]interface{}{
@@ -89,7 +94,8 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 				for _, rawModule := range modulesSlice {
 					module, err := entity.NewPhpModuleFromString(rawModule)
 					if err != nil {
-						continue
+						tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+						return
 					}
 					modules = append(modules, module)
 				}
@@ -101,7 +107,8 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 				for _, rawSetting := range settingsSlice {
 					setting, err := entity.NewPhpSettingFromString(rawSetting)
 					if err != nil {
-						continue
+						tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+						return
 					}
 					settings = append(settings, setting)
 				}
@@ -109,14 +116,14 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 			}
 
 			tkPresentation.LiaisonCliResponseRenderer(
-				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
+				controller.runtimeLiaison.UpdatePhpConfigs(requestBody, false),
 			)
 		},
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
-	cmd.MarkFlagRequired("version")
+	cliHelper.MarkRequiredFlag(cmd, "version")
 	cmd.Flags().StringSliceVarP(
 		&modulesSlice, "module", "m", []string{}, "(phpModuleName:phpModuleStatus)",
 	)
@@ -132,10 +139,12 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-module",
 		Short: "UpdatePhpModule",
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+				return
 			}
 			requestBody := map[string]interface{}{
 				"hostname": hostname.String(),
@@ -146,22 +155,83 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 			module, err := entity.NewPhpModuleFromString(rawPhpModuleParam)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+				return
 			}
 			requestBody["modules"] = []entity.PhpModule{module}
 
 			tkPresentation.LiaisonCliResponseRenderer(
-				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
+				controller.runtimeLiaison.UpdatePhpConfigs(requestBody, false),
 			)
 		},
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
-	cmd.MarkFlagRequired("version")
+	cliHelper.MarkRequiredFlag(cmd, "version")
 	cmd.Flags().StringVarP(&moduleNameStr, "name", "N", "", "PhpModuleName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringVarP(&moduleStatusStr, "status", "V", "true", "PhpModuleStatus")
-	cmd.MarkFlagRequired("status")
+	cliHelper.MarkRequiredFlag(cmd, "status")
+	return cmd
+}
+
+func (controller *RuntimeController) UpdatePhpModules() *cobra.Command {
+	var hostnameStr, phpVersionStr string
+	var operatorAccountIdStr, operatorIpAddressStr string
+	var modulesSlice []string
+
+	cmd := &cobra.Command{
+		Use:   "update-modules",
+		Short: "UpdatePhpModules",
+		Args:  cobra.NoArgs,
+		Run: func(cmd *cobra.Command, args []string) {
+			hostname, err := getHostname(hostnameStr)
+			if err != nil {
+				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+				return
+			}
+
+			modules := []entity.PhpModule{}
+			for _, rawModule := range modulesSlice {
+				module, err := entity.NewPhpModuleFromString(rawModule)
+				if err != nil {
+					tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+					return
+				}
+				modules = append(modules, module)
+			}
+
+			requestBody := map[string]interface{}{
+				"hostname": hostname.String(),
+				"version":  phpVersionStr,
+				"modules":  modules,
+			}
+			if operatorAccountIdStr != "" {
+				requestBody["operatorAccountId"] = operatorAccountIdStr
+			}
+			if operatorIpAddressStr != "" {
+				requestBody["operatorIpAddress"] = operatorIpAddressStr
+			}
+
+			tkPresentation.LiaisonCliResponseRenderer(
+				controller.runtimeLiaison.UpdatePhpModules(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
+	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
+	cliHelper.MarkRequiredFlag(cmd, "version")
+	cmd.Flags().StringSliceVarP(
+		&modulesSlice, "module", "m", []string{}, "(phpModuleName:phpModuleStatus)",
+	)
+	cliHelper.MarkRequiredFlag(cmd, "module")
+	cmd.Flags().StringVar(
+		&operatorAccountIdStr, "operator-account-id", "", "OperatorAccountId",
+	)
+	cmd.Flags().StringVar(
+		&operatorIpAddressStr, "operator-ip-address", "", "OperatorIpAddress",
+	)
 	return cmd
 }
 
@@ -171,10 +241,12 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "update-setting",
 		Short: "UpdatePhpSetting",
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+				return
 			}
 			requestBody := map[string]interface{}{
 				"hostname": hostname.String(),
@@ -185,22 +257,23 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 			setting, err := entity.NewPhpSettingFromString(rawPhpSettingParam)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+				return
 			}
 			requestBody["settings"] = []entity.PhpSetting{setting}
 
 			tkPresentation.LiaisonCliResponseRenderer(
-				controller.runtimeLiaison.UpdatePhpConfigs(requestBody),
+				controller.runtimeLiaison.UpdatePhpConfigs(requestBody, false),
 			)
 		},
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
 	cmd.Flags().StringVarP(&phpVersionStr, "version", "v", "", "PhpVersion")
-	cmd.MarkFlagRequired("version")
+	cliHelper.MarkRequiredFlag(cmd, "version")
 	cmd.Flags().StringVarP(&settingNameStr, "name", "N", "", "PhpSettingName")
-	cmd.MarkFlagRequired("name")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	cmd.Flags().StringVarP(&settingValueStr, "value", "V", "", "PhpSettingValue")
-	cmd.MarkFlagRequired("value")
+	cliHelper.MarkRequiredFlag(cmd, "value")
 	return cmd
 }
 
@@ -210,10 +283,12 @@ func (controller *RuntimeController) RunPhpCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "run",
 		Short: "RunPhpCommand",
+		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
 			hostname, err := getHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
+				return
 			}
 			requestBody := map[string]interface{}{
 				"hostname": hostname.String(),
@@ -227,8 +302,8 @@ func (controller *RuntimeController) RunPhpCommand() *cobra.Command {
 	}
 
 	cmd.Flags().StringVarP(&hostnameStr, "hostname", "n", "", "Hostname")
-	cmd.MarkFlagRequired("hostname")
+	cliHelper.MarkRequiredFlag(cmd, "hostname")
 	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command")
-	cmd.MarkFlagRequired("command")
+	cliHelper.MarkRequiredFlag(cmd, "command")
 	return cmd
 }

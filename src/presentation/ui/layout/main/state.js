@@ -31,7 +31,6 @@ document.addEventListener("alpine:initializing", () => {
         source: "#htmx-routing-attributes-element",
         select: "#page-content",
         target: "#page-content",
-        indicator: "#loading-overlay",
         swap: "outerHTML transition:true",
       });
     },

@@ -2,13 +2,16 @@ package cronInfra
 
 import (
 	"errors"
+	"log/slog"
 	"os"
 	"slices"
+	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
@@ -25,39 +28,49 @@ func NewCronCmdRepo() *CronCmdRepo {
 }
 
 func (repo *CronCmdRepo) rebuildCrontab(cronsEntities []entity.Cron) error {
-	tmpCrontabFilePath := "/tmp/crontab"
-
-	if !repo.fileClerk.FileExists(tmpCrontabFilePath) {
-		_, err := os.Create(tmpCrontabFilePath)
-		if err != nil {
-			return errors.New("CreateCrontabTempFileError: " + err.Error())
+	tmpCrontabDirPath, err := os.MkdirTemp("", "crontab-")
+	if err != nil {
+		return errors.New("CreateCrontabTempDirError: " + err.Error())
+	}
+	defer func() {
+		removeErr := os.RemoveAll(tmpCrontabDirPath)
+		if removeErr != nil {
+			slog.Error(
+				"DeleteCrontabTempDirFailed",
+				slog.String("err", removeErr.Error()),
+			)
 		}
-	}
+	}()
 
-	crontabContent := ""
-	for _, cronEntity := range cronsEntities {
-		crontabContent += cronEntity.String() + "\n"
-	}
-
-	shouldOverwrite := true
-	err := repo.fileClerk.UpdateFileContent(
-		tmpCrontabFilePath, crontabContent, shouldOverwrite,
+	tmpCrontabFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+		tmpCrontabDirPath+"/crontab", false,
 	)
+	if err != nil {
+		return errors.New("DefineCrontabTempFilePathError: " + err.Error())
+	}
+
+	var crontabContent strings.Builder
+	for _, cronEntity := range cronsEntities {
+		crontabContent.WriteString(cronEntity.String())
+		crontabContent.WriteString("\n")
+	}
+
+	crontabFilePermissions := os.FileMode(0644)
+	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
+		FilePath:        tmpCrontabFilePath,
+		Permissions:     &crontabFilePermissions,
+		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
+	}, []byte(crontabContent.String()))
 	if err != nil {
 		return errors.New("UpdateCrontabTempFileContentError: " + err.Error())
 	}
 
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:           "crontab " + tmpCrontabFilePath,
+		Command:           "crontab " + tmpCrontabFilePath.String(),
 		ShouldUseSubShell: true,
 	}).Run()
 	if err != nil {
 		return err
-	}
-
-	err = os.Remove(tmpCrontabFilePath)
-	if err != nil {
-		return errors.New("DeleteCrontabTempFileError: " + err.Error())
 	}
 
 	return nil
@@ -142,13 +155,21 @@ func (repo *CronCmdRepo) Delete(cronId valueObject.CronId) error {
 	if err != nil {
 		return errors.New("ReadCronsError: " + err.Error())
 	}
-	cronsEntities := readResponseDto.Crons
-	cronEntityIndex := cronId.Uint64() - 1
 
-	cronsEntitiesToKeep := append(
-		cronsEntities[:cronEntityIndex],
-		cronsEntities[cronEntityIndex+1:]...,
-	)
+	cronsEntitiesToKeep := []entity.Cron{}
+	cronFound := false
+	for _, cronEntity := range readResponseDto.Crons {
+		if cronEntity.Id == cronId {
+			cronFound = true
+			continue
+		}
+
+		cronsEntitiesToKeep = append(cronsEntitiesToKeep, cronEntity)
+	}
+
+	if !cronFound {
+		return errors.New("CronNotFound")
+	}
 
 	return repo.rebuildCrontab(cronsEntitiesToKeep)
 }

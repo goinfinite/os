@@ -18,11 +18,12 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfra "github.com/goinfinite/tk/src/infra"
+	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 )
 
 type WebServerSetup struct {
 	persistentDbSvc   *internalDbInfra.PersistentDatabaseService
-	transientDbSvc    *internalDbInfra.TransientDatabaseService
+	transientDbSvc    *tkInfraDb.TransientDatabaseService
 	servicesQueryRepo *servicesInfra.ServicesQueryRepo
 	servicesCmdRepo   *servicesInfra.ServicesCmdRepo
 	vhostHelpers      *vhostInfra.VirtualHostHelpers
@@ -30,7 +31,7 @@ type WebServerSetup struct {
 
 func NewWebServerSetup(
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService,
-	transientDbSvc *internalDbInfra.TransientDatabaseService,
+	transientDbSvc *tkInfraDb.TransientDatabaseService,
 ) *WebServerSetup {
 	return &WebServerSetup{
 		persistentDbSvc:   persistentDbSvc,
@@ -264,7 +265,18 @@ func (ws *WebServerSetup) webServerRunningEnsurer() error {
 func (ws *WebServerSetup) phpChildProcessesConfigurator(
 	memoryTotal tkValueObject.Byte,
 ) error {
-	if !ws.servicesQueryRepo.IsInstalled(valueObject.ServiceNamePhpWebServer) {
+	phpWebServerIsInstalled, err := ws.servicesQueryRepo.IsInstalled(
+		valueObject.ServiceNamePhpWebServer,
+	)
+	if err != nil {
+		slog.Warn(
+			"SkippingPhpChildProcessesConfigurator",
+			slog.String("reason", "PhpWebServerInstallationCheckFailed"),
+			slog.String("err", err.Error()),
+		)
+		return nil
+	}
+	if !phpWebServerIsInstalled {
 		slog.Debug(
 			"SkippingPhpChildProcessesConfigurator",
 			slog.String("reason", "PhpWebServerNotInstalled"),
