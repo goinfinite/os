@@ -46,6 +46,12 @@ vhost.create:
   info_ms: 2000
   warn_ms: 4000
   relative_warn_percent: 50
+vhost.delete:
+  baseline_p50_ms: 1200
+  baseline_p90_ms: 10000
+  info_ms: 12000
+  warn_ms: 20000
+  relative_warn_percent: 50
 vhost.mapping.create:
   baseline_p50_ms: 150
   baseline_p90_ms: 1200
@@ -64,3 +70,25 @@ ssl.create:
   info_ms: 1500
   warn_ms: 3000
   relative_warn_percent: 50
+mktplace.list:
+  baseline_p50_ms: 100
+  baseline_p90_ms: 150
+  info_ms: 300
+  warn_ms: 600
+  relative_warn_percent: 50
+mktplace.list-catalog:
+  baseline_p50_ms: 300
+  baseline_p90_ms: 2500
+  info_ms: 4000
+  warn_ms: 8000
+  relative_warn_percent: 50
+mktplace.install:
+  baseline_p50_ms: 10000
+  baseline_p90_ms: 80000
+  info_ms: 120000
+  warn_ms: 240000
+mktplace.delete:
+  baseline_p50_ms: 5000
+  baseline_p90_ms: 16000
+  info_ms: 30000
+  warn_ms: 60000
