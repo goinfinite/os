@@ -408,11 +408,20 @@ func (repo *ServicesQueryRepo) ReadFirstInstalledItem(
 	return responseDto.InstalledServices[0], nil
 }
 
-func (repo *ServicesQueryRepo) IsInstalled(serviceName valueObject.ServiceName) bool {
+func (repo *ServicesQueryRepo) IsInstalled(
+	serviceName valueObject.ServiceName,
+) (bool, error) {
 	_, readErr := repo.ReadFirstInstalledItem(
 		dto.ReadFirstInstalledServiceItemsRequest{ServiceName: &serviceName},
 	)
-	return readErr == nil
+	if readErr != nil {
+		if errors.Is(readErr, ErrInstalledServiceNotFound) {
+			return false, nil
+		}
+		return false, readErr
+	}
+
+	return true, nil
 }
 
 func (repo *ServicesQueryRepo) migrateLegacyManifestCmdStep(

@@ -55,13 +55,19 @@ func TestServicesQueryRepo(t *testing.T) {
 
 	t.Run("IsInstalled", func(t *testing.T) {
 		installedName, _ := valueObject.NewServiceName("nginx")
-		isInstalled := servicesQueryRepo.IsInstalled(installedName)
+		isInstalled, err := servicesQueryRepo.IsInstalled(installedName)
+		if err != nil {
+			t.Fatalf("IsInstalledFailed: %v", err)
+		}
 		if !isInstalled {
 			t.Error("InstalledServiceShouldReturnTrue")
 		}
 
 		missingName, _ := valueObject.NewServiceName("nonexistent-svc-xyz")
-		isMissingInstalled := servicesQueryRepo.IsInstalled(missingName)
+		isMissingInstalled, err := servicesQueryRepo.IsInstalled(missingName)
+		if err != nil {
+			t.Fatalf("IsInstalledFailed: %v", err)
+		}
 		if isMissingInstalled {
 			t.Error("MissingServiceShouldReturnFalse")
 		}

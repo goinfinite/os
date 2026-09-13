@@ -265,7 +265,18 @@ func (ws *WebServerSetup) webServerRunningEnsurer() error {
 func (ws *WebServerSetup) phpChildProcessesConfigurator(
 	memoryTotal tkValueObject.Byte,
 ) error {
-	if !ws.servicesQueryRepo.IsInstalled(valueObject.ServiceNamePhpWebServer) {
+	phpWebServerIsInstalled, err := ws.servicesQueryRepo.IsInstalled(
+		valueObject.ServiceNamePhpWebServer,
+	)
+	if err != nil {
+		slog.Warn(
+			"SkippingPhpChildProcessesConfigurator",
+			slog.String("reason", "PhpWebServerInstallationCheckFailed"),
+			slog.String("err", err.Error()),
+		)
+		return nil
+	}
+	if !phpWebServerIsInstalled {
 		slog.Debug(
 			"SkippingPhpChildProcessesConfigurator",
 			slog.String("reason", "PhpWebServerNotInstalled"),

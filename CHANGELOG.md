@@ -2,6 +2,11 @@
 
 ```log
 0.3.3 - 2026/09/12
+test: add timing budgets for vhost delete and marketplace
+test(marketplace): assert wordpress serves over http and https
+test(runtime): assert the php virtual host config cleanup on delete
+fix(runtime): repair the php virtual host listener map and block
+fix(services): report installation check errors
 test: install wordpress and uptime kuma from the marketplace
 fix(ui): mark the htpasswd language key as a sonar false positive
 fix(container): add the language attribute to the welcome page
