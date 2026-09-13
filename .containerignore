@@ -1,10 +1,22 @@
+# Build file and version control metadata.
 Containerfile
-logs/
-tmp/
-.env
-.env.example
-tests/artifacts/
 .git
 .gitignore
-TODO.md
+
+# Local configuration and state.
+.env
+.env.example
 *.db
+
+# Runtime and test output.
+logs/
+tests/artifacts/
+
+# Local notes and tooling.
+tmp/
+TODO.md
+.agents/
+.memory/
+opencode.json
+.claude/
+.ignore
