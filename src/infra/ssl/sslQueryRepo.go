@@ -1,8 +1,6 @@
 package sslInfra
 
 import (
-	"crypto/md5"
-	"encoding/hex"
 	"errors"
 	"log/slog"
 	"slices"
@@ -303,13 +301,4 @@ func (repo *SslQueryRepo) ReadFirst(
 	}
 
 	return responseDto.SslPairs[0], nil
-}
-
-func (repo SslQueryRepo) GetOwnershipValidationHash(
-	sslCrtContent valueObject.SslCertificateContent,
-) (tkValueObject.Hash, error) {
-	sslCrtContentBytes := []byte(sslCrtContent.String())
-	sslCrtContentHash := md5.Sum(sslCrtContentBytes)
-	sslCrtContentHashStr := hex.EncodeToString(sslCrtContentHash[:])
-	return tkValueObject.NewHash(sslCrtContentHashStr)
 }
