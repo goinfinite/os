@@ -2,6 +2,8 @@
 
 ```log
 0.3.3 - 2026/09/12
+test(marketplace): enforce https on wordpress redirects
+docs: remove the deprecated goreportcard badge
 test: add timing budgets for vhost delete and marketplace
 test(marketplace): assert wordpress serves over http and https
 test(runtime): assert the php virtual host config cleanup on delete
