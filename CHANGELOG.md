@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/09/12
+docs: refresh the root context file
 chore: organize the containerignore and exclude agent tooling
 chore: organize the gitignore and drop the services entry
 docs: trim the agent override
