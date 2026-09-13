@@ -2,6 +2,7 @@
 
 ```log
 0.3.3 - 2026/09/12
+fix(ui): mark the htpasswd language key as a sonar false positive
 fix(container): add the language attribute to the welcome page
 fix: resolve awk by absolute path
 refactor(ssl): drop the unused md5 ownership hash
