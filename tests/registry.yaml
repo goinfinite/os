@@ -64,6 +64,12 @@ features:
     - scope: cli
       level: exhaustive
       run: tests/marketplace/cliInstall.sh
+    - scope: cli
+      level: exhaustive
+      run: tests/marketplace/cliInstallWordpress.sh
+    - scope: cli
+      level: exhaustive
+      run: tests/marketplace/cliInstallNodeApp.sh
   o11y:
     - scope: cli
       level: fast

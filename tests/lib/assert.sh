@@ -37,6 +37,18 @@ assertNotEmpty() {
 	return 1
 }
 
+assertContains() {
+	local content="$1" expectedSubstring="$2" description="$3"
+
+	if [[ "${content}" == *"${expectedSubstring}"* ]]; then
+		recordAssertionPass "${description}"
+		return 0
+	fi
+
+	recordAssertionFail "${description} (missing '${expectedSubstring}' in '${content:0:200}')"
+	return 1
+}
+
 assertNumberGreaterThan() {
 	local threshold="$1" actual="$2" description="$3"
 
