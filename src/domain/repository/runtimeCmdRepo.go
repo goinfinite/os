@@ -9,6 +9,7 @@ import (
 
 type RuntimeCmdRepo interface {
 	CreatePhpVirtualHost(tkValueObject.Fqdn) error
+	DeletePhpVirtualHost(tkValueObject.Fqdn) error
 	RunPhpCommand(dto.RunPhpCommandRequest) (dto.RunPhpCommandResponse, error)
 	UpdatePhpVersion(tkValueObject.Fqdn, valueObject.PhpVersion) error
 	UpdatePhpSettings(tkValueObject.Fqdn, []entity.PhpSetting) error

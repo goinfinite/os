@@ -301,10 +301,12 @@ func (liaison *VirtualHostLiaison) Delete(untrustedInput map[string]any) tkPrese
 		)
 	}
 
+	servicesQueryRepo := servicesInfra.NewServicesQueryRepo(liaison.persistentDbSvc)
+	runtimeCmdRepo := runtimeInfra.NewRuntimeCmdRepo(liaison.persistentDbSvc)
 	deleteDto := dto.NewDeleteVirtualHost(hostname, operatorAccountId, operatorIpAddress)
 	err = useCase.DeleteVirtualHost(
-		liaison.vhostQueryRepo, liaison.vhostCmdRepo,
-		liaison.activityRecordCmdRepo, deleteDto,
+		liaison.vhostQueryRepo, liaison.vhostCmdRepo, runtimeCmdRepo,
+		servicesQueryRepo, liaison.activityRecordCmdRepo, deleteDto,
 	)
 	if err != nil {
 		return tkPresentation.NewLiaisonResponseNoMessage(

@@ -27,6 +27,12 @@ func (repo *phpModulesRuntimeCmdRepo) CreatePhpVirtualHost(
 	return nil
 }
 
+func (repo *phpModulesRuntimeCmdRepo) DeletePhpVirtualHost(
+	hostname tkValueObject.Fqdn,
+) error {
+	return nil
+}
+
 func (repo *phpModulesRuntimeCmdRepo) RunPhpCommand(
 	requestDto dto.RunPhpCommandRequest,
 ) (dto.RunPhpCommandResponse, error) {

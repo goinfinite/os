@@ -428,6 +428,506 @@ func TestBuildPhpSettingLineRegex(test *testing.T) {
 	}
 }
 
+func TestBuildListenerMapLineRegex(test *testing.T) {
+	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
+
+	listenerMapLineFactory := func(domains string) string {
+		return "  map                     goinfinite.app " + domains
+	}
+
+	testCases := []struct {
+		testName     string
+		vhostName    string
+		confLine     string
+		expectsMatch bool
+	}{
+		{
+			testName:     "MatchesCatchAllListenerMap",
+			vhostName:    "goinfinite.app",
+			confLine:     listenerMapLineFactory("*"),
+			expectsMatch: true,
+		},
+		{
+			testName:     "MatchesPlainListenerMap",
+			vhostName:    "goinfinite.app",
+			confLine:     listenerMapLineFactory("goinfinite.app"),
+			expectsMatch: true,
+		},
+		{
+			testName:     "MatchesWildcardListenerMap",
+			vhostName:    "goinfinite.app",
+			confLine:     listenerMapLineFactory("goinfinite.app, *.goinfinite.app"),
+			expectsMatch: true,
+		},
+		{
+			testName:     "MatchesAliasListenerMap",
+			vhostName:    "goinfinite.app",
+			confLine:     listenerMapLineFactory("www.goinfinite.app, *.goinfinite.app"),
+			expectsMatch: true,
+		},
+		{
+			testName:     "RejectsOtherVhostListenerMap",
+			vhostName:    "goinfinite.app",
+			confLine:     "  map                     blog.goinfinite.app blog.goinfinite.app",
+			expectsMatch: false,
+		},
+		{
+			testName:     "RejectsCommentedListenerMap",
+			vhostName:    "goinfinite.app",
+			confLine:     "# map                     goinfinite.app *",
+			expectsMatch: false,
+		},
+		{
+			testName:     "TreatsDotsAsLiteralChars",
+			vhostName:    "goinfinite.app",
+			confLine:     "  map                     goinfiniteXapp goinfiniteXapp",
+			expectsMatch: false,
+		},
+	}
+
+	for _, testCase := range testCases {
+		test.Run(testCase.testName, func(subtest *testing.T) {
+			mapLineRegex, err := runtimeCmdRepo.listenerMapLineRegexFactory(
+				testCase.vhostName,
+			)
+			if err != nil {
+				subtest.Fatalf("BuildListenerMapLineRegexFailed: %v", err)
+			}
+
+			actualMatch := mapLineRegex.MatchString(testCase.confLine)
+			if actualMatch != testCase.expectsMatch {
+				subtest.Errorf(
+					"PhpListenerMapLineMatchMismatch: expected %v, got %v, confLine: %q",
+					testCase.expectsMatch, actualMatch, testCase.confLine,
+				)
+			}
+		})
+	}
+}
+
+const testListenerMapLinePrefix = "  map                     "
+
+func writeTempConfFile(
+	test *testing.T, fileName, content string,
+) tkValueObject.UnixAbsoluteFilePath {
+	test.Helper()
+
+	confFilePath := filepath.Join(test.TempDir(), fileName)
+	writeErr := os.WriteFile(confFilePath, []byte(content), 0644)
+	if writeErr != nil {
+		test.Fatalf("WriteConfFileFailed: %v", writeErr)
+	}
+
+	filePath, pathErr := tkValueObject.NewUnixAbsoluteFilePath(confFilePath, false)
+	if pathErr != nil {
+		test.Fatalf("ConfFilePathCreationFailed: %v", pathErr)
+	}
+
+	return filePath
+}
+
+func resolvePhpWebServerConfOwnerAccount(test *testing.T) *user.User {
+	test.Helper()
+
+	confOwnerAccount, lookupErr := user.Lookup(
+		infraEnvs.PhpWebServerConfOwnerUsername,
+	)
+	if lookupErr == nil {
+		return confOwnerAccount
+	}
+
+	_, createErr := tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: "useradd",
+		Args: []string{
+			"--system", "--no-create-home",
+			infraEnvs.PhpWebServerConfOwnerUsername,
+		},
+	}).Run()
+	if createErr != nil {
+		test.Skipf("PhpWebServerConfOwnerCreationFailed: %v", createErr)
+	}
+
+	confOwnerAccount, lookupErr = user.Lookup(
+		infraEnvs.PhpWebServerConfOwnerUsername,
+	)
+	if lookupErr != nil {
+		test.Skipf("PhpWebServerConfOwnerLookupFailed: %v", lookupErr)
+	}
+
+	return confOwnerAccount
+}
+
+func TestCountListenerMapLines(test *testing.T) {
+	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
+
+	testCases := []struct {
+		testName      string
+		confContent   string
+		vhostName     string
+		expectedCount int
+	}{
+		{
+			testName: "CountsPlainMapLine",
+			confContent: testListenerMapLinePrefix +
+				"goinfinite.app goinfinite.app\n",
+			vhostName:     "goinfinite.app",
+			expectedCount: 1,
+		},
+		{
+			testName: "CountsWildcardMapLinesInEveryListener",
+			confContent: testListenerMapLinePrefix +
+				"goinfinite.app goinfinite.app, *.goinfinite.app\n" +
+				testListenerMapLinePrefix +
+				"goinfinite.app goinfinite.app, *.goinfinite.app\n",
+			vhostName:     "goinfinite.app",
+			expectedCount: 2,
+		},
+		{
+			testName: "RejectsOtherVhostMapLine",
+			confContent: testListenerMapLinePrefix +
+				"blog.goinfinite.app blog.goinfinite.app\n",
+			vhostName:     "goinfinite.app",
+			expectedCount: 0,
+		},
+		{
+			testName: "RejectsHostnameAsMappedDomain",
+			confContent: testListenerMapLinePrefix +
+				"other.test goinfinite.app\n",
+			vhostName:     "goinfinite.app",
+			expectedCount: 0,
+		},
+	}
+
+	for _, testCase := range testCases {
+		test.Run(testCase.testName, func(subtest *testing.T) {
+			confFilePath := writeTempConfFile(
+				subtest, "httpd_config.conf", testCase.confContent,
+			)
+
+			count, err := runtimeCmdRepo.countListenerMapLines(
+				confFilePath, testCase.vhostName,
+			)
+			if err != nil {
+				subtest.Fatalf("CountListenerMapLinesFailed: %v", err)
+			}
+			if count != testCase.expectedCount {
+				subtest.Errorf(
+					"ListenerMapLineCountMismatch: expected %d, got %d",
+					testCase.expectedCount, count,
+				)
+			}
+		})
+	}
+}
+
+func TestIsVirtualHostBlockPresent(test *testing.T) {
+	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
+
+	confContent := "virtualhost goinfinite.app {\n" +
+		"  vhRoot                  /app/html/\n" +
+		"}\n"
+	confFilePath := writeTempConfFile(
+		test, "httpd_config.conf", confContent,
+	)
+
+	isPresent, err := runtimeCmdRepo.isVirtualHostBlockPresent(
+		confFilePath, "goinfinite.app",
+	)
+	if err != nil {
+		test.Fatalf("ReadVirtualHostBlockFailed: %v", err)
+	}
+	if !isPresent {
+		test.Errorf("ExpectedPhpVirtualHostBlockFound")
+	}
+
+	isMissingPresent, err := runtimeCmdRepo.isVirtualHostBlockPresent(
+		confFilePath, "blog.goinfinite.app",
+	)
+	if err != nil {
+		test.Fatalf("ReadVirtualHostBlockFailed: %v", err)
+	}
+	if isMissingPresent {
+		test.Errorf("ExpectedPhpVirtualHostBlockAbsent")
+	}
+}
+
+func TestMapVirtualHostOnEveryListener(test *testing.T) {
+	resolvePhpWebServerConfOwnerAccount(test)
+	test.Setenv(infraEnvs.PrimaryVirtualHostEnvKey, "goinfinite.app")
+
+	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
+	vhostHostname, err := tkValueObject.NewFqdn("blog.goinfinite.app")
+	if err != nil {
+		test.Fatalf("VirtualHostHostnameCreationFailed: %v", err)
+	}
+
+	primaryListenerConf := "listener HTTP {\n" +
+		"  address                 *:8080\n" +
+		testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+		"}\n" +
+		"listener HTTPS {\n" +
+		"  address                 *:8443\n" +
+		testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+		"}\n"
+	expectedMapLine := testListenerMapLinePrefix +
+		"blog.goinfinite.app blog.goinfinite.app, *.blog.goinfinite.app"
+
+	test.Run("InsertsMissingMapForEveryListener", func(subtest *testing.T) {
+		confFilePath := writeTempConfFile(
+			subtest, "httpd_config.conf", primaryListenerConf,
+		)
+
+		err := runtimeCmdRepo.mapVirtualHostOnEveryListener(
+			vhostHostname, confFilePath,
+		)
+		if err != nil {
+			subtest.Fatalf("MapVirtualHostOnEveryListenerFailed: %v", err)
+		}
+
+		confContent, readErr := os.ReadFile(confFilePath.String())
+		if readErr != nil {
+			subtest.Fatalf("ReadHttpdConfigFailed: %v", readErr)
+		}
+
+		actualCount := strings.Count(string(confContent), expectedMapLine)
+		if actualCount != 2 {
+			subtest.Errorf(
+				"ExpectedInsertedMapLineTwice, got %d, content: %q",
+				actualCount, confContent,
+			)
+		}
+	})
+
+	test.Run("RepairsMapMissingFromOneListener", func(subtest *testing.T) {
+		confContent := "listener HTTP {\n" +
+			testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+			testListenerMapLinePrefix +
+			"blog.goinfinite.app blog.goinfinite.app\n" +
+			"}\n" +
+			"listener HTTPS {\n" +
+			testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+			"}\n"
+		confFilePath := writeTempConfFile(
+			subtest, "httpd_config.conf", confContent,
+		)
+
+		err := runtimeCmdRepo.mapVirtualHostOnEveryListener(
+			vhostHostname, confFilePath,
+		)
+		if err != nil {
+			subtest.Fatalf("MapVirtualHostOnEveryListenerFailed: %v", err)
+		}
+
+		readContent, readErr := os.ReadFile(confFilePath.String())
+		if readErr != nil {
+			subtest.Fatalf("ReadHttpdConfigFailed: %v", readErr)
+		}
+
+		actualCount := strings.Count(string(readContent), expectedMapLine)
+		if actualCount != 2 {
+			subtest.Errorf(
+				"ExpectedRepairedMapLineTwice, got %d, content: %q",
+				actualCount, readContent,
+			)
+		}
+	})
+
+	test.Run("KeepsExistingMapLine", func(subtest *testing.T) {
+		confContent := "listener HTTP {\n" +
+			testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+			testListenerMapLinePrefix +
+			"blog.goinfinite.app blog.goinfinite.app\n" +
+			"}\n"
+		confFilePath := writeTempConfFile(
+			subtest, "httpd_config.conf", confContent,
+		)
+
+		err := runtimeCmdRepo.mapVirtualHostOnEveryListener(
+			vhostHostname, confFilePath,
+		)
+		if err != nil {
+			subtest.Fatalf("MapVirtualHostOnEveryListenerFailed: %v", err)
+		}
+
+		readContent, readErr := os.ReadFile(confFilePath.String())
+		if readErr != nil {
+			subtest.Fatalf("ReadHttpdConfigFailed: %v", readErr)
+		}
+		if string(readContent) != confContent {
+			subtest.Errorf("ExpectedUnchangedConfig, got: %q", readContent)
+		}
+	})
+
+	test.Run("FailsWhenPrimaryMapLineIsMissing", func(subtest *testing.T) {
+		confFilePath := writeTempConfFile(
+			subtest, "httpd_config.conf",
+			"listener HTTP {\n  address *:8080\n}\n",
+		)
+
+		err := runtimeCmdRepo.mapVirtualHostOnEveryListener(
+			vhostHostname, confFilePath,
+		)
+		if err == nil {
+			subtest.Fatalf("ExpectedPrimaryListenerMapLineNotFoundError")
+		}
+		if !strings.Contains(err.Error(), "PrimaryListenerMapLineNotFound") {
+			subtest.Errorf("UnexpectedError: %v", err)
+		}
+	})
+}
+
+func TestListenerMapLinesDoubleChecker(test *testing.T) {
+	resolvePhpWebServerConfOwnerAccount(test)
+	test.Setenv(infraEnvs.PrimaryVirtualHostEnvKey, "goinfinite.app")
+
+	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
+	vhostHostname, err := tkValueObject.NewFqdn("blog.goinfinite.app")
+	if err != nil {
+		test.Fatalf("VirtualHostHostnameCreationFailed: %v", err)
+	}
+
+	test.Run("AcceptsMapPresentInEveryListener", func(subtest *testing.T) {
+		confContent := "listener HTTP {\n" +
+			testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+			testListenerMapLinePrefix +
+			"blog.goinfinite.app blog.goinfinite.app\n" +
+			"}\n" +
+			"listener HTTPS {\n" +
+			testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+			testListenerMapLinePrefix +
+			"blog.goinfinite.app blog.goinfinite.app\n" +
+			"}\n"
+		confFilePath := writeTempConfFile(
+			subtest, "httpd_config.conf", confContent,
+		)
+
+		err := runtimeCmdRepo.listenerMapLinesDoubleChecker(
+			vhostHostname, confFilePath,
+		)
+		if err != nil {
+			subtest.Fatalf("ListenerMapDoubleCheckFailed: %v", err)
+		}
+	})
+
+	test.Run("FailsWhenMapMissingFromOneListener", func(subtest *testing.T) {
+		confContent := "listener HTTP {\n" +
+			testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+			testListenerMapLinePrefix +
+			"blog.goinfinite.app blog.goinfinite.app\n" +
+			"}\n" +
+			"listener HTTPS {\n" +
+			testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+			"}\n"
+		confFilePath := writeTempConfFile(
+			subtest, "httpd_config.conf", confContent,
+		)
+
+		err := runtimeCmdRepo.listenerMapLinesDoubleChecker(
+			vhostHostname, confFilePath,
+		)
+		if err == nil {
+			subtest.Fatalf("ExpectedPhpVirtualHostListenerMapNotFoundError")
+		}
+		if !strings.Contains(err.Error(), "PhpVirtualHostListenerMapNotFound") {
+			subtest.Errorf("UnexpectedError: %v", err)
+		}
+	})
+}
+
+func TestRemoveListenerMapLines(test *testing.T) {
+	resolvePhpWebServerConfOwnerAccount(test)
+	test.Setenv(infraEnvs.PrimaryVirtualHostEnvKey, "goinfinite.app")
+
+	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
+	vhostHostname, err := tkValueObject.NewFqdn("blog.goinfinite.app")
+	if err != nil {
+		test.Fatalf("VirtualHostHostnameCreationFailed: %v", err)
+	}
+
+	confContent := "listener HTTP {\n" +
+		testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+		testListenerMapLinePrefix +
+		"blog.goinfinite.app blog.goinfinite.app\n" +
+		"}\n" +
+		"\n" +
+		"virtualhost blog.goinfinite.app {\n" +
+		"  vhRoot                  /app/html/blog.goinfinite.app/\n" +
+		"  configFile              /app/conf/php-webserver/blog.conf\n" +
+		"}\n"
+	mainConfFilePath := writeTempConfFile(
+		test, "httpd_config.conf", confContent,
+	)
+
+	err = runtimeCmdRepo.removeListenerMapLines(
+		vhostHostname, mainConfFilePath,
+	)
+	if err != nil {
+		test.Fatalf("RemoveListenerMapLinesFailed: %v", err)
+	}
+
+	readContent, readErr := os.ReadFile(mainConfFilePath.String())
+	if readErr != nil {
+		test.Fatalf("ReadHttpdConfigFailed: %v", readErr)
+	}
+	contentStr := string(readContent)
+	if strings.Contains(contentStr, testListenerMapLinePrefix+"blog.goinfinite.app") {
+		test.Errorf("ExpectedPhpVirtualHostMapLineRemoved, got: %q", contentStr)
+	}
+	if !strings.Contains(contentStr, testListenerMapLinePrefix+"goinfinite.app") {
+		test.Errorf("ExpectedPrimaryMapLineKept, got: %q", contentStr)
+	}
+	if !strings.Contains(contentStr, "virtualhost blog.goinfinite.app") {
+		test.Errorf("ExpectedPhpVirtualHostBlockKept, got: %q", contentStr)
+	}
+}
+
+func TestRemoveVirtualHostBlock(test *testing.T) {
+	resolvePhpWebServerConfOwnerAccount(test)
+	test.Setenv(infraEnvs.PrimaryVirtualHostEnvKey, "goinfinite.app")
+
+	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
+	vhostHostname, err := tkValueObject.NewFqdn("blog.goinfinite.app")
+	if err != nil {
+		test.Fatalf("VirtualHostHostnameCreationFailed: %v", err)
+	}
+
+	confContent := "listener HTTP {\n" +
+		testListenerMapLinePrefix + "goinfinite.app goinfinite.app\n" +
+		testListenerMapLinePrefix +
+		"blog.goinfinite.app blog.goinfinite.app\n" +
+		"}\n" +
+		"\n" +
+		"virtualhost blog.goinfinite.app {\n" +
+		"  vhRoot                  /app/html/blog.goinfinite.app/\n" +
+		"  configFile              /app/conf/php-webserver/blog.conf\n" +
+		"}\n"
+	mainConfFilePath := writeTempConfFile(
+		test, "httpd_config.conf", confContent,
+	)
+
+	err = runtimeCmdRepo.removeVirtualHostBlock(
+		vhostHostname, mainConfFilePath,
+	)
+	if err != nil {
+		test.Fatalf("RemoveVirtualHostBlockFailed: %v", err)
+	}
+
+	readContent, readErr := os.ReadFile(mainConfFilePath.String())
+	if readErr != nil {
+		test.Fatalf("ReadHttpdConfigFailed: %v", readErr)
+	}
+	contentStr := string(readContent)
+	if strings.Contains(contentStr, "virtualhost blog.goinfinite.app") {
+		test.Errorf("ExpectedPhpVirtualHostBlockRemoved, got: %q", contentStr)
+	}
+	if !strings.Contains(contentStr, testListenerMapLinePrefix+"blog.goinfinite.app") {
+		test.Errorf("ExpectedPhpVirtualHostMapLineKept, got: %q", contentStr)
+	}
+	if !strings.Contains(contentStr, testListenerMapLinePrefix+"goinfinite.app") {
+		test.Errorf("ExpectedPrimaryMapLineKept, got: %q", contentStr)
+	}
+}
+
 func TestArePhpSettingLinesInPlace(test *testing.T) {
 	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
 
@@ -521,28 +1021,7 @@ func TestArePhpSettingLinesInPlace(test *testing.T) {
 }
 
 func TestApplyPhpSettingsToConfFile(test *testing.T) {
-	confOwnerAccount, lookupErr := user.Lookup(
-		infraEnvs.PhpWebServerConfOwnerUsername,
-	)
-	if lookupErr != nil {
-		_, createErr := tkInfra.NewShell(tkInfra.ShellSettings{
-			Command: "useradd",
-			Args: []string{
-				"--system", "--no-create-home",
-				infraEnvs.PhpWebServerConfOwnerUsername,
-			},
-		}).Run()
-		if createErr != nil {
-			test.Skipf("PhpWebServerConfOwnerCreationFailed: %v", createErr)
-		}
-
-		confOwnerAccount, lookupErr = user.Lookup(
-			infraEnvs.PhpWebServerConfOwnerUsername,
-		)
-		if lookupErr != nil {
-			test.Skipf("PhpWebServerConfOwnerLookupFailed: %v", lookupErr)
-		}
-	}
+	confOwnerAccount := resolvePhpWebServerConfOwnerAccount(test)
 
 	webServerAccount, lookupErr := user.Lookup(infraEnvs.PhpWebServerUsername)
 	if lookupErr != nil {

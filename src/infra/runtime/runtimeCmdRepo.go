@@ -175,6 +175,28 @@ func (repo *RuntimeCmdRepo) replaceFileContentByRegex(
 	)
 }
 
+func (repo *RuntimeCmdRepo) listenerMapLineRegexFactory(
+	vhostName string,
+) (*regexp.Regexp, error) {
+	quotedVhostName := regexp.QuoteMeta(vhostName)
+	mapLineRegex, err := regexp.Compile(
+		"(?m)^([[:space:]]*map[[:space:]]+)" + quotedVhostName + "[[:space:]]+.*$",
+	)
+	if err != nil {
+		return nil, errors.New(
+			"PhpListenerMapLineRegexCompileFailed: " + err.Error(),
+		)
+	}
+
+	return mapLineRegex, nil
+}
+
+// The wildcard form makes this vhost the catch-all for the host and its
+// subdomains. A subdomain with its own mapping takes precedence.
+func (repo *RuntimeCmdRepo) listenerMapDomainsFactory(vhostName string) string {
+	return vhostName + " " + vhostName + ", *." + vhostName
+}
+
 func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 	previousHostname, newHostname tkValueObject.Fqdn,
 	aliasesHostnames []tkValueObject.Fqdn,
@@ -220,16 +242,14 @@ func (repo *RuntimeCmdRepo) UpdatePhpVirtualHostHostname(
 	)
 	hostnameSubstitutionReplacement := "${1}" + newHostnameStr + "${2}"
 
-	// The wildcard form makes this vhost the catch-all for the host and its
-	// subdomains. A subdomain with its own mapping takes precedence.
-	listenerMapSubstitutionRegex := regexp.MustCompile(
-		"(?m)(map[[:space:]]+)" + quotedPreviousHostname +
-			"([[:space:]]+)" + quotedPreviousHostname +
-			"(, \\*\\.)" + quotedPreviousHostname +
-			"([[:space:]]|$)",
+	listenerMapSubstitutionRegex, err := repo.listenerMapLineRegexFactory(
+		previousHostname.String(),
 	)
-	listenerMapSubstitutionReplacement := "${1}" + newHostnameStr + "${2}" +
-		newHostnameStr + ", *." + newHostnameStr + "${4}"
+	if err != nil {
+		return err
+	}
+	listenerMapSubstitutionReplacement := "${1}" +
+		repo.listenerMapDomainsFactory(newHostnameStr)
 
 	sslFilePathSubstitutionRegex := regexp.MustCompile(
 		"(?m)(keyFile|certFile)([[:space:]]+)" + quotedPkiConfDir + "/" +
@@ -735,25 +755,304 @@ func (repo *RuntimeCmdRepo) UpdatePhpModules(
 	), nil
 }
 
-func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) error {
-	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(
-		hostname,
+func (repo *RuntimeCmdRepo) removeListenerMapLines(
+	hostname tkValueObject.Fqdn,
+	phpWebServerMainConfFilePath tkValueObject.UnixAbsoluteFilePath,
+) error {
+	hostnameStr := strings.ReplaceAll(hostname.String(), "*.", "")
+	mapLineRegex, err := repo.listenerMapLineRegexFactory(hostnameStr)
+	if err != nil {
+		return err
+	}
+	listenerMapLineRemovalRegex, err := regexp.Compile(
+		mapLineRegex.String() + `\n?`,
 	)
-	if err == nil {
+	if err != nil {
+		return errors.New(
+			"PhpListenerMapLineRemovalRegexCompileFailed: " + err.Error(),
+		)
+	}
+	_, err = repo.replaceFileContentByRegex(
+		phpWebServerMainConfFilePath, repo.resolvePhpWebServerTrustedOwners(),
+		listenerMapLineRemovalRegex, "",
+	)
+	if err != nil {
+		return errors.New("RemoveListenerMapLineError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo *RuntimeCmdRepo) countListenerMapLines(
+	phpWebServerMainConfFilePath tkValueObject.UnixAbsoluteFilePath,
+	vhostName string,
+) (int, error) {
+	mapLineRegex, err := repo.listenerMapLineRegexFactory(vhostName)
+	if err != nil {
+		return 0, err
+	}
+
+	findings, err := repo.fileClerk.FileContentRegexSearch(
+		phpWebServerMainConfFilePath, mapLineRegex,
+	)
+	if err != nil {
+		return 0, errors.New("ReadPhpListenerMapLinesError: " + err.Error())
+	}
+
+	return len(findings), nil
+}
+
+func (repo *RuntimeCmdRepo) readListenerMapLineCounts(
+	hostname tkValueObject.Fqdn,
+	phpWebServerMainConfFilePath tkValueObject.UnixAbsoluteFilePath,
+) (
+	primaryHostname tkValueObject.Fqdn,
+	primaryMapLineCount, hostnameMapLineCount int,
+	err error,
+) {
+	primaryHostname, err = repo.vhostHelpers.ReadPrimaryVirtualHostHostname()
+	if err != nil {
+		return primaryHostname, 0, 0, errors.New(
+			"ReadPrimaryVirtualHostHostnameError: " + err.Error(),
+		)
+	}
+
+	primaryMapLineCount, err = repo.countListenerMapLines(
+		phpWebServerMainConfFilePath, primaryHostname.String(),
+	)
+	if err != nil {
+		return primaryHostname, 0, 0, err
+	}
+
+	hostnameStr := strings.ReplaceAll(hostname.String(), "*.", "")
+	hostnameMapLineCount, err = repo.countListenerMapLines(
+		phpWebServerMainConfFilePath, hostnameStr,
+	)
+	if err != nil {
+		return primaryHostname, 0, 0, err
+	}
+
+	return primaryHostname, primaryMapLineCount, hostnameMapLineCount, nil
+}
+
+func (repo *RuntimeCmdRepo) mapVirtualHostOnEveryListener(
+	hostname tkValueObject.Fqdn,
+	phpWebServerMainConfFilePath tkValueObject.UnixAbsoluteFilePath,
+) error {
+	primaryHostname, primaryMapLineCount, hostnameMapLineCount, err := repo.
+		readListenerMapLineCounts(hostname, phpWebServerMainConfFilePath)
+	if err != nil {
+		return err
+	}
+	if primaryMapLineCount == 0 {
+		return errors.New("PrimaryListenerMapLineNotFound")
+	}
+	if hostnameMapLineCount == primaryMapLineCount {
 		return nil
 	}
-	if !errors.Is(err, domainRepository.ErrPhpVirtualHostNotFound) {
+
+	err = repo.removeListenerMapLines(
+		hostname, phpWebServerMainConfFilePath,
+	)
+	if err != nil {
 		return err
 	}
 
-	phpConfFilePathStr := phpConfFilePath.String()
+	primaryMapLineRegex, err := repo.listenerMapLineRegexFactory(
+		primaryHostname.String(),
+	)
+	if err != nil {
+		return err
+	}
+
+	hostnameStr := strings.ReplaceAll(hostname.String(), "*.", "")
+	newListenerMapLine := "  map                     " +
+		repo.listenerMapDomainsFactory(hostnameStr)
+	_, err = repo.replaceFileContentByRegex(
+		phpWebServerMainConfFilePath, repo.resolvePhpWebServerTrustedOwners(),
+		primaryMapLineRegex, "${0}\n"+newListenerMapLine,
+	)
+	if err != nil {
+		return errors.New("UpdateListenerMapLineError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo *RuntimeCmdRepo) listenerMapLinesDoubleChecker(
+	hostname tkValueObject.Fqdn,
+	phpWebServerMainConfFilePath tkValueObject.UnixAbsoluteFilePath,
+) error {
+	_, primaryMapLineCount, hostnameMapLineCount, err := repo.
+		readListenerMapLineCounts(hostname, phpWebServerMainConfFilePath)
+	if err != nil {
+		return err
+	}
+	if hostnameMapLineCount != primaryMapLineCount {
+		return errors.New("PhpVirtualHostListenerMapNotFound")
+	}
+
+	return nil
+}
+
+func (repo *RuntimeCmdRepo) virtualHostBlockRegexFactory(
+	hostname string,
+) (*regexp.Regexp, error) {
+	baseHostname := strings.ReplaceAll(hostname, "*.", "")
+	quotedHostname := regexp.QuoteMeta(baseHostname)
+	vhostBlockRegex, err := regexp.Compile(
+		"(?m)^[[:space:]]*virtualhost[[:space:]]+" + quotedHostname +
+			"[[:space:]]*\\{",
+	)
+	if err != nil {
+		return nil, errors.New(
+			"PhpVirtualHostBlockRegexCompileFailed: " + err.Error(),
+		)
+	}
+
+	return vhostBlockRegex, nil
+}
+
+func (repo *RuntimeCmdRepo) isVirtualHostBlockPresent(
+	phpWebServerMainConfFilePath tkValueObject.UnixAbsoluteFilePath,
+	hostname string,
+) (bool, error) {
+	vhostBlockRegex, err := repo.virtualHostBlockRegexFactory(hostname)
+	if err != nil {
+		return false, err
+	}
+
+	findings, err := repo.fileClerk.FileContentRegexSearch(
+		phpWebServerMainConfFilePath, vhostBlockRegex,
+	)
+	if err != nil {
+		return false, errors.New("ReadPhpVirtualHostBlockError: " + err.Error())
+	}
+
+	return len(findings) > 0, nil
+}
+
+func (repo *RuntimeCmdRepo) insertVirtualHostBlock(
+	hostname tkValueObject.Fqdn,
+	phpConfFilePath tkValueObject.UnixAbsoluteFilePath,
+	phpWebServerMainConfFilePath tkValueObject.UnixAbsoluteFilePath,
+) error {
+	vhostBlockIsPresent, err := repo.isVirtualHostBlockPresent(
+		phpWebServerMainConfFilePath, hostname.String(),
+	)
+	if err != nil {
+		return err
+	}
+	if vhostBlockIsPresent {
+		return nil
+	}
+
+	hostnameStr := strings.ReplaceAll(hostname.String(), "*.", "")
+	phpVhostHttpdConf := `
+virtualhost ` + hostnameStr + ` {
+  vhRoot                  /app/html/` + hostnameStr + `/
+  configFile              ` + phpConfFilePath.String() + `
+  allowSymbolLink         1
+  enableScript            1
+  restrained              0
+  setUIDMode              0
+}
+`
+	err = repo.fileClerk.AppendFileContent(tkInfra.FileAppendSettings{
+		FilePath:                 phpWebServerMainConfFilePath,
+		SymlinkPolicy:            &tkInfra.FileClerkSymlinkPolicyResolve,
+		TrustedDirOwnerUsernames: repo.resolvePhpWebServerTrustedOwners(),
+	}, phpVhostHttpdConf)
+	if err != nil {
+		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (repo *RuntimeCmdRepo) removeVirtualHostBlock(
+	hostname tkValueObject.Fqdn,
+	phpWebServerMainConfFilePath tkValueObject.UnixAbsoluteFilePath,
+) error {
+	vhostBlockRegex, err := repo.virtualHostBlockRegexFactory(hostname.String())
+	if err != nil {
+		return err
+	}
+	vhostBlockRemovalRegex, err := regexp.Compile(
+		vhostBlockRegex.String() + "[^}]*\\}\n?",
+	)
+	if err != nil {
+		return errors.New(
+			"PhpVirtualHostBlockRemovalRegexCompileFailed: " + err.Error(),
+		)
+	}
+	_, err = repo.replaceFileContentByRegex(
+		phpWebServerMainConfFilePath, repo.resolvePhpWebServerTrustedOwners(),
+		vhostBlockRemovalRegex, "",
+	)
+	if err != nil {
+		return errors.New("RemoveVirtualHostBlockError: " + err.Error())
+	}
+
+	blockStillPresent, err := repo.isVirtualHostBlockPresent(
+		phpWebServerMainConfFilePath, hostname.String(),
+	)
+	if err != nil {
+		return err
+	}
+	if blockStillPresent {
+		return errors.New("RemovePhpVirtualHostBlockFailed")
+	}
+
+	return nil
+}
+
+func (repo *RuntimeCmdRepo) DeletePhpVirtualHost(hostname tkValueObject.Fqdn) error {
+	phpWebServerMainConfFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
+		infraEnvs.PhpWebServerMainConfFilePath, false,
+	)
+	if err != nil {
+		return errors.New("DefinePhpWebServerMainConfFilePathError: " + err.Error())
+	}
+
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(
+		hostname,
+	)
+	if err != nil && !errors.Is(err, domainRepository.ErrPhpVirtualHostNotFound) {
+		return errors.New("ReadPhpVirtualHostConfFilePathError: " + err.Error())
+	}
+
+	err = repo.removeListenerMapLines(hostname, phpWebServerMainConfFilePath)
+	if err != nil {
+		return err
+	}
+
+	err = repo.removeVirtualHostBlock(hostname, phpWebServerMainConfFilePath)
+	if err != nil {
+		return err
+	}
+
+	err = repo.fileClerk.DeleteFile(phpConfFilePath.String())
+	if err != nil {
+		return errors.New("RemovePhpConfFileError: " + err.Error())
+	}
+
+	return repo.restartPhpWebServer()
+}
+
+func (repo *RuntimeCmdRepo) createVirtualHostConfFile(
+	hostname tkValueObject.Fqdn,
+	phpConfFilePath tkValueObject.UnixAbsoluteFilePath,
+) error {
+	hostnameStr := strings.ReplaceAll(hostname.String(), "*.", "")
 	templatePhpVhostConfFilePath := infraEnvs.PhpWebServerConfDir + "/template"
-	err = repo.fileClerk.CopyFile(templatePhpVhostConfFilePath, phpConfFilePathStr)
+	err := repo.fileClerk.CopyFile(
+		templatePhpVhostConfFilePath, phpConfFilePath.String(),
+	)
 	if err != nil {
 		return errors.New("CopyPhpConfTemplateError: " + err.Error())
 	}
 
-	hostnameStr := strings.ReplaceAll(hostname.String(), "*.", "")
 	primaryVirtualHostPlaceholderRegex := regexp.MustCompile(
 		regexp.QuoteMeta(infraEnvs.PrimaryVirtualHostPlaceholderHostname),
 	)
@@ -765,16 +1064,10 @@ func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) er
 		return errors.New("UpdatePhpVirtualHostConfFileError: " + err.Error())
 	}
 
-	phpVhostHttpdConf := `
-virtualhost ` + hostname.String() + ` {
-  vhRoot                  /app/html/` + hostnameStr + `/
-  configFile              ` + phpConfFilePathStr + `
-  allowSymbolLink         1
-  enableScript            1
-  restrained              0
-  setUIDMode              0
+	return nil
 }
-`
+
+func (repo *RuntimeCmdRepo) CreatePhpVirtualHost(hostname tkValueObject.Fqdn) error {
 	phpWebServerMainConfFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
 		infraEnvs.PhpWebServerMainConfFilePath, false,
 	)
@@ -782,38 +1075,40 @@ virtualhost ` + hostname.String() + ` {
 		return errors.New("DefinePhpWebServerMainConfFilePathError: " + err.Error())
 	}
 
-	phpWebServerTrustedOwners := repo.resolvePhpWebServerTrustedOwners()
-	err = repo.fileClerk.AppendFileContent(tkInfra.FileAppendSettings{
-		FilePath:                 phpWebServerMainConfFilePath,
-		SymlinkPolicy:            &tkInfra.FileClerkSymlinkPolicyResolve,
-		TrustedDirOwnerUsernames: phpWebServerTrustedOwners,
-	}, phpVhostHttpdConf)
-	if err != nil {
-		return errors.New("AddVirtualHostAtHttpdConfFileError: " + err.Error())
+	phpConfFilePath, err := repo.runtimeQueryRepo.ReadPhpVirtualHostConfFilePath(
+		hostname,
+	)
+	phpConfExists := err == nil
+	if err != nil && !errors.Is(err, domainRepository.ErrPhpVirtualHostNotFound) {
+		return errors.New("ReadPhpVirtualHostConfFilePathError: " + err.Error())
 	}
 
-	primaryHostname, err := repo.vhostHelpers.ReadPrimaryVirtualHostHostname()
-	if err != nil {
-		return errors.New("ReadPrimaryVirtualHostHostnameError: " + err.Error())
+	if !phpConfExists {
+		err = repo.createVirtualHostConfFile(hostname, phpConfFilePath)
+		if err != nil {
+			return err
+		}
 	}
-	quotedPrimaryHostname := regexp.QuoteMeta(primaryHostname.String())
-	primaryListenerMapLineRegex := regexp.MustCompile(
-		"(?m)^[[:space:]]*map[[:space:]]+" + quotedPrimaryHostname +
-			"[[:space:]]+(\\*|" + quotedPrimaryHostname + ", \\*\\." +
-			quotedPrimaryHostname + ")[ \t]*$",
-	)
 
-	// The wildcard form makes this vhost the catch-all for the host and its
-	// subdomains. A subdomain with its own mapping takes precedence.
-	newListenerMapLine := "  map                     " +
-		hostnameStr + " " + hostnameStr +
-		", *." + hostnameStr
-	_, err = repo.replaceFileContentByRegex(
-		phpWebServerMainConfFilePath, phpWebServerTrustedOwners,
-		primaryListenerMapLineRegex, "${0}\n"+newListenerMapLine,
+	err = repo.insertVirtualHostBlock(
+		hostname, phpConfFilePath, phpWebServerMainConfFilePath,
 	)
 	if err != nil {
-		return errors.New("UpdateListenerMapLineError: " + err.Error())
+		return err
+	}
+
+	err = repo.mapVirtualHostOnEveryListener(
+		hostname, phpWebServerMainConfFilePath,
+	)
+	if err != nil {
+		return err
+	}
+
+	err = repo.listenerMapLinesDoubleChecker(
+		hostname, phpWebServerMainConfFilePath,
+	)
+	if err != nil {
+		return err
 	}
 
 	return repo.restartPhpWebServer()
