@@ -2,6 +2,7 @@
 
 ```log
 0.3.4 - 2026/09/15
+test(marketplace): install passbolt and assert the pear tool module lifecycle
 fix(runtime): report php tool module status from its binary
 feat: auto-tune php web server capacity and raise the task completion banner
 
