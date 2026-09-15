@@ -47,7 +47,8 @@ waitForCliJq 300 "php-webserver returns to the running state after the restart" 
 
 assertLsapiCapacityIsTuned
 
-osCliCapture vhost mapping create -n "${vhostHostname}" -p / -t service -v "${serviceName}"
+osCliCaptureWithOperation "vhost.mapping.create-php" \
+	vhost mapping create -n "${vhostHostname}" -p / -t service -v "${serviceName}"
 assertCliStatus created "create mapping to php-webserver"
 assertLsapiCapacityIsTuned
 

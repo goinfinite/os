@@ -58,6 +58,12 @@ vhost.mapping.create:
   info_ms: 2000
   warn_ms: 4000
   relative_warn_percent: 50
+vhost.mapping.create-php:
+  baseline_p50_ms: 9000
+  baseline_p90_ms: 11000
+  info_ms: 15000
+  warn_ms: 25000
+  relative_warn_percent: 50
 services.create-custom:
   baseline_p50_ms: 250
   baseline_p90_ms: 1700
