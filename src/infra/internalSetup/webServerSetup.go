@@ -300,6 +300,22 @@ func (ws *WebServerSetup) webServerRunningEnsurer() error {
 	return nil
 }
 
+func (ws *WebServerSetup) phpWebServerCapacityConfigApplier() error {
+	phpWebServerName := valueObject.ServiceNamePhpWebServer
+
+	stopErr := ws.servicesCmdRepo.Stop(phpWebServerName)
+	if stopErr != nil {
+		return errors.New("PhpWebServerStopError: " + stopErr.Error())
+	}
+
+	startErr := ws.servicesCmdRepo.Start(phpWebServerName)
+	if startErr != nil {
+		return errors.New("PhpWebServerStartError: " + startErr.Error())
+	}
+
+	return nil
+}
+
 func (ws *WebServerSetup) phpWebServerCapacityConfigurator(
 	memoryTotal tkValueObject.Byte,
 	cpuCores float64,
@@ -348,6 +364,11 @@ func (ws *WebServerSetup) phpWebServerCapacityConfigurator(
 	)
 	if err != nil {
 		return errors.New("PhpWebServerCapacityConfiguratorError: " + err.Error())
+	}
+
+	applyErr := ws.phpWebServerCapacityConfigApplier()
+	if applyErr != nil {
+		return errors.New("PhpWebServerCapacityConfiguratorError: " + applyErr.Error())
 	}
 
 	return nil
