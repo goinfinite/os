@@ -37,7 +37,7 @@ const (
 	PhpWebServerGroupName                 string = "nogroup"
 	PhpWebServerConfOwnerUsername         string = "lsadm"
 	PhpWebServerConfigValidationCmd       string = "/usr/local/lsws/bin/openlitespeed -t"
-	PhpChildProcessesUpdateSkipEnvKey     string = "SKIP_PHP_PROCS_COUNT_UPDATE"
+	PhpWebServerCapacityUpdateSkipEnvKey  string = "SKIP_PHP_WEBSERVER_CAPACITY_UPDATE"
 	AccessTokenCookieKey                  string = "os-access-token"
 	UserDataBaseDirectory                 string = "/home"
 	PrimaryVirtualHostPlaceholderHostname string = "goinfinite.local"

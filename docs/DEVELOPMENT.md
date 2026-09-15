@@ -49,19 +49,19 @@ Run the script from the project's root directory.
 
 ## Environment Variables
 
-| Variable                         | Required | Auto-generated | Description                                                                                                        |
-| -------------------------------- | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `PRIMARY_VHOST`                  | Yes      | Yes            | Primary virtual host. Auto-detected from hostname if unset; auto-syncs web server, PHP, and DB on boot if changed. |
-| `JWT_SECRET`                     | Yes      | Yes            | JWT session signing key. Auto-generated on first boot.                                                             |
-| `ACCOUNT_API_KEY_SECRET`         | Yes      | Yes            | API key generation/validation encryption key. Auto-generated on first boot.                                        |
-| `DEV_MODE`                       | No       | No             | Enables dev mode (startup banner, additional UI routes).                                                           |
-| `TRUSTED_CIDRS`                  | No       | No             | CIDRs that bypass auth origin validation and receive verbose API panic responses.                                  |
-| `READ_ONLY_MODE`                 | No       | No             | Blocks non-GET/HEAD/OPTIONS API requests (HTTP 423).                                                               |
-| `SKIP_SSL_DNS_OWNERSHIP_CHECK`   | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                                              |
-| `SKIP_PHP_PROCS_COUNT_UPDATE`    | No       | No             | Skips automatic PHP max children calculation on startup.                                                           |
-| `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
-| `LOG_LEVEL`                      | No       | No             | Sets the logging verbosity (debug, info, warn, error, fatal, panic). Defaults to warn.                             |
-| `SILENT_EXIT_MODE`               | No       | No             | Makes the CLI exit immediately. The dev-build rebuild trigger sets it.                                             |
+| Variable                             | Required | Auto-generated | Description                                                                                                        |
+| ------------------------------------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `PRIMARY_VHOST`                      | Yes      | Yes            | Primary virtual host. Auto-detected from hostname if unset; auto-syncs web server, PHP, and DB on boot if changed. |
+| `JWT_SECRET`                         | Yes      | Yes            | JWT session signing key. Auto-generated on first boot.                                                             |
+| `ACCOUNT_API_KEY_SECRET`             | Yes      | Yes            | API key generation/validation encryption key. Auto-generated on first boot.                                        |
+| `DEV_MODE`                           | No       | No             | Enables dev mode (startup banner, additional UI routes).                                                           |
+| `TRUSTED_CIDRS`                      | No       | No             | CIDRs that bypass auth origin validation and receive verbose API panic responses.                                  |
+| `READ_ONLY_MODE`                     | No       | No             | Blocks non-GET/HEAD/OPTIONS API requests (HTTP 423).                                                               |
+| `SKIP_SSL_DNS_OWNERSHIP_CHECK`       | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                                              |
+| `SKIP_PHP_WEBSERVER_CAPACITY_UPDATE` | No       | No             | Skips automatic PHP web server capacity calculation on startup.                                                    |
+| `ENABLE_API_RUNTIME_PHP_RUN_CMD`     | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
+| `LOG_LEVEL`                          | No       | No             | Sets the logging verbosity (debug, info, warn, error, fatal, panic). Defaults to warn.                             |
+| `SILENT_EXIT_MODE`                   | No       | No             | Makes the CLI exit immediately. The dev-build rebuild trigger sets it.                                             |
 
 ## Unit Testing
 

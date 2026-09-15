@@ -39,7 +39,9 @@ resolveCliOperationName() {
 	printf '%s' "${operationName}"
 }
 
-osCliCapture() {
+captureCliCommand() {
+	local operationName="$1"
+	shift
 	local outputFile errorFile startedAtMs
 	outputFile="$(mktemp)"
 	errorFile="$(mktemp)"
@@ -62,7 +64,19 @@ osCliCapture() {
 		cliBody="$(jq -c '.body' <<<"${cliOutput}")"
 	fi
 
-	recordTiming "$(resolveCliOperationName "$@")" "$(( $(readCurrentTimeMillis) - startedAtMs ))"
+	recordTiming "${operationName}" "$(( $(readCurrentTimeMillis) - startedAtMs ))"
+}
+
+osCliCapture() {
+	captureCliCommand "$(resolveCliOperationName "$@")" "$@"
+	return 0
+}
+
+osCliCaptureWithOperation() {
+	local operationName="$1"
+	shift
+
+	captureCliCommand "${operationName}" "$@"
 	return 0
 }
 
