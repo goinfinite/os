@@ -34,6 +34,38 @@ type MainLayoutSettings struct {
 //go:embed state.js
 var mainLayoutAlpineState string
 
+templ scheduledTaskCompletedBannerContent() {
+	<div class="flex w-full items-center justify-between gap-4">
+		<span>A Scheduled Task was just completed. The state of this page is likely outdated.</span>
+		<button
+			type="button"
+			@click="$store.main.refreshPageContent()"
+			class="bg-infinite-500 hover:bg-infinite-300 shrink-0 cursor-pointer rounded-md border-none px-2 py-1 text-sm font-bold lowercase text-white transition-colors"
+		>
+			Refresh Page Content
+		</button>
+	</div>
+}
+
+templ ScheduledTaskCompletedBanner() {
+	<div
+		x-data
+		style="display: none"
+		x-show="$store.main.displayScheduledTaskCompletedBanner"
+		x-transition
+		class="fixed top-4 left-1/2 z-100 w-full max-w-3xl -translate-x-1/2 px-4"
+	>
+		@uiDisplay.Alert(uiDisplay.AlertSettings{
+			Variation:       uiDisplay.AlertVariationSuccess,
+			BackgroundColor: "emerald-800",
+			TextColor:       "neutral-50",
+			Size:            uiDisplay.AlertSizeSm,
+			ShadowSize:      uiDisplay.AlertShadowSizeLg,
+			ContentHtml:     scheduledTaskCompletedBannerContent(),
+		})
+	</div>
+}
+
 templ Main(componentSettings MainLayoutSettings) {
 	<!DOCTYPE html>
 	<html>
@@ -52,6 +84,7 @@ templ Main(componentSettings MainLayoutSettings) {
 			<section id="page-content" class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
 				@componentSettings.PageContent
 			</section>
+			@ScheduledTaskCompletedBanner()
 			@layoutFooter.FooterSkeleton()
 			@uiDisplay.Toast(uiDisplay.ToastSettings{})
 		</body>

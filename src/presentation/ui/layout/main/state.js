@@ -19,8 +19,9 @@ document.addEventListener("alpine:initializing", () => {
     isActiveRoute(path) {
       return this.activeRoute.startsWith(path);
     },
-    navigateTo(path) {
+    navigateTo(path, sourceElementSelector = "#htmx-routing-attributes-element") {
       this.activeRoute = path;
+      this.displayScheduledTaskCompletedBanner = false;
 
       let baseUri = document.baseURI;
       if (baseUri.endsWith("/")) {
@@ -28,7 +29,7 @@ document.addEventListener("alpine:initializing", () => {
       }
       const newPath = baseUri + path;
       htmx.ajax("GET", newPath, {
-        source: "#htmx-routing-attributes-element",
+        source: sourceElementSelector,
         select: "#page-content",
         target: "#page-content",
         swap: "outerHTML transition:true",
@@ -73,6 +74,34 @@ document.addEventListener("alpine:initializing", () => {
       setTimeout(() => {
         this.displayScheduledTasksPopover = true;
       }, 1000);
+    },
+    scheduledTasksStatuses: null,
+    displayScheduledTaskCompletedBanner: false,
+    trackScheduledTasks(scheduledTasksStatuses) {
+      const previousStatuses = this.scheduledTasksStatuses;
+      this.scheduledTasksStatuses = scheduledTasksStatuses;
+
+      if (previousStatuses === null) {
+        return;
+      }
+
+      for (const [taskId, taskStatus] of Object.entries(
+        scheduledTasksStatuses,
+      )) {
+        if (taskStatus !== "completed") {
+          continue;
+        }
+        if (previousStatuses[taskId] === taskStatus) {
+          continue;
+        }
+        this.displayScheduledTaskCompletedBanner = true;
+      }
+    },
+    refreshPageContent() {
+      this.navigateTo(
+        this.activeRoute,
+        "#htmx-indicator-attributes-element",
+      );
     },
   });
 });

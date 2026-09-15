@@ -208,36 +208,74 @@ func (ws *WebServerSetup) firstSetupOrchestrator() {
 	}
 }
 
-func (ws *WebServerSetup) phpMaxChildProcessesUpdater(
-	memoryTotal tkValueObject.Byte,
+func (ws *WebServerSetup) phpLsapiBlockUpdateExpressionFactory(
+	substitutionExpression string,
+) string {
+	return "/^extprocessor lsphp[0-9]/,/^}/ " + substitutionExpression
+}
+
+func (ws *WebServerSetup) phpWebServerCapacityFileUpdater(
+	confFilePath string,
+	lsapiCapacity uint64,
+	workersCount uint64,
 ) error {
-	childProcsHardCap := uint64(300)
-	childProcsPerGb := uint64(5)
-
-	childProcsHealthyAmount := memoryTotal.ToGiB() * childProcsPerGb
-	if childProcsHealthyAmount > childProcsHardCap {
-		childProcsHealthyAmount = childProcsHardCap
-	}
-
-	childProcsHealthyAmountStr := strconv.FormatUint(childProcsHealthyAmount, 10)
+	lsapiCapacityStr := strconv.FormatUint(lsapiCapacity, 10)
+	workersCountStr := strconv.FormatUint(workersCount, 10)
 	autoUpdateComment := "# AUTO CALCULATED. DO NOT EDIT. LAST EDIT: " +
 		tkValueObject.NewUnixTimeNow().ReadRfcDate()
-	childProcsNewValue := "PHP_LSAPI_CHILDREN=" + childProcsHealthyAmountStr + "; " +
+
+	childrenSetting := "PHP_LSAPI_CHILDREN=" + lsapiCapacityStr + "; " +
 		autoUpdateComment
+	connectionsSetting := "maxConns " + lsapiCapacityStr + "; " +
+		autoUpdateComment
+	workersSetting := "httpdworkers " + workersCountStr + "; " +
+		autoUpdateComment
+
+	childrenUpdateExpression := ws.phpLsapiBlockUpdateExpressionFactory(
+		"s/PHP_LSAPI_CHILDREN=[0-9]+.*/" + childrenSetting + "/",
+	)
+	connectionsUpdateExpression := ws.phpLsapiBlockUpdateExpressionFactory(
+		"s/^([[:space:]]*)maxConns[[:space:]]+[0-9]+.*/" +
+			"\\1" + connectionsSetting + "/",
+	)
+	workersUpdateExpression := "s/^httpdworkers[[:space:]]+[0-9]+.*/" +
+		workersSetting + "/"
 
 	_, sedErr := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "sed",
 		Args: []string{
 			"-i", "-E",
-			"s/PHP_LSAPI_CHILDREN=[0-9]+.*/" + childProcsNewValue + "/g",
-			infraEnvs.PhpWebServerMainConfFilePath,
+			"-e", childrenUpdateExpression,
+			"-e", connectionsUpdateExpression,
+			"-e", workersUpdateExpression,
+			confFilePath,
 		},
 	}).Run()
 	if sedErr != nil {
-		return errors.New("PhpMaxChildProcessesUpdaterError: " + sedErr.Error())
+		return errors.New("PhpWebServerCapacityFileUpdaterError: " + sedErr.Error())
 	}
 
 	return nil
+}
+
+func (ws *WebServerSetup) phpWebServerCapacityCalculator(
+	memoryTotal tkValueObject.Byte,
+	cpuCores float64,
+) (lsapiCapacity uint64, workersCount uint64) {
+	openLiteSpeedCoresPerWorker := uint64(4)
+	openLiteSpeedMaxWorkersCount := uint64(16)
+
+	capacityHardCap := uint64(300)
+	capacityPerGb := uint64(5)
+	memoryGiB := max(memoryTotal.ToGiB(), 1)
+	lsapiCapacity = min(memoryGiB*capacityPerGb, capacityHardCap)
+
+	workersCount = min(
+		max(uint64(cpuCores)/openLiteSpeedCoresPerWorker, 1),
+		openLiteSpeedMaxWorkersCount,
+	)
+
+	return lsapiCapacity, workersCount
 }
 
 func (ws *WebServerSetup) webServerRunningEnsurer() error {
@@ -262,15 +300,16 @@ func (ws *WebServerSetup) webServerRunningEnsurer() error {
 	return nil
 }
 
-func (ws *WebServerSetup) phpChildProcessesConfigurator(
+func (ws *WebServerSetup) phpWebServerCapacityConfigurator(
 	memoryTotal tkValueObject.Byte,
+	cpuCores float64,
 ) error {
 	phpWebServerIsInstalled, err := ws.servicesQueryRepo.IsInstalled(
 		valueObject.ServiceNamePhpWebServer,
 	)
 	if err != nil {
 		slog.Warn(
-			"SkippingPhpChildProcessesConfigurator",
+			"SkippingPhpWebServerCapacityConfigurator",
 			slog.String("reason", "PhpWebServerInstallationCheckFailed"),
 			slog.String("err", err.Error()),
 		)
@@ -278,31 +317,37 @@ func (ws *WebServerSetup) phpChildProcessesConfigurator(
 	}
 	if !phpWebServerIsInstalled {
 		slog.Debug(
-			"SkippingPhpChildProcessesConfigurator",
+			"SkippingPhpWebServerCapacityConfigurator",
 			slog.String("reason", "PhpWebServerNotInstalled"),
 		)
 		return nil
 	}
 
-	skipProcUpdate := false
-	envSkipProcUpdate, err := tkVoUtil.InterfaceToBool(
-		os.Getenv(infraEnvs.PhpChildProcessesUpdateSkipEnvKey),
+	skipCapacityUpdate := false
+	envSkipCapacityUpdate, err := tkVoUtil.InterfaceToBool(
+		os.Getenv(infraEnvs.PhpWebServerCapacityUpdateSkipEnvKey),
 	)
-	if err == nil && envSkipProcUpdate {
-		skipProcUpdate = true
+	if err == nil && envSkipCapacityUpdate {
+		skipCapacityUpdate = true
 	}
 
-	if skipProcUpdate {
+	if skipCapacityUpdate {
 		slog.Debug(
-			"SkippingPhpChildProcessesConfigurator",
+			"SkippingPhpWebServerCapacityConfigurator",
 			slog.String("reason", "EnvVarSet"),
 		)
 		return nil
 	}
 
-	err = ws.phpMaxChildProcessesUpdater(memoryTotal)
+	lsapiCapacity, workersCount := ws.phpWebServerCapacityCalculator(
+		memoryTotal, cpuCores,
+	)
+
+	err = ws.phpWebServerCapacityFileUpdater(
+		infraEnvs.PhpWebServerMainConfFilePath, lsapiCapacity, workersCount,
+	)
 	if err != nil {
-		return errors.New("PhpChildProcessesConfiguratorError: " + err.Error())
+		return errors.New("PhpWebServerCapacityConfiguratorError: " + err.Error())
 	}
 
 	return nil
@@ -319,13 +364,14 @@ func (ws *WebServerSetup) onStartSetupOrchestrator() {
 		os.Exit(1)
 	}
 
-	phpChildProcessesConfiguratorErr := ws.phpChildProcessesConfigurator(
+	phpWebServerCapacityConfiguratorErr := ws.phpWebServerCapacityConfigurator(
 		containerResources.HardwareSpecs.MemoryTotal,
+		containerResources.HardwareSpecs.CpuCores,
 	)
-	if phpChildProcessesConfiguratorErr != nil {
+	if phpWebServerCapacityConfiguratorErr != nil {
 		slog.Warn(
-			"PhpChildProcessesConfiguratorError",
-			slog.String("err", phpChildProcessesConfiguratorErr.Error()),
+			"PhpWebServerCapacityConfiguratorError",
+			slog.String("err", phpWebServerCapacityConfiguratorErr.Error()),
 		)
 	}
 

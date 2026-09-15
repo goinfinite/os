@@ -1,6 +1,8 @@
 # Changelog
 
 ```log
+0.3.4 - 2026/09/15
+feat: auto-tune php web server capacity and raise the task completion banner
 0.3.3 - 2026/09/12
 test(marketplace): enforce https on wordpress redirects
 docs: remove the deprecated goreportcard badge

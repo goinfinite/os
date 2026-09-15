@@ -158,7 +158,8 @@ Configure programming language runtimes (PHP, Node.js, Python) including version
 12. `src/presentation/ui/presenter/runtimes/phpState.js` — Diffs the edited module statuses against the page snapshot and submits only changes; the scheduled tasks popover reports task outcomes
 13. `services/runtime/php-webserver/assets/modules.yaml` — Development checkout of the PHP version/module compatibility catalog
 14. `src/infra/services/` — Service lifecycle (start/stop runtimes)
-15. `src/infra/internalDatabase/` — Runtime configuration persistence
+15. `src/infra/internalSetup/webServerSetup.go` — On boot, sets the LSPHP child process and connection capacity from the container memory (five per GiB, with a one-GiB floor, capped at three hundred) and the web server worker count from the container CPU count (one per four cores, capped at sixteen)
+16. `src/infra/internalDatabase/` — Runtime configuration persistence
 
 ---
 
@@ -253,14 +254,18 @@ Verify user identity and permissions for all API and UI requests via JWT tokens 
 
 ## Scheduled Task Execution
 
-Execute background tasks at configured schedules, logging execution history and results.
+Execute background tasks at configured schedules, logging execution history and results. The dashboard raises a banner when a tracked task reaches the completed state, because the page data is probably outdated. The banner watches the five newest tasks only. A task that leaves that window completes without raising the banner. This is an accepted limitation.
 
 **Flow:**
 
 1. `src/infra/scheduledTask/` — Task scheduler and execution engine
 2. `src/infra/cron/` — Cron job repository
 3. `src/presentation/api/controller/scheduledTask.go` — Task execution tracking REST endpoint
-4. `src/infra/internalDatabase/` — Task schedule and execution log persistence
+4. `src/presentation/ui/presenter/footer/footer.go` — Footer presenter reads the newest tasks and renders them with the status snapshot
+5. `src/presentation/ui/layout/footer/footer.templ` — Footer fragment embeds the task status snapshot and reports it to the Alpine store on every refresh
+6. `src/presentation/ui/layout/main/state.js` — Compares each snapshot with the previous one and raises the completion banner on a transition to completed
+7. `src/presentation/ui/layout/main/main.templ` — Renders the completion banner with the page content refresh action
+8. `src/infra/internalDatabase/` — Task schedule and execution log persistence
 
 ---
 

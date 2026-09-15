@@ -206,6 +206,17 @@ templ ResourceUsageProgressBar(usageRate uint8, usageLabel, tooltipText, icon st
 	</div>
 }
 
+func scheduledTasksStatusesFactory(
+	scheduledTasksEntities []entity.ScheduledTask,
+) map[string]string {
+	statuses := map[string]string{}
+	for _, scheduledTask := range scheduledTasksEntities {
+		statuses[scheduledTask.Id.String()] = scheduledTask.Status.String()
+	}
+
+	return statuses
+}
+
 templ Footer(
 	o11yOverviewEntity entity.O11yOverview,
 	scheduledTasksEntities []entity.ScheduledTask,
@@ -216,8 +227,13 @@ templ Footer(
 		hx-trigger="every 20s"
 		hx-target="this"
 		hx-swap="outerHTML"
+		x-init={ "$store.main.trackScheduledTasks(JSON.parse(document.getElementById('scheduledTasksStatuses').textContent))" }
 		class="bg-os-800 border-os-400 h-8.5 fixed bottom-0 z-50 flex w-full items-center justify-end border-t-2 px-3 text-sm transition-all duration-300 ease-in-out"
 	>
+		@templ.JSONScript(
+			"scheduledTasksStatuses",
+			scheduledTasksStatusesFactory(scheduledTasksEntities),
+		)
 		<!-- Footer Layout HTML -->
 		<div
 			class="mr-5 flex h-full items-center"
