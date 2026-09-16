@@ -13,7 +13,7 @@
             "name": "Eclipse Public License v2.0",
             "url": "https://www.eclipse.org/legal/epl-2.0/"
         },
-        "version": "0.3.3"
+        "version": "0.3.4"
     },
     "host": "localhost:1618",
     "basePath": "/api",
@@ -3433,7 +3433,7 @@
                     "type": "string"
                 },
                 "reason": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.FailureReason"
                 },
                 "status": {
                     "type": "boolean"
@@ -4772,6 +4772,15 @@
                     "type": "string"
                 }
             }
+        },
+        "valueObject.FailureReason": {
+            "type": "string",
+            "enum": [
+                "MalformedFailureReason"
+            ],
+            "x-enum-varnames": [
+                "malformedFailureReason"
+            ]
         },
         "valueObject.HardwareSpecs": {
             "type": "object",

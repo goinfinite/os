@@ -1,7 +1,7 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion                     string = "0.3.3"
+	InfiniteOsVersion                     string = "0.3.4"
 	InfiniteOsMainDir                     string = "/infinite"
 	InfiniteOsBinary                      string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath                 string = InfiniteOsMainDir + "/.env"
