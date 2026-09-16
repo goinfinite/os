@@ -118,6 +118,10 @@ features:
       level: standard
       run: go test ./src/infra/ssl/...
       provisional: true
+  ui:
+    - scope: cli
+      level: fast
+      run: tests/ui/cliBaseHref.sh
   vhost:
     - scope: cli
       level: fast

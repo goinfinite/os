@@ -14,13 +14,13 @@ func BaseHref(rootBasePath, apiBasePath, uiBasePath string) echo.MiddlewareFunc 
 			echoContext.Set("apiBasePath", apiBasePath)
 			echoContext.Set("uiBasePath", uiBasePath)
 
-			// BaseHref is used to set the base href of the HTML document.
-			// It is set to the root base path by default, unless X-Base-Href header is set.
-			// Base href is only used for assets and API calls from the HTML document.
-			// NOTE: Do not confuse this with the base paths. Base paths are used for routing.
-			// If the application is behind a reverse proxy, it will receive the request URLs
-			// as if it was running on the root of the hostname. On the other hand, the base href
-			// won't, that's why X-Base-Href header is used.
+			// The deployment proxy strips its prefix from request URLs, so the app
+			// sees root-relative paths. The HTML document still needs the prefix to
+			// resolve its assets and links. The proxy sends the prefix in the
+			// X-Base-Href header.
+			//
+			// Do not confuse the base href with the base paths. The base paths route
+			// requests. The base href serves the document.
 			baseHrefStr := rootBasePath
 			if len(baseHrefStr) == 0 {
 				baseHrefStr = "/"

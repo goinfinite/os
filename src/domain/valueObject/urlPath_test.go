@@ -26,6 +26,7 @@ func TestUrlPath(t *testing.T) {
 		invalidUrlPath := []interface{}{
 			"/app/html@", "/info.php?id=1", "/path to download", "index.js=",
 			"/how-to-get-habbo-coins?/2011",
+			"//evil.com", "//evil.com/",
 		}
 
 		for _, urlPath := range invalidUrlPath {

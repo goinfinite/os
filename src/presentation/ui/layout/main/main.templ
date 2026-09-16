@@ -79,7 +79,7 @@ templ Main(componentSettings MainLayoutSettings) {
 		<body class="bg-primary-500 flex overflow-hidden text-neutral-50">
 			@uiDisplay.CloakLoading(uiDisplay.CloakLoadingSettings{})
 			@uiDisplay.LoadingOverlay(uiDisplay.LoadingOverlaySettings{})
-			@layoutSidebar.Sidebar()
+			@layoutSidebar.Sidebar(componentSettings.BaseHref)
 			<!-- PageContent -->
 			<section id="page-content" class="h-screen w-full overflow-y-auto overflow-x-hidden p-6">
 				@componentSettings.PageContent

@@ -40,6 +40,17 @@ func NewRouter(
 
 func (router Router) swaggerRoute() {
 	swaggerGroup := router.baseRoute.Group("/swagger")
+	swaggerGroup.GET("/", func(echoContext echo.Context) error {
+		baseHref, assertOk := echoContext.Get("baseHref").(string)
+		if !assertOk {
+			return echoContext.NoContent(http.StatusInternalServerError)
+		}
+
+		requestPath := echoContext.Request().URL.Path
+		indexPath := baseHref + strings.TrimPrefix(requestPath, "/") + "index.html"
+
+		return echoContext.Redirect(http.StatusMovedPermanently, indexPath)
+	})
 	// KnownIssue: echo-swagger forces double slashes on / path.
 	// @see https://github.com/swaggo/echo-swagger/pull/127
 	swaggerGroup.GET("/*", echoSwagger.WrapHandler)

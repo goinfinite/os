@@ -4,25 +4,29 @@ import "github.com/goinfinite/ui/src/display"
 
 import (
 	_ "embed"
+	"strings"
+
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 )
 
 type SidebarItem struct {
-	Label string `json:"label"`
-	Icon  string `json:"icon"`
-	Link  string `json:"link"`
+	Label      string `json:"label"`
+	Icon       string `json:"icon"`
+	Link       string `json:"link"`
+	IsExternal bool   `json:"isExternal"`
 }
 
 var SidebarItems = []SidebarItem{
-	{"Overview", "ph-speedometer", "/overview/"},
-	{"Accounts", "ph-users-three", "/accounts/"},
-	{"Databases", "ph-database", "/databases/"},
-	{"Runtime", "ph-code", "/runtimes/"},
-	{"Cron Jobs", "ph-clock", "/crons/"},
-	{"File Manager", "ph-files", "/file-manager/"},
-	{"Mappings", "ph-graph", "/mappings/"},
-	{"SSL Certificates", "ph-lock", "/ssls/"},
-	{"Marketplace", "ph-storefront", "/marketplace/"},
+	{Label: "Overview", Icon: "ph-speedometer", Link: "/overview/"},
+	{Label: "Accounts", Icon: "ph-users-three", Link: "/accounts/"},
+	{Label: "Databases", Icon: "ph-database", Link: "/databases/"},
+	{Label: "Runtime", Icon: "ph-code", Link: "/runtimes/"},
+	{Label: "Cron Jobs", Icon: "ph-clock", Link: "/crons/"},
+	{Label: "File Manager", Icon: "ph-files", Link: "/file-manager/"},
+	{Label: "Mappings", Icon: "ph-graph", Link: "/mappings/"},
+	{Label: "SSL Certificates", Icon: "ph-lock", Link: "/ssls/"},
+	{Label: "Marketplace", Icon: "ph-storefront", Link: "/marketplace/"},
+	{Label: "API Docs", Icon: "ph-book-open", Link: "/api/swagger/", IsExternal: true},
 }
 
 templ SidebarHeader() {
@@ -33,6 +37,7 @@ templ SidebarHeader() {
 				href="https://goinfinite.net/os/"
 				title="Infinite OS"
 				target="_blank"
+				rel="noopener"
 				:class="isSidebarCollapsed ? 'w-12' : 'w-24'"
 			>
 				<img src="assets/os-logo.svg" alt="Infinite OS" class="fill-white"/>
@@ -42,7 +47,7 @@ templ SidebarHeader() {
 	</div>
 }
 
-templ SidebarMiddle() {
+templ SidebarMiddle(baseHref string) {
 	<ul
 		class="flex flex-col gap-1.5 py-6"
 		:class="{'items-center gap-4':isSidebarCollapsed}"
@@ -50,7 +55,14 @@ templ SidebarMiddle() {
 		for _, sidebarItem := range SidebarItems {
 			<li>
 				<a
-					@click={ "$store.main.navigateTo('" + sidebarItem.Link + "')" }
+					if sidebarItem.IsExternal {
+						href={ baseHref + strings.TrimPrefix(sidebarItem.Link, "/") }
+						target="_blank"
+						rel="noopener"
+					}
+					if !sidebarItem.IsExternal {
+						@click={ "$store.main.navigateTo('" + sidebarItem.Link + "')" }
+					}
 					class="group relative flex cursor-pointer items-center gap-2"
 					:class="{'px-3 hover:bg-neutral-50/5 py-2':!isSidebarCollapsed}"
 					title={ sidebarItem.Label }
@@ -98,11 +110,11 @@ templ SidebarFooter() {
 	</div>
 }
 
-templ Sidebar() {
+templ Sidebar(baseHref string) {
 	<!-- Sidebar HTML -->
 	<div x-data="{isSidebarCollapsed: $persist(false).as('osDash.isSidebarCollapsed')}">
 		@uiDisplay.Sidebar(uiDisplay.SidebarSettings{
-			MiddleContent:              SidebarMiddle(),
+			MiddleContent:              SidebarMiddle(baseHref),
 			HeaderContent:              SidebarHeader(),
 			FooterContent:              SidebarFooter(),
 			IsCollapsedTwoWayStatePath: "isSidebarCollapsed",
