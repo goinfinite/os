@@ -2,6 +2,7 @@
 
 ```log
 0.3.4 - 2026/09/15
+chore: update go deps
 docs: document the version bump and swag tmp exclusion
 chore: bump version
 test: start a fresh container for every run and stop it on success
