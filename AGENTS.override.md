@@ -13,9 +13,15 @@
   files instead of `*_templ.go`; run `templ generate -path src/presentation/ui`.
 - Edit Swagger annotations in `src/presentation/api/api.go` and
   `src/presentation/api/controller/`. Do not edit `src/presentation/api/docs/`; run
-  `swag init --pdl 3 -g src/presentation/api/api.go -o src/presentation/api/docs`.
+  `swag init --pdl 3 --exclude ./tmp -g src/presentation/api/api.go -o src/presentation/api/docs`.
+  Exclude `tmp/`; local checkouts there change the generated type names.
 - Use the tool versions in `.mise.toml`. Run `mise trust` once and `mise install`
   when they are missing.
+
+## Version Bump
+
+- Bump `InfiniteOsVersion` in `src/infra/envs/envs.go` and `@version` in
+  `src/presentation/api/api.go`. Regenerate the swagger docs in the same change.
 
 ## Unit Tests
 
