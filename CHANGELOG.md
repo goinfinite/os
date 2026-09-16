@@ -2,6 +2,7 @@
 
 ```log
 0.3.4 - 2026/09/15
+test: start a fresh container for every run and stop it on success
 fix: carry the deployment proxy base href in API redirects and the docs link
 fix: restart the php web server after the capacity update
 test: record the php mapping create under its own timing key
