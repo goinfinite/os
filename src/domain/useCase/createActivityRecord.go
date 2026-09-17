@@ -211,6 +211,49 @@ func (uc *CreateSecurityActivityRecord) DeleteCron(deleteDto dto.DeleteCron) {
 	uc.createActivityRecord(createRecordDto)
 }
 
+func (uc *CreateSecurityActivityRecord) CreateTerminalSession(
+	createDto dto.CreateTerminalSession,
+	ownerAccountId tkValueObject.AccountId,
+	terminalSessionId valueObject.TerminalSessionId,
+) {
+	recordCode, _ := tkValueObject.NewActivityRecordCode("TerminalSessionCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			valueObject.NewTerminalSessionSri(ownerAccountId, terminalSessionId),
+		},
+		RecordDetails:     createDto,
+		OperatorSri:       &operatorSri,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) DeleteTerminalSession(
+	deleteDto dto.DeleteTerminalSession,
+	ownerAccountId tkValueObject.AccountId,
+) {
+	recordCode, _ := tkValueObject.NewActivityRecordCode("TerminalSessionDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			valueObject.NewTerminalSessionSri(ownerAccountId, deleteDto.Id),
+		},
+		RecordDetails: map[string]interface{}{
+			"ownerAccountId": ownerAccountId.String(),
+		},
+		OperatorSri:       &operatorSri,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
 func (uc *CreateSecurityActivityRecord) CreateDatabase(createDto dto.CreateDatabase) {
 	recordCode, _ := tkValueObject.NewActivityRecordCode("DatabaseCreated")
 	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
