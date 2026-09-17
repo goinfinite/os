@@ -49,19 +49,19 @@ Run the script from the project's root directory.
 
 ## Environment Variables
 
-| Variable                         | Required | Auto-generated | Description                                                                                                        |
-| -------------------------------- | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `PRIMARY_VHOST`                  | Yes      | Yes            | Primary virtual host. Auto-detected from hostname if unset; auto-syncs web server, PHP, and DB on boot if changed. |
-| `JWT_SECRET`                     | Yes      | Yes            | JWT session signing key. Auto-generated on first boot.                                                             |
-| `ACCOUNT_API_KEY_SECRET`         | Yes      | Yes            | API key generation/validation encryption key. Auto-generated on first boot.                                        |
-| `DEV_MODE`                       | No       | No             | Enables dev mode (startup banner, additional UI routes).                                                           |
-| `TRUSTED_CIDRS`                  | No       | No             | CIDRs that bypass auth origin validation and receive verbose API panic responses.                                  |
-| `READ_ONLY_MODE`                 | No       | No             | Blocks non-GET/HEAD/OPTIONS API requests (HTTP 423).                                                               |
-| `SKIP_SSL_DNS_OWNERSHIP_CHECK`   | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                                              |
-| `SKIP_PHP_PROCS_COUNT_UPDATE`    | No       | No             | Skips automatic PHP max children calculation on startup.                                                           |
-| `ENABLE_API_RUNTIME_PHP_RUN_CMD` | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
-| `LOG_LEVEL`                      | No       | No             | Sets the logging verbosity (debug, info, warn, error, fatal, panic). Defaults to warn.                             |
-| `SILENT_EXIT_MODE`               | No       | No             | Makes the CLI exit immediately. The dev-build rebuild trigger sets it.                                             |
+| Variable                             | Required | Auto-generated | Description                                                                                                        |
+| ------------------------------------ | -------- | -------------- | ------------------------------------------------------------------------------------------------------------------ |
+| `PRIMARY_VHOST`                      | Yes      | Yes            | Primary virtual host. Auto-detected from hostname if unset; auto-syncs web server, PHP, and DB on boot if changed. |
+| `JWT_SECRET`                         | Yes      | Yes            | JWT session signing key. Auto-generated on first boot.                                                             |
+| `ACCOUNT_API_KEY_SECRET`             | Yes      | Yes            | API key generation/validation encryption key. Auto-generated on first boot.                                        |
+| `DEV_MODE`                           | No       | No             | Enables dev mode (startup banner, additional UI routes).                                                           |
+| `TRUSTED_CIDRS`                      | No       | No             | CIDRs that bypass auth origin validation and receive verbose API panic responses.                                  |
+| `READ_ONLY_MODE`                     | No       | No             | Blocks non-GET/HEAD/OPTIONS API requests (HTTP 423).                                                               |
+| `SKIP_SSL_DNS_OWNERSHIP_CHECK`       | No       | No             | Skips DNS ownership check during SSL generation. Useful behind a CDN.                                              |
+| `SKIP_PHP_WEBSERVER_CAPACITY_UPDATE` | No       | No             | Skips automatic PHP web server capacity calculation on startup.                                                    |
+| `ENABLE_API_RUNTIME_PHP_RUN_CMD`     | No       | No             | Enables PHP runtime command-execution API endpoint.                                                                |
+| `LOG_LEVEL`                          | No       | No             | Sets the logging verbosity (debug, info, warn, error, fatal, panic). Defaults to warn.                             |
+| `SILENT_EXIT_MODE`                   | No       | No             | Makes the CLI exit immediately. The dev-build rebuild trigger sets it.                                             |
 
 ## Unit Testing
 
@@ -142,12 +142,14 @@ The API accepts two types of tokens and uses the standard "Authorization: Bearer
 Do not edit the files at `src/presentation/api/docs` directly. To generate the swagger documentation, you MUST use the following command:
 
 ```
-swag init --pdl 3 -g src/presentation/api/api.go -o src/presentation/api/docs
+swag init --pdl 3 --exclude ./tmp -g src/presentation/api/api.go -o src/presentation/api/docs
 ```
 
 The annotations are in the controller files. The reference file can be found [here](https://github.com/swaggo/swag#attribute).
 
 The `--pdl 3` flag is used to gather external components from goinfinite/tk and goinfinite/ui packages.
+
+The `--exclude ./tmp` flag keeps the local checkouts in `tmp/` out of the search. Without it, swag resolves types from those checkouts and renames the generated references.
 
 When the project is running, you can access the documentation at [`https://localhost:1618/api/swagger/`](https://localhost:1618/api/swagger/) (or the IP address of your host machine if you're not using localhost).
 

@@ -564,6 +564,17 @@ func (repo *RuntimeCmdRepo) disablePhpModule(
 	moduleEntity entity.PhpModule,
 ) error {
 	moduleNameStr := moduleEntity.Name.String()
+	if repo.runtimeQueryRepo.isPhpToolModule(moduleNameStr) {
+		err := infraHelper.RemovePkgs([]string{
+			repo.phpExtensionPackageNameResolver(phpVersion, moduleNameStr),
+		})
+		if err != nil {
+			return errors.New("RemovePhpModulePackageFailed: " + err.Error())
+		}
+
+		return nil
+	}
+
 	iniRootDir := "/usr/local/lsws/lsphp" +
 		phpVersion.GetWithoutDots() + "/etc/php/" + phpVersion.String()
 	modsAvailableDir := iniRootDir + "/mods-available"

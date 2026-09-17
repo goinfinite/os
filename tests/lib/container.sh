@@ -109,30 +109,8 @@ osTestWaitForApi() {
 }
 
 osTestStartContainer() {
-	local feature="$1" level="$2"
-	local containerName="os-test-${feature}"
-
-	if [[ "${level}" == "fast" && "${OS_TEST_REBUILD}" != "true" ]]; then
-		if "${OS_TEST_RUNTIME}" container inspect "${containerName}" >/dev/null 2>&1; then
-			local isRunning
-			isRunning="$("${OS_TEST_RUNTIME}" inspect --format '{{.State.Running}}' "${containerName}")"
-			if [[ "${isRunning}" == "true" ]]; then
-				printf '%s' "${containerName}"
-				return 0
-			fi
-
-			"${OS_TEST_RUNTIME}" rm -f "${containerName}" >/dev/null
-		fi
-	fi
-
-	if [[ "${level}" != "fast" ]]; then
-		containerName="os-test-${feature}-${OS_TEST_RUN_ID}"
-		osTestRecordContainer "${containerName}"
-	fi
-
-	if [[ "${level}" == "fast" && "${OS_TEST_REBUILD}" == "true" ]]; then
-		osTestStopContainer "${containerName}"
-	fi
+	local feature="$1"
+	local containerName="os-test-${feature}-${OS_TEST_RUN_ID}"
 
 	if ! "${OS_TEST_RUNTIME}" run -d --name "${containerName}" \
 		--hostname "${feature}.test" \

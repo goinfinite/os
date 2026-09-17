@@ -320,6 +320,42 @@ func (repo RuntimeQueryRepo) normalizePhpModuleName(
 	return strings.ToLower(strings.TrimSpace(normalizedModuleName))
 }
 
+var phpToolModuleNames = map[string]struct{}{
+	"pear": {},
+}
+
+func (repo RuntimeQueryRepo) isPhpToolModule(moduleName string) bool {
+	_, isToolModule := phpToolModuleNames[moduleName]
+	return isToolModule
+}
+
+func (repo RuntimeQueryRepo) phpToolModuleBinaryPath(
+	phpVersion valueObject.PhpVersion,
+	moduleName valueObject.PhpModuleName,
+) string {
+	return "/usr/local/lsws/lsphp" + phpVersion.GetWithoutDots() +
+		"/bin/" + moduleName.String()
+}
+
+func (repo RuntimeQueryRepo) readPhpToolModuleStatuses(
+	phpVersion valueObject.PhpVersion,
+	supportedModuleNames []valueObject.PhpModuleName,
+) map[string]bool {
+	toolModuleStatuses := map[string]bool{}
+	for _, moduleName := range supportedModuleNames {
+		if !repo.isPhpToolModule(moduleName.String()) {
+			continue
+		}
+
+		toolBinaryPath := repo.phpToolModuleBinaryPath(phpVersion, moduleName)
+		toolModuleStatuses[moduleName.String()] = repo.fileClerk.FileExists(
+			toolBinaryPath,
+		)
+	}
+
+	return toolModuleStatuses
+}
+
 func (repo RuntimeQueryRepo) readSupportedPhpModuleNames(
 	assetFilePath string,
 	version valueObject.PhpVersion,
@@ -360,6 +396,7 @@ func (repo RuntimeQueryRepo) readSupportedPhpModuleNames(
 func (repo RuntimeQueryRepo) phpModulesFactory(
 	rawPhpModuleOutput string,
 	supportedModuleNames []valueObject.PhpModuleName,
+	toolModuleStatuses map[string]bool,
 ) []entity.PhpModule {
 	activePhpModuleNames := []string{}
 	for rawModuleName := range strings.SplitSeq(rawPhpModuleOutput, "\n") {
@@ -382,9 +419,12 @@ func (repo RuntimeQueryRepo) phpModulesFactory(
 
 	phpModulesEntities := []entity.PhpModule{}
 	for _, moduleName := range supportedModuleNames {
-		isModuleInstalled := slices.Contains(
-			activePhpModuleNames, moduleName.String(),
-		)
+		moduleNameStr := moduleName.String()
+		isModuleInstalled := slices.Contains(activePhpModuleNames, moduleNameStr)
+		if toolModuleStatus, isToolModule := toolModuleStatuses[moduleNameStr]; isToolModule {
+			isModuleInstalled = toolModuleStatus
+		}
+
 		phpModulesEntities = append(
 			phpModulesEntities, entity.NewPhpModule(moduleName, isModuleInstalled),
 		)
@@ -413,7 +453,13 @@ func (repo RuntimeQueryRepo) ReadPhpModules(
 		)
 	}
 
-	return repo.phpModulesFactory(rawPhpModuleOutput, supportedModuleNames), nil
+	toolModuleStatuses := repo.readPhpToolModuleStatuses(
+		version, supportedModuleNames,
+	)
+
+	return repo.phpModulesFactory(
+		rawPhpModuleOutput, supportedModuleNames, toolModuleStatuses,
+	), nil
 }
 
 func (repo RuntimeQueryRepo) ReadPhpConfigs(

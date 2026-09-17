@@ -3439,7 +3439,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "reason": {
-                    "type": "string"
+                    "$ref": "#/definitions/valueObject.FailureReason"
                 },
                 "status": {
                     "type": "boolean"
@@ -4779,6 +4779,15 @@ const docTemplate = `{
                 }
             }
         },
+        "valueObject.FailureReason": {
+            "type": "string",
+            "enum": [
+                "MalformedFailureReason"
+            ],
+            "x-enum-varnames": [
+                "malformedFailureReason"
+            ]
+        },
         "valueObject.HardwareSpecs": {
             "type": "object",
             "properties": {
@@ -4996,7 +5005,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.3",
+	Version:          "0.3.4",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},

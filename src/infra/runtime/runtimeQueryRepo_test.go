@@ -96,6 +96,27 @@ func TestNormalizePhpModuleName(test *testing.T) {
 	}
 }
 
+func TestPhpToolModuleBinaryPath(test *testing.T) {
+	runtimeQueryRepo := NewRuntimeQueryRepo()
+	phpVersion, err := valueObject.NewPhpVersion("8.3")
+	if err != nil {
+		test.Fatalf("PhpVersionCreationFailed: %v", err)
+	}
+	moduleName, err := valueObject.NewPhpModuleName("pear")
+	if err != nil {
+		test.Fatalf("PhpModuleNameCreationFailed: %v", err)
+	}
+
+	expectedPath := "/usr/local/lsws/lsphp83/bin/pear"
+	actualPath := runtimeQueryRepo.phpToolModuleBinaryPath(phpVersion, moduleName)
+	if actualPath != expectedPath {
+		test.Errorf(
+			"PhpToolModuleBinaryPathMismatch: expected %q, got %q",
+			expectedPath, actualPath,
+		)
+	}
+}
+
 func TestReadSupportedPhpModuleNames(test *testing.T) {
 	assetFilePath := filepath.Join(test.TempDir(), "modules.yaml")
 	assetContent := []byte(`modules:
@@ -224,6 +245,7 @@ func TestPhpModulesFactory(test *testing.T) {
 		testName             string
 		rawPhpModuleOutput   string
 		supportedModuleNames []valueObject.PhpModuleName
+		toolModuleStatuses   map[string]bool
 		expectedModules      []entity.PhpModule
 	}{
 		{
@@ -246,6 +268,27 @@ func TestPhpModulesFactory(test *testing.T) {
 			supportedModuleNames: phpModuleNameFactory("curl"),
 			expectedModules:      phpModuleFactory("curl:true"),
 		},
+		{
+			testName:             "MarksToolModuleAsActiveWhenItsBinaryIsPresent",
+			rawPhpModuleOutput:   "[PHP Modules]\ncurl\n",
+			supportedModuleNames: phpModuleNameFactory("curl", "pear"),
+			toolModuleStatuses:   map[string]bool{"pear": true},
+			expectedModules:      phpModuleFactory("curl:true", "pear:true"),
+		},
+		{
+			testName:             "MarksToolModuleAsInactiveWhenItsBinaryIsAbsent",
+			rawPhpModuleOutput:   "[PHP Modules]\ncurl\n",
+			supportedModuleNames: phpModuleNameFactory("curl", "pear"),
+			toolModuleStatuses:   map[string]bool{"pear": false},
+			expectedModules:      phpModuleFactory("curl:true", "pear:false"),
+		},
+		{
+			testName:             "IgnoresExtensionListingForToolModules",
+			rawPhpModuleOutput:   "[PHP Modules]\ncurl\npear\n",
+			supportedModuleNames: phpModuleNameFactory("curl", "pear"),
+			toolModuleStatuses:   map[string]bool{"pear": false},
+			expectedModules:      phpModuleFactory("curl:true", "pear:false"),
+		},
 	}
 
 	for _, testCase := range testCases {
@@ -253,6 +296,7 @@ func TestPhpModulesFactory(test *testing.T) {
 			runtimeQueryRepo := NewRuntimeQueryRepo()
 			actualModules := runtimeQueryRepo.phpModulesFactory(
 				testCase.rawPhpModuleOutput, testCase.supportedModuleNames,
+				testCase.toolModuleStatuses,
 			)
 
 			if !slices.Equal(actualModules, testCase.expectedModules) {

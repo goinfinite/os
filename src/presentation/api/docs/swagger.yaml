@@ -338,7 +338,7 @@ definitions:
       name:
         type: string
       reason:
-        type: string
+        $ref: '#/definitions/valueObject.FailureReason'
       status:
         type: boolean
     type: object
@@ -1214,6 +1214,12 @@ definitions:
       storageUsagePercentStr:
         type: string
     type: object
+  valueObject.FailureReason:
+    enum:
+    - MalformedFailureReason
+    type: string
+    x-enum-varnames:
+    - malformedFailureReason
   valueObject.HardwareSpecs:
     properties:
       cpuCores:
@@ -1371,7 +1377,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.3.3
+  version: 0.3.4
 paths:
   /v1/account/:
     get:

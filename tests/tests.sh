@@ -359,17 +359,18 @@ runEntry() {
 	if ((exitCode == 124 || exitCode == 137)); then
 		printf 'TIMEOUT %s exceeded the %ss ceiling\n' "${entryKey}" "${osTestCommandTimeoutSeconds}"
 		printf '%s\t%s\t%s\n' "${entryKey}" "error" "${elapsed}" >>"${resultsFile}"
-		return 0
+		return 1
 	fi
 
 	if ((exitCode != 0)); then
 		printf 'FAIL  %s (%ss)\n' "${entryKey}" "${elapsed}"
 		printf '%s\t%s\t%s\n' "${entryKey}" "fail" "${elapsed}" >>"${resultsFile}"
-		return 0
+		return 1
 	fi
 
 	printf 'PASS  %s (%ss)\n' "${entryKey}" "${elapsed}"
 	printf '%s\t%s\t%s\n' "${entryKey}" "pass" "${elapsed}" >>"${resultsFile}"
+	return 0
 }
 
 runFeatureGroup() {
@@ -392,11 +393,15 @@ runFeatureGroup() {
 
 	local containerName=""
 	if [[ "${hasIntegrationEntry}" == "true" ]]; then
-		containerName="$(osTestStartContainer "${feature}" "${level}")"
+		containerName="$(osTestStartContainer "${feature}")"
 		if [[ -z "${containerName}" ]]; then
 			printf 'FAIL  %s: container did not start\n' "${feature}"
 			printf '%s\t%s\t%s\n' "${feature}:container/start" "error" "0" >>"${resultsFile}"
 			return 0
+		fi
+
+		if [[ "${level}" != "fast" ]]; then
+			osTestRecordContainer "${containerName}"
 		fi
 	fi
 
@@ -418,6 +423,7 @@ runFeatureGroup() {
 		export OS_TEST_HTTPS_PORT="${httpsHostPort}"
 	fi
 
+	local entryFailed=false
 	while IFS= read -r entryJson; do
 		[[ -n "${entryJson}" ]] || continue
 
@@ -427,13 +433,25 @@ runFeatureGroup() {
 		runCommand="$(jq -r '.run' <<<"${entryJson}")"
 
 		export OS_TEST_SCOPE="${scope}"
-		runEntry "${feature}" "${scope}" "${entryLevel}" "${runCommand}"
+		runEntry "${feature}" "${scope}" "${entryLevel}" "${runCommand}" || entryFailed=true
 	done <<<"${entriesJson}"
 
-	if [[ -n "${containerName}" && "${level}" != "fast" ]]; then
+	if [[ -z "${containerName}" ]]; then
+		return 0
+	fi
+
+	if [[ "${level}" != "fast" ]]; then
 		exportContainerLogs "${containerName}" "${artifactsDir}/${feature}.log"
 		osTestStopContainer "${containerName}"
+		return 0
 	fi
+
+	if [[ "${entryFailed}" == "true" ]]; then
+		printf 'Kept container %s for inspection.\n' "${containerName}"
+		return 0
+	fi
+
+	osTestStopContainer "${containerName}"
 }
 
 readSelectedFeatureNames() {

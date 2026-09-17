@@ -70,7 +70,7 @@ func (repo *O11yQueryRepo) ReadServerPublicIpAddress() (
 		return ipAddress, errors.New("ReadServerPublicIpAddressError: " + err.Error())
 	}
 
-	err = repo.transientDbSvc.Set(PublicIpTransientKey, serverPublicIpAddress.String())
+	err = repo.transientDbSvc.Set(PublicIpTransientKey, serverPublicIpAddress.String(), nil)
 	if err != nil {
 		return ipAddress, errors.New("PersistPublicIpFailed: " + err.Error())
 	}

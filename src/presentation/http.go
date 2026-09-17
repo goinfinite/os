@@ -106,7 +106,7 @@ func HttpServerInit(
 		uiBasePath = ""
 	}
 
-	echoInstance.Use(
+	echoInstance.Pre(
 		presentationMiddleware.BaseHref(rootBasePath, apiBasePath, uiBasePath),
 	)
 

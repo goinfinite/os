@@ -152,6 +152,7 @@ func TestPhpExtensionPackageName(test *testing.T) {
 		{moduleName: "pdo_sqlite", expectedPackageName: "lsphp81-sqlite3"},
 		{moduleName: "sqlite3", expectedPackageName: "lsphp81-sqlite3"},
 		{moduleName: "pdo_dblib", expectedPackageName: "lsphp81-sybase"},
+		{moduleName: "pear", expectedPackageName: "lsphp81-pear"},
 	}
 
 	for _, testCase := range testCases {

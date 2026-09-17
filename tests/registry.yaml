@@ -70,6 +70,9 @@ features:
     - scope: cli
       level: exhaustive
       run: tests/marketplace/cliInstallNodeApp.sh
+    - scope: cli
+      level: exhaustive
+      run: tests/marketplace/cliInstallPassbolt.sh
   o11y:
     - scope: cli
       level: fast
@@ -115,6 +118,10 @@ features:
       level: standard
       run: go test ./src/infra/ssl/...
       provisional: true
+  ui:
+    - scope: cli
+      level: fast
+      run: tests/ui/cliBaseHref.sh
   vhost:
     - scope: cli
       level: fast
