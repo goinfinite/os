@@ -155,3 +155,13 @@ func NewMappingSecurityRuleSri(
 		"sri://" + accountId.String() + ":mappingSecurityRule/" + mappingSecurityRuleId.String(),
 	)
 }
+
+func NewTerminalSessionSri(
+	accountId tkValueObject.AccountId,
+	terminalSessionId TerminalSessionId,
+) tkValueObject.SystemResourceIdentifier {
+	return NewSystemResourceIdentifierMustCreate(
+		"sri://" + accountId.String() + ":terminalSession/" +
+			terminalSessionId.String(),
+	)
+}
