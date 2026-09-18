@@ -2,9 +2,9 @@ package apiController
 
 import (
 	_ "github.com/goinfinite/os/src/domain/dto"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
