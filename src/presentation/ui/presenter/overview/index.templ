@@ -38,6 +38,7 @@ templ OverviewIndex(
 	marketplaceOverview presenterMarketplace.MarketplaceOverview,
 	o11yOverview entity.O11yOverview,
 	servicesOverview ServicesOverview,
+	terminalSessionsOverview TerminalSessionsOverview,
 ) {
 	<!-- OverviewIndex JavaScript -->
 	@uiToolset.MinifierTemplateJs(&overviewIndexAlpineState)
@@ -48,8 +49,14 @@ templ OverviewIndex(
 			"Welcome! Take a quick peek at your installed services and marketplace items, as well as OS performance such as the server resource usage and system information.",
 			"ph-speedometer",
 		)
-		<div class="space-y-5">
-			<div id="marketplace" class="card w-full" x-data="marketplace">
+		<div class="grid grid-cols-1 gap-5 lg:grid-cols-2">
+			@componentStructural.Card(componentStructural.CardSettings{
+				Title: "Marketplace",
+				Icon:  "ph-storefront",
+				Attributes: templ.Attributes{
+					"id": "marketplace", "x-data": "marketplace",
+				},
+			}) {
 				@InstalledMarketplaceItemsTable(marketplaceOverview.InstalledItemsList)
 				@componentStructural.ScheduleDeletionModal(
 					"isUninstallMarketplaceItemModalOpen",
@@ -60,11 +67,15 @@ templ OverviewIndex(
 				@ScheduleMarketplaceItemInstallationModal(
 					vhostsHostnames, marketplaceOverview.CatalogItemsList,
 				)
-			</div>
-			<div id="system-info" class="card w-full" x-data="resourceUsage">
-				@SystemInfoTableAndGraphic(o11yOverview)
-			</div>
-			<div id="services" class="card w-full" x-data="services">
+			}
+			@componentStructural.Card(componentStructural.CardSettings{
+				Title: "Services",
+				Icon:  "ph-package",
+				Class: "lg:row-span-2",
+				Attributes: templ.Attributes{
+					"id": "services", "x-data": "services",
+				},
+			}) {
 				@InstalledServicesItemsTable(servicesOverview.InstalledServicesResponseDto)
 				@ServiceInstallationModal(servicesOverview.InstallableServices)
 				@UpdateInstalledServiceModal()
@@ -72,7 +83,60 @@ templ OverviewIndex(
 					"isUninstallServiceModalOpen", "closeUninstallServiceModal()",
 					"uninstallService()", "service.name", "",
 				)
+			}
+			@componentStructural.Card(componentStructural.CardSettings{
+				Title:      "Terminal Sessions",
+				Icon:       "ph-terminal-window",
+				Attributes: templ.Attributes{"id": "terminal-sessions"},
+			}) {
+				@TerminalSessionsList(terminalSessionsOverview)
+			}
+			@componentStructural.Card(componentStructural.CardSettings{
+				Title:      "System Information",
+				Icon:       "ph-info",
+				Attributes: templ.Attributes{"id": "system-info"},
+			}) {
+				@SystemInfoTable(o11yOverview)
+			}
+			@componentStructural.Card(componentStructural.CardSettings{
+				Title: "Resource Usage",
+				Icon:  "ph-chart-line",
+				Attributes: templ.Attributes{
+					"id": "resource-usage", "x-data": "resourceUsage",
+				},
+			}) {
+				@ResourceUsageGraph()
+			}
+		</div>
+	</div>
+}
+
+templ TerminalSessionsList(overview TerminalSessionsOverview) {
+	<!-- TerminalSessionsList -->
+	<div class="flex h-full flex-col justify-between gap-3">
+		if len(overview.RecentSessions) == 0 {
+			<p class="py-2 text-center italic text-slate-500">No terminal sessions open.</p>
+		} else {
+			<div class="space-y-2">
+				for _, session := range overview.RecentSessions {
+					<div class="flex items-center justify-between rounded-md bg-neutral-500/5 p-2.5 text-sm">
+						<div class="flex items-center gap-2">
+							<i class="ph-duotone ph-terminal-window text-lg"></i>
+							<span class="font-mono">{ session.Id.String() }</span>
+						</div>
+						<span class="truncate text-neutral-400">{ session.WorkingDir.String() }</span>
+					</div>
+				}
 			</div>
+		}
+		<div class="flex items-center justify-between pt-1">
+			<span class="text-sm text-neutral-400">
+				{ strconv.Itoa(overview.TotalCount) } open session(s)
+			</span>
+			@componentForm.SubmitButton(
+				"", "new session", "ph-plus",
+				"$store.main.openTerminalSessionsModal()", true,
+			)
 		</div>
 	</div>
 }
@@ -325,74 +389,69 @@ func transformCpuInfoIntoHumanReadable(cpuCores float64, cpuFrequency float64) s
 	return fmt.Sprintf("%.0f CPU @ %.1f GHz", cpuCores, cpuFrequency)
 }
 
-templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
-	<!-- SystemInfoTableAndGraphic -->
-	<div class="rounded-lg bg-neutral-950/20 p-5">
-		<div class="mb-2">
-			@componentStructural.PageSubHeading("System Information", "", "ph-chart-line")
+templ SystemInfoTable(o11yOverview entity.O11yOverview) {
+	<!-- SystemInfoTable -->
+	<div class="*:text-sm *:rounded-md *:p-2.5 *:flex *:justify-between *:bg-neutral-500/5 *:items-center flex flex-col space-y-2 rounded-lg p-3">
+		<div>
+			<span class="font-bold">Hostname</span>
+			<span class="text-right">{ o11yOverview.Hostname.String() }</span>
 		</div>
-		<div class="grid grid-cols-3 items-center gap-3">
-			<!-- Observability Table -->
-			<div class="*:text-sm *:rounded-md *:p-2.5 *:flex *:justify-between *:bg-neutral-500/5 *:items-center flex flex-col space-y-2 rounded-lg p-3">
-				<div>
-					<span class="font-bold">Hostname</span>
-					<span class="text-right">{ o11yOverview.Hostname.String() }</span>
+		<div>
+			<span class="font-bold">Uptime</span>
+			<span class="text-right">{ transformUptimeSecsIntoHumanReadable(o11yOverview.UptimeSecs) }</span>
+		</div>
+		<div>
+			<span class="font-bold">Hardware Specs</span>
+			<div class="space-y-2">
+				<div class="flex justify-end">
+					@componentStructural.TinyTag(componentStructural.TinyTagDto{
+						HighlightedIcon: "ph-memory",
+						TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+						TagColor:        "infinite-500",
+					})
 				</div>
-				<div>
-					<span class="font-bold">Uptime</span>
-					<span class="text-right">{ transformUptimeSecsIntoHumanReadable(o11yOverview.UptimeSecs) }</span>
+				<div class="flex justify-end">
+					@componentStructural.TinyTag(componentStructural.TinyTagDto{
+						HighlightedIcon: "ph-cpu",
+						TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+						TagColor:        "infinite-500",
+					})
 				</div>
-				<div>
-					<span class="font-bold">Hardware Specs</span>
-					<div class="space-y-2">
-						<div class="flex justify-end">
-							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-memory",
-								TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
-								TagColor:        "infinite-500",
-							})
-						</div>
-						<div class="flex justify-end">
-							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-cpu",
-								TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
-								TagColor:        "infinite-500",
-							})
-						</div>
-						<div class="flex justify-end">
-							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-sim-card",
-								TagValue:        o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
-								TagColor:        "infinite-500",
-							})
-						</div>
-					</div>
-				</div>
-				<div>
-					<span class="font-bold">Public IP Address</span>
-					<span class="text-right">{ o11yOverview.PublicIpAddress.String() }</span>
+				<div class="flex justify-end">
+					@componentStructural.TinyTag(componentStructural.TinyTagDto{
+						HighlightedIcon: "ph-sim-card",
+						TagValue:        o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
+						TagColor:        "infinite-500",
+					})
 				</div>
 			</div>
-			<!-- Resource Usage Graphic -->
-			<div class="col-span-2 rounded-md bg-neutral-950/20 p-4">
-				<div class="flex cursor-default flex-row items-center justify-center gap-2 text-[11px] text-neutral-300">
-					<div class="flex flex-row items-center gap-1">
-						<span class="h-4 w-4 rounded-full border-2 border-[#145952] bg-[#0E3E39]"></span>
-						Memory Usage (%)
-					</div>
-					<div class="flex flex-row items-center gap-1">
-						<span class="h-4 w-4 rounded-full border-2 border-[#E89500] bg-[#A26800]"></span>
-						CPU Usage (%)
-					</div>
-					<div class="flex flex-row items-center gap-1">
-						<span class="h-4 w-4 rounded-full border-2 border-[#281B86] bg-[#1C125D]"></span>
-						Storage Usage (%)
-					</div>
-				</div>
-				<div class="h-64 w-full p-2">
-					<div id="cpuAndMemoryUsageChart" class="h-full w-full"></div>
-				</div>
+		</div>
+		<div>
+			<span class="font-bold">Public IP Address</span>
+			<span class="text-right">{ o11yOverview.PublicIpAddress.String() }</span>
+		</div>
+	</div>
+}
+
+templ ResourceUsageGraph() {
+	<!-- ResourceUsageGraph -->
+	<div class="rounded-md bg-neutral-950/20 p-4">
+		<div class="flex cursor-default flex-row items-center justify-center gap-2 text-[11px] text-neutral-300">
+			<div class="flex flex-row items-center gap-1">
+				<span class="h-4 w-4 rounded-full border-2 border-[#145952] bg-[#0E3E39]"></span>
+				Memory Usage (%)
 			</div>
+			<div class="flex flex-row items-center gap-1">
+				<span class="h-4 w-4 rounded-full border-2 border-[#E89500] bg-[#A26800]"></span>
+				CPU Usage (%)
+			</div>
+			<div class="flex flex-row items-center gap-1">
+				<span class="h-4 w-4 rounded-full border-2 border-[#281B86] bg-[#1C125D]"></span>
+				Storage Usage (%)
+			</div>
+		</div>
+		<div class="h-64 w-full p-2">
+			<div id="cpuAndMemoryUsageChart" class="h-full w-full"></div>
 		</div>
 	</div>
 }
@@ -798,7 +857,7 @@ templ CustomServiceAdvancedSettings() {
 				Label:                             "Exec User",
 				TwoWayStatePath:                   "service.execUser",
 				HintValue:                         "Unix user that will be used to execute your service commands.",
-				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplay:                       uiForm.InputHintDisplayTooltip,
 				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 			@uiForm.InputField(uiForm.InputFieldSettings{
@@ -823,7 +882,7 @@ templ CustomServiceAdvancedSettings() {
 				Label:                             "Log Output Path",
 				TwoWayStatePath:                   "service.logOutputPath",
 				HintValue:                         "Path to the file that will receive the custom service output logs.",
-				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplay:                       uiForm.InputHintDisplayTooltip,
 				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 			@uiForm.InputField(uiForm.InputFieldSettings{
@@ -832,7 +891,7 @@ templ CustomServiceAdvancedSettings() {
 				Label:                             "Log Error Path",
 				TwoWayStatePath:                   "service.logErrorPath",
 				HintValue:                         "Path to the file that will receive the custom service error logs.",
-				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplay:                       uiForm.InputHintDisplayTooltip,
 				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 		</div>
@@ -888,7 +947,7 @@ templ CustomServiceForm(
 					Label:                             "Start Command",
 					TwoWayStatePath:                   "service.startCmd",
 					HintValue:                         `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
-					HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+					HintDisplay:                       uiForm.InputHintDisplayTooltip,
 					HintDisplayTooltipBackgroundColor: "os-400",
 				})
 			</div>

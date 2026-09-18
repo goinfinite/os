@@ -1,7 +1,6 @@
+// biome-ignore lint/correctness/noUnusedVariables: called from server-rendered markup via templ.JSFuncCall.
 function devWsHotReload() {
-  hotReloadWs = new WebSocket(
-    "wss://" + document.location.host + "/dev/hot-reload",
-  );
+  hotReloadWs = new WebSocket(`wss://${document.location.host}/dev/hot-reload`);
   hotReloadWs.onclose = () => {
     setTimeout(() => {
       location.reload();
@@ -19,7 +18,10 @@ document.addEventListener("alpine:initializing", () => {
     isActiveRoute(path) {
       return this.activeRoute.startsWith(path);
     },
-    navigateTo(path, sourceElementSelector = "#htmx-routing-attributes-element") {
+    navigateTo(
+      path,
+      sourceElementSelector = "#htmx-routing-attributes-element",
+    ) {
       this.activeRoute = path;
       this.displayScheduledTaskCompletedBanner = false;
 
@@ -37,11 +39,12 @@ document.addEventListener("alpine:initializing", () => {
     },
     clearUserSession() {
       const baseUrl = new URL(document.baseURI);
+      // biome-ignore lint/suspicious/noDocumentCookie: clears the access token cookie on logout.
       document.cookie =
         `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=` +
         baseUrl.pathname +
         ";";
-      window.location.href = document.baseURI + "login/";
+      window.location.href = `${document.baseURI}login/`;
     },
     init() {
       window.addEventListener("popstate", () => {
@@ -52,7 +55,7 @@ document.addEventListener("alpine:initializing", () => {
     // FooterState
     refreshFooter() {
       htmx
-        .ajax("GET", document.baseURI + "fragment/footer/", {
+        .ajax("GET", `${document.baseURI}fragment/footer/`, {
           select: "#footer",
           target: "#footer",
           swap: "outerHTML transition:true",
@@ -97,11 +100,20 @@ document.addEventListener("alpine:initializing", () => {
         this.displayScheduledTaskCompletedBanner = true;
       }
     },
+    // - TerminalSessionsState
+    isTerminalSessionsModalOpen: false,
+    openTerminalSessionsModal() {
+      this.isTerminalSessionsModalOpen = true;
+      htmx.ajax("GET", `${document.baseURI}fragment/terminal-sessions/`, {
+        target: "#terminal-sessions-modal-body",
+        swap: "innerHTML",
+      });
+    },
+    closeTerminalSessionsModal() {
+      this.isTerminalSessionsModalOpen = false;
+    },
     refreshPageContent() {
-      this.navigateTo(
-        this.activeRoute,
-        "#htmx-indicator-attributes-element",
-      );
+      this.navigateTo(this.activeRoute, "#htmx-indicator-attributes-element");
     },
   });
 });

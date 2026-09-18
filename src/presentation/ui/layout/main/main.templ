@@ -66,6 +66,36 @@ templ ScheduledTaskCompletedBanner() {
 	</div>
 }
 
+templ TerminalSessionsModal() {
+	<div
+		x-data
+		x-cloak
+		x-show="$store.main.isTerminalSessionsModalOpen"
+		x-transition:enter="transition ease-out duration-300"
+		x-transition:enter-start="opacity-0"
+		x-transition:enter-end="opacity-100"
+		x-transition:leave="transition ease-in duration-150"
+		x-transition:leave-start="opacity-100"
+		x-transition:leave-end="opacity-0"
+		class="fixed left-0 top-0 z-60 mx-auto h-screen max-h-screen w-full overflow-y-auto overflow-x-hidden bg-neutral-950 bg-opacity-50"
+	>
+		<div class="bg-os-400 relative mx-auto mt-20 max-w-3/5 rounded-md p-6 drop-shadow-xl xl:mt-24 xl:max-w-3xl">
+			<div class="mb-6 flex justify-between align-middle">
+				<h2 class="text-2xl">Terminal Sessions</h2>
+				<button
+					id="terminal-sessions-modal-close"
+					type="button"
+					@click="$store.main.closeTerminalSessionsModal()"
+					class="bg-os-200 hover:bg-os-100 rounded-md border-none px-2 py-1 text-neutral-50"
+				>
+					<i class="ph-bold ph-x align-middle text-xl"></i>
+				</button>
+			</div>
+			<div id="terminal-sessions-modal-body"></div>
+		</div>
+	</div>
+}
+
 templ Main(componentSettings MainLayoutSettings) {
 	<!DOCTYPE html>
 	<html>
@@ -85,6 +115,7 @@ templ Main(componentSettings MainLayoutSettings) {
 				@componentSettings.PageContent
 			</section>
 			@ScheduledTaskCompletedBanner()
+			@TerminalSessionsModal()
 			@layoutFooter.FooterSkeleton()
 			@uiDisplay.Toast(uiDisplay.ToastSettings{})
 		</body>

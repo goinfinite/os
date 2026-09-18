@@ -17,17 +17,24 @@ import (
 	uiLayout "github.com/goinfinite/os/src/presentation/ui/layout"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/labstack/echo/v4"
 )
 
+type TerminalSessionsOverview struct {
+	TotalCount     int
+	RecentSessions []entity.TerminalSession
+}
+
 type OverviewPresenter struct {
-	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
-	transientDbSvc       *tkInfraDb.TransientDatabaseService
-	trailDbSvc           *internalDbInfra.TrailDatabaseService
-	marketplacePresenter *presenterMarketplace.MarketplacePresenter
-	servicesLiaison      *liaison.ServicesLiaison
+	persistentDbSvc        *internalDbInfra.PersistentDatabaseService
+	transientDbSvc         *tkInfraDb.TransientDatabaseService
+	trailDbSvc             *internalDbInfra.TrailDatabaseService
+	marketplacePresenter   *presenterMarketplace.MarketplacePresenter
+	servicesLiaison        *liaison.ServicesLiaison
+	terminalSessionLiaison *liaison.TerminalSessionLiaison
 }
 
 func NewOverviewPresenter(
@@ -36,11 +43,12 @@ func NewOverviewPresenter(
 	trailDbSvc *internalDbInfra.TrailDatabaseService,
 ) *OverviewPresenter {
 	return &OverviewPresenter{
-		persistentDbSvc:      persistentDbSvc,
-		transientDbSvc:       transientDbSvc,
-		trailDbSvc:           trailDbSvc,
-		marketplacePresenter: presenterMarketplace.NewMarketplacePresenter(persistentDbSvc, trailDbSvc),
-		servicesLiaison:      liaison.NewServicesLiaison(persistentDbSvc, trailDbSvc),
+		persistentDbSvc:        persistentDbSvc,
+		transientDbSvc:         transientDbSvc,
+		trailDbSvc:             trailDbSvc,
+		marketplacePresenter:   presenterMarketplace.NewMarketplacePresenter(persistentDbSvc, trailDbSvc),
+		servicesLiaison:        liaison.NewServicesLiaison(persistentDbSvc, trailDbSvc),
+		terminalSessionLiaison: liaison.NewTerminalSessionLiaison(persistentDbSvc, trailDbSvc),
 	}
 }
 
@@ -123,12 +131,12 @@ func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 		readInstalledServicesRequestBody,
 	)
 	if installedItemsResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
-		return responseDto, errors.New("FailedToReadInstalledServices")
+		return responseDto, errors.New("ReadInstalledServicesLiaisonBadResponse")
 	}
 
 	installedItemsTypedOutputBody, assertOk := installedItemsResponseOutput.Body.(dto.ReadInstalledServicesItemsResponse)
 	if !assertOk {
-		return responseDto, errors.New("FailedToReadInstalledServices")
+		return responseDto, errors.New("AssertReadInstalledServicesResponseFailed")
 	}
 
 	return installedItemsTypedOutputBody, nil
@@ -148,12 +156,12 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 		},
 	)
 	if installableItemsResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
-		return overview, errors.New("FailedToReadInstallableServices")
+		return overview, errors.New("ReadInstallableServicesLiaisonBadResponse")
 	}
 
 	installableItemsTypedOutputBody, assertOk := installableItemsResponseOutput.Body.(dto.ReadInstallableServicesItemsResponse)
 	if !assertOk {
-		return overview, errors.New("FailedToReadInstallableServices")
+		return overview, errors.New("AssertReadInstallableServicesResponseFailed")
 	}
 	installableServicesGroupedByType := presenter.installableServicesGroupedByTypeFactory(
 		installableItemsTypedOutputBody.InstallableServices,
@@ -162,6 +170,42 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 	return ServicesOverview{
 		InstalledServicesResponseDto: installedItemsResponseDto,
 		InstallableServices:          installableServicesGroupedByType,
+	}, nil
+}
+
+const terminalSessionsOverviewRecentLimit = 3
+
+func (presenter *OverviewPresenter) terminalSessionsOverviewFactory(
+	echoContext echo.Context,
+) (overview TerminalSessionsOverview, err error) {
+	operatorAccountId, assertOk := echoContext.Get("operatorAccountId").(tkValueObject.AccountId)
+	if !assertOk {
+		return overview, errors.New("OperatorAccountIdNotFound")
+	}
+
+	responseOutput := presenter.terminalSessionLiaison.Read(map[string]any{
+		"operatorAccountId": operatorAccountId,
+		"itemsPerPage":      terminalSessionsOverviewRecentLimit,
+		"sortBy":            "createdAt",
+		"sortDirection":     "desc",
+	})
+	if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
+		return overview, errors.New("ReadTerminalSessionsLiaisonBadResponse")
+	}
+
+	responseDto, assertOk := responseOutput.Body.(dto.ReadTerminalSessionsResponse)
+	if !assertOk {
+		return overview, errors.New("AssertReadTerminalSessionsResponseFailed")
+	}
+
+	totalCount := 0
+	if responseDto.Pagination.ItemsTotal != nil {
+		totalCount = int(*responseDto.Pagination.ItemsTotal)
+	}
+
+	return TerminalSessionsOverview{
+		TotalCount:     totalCount,
+		RecentSessions: responseDto.TerminalSessions,
 	}, nil
 }
 
@@ -193,8 +237,15 @@ func (presenter *OverviewPresenter) Handler(echoContext echo.Context) error {
 		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
+	terminalSessionsOverview, err := presenter.terminalSessionsOverviewFactory(echoContext)
+	if err != nil {
+		slog.Error("TerminalSessionsOverviewFactoryError", slog.String("err", err.Error()))
+		return echoContext.NoContent(http.StatusInternalServerError)
+	}
+
 	pageContent := OverviewIndex(
 		vhostsHostnames, marketplaceOverview, o11yOverview, servicesOverview,
+		terminalSessionsOverview,
 	)
 	return uiLayout.Renderer(uiLayout.LayoutRendererSettings{
 		EchoContext:  echoContext,

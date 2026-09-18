@@ -235,6 +235,13 @@ templ Footer(
 			scheduledTasksStatusesFactory(scheduledTasksEntities),
 		)
 		<!-- Footer Layout HTML -->
+		<div class="mr-2 flex h-full items-center">
+			<i
+				id="terminal-sessions-footer-trigger"
+				class="ph-bold ph-terminal-window cursor-pointer px-1 text-xl"
+				@click="$store.main.openTerminalSessionsModal()"
+			></i>
+		</div>
 		<div
 			class="mr-5 flex h-full items-center"
 			:class="$store.main.displayScheduledTasksPopover ? 'bg-os-300' : 'bg-os-800'"

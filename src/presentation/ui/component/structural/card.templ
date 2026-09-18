@@ -1,0 +1,22 @@
+package componentStructural
+
+type CardSettings struct {
+	Title       string
+	Description string
+	Icon        string
+	// OptionalFields
+	Class      string
+	Attributes templ.Attributes
+}
+
+templ Card(settings CardSettings) {
+	<!-- Card -->
+	<div class={ "rounded-lg bg-neutral-950/20 p-5 " + settings.Class } { settings.Attributes... }>
+		if settings.Title != "" {
+			<div class="mb-2">
+				@PageSubHeading(settings.Title, settings.Description, settings.Icon)
+			</div>
+		}
+		{ children... }
+	</div>
+}
