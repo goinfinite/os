@@ -36,7 +36,7 @@ var AvailableDatabasePrivileges = []string{
 	"LOCK TABLES", "REFERENCES", "SELECT", "SHOW VIEW", "TRIGGER", "UPDATE",
 }
 
-func NewDatabasePrivilege(value interface{}) (
+func NewDatabasePrivilege(value any) (
 	dbPrivilege DatabasePrivilege, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

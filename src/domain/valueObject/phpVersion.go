@@ -7,11 +7,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const phpVersionRegex string = `^\d\.\d$`
+var phpVersionRegex = regexp.MustCompile(`^\d\.\d$`)
 
 type PhpVersion string
 
-func NewPhpVersion(value interface{}) (phpVersion PhpVersion, err error) {
+func NewPhpVersion(value any) (phpVersion PhpVersion, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return phpVersion, errors.New("PhpVersionMustBeString")
@@ -21,8 +21,7 @@ func NewPhpVersion(value interface{}) (phpVersion PhpVersion, err error) {
 		stringValue = stringValue[:1] + "." + stringValue[1:]
 	}
 
-	re := regexp.MustCompile(phpVersionRegex)
-	if !re.MatchString(stringValue) {
+	if !phpVersionRegex.MatchString(stringValue) {
 		return "", errors.New("InvalidPhpVersion")
 	}
 

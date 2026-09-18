@@ -14,7 +14,7 @@ var validMarketplaceItemManifestVersions = []string{
 	"v1",
 }
 
-func NewMarketplaceItemManifestVersion(value interface{}) (
+func NewMarketplaceItemManifestVersion(value any) (
 	version MarketplaceItemManifestVersion, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

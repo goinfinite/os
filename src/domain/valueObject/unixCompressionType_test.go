@@ -4,7 +4,7 @@ import "testing"
 
 func TestUnixCompressionType(t *testing.T) {
 	t.Run("ValidUnixCompressionType", func(t *testing.T) {
-		validUnixCompressionTypes := []interface{}{
+		validUnixCompressionTypes := []any{
 			"tgz", "zip",
 		}
 
@@ -20,7 +20,7 @@ func TestUnixCompressionType(t *testing.T) {
 	})
 
 	t.Run("InvalidUnixCompressionType", func(t *testing.T) {
-		invalidUnixCompressionTypes := []interface{}{
+		invalidUnixCompressionTypes := []any{
 			"", "jpeg", "pdf",
 		}
 

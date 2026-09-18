@@ -7,11 +7,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const mappingSecurityRuleDescriptionRegex string = `^[^\r\n\t\x00-\x1F\x7F]{0,1000}$`
+var mappingSecurityRuleDescriptionRegex = regexp.MustCompile(`^[^\r\n\t\x00-\x1F\x7F]{0,1000}$`)
 
 type MappingSecurityRuleDescription string
 
-func NewMappingSecurityRuleDescription(value interface{}) (
+func NewMappingSecurityRuleDescription(value any) (
 	mappingSecurityRuleDescription MappingSecurityRuleDescription,
 	err error,
 ) {
@@ -20,8 +20,7 @@ func NewMappingSecurityRuleDescription(value interface{}) (
 		return mappingSecurityRuleDescription, errors.New("MappingSecurityRuleDescriptionMustBeString")
 	}
 
-	re := regexp.MustCompile(mappingSecurityRuleDescriptionRegex)
-	if !re.MatchString(stringValue) {
+	if !mappingSecurityRuleDescriptionRegex.MatchString(stringValue) {
 		return mappingSecurityRuleDescription, errors.New("InvalidMappingSecurityRuleDescription")
 	}
 

@@ -7,20 +7,19 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const SecureAccessPublicKeyNameRegex string = `^[A-Za-z0-9][\w@\-_]{5,32}$`
+var SecureAccessPublicKeyNameRegex = regexp.MustCompile(`^[A-Za-z0-9][\w@\-_]{5,32}$`)
 
 type SecureAccessPublicKeyName string
 
 func NewSecureAccessPublicKeyName(
-	value interface{},
+	value any,
 ) (keyName SecureAccessPublicKeyName, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return keyName, errors.New("SecureAccessPublicKeyNameMustBeString")
 	}
 
-	re := regexp.MustCompile(SecureAccessPublicKeyNameRegex)
-	if !re.MatchString(stringValue) {
+	if !SecureAccessPublicKeyNameRegex.MatchString(stringValue) {
 		return keyName, errors.New("InvalidSecureAccessPublicKeyName")
 	}
 

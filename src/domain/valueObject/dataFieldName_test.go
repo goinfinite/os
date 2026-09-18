@@ -4,7 +4,7 @@ import "testing"
 
 func TestDataFieldName(t *testing.T) {
 	t.Run("ValidDataFieldName", func(t *testing.T) {
-		validDataFieldNames := []interface{}{
+		validDataFieldNames := []any{
 			"username", "user-email", "Service-Name_With_Port80",
 		}
 
@@ -17,7 +17,7 @@ func TestDataFieldName(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldName", func(t *testing.T) {
-		invalidDataFieldNames := []interface{}{
+		invalidDataFieldNames := []any{
 			"", "./test", "-key", "anotherkey-",
 		}
 

@@ -8,7 +8,7 @@ import (
 
 type PhpSettingOption string
 
-func NewPhpSettingOption(value interface{}) (
+func NewPhpSettingOption(value any) (
 	phpSettingOption PhpSettingOption, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

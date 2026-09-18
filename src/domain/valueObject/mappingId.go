@@ -9,7 +9,7 @@ import (
 
 type MappingId uint64
 
-func NewMappingId(value interface{}) (mappingId MappingId, err error) {
+func NewMappingId(value any) (mappingId MappingId, err error) {
 	uintValue, err := tkVoUtil.InterfaceToUint64(value)
 	if err != nil {
 		return mappingId, errors.New("MappingIdMustBeUint64")

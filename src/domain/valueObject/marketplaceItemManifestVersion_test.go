@@ -4,7 +4,7 @@ import "testing"
 
 func TestMarketplaceItemManifestVersion(t *testing.T) {
 	t.Run("ValidMarketplaceItemManifestVersion", func(t *testing.T) {
-		validMarketplaceItemManifestVersions := []interface{}{
+		validMarketplaceItemManifestVersions := []any{
 			"v1",
 		}
 
@@ -20,7 +20,7 @@ func TestMarketplaceItemManifestVersion(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemManifestVersion", func(t *testing.T) {
-		invalidMarketplaceItemManifestVersions := []interface{}{
+		invalidMarketplaceItemManifestVersions := []any{
 			"v0", 0, false, 1.00,
 		}
 

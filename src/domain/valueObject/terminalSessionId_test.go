@@ -4,7 +4,7 @@ import "testing"
 
 func TestTerminalSessionId(t *testing.T) {
 	t.Run("ValidTerminalSessionId", func(t *testing.T) {
-		validIds := []interface{}{
+		validIds := []any{
 			"a7f3c91d2e4b6f80", "0123456789abcdef", "1234567890123456",
 			"A7F3C91D2E4B6F80",
 		}
@@ -18,7 +18,7 @@ func TestTerminalSessionId(t *testing.T) {
 	})
 
 	t.Run("InvalidTerminalSessionId", func(t *testing.T) {
-		invalidIds := []interface{}{
+		invalidIds := []any{
 			"a7f3c91d2e4b6f8", "a7f3c91d2e4b6f800", "a7f3c91d2e4b6f8g",
 			"infinite-a7f3c91d2e4b6f80", "", 12345,
 		}

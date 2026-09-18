@@ -4,7 +4,7 @@ import "testing"
 
 func TestScheduledTaskId(t *testing.T) {
 	t.Run("ValidScheduledTaskId", func(t *testing.T) {
-		validScheduledTaskIds := []interface{}{
+		validScheduledTaskIds := []any{
 			0, 1, 445, "15987612309",
 		}
 
@@ -17,7 +17,7 @@ func TestScheduledTaskId(t *testing.T) {
 	})
 
 	t.Run("InvalidScheduledTaskId", func(t *testing.T) {
-		invalidScheduledTaskIds := []interface{}{
+		invalidScheduledTaskIds := []any{
 			-1, -455, "-15987612309",
 		}
 

@@ -10,7 +10,7 @@ type UnixFileContent string
 
 const FileContentMaxSizeInMb = 5
 
-func NewUnixFileContent(value interface{}) (
+func NewUnixFileContent(value any) (
 	unixFileContent UnixFileContent, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

@@ -10,9 +10,9 @@ import (
 
 type TerminalSessionId string
 
-const terminalSessionIdRegexExpression = `^[a-f0-9]{16}$`
+var terminalSessionIdRegex = regexp.MustCompile(`^[a-f0-9]{16}$`)
 
-func NewTerminalSessionId(value interface{}) (
+func NewTerminalSessionId(value any) (
 	terminalSessionId TerminalSessionId, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -21,8 +21,7 @@ func NewTerminalSessionId(value interface{}) (
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	re := regexp.MustCompile(terminalSessionIdRegexExpression)
-	if !re.MatchString(stringValue) {
+	if !terminalSessionIdRegex.MatchString(stringValue) {
 		return terminalSessionId, errors.New("InvalidTerminalSessionId")
 	}
 

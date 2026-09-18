@@ -4,7 +4,7 @@ import "testing"
 
 func TestMappingId(t *testing.T) {
 	t.Run("ValidMappingId", func(t *testing.T) {
-		validMappingIds := []interface{}{
+		validMappingIds := []any{
 			0, 1, 10000000000000, "455", 40.5,
 		}
 
@@ -17,7 +17,7 @@ func TestMappingId(t *testing.T) {
 	})
 
 	t.Run("InvalidMappingId", func(t *testing.T) {
-		invalidMappingIds := []interface{}{
+		invalidMappingIds := []any{
 			-1, -10000000000000, "-455", -40.5,
 		}
 

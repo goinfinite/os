@@ -4,7 +4,7 @@ import "testing"
 
 func TestDataFieldLabel(t *testing.T) {
 	t.Run("ValidDataFieldLabel", func(t *testing.T) {
-		validDataFieldLabels := []interface{}{
+		validDataFieldLabels := []any{
 			"Administrator Email", "Super administrator password",
 			"Public directory to install", "Your own custom domain",
 			"Container port binding", "Customem phone number",
@@ -19,7 +19,7 @@ func TestDataFieldLabel(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldLabel", func(t *testing.T) {
-		invalidDataFieldLabels := []interface{}{
+		invalidDataFieldLabels := []any{
 			"", "./test", "-key", "anotherkey-",
 		}
 

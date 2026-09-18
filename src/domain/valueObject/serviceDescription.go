@@ -8,7 +8,7 @@ import (
 
 type ServiceDescription string
 
-func NewServiceDescription(value interface{}) (
+func NewServiceDescription(value any) (
 	serviceDescription ServiceDescription, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

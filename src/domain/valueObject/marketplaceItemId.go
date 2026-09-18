@@ -9,7 +9,7 @@ import (
 
 type MarketplaceItemId uint16
 
-func NewMarketplaceItemId(value interface{}) (
+func NewMarketplaceItemId(value any) (
 	marketplaceItemId MarketplaceItemId, err error,
 ) {
 	uintValue, err := tkVoUtil.InterfaceToUint16(value)

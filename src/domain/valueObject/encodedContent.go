@@ -8,11 +8,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const encodedContentRegex = `^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$`
+var encodedContentRegex = regexp.MustCompile(`^(?:[A-Za-z0-9+\/]{4})*(?:[A-Za-z0-9+\/]{4}|[A-Za-z0-9+\/]{3}=|[A-Za-z0-9+\/]{2}={2})$`)
 
 type EncodedContent string
 
-func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err error) {
+func NewEncodedContent(value any) (encodedContent EncodedContent, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return encodedContent, errors.New("EncodedContentMustBeString")
@@ -22,8 +22,7 @@ func NewEncodedContent(value interface{}) (encodedContent EncodedContent, err er
 		return encodedContent, errors.New("EmptyEncodedContent")
 	}
 
-	re := regexp.MustCompile(encodedContentRegex)
-	if !re.MatchString(stringValue) {
+	if !encodedContentRegex.MatchString(stringValue) {
 		return encodedContent, errors.New("InvalidEncodedContent")
 	}
 

@@ -9,7 +9,7 @@ import (
 var NewSystemResourceIdentifier = tkValueObject.NewSystemResourceIdentifier
 
 func NewSystemResourceIdentifierMustCreate(
-	value interface{},
+	value any,
 ) tkValueObject.SystemResourceIdentifier {
 	return tkValueObject.NewSystemResourceIdentifierMustCreate(value)
 }

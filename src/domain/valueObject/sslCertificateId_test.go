@@ -6,7 +6,7 @@ import (
 
 func TestNewSslCertificateId(t *testing.T) {
 	t.Run("ValidSslCertificateId", func(t *testing.T) {
-		validSslCertificateIds := []interface{}{
+		validSslCertificateIds := []any{
 			"a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4",
 			"a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4",
 			"1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
@@ -25,7 +25,7 @@ func TestNewSslCertificateId(t *testing.T) {
 	})
 
 	t.Run("InvalidSslCertificateId", func(t *testing.T) {
-		invalidSslCertificateIds := []interface{}{
+		invalidSslCertificateIds := []any{
 			"g3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a3b4",
 			"12345", "!@#$%^&*()_+|}{:?><,./;'[]=-",
 			"abcdefgh1234567890abcdefgh1234567890abcdefgh1234567890abcdefgh12",

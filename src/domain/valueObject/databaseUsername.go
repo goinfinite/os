@@ -7,11 +7,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const databaseUsernameRegex string = `^\w[\w-]+\w$`
+var databaseUsernameRegex = regexp.MustCompile(`^\w[\w-]+\w$`)
 
 type DatabaseUsername string
 
-func NewDatabaseUsername(value interface{}) (
+func NewDatabaseUsername(value any) (
 	dbUsername DatabaseUsername, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -19,8 +19,7 @@ func NewDatabaseUsername(value interface{}) (
 		return dbUsername, errors.New("DatabaseUsernameMustBeString")
 	}
 
-	re := regexp.MustCompile(databaseUsernameRegex)
-	if !re.MatchString(stringValue) {
+	if !databaseUsernameRegex.MatchString(stringValue) {
 		return dbUsername, errors.New("InvalidDatabaseUsername")
 	}
 

@@ -7,11 +7,15 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const serviceVersionRegex string = `^([\w\_\.\-]{1,64}|[\d\.\_\-]{1,20}|latest|lts|alpha|beta|legacy)$`
+var serviceVersionRegex = regexp.MustCompile(
+	`^([\w\_\.\-]{1,64}|[\d\.\_\-]{1,20}|latest|lts|alpha|beta|legacy)$`,
+)
+
+var serviceVersionPunctuationRegex = regexp.MustCompile(`[\.\_\-]`)
 
 type ServiceVersion string
 
-func NewServiceVersion(value interface{}) (
+func NewServiceVersion(value any) (
 	serviceVersion ServiceVersion, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -19,8 +23,7 @@ func NewServiceVersion(value interface{}) (
 		return serviceVersion, errors.New("ServiceVersionMustBeString")
 	}
 
-	re := regexp.MustCompile(serviceVersionRegex)
-	if !re.MatchString(stringValue) {
+	if !serviceVersionRegex.MatchString(stringValue) {
 		return serviceVersion, errors.New("InvalidServiceVersion")
 	}
 
@@ -28,8 +31,7 @@ func NewServiceVersion(value interface{}) (
 }
 
 func (vo ServiceVersion) GetWithoutPunctuation() string {
-	re := regexp.MustCompile(`[\.\_\-]`)
-	return re.ReplaceAllString(string(vo), "")
+	return serviceVersionPunctuationRegex.ReplaceAllString(string(vo), "")
 }
 
 func (vo ServiceVersion) String() string {

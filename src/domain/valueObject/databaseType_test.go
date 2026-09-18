@@ -4,7 +4,7 @@ import "testing"
 
 func TestDatabaseType(t *testing.T) {
 	t.Run("ValidDatabaseType", func(t *testing.T) {
-		validDbTypes := []interface{}{
+		validDbTypes := []any{
 			"mariadb", "mysql", "percona", "postgresql", "postgres",
 		}
 
@@ -17,7 +17,7 @@ func TestDatabaseType(t *testing.T) {
 	})
 
 	t.Run("InvalidDatabaseType", func(t *testing.T) {
-		invalidDbTypes := []interface{}{
+		invalidDbTypes := []any{
 			"cassandra", "sql-server", "cosmosdb",
 		}
 

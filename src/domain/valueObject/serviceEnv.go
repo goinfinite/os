@@ -7,18 +7,17 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const serviceEnvRegex string = `^\w{1,1000}=.{1,1000}$`
+var serviceEnvRegex = regexp.MustCompile(`^\w{1,1000}=.{1,1000}$`)
 
 type ServiceEnv string
 
-func NewServiceEnv(value interface{}) (serviceEnv ServiceEnv, err error) {
+func NewServiceEnv(value any) (serviceEnv ServiceEnv, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceEnv, errors.New("ServiceEnvMustBeString")
 	}
 
-	re := regexp.MustCompile(serviceEnvRegex)
-	if !re.MatchString(stringValue) {
+	if !serviceEnvRegex.MatchString(stringValue) {
 		return serviceEnv, errors.New("InvalidServiceEnv")
 	}
 

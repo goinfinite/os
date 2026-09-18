@@ -4,7 +4,7 @@ import "testing"
 
 func TestRuntimeType(t *testing.T) {
 	t.Run("ValidRuntimeType", func(t *testing.T) {
-		validRuntimeTypes := []interface{}{
+		validRuntimeTypes := []any{
 			"php",
 		}
 
@@ -17,7 +17,7 @@ func TestRuntimeType(t *testing.T) {
 	})
 
 	t.Run("InvalidRuntimeType", func(t *testing.T) {
-		invalidRuntimeTypes := []interface{}{
+		invalidRuntimeTypes := []any{
 			"jre", "nodejs",
 		}
 

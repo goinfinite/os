@@ -4,7 +4,7 @@ import "testing"
 
 func TestServiceName(t *testing.T) {
 	t.Run("ValidServiceName", func(t *testing.T) {
-		validServiceName := []interface{}{
+		validServiceName := []any{
 			"php-webserver", "mariadb", "mysql", "postgresql", "python",
 			"java", "nodejs", "python", "php", "redis-server",
 		}
@@ -20,7 +20,7 @@ func TestServiceName(t *testing.T) {
 	})
 
 	t.Run("InvalidServiceName", func(t *testing.T) {
-		invalidServiceName := []interface{}{
+		invalidServiceName := []any{
 			"nginx@", "my<>sql", "php#fpm", "node(js)",
 		}
 

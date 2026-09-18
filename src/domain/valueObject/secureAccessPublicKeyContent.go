@@ -11,7 +11,7 @@ import (
 type SecureAccessPublicKeyContent string
 
 func NewSecureAccessPublicKeyContent(
-	value interface{},
+	value any,
 ) (keyContent SecureAccessPublicKeyContent, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {

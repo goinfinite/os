@@ -7,11 +7,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const mappingSecurityRuleNameRegex string = `^[a-zA-Z0-9][a-zA-Z0-9\-_ ]{1,512}$`
+var mappingSecurityRuleNameRegex = regexp.MustCompile(`^[a-zA-Z0-9][a-zA-Z0-9\-_ ]{1,512}$`)
 
 type MappingSecurityRuleName string
 
-func NewMappingSecurityRuleName(value interface{}) (
+func NewMappingSecurityRuleName(value any) (
 	mappingSecurityRuleName MappingSecurityRuleName,
 	err error,
 ) {
@@ -20,8 +20,7 @@ func NewMappingSecurityRuleName(value interface{}) (
 		return mappingSecurityRuleName, errors.New("MappingSecurityRuleNameMustBeString")
 	}
 
-	re := regexp.MustCompile(mappingSecurityRuleNameRegex)
-	if !re.MatchString(stringValue) {
+	if !mappingSecurityRuleNameRegex.MatchString(stringValue) {
 		return mappingSecurityRuleName, errors.New("InvalidMappingSecurityRuleName")
 	}
 

@@ -8,7 +8,7 @@ import (
 
 type InlineHtmlContent string
 
-func NewInlineHtmlContent(value interface{}) (
+func NewInlineHtmlContent(value any) (
 	inlineHtmlContent InlineHtmlContent, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

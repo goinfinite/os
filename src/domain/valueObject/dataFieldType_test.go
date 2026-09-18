@@ -4,7 +4,7 @@ import "testing"
 
 func TestDataFieldType(t *testing.T) {
 	t.Run("ValidDataFieldType", func(t *testing.T) {
-		validDataFieldTypes := []interface{}{
+		validDataFieldTypes := []any{
 			"checkbox", "color", "date", "email", "image", "number", "password",
 			"radio", "range", "search", "select", "tel", "text", "time", "url",
 		}
@@ -20,7 +20,7 @@ func TestDataFieldType(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldType", func(t *testing.T) {
-		invalidDataFieldTypes := []interface{}{
+		invalidDataFieldTypes := []any{
 			"button", "datetime-local", "file", "hidden", "month", "reset",
 			"submit", "week",
 		}

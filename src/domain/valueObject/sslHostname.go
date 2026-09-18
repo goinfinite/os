@@ -10,7 +10,7 @@ import (
 
 type SslHostname string
 
-func NewSslHostname(value interface{}) (sslHostname SslHostname, err error) {
+func NewSslHostname(value any) (sslHostname SslHostname, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return sslHostname, errors.New("SslHostnameMustBeString")

@@ -14,7 +14,7 @@ var ValidScheduledTaskStatuses = []string{
 	"pending", "running", "completed", "failed", "cancelled", "timeout",
 }
 
-func NewScheduledTaskStatus(value interface{}) (
+func NewScheduledTaskStatus(value any) (
 	scheduledTaskStatus ScheduledTaskStatus, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

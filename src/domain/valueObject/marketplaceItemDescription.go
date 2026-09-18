@@ -8,7 +8,7 @@ import (
 
 type MarketplaceItemDescription string
 
-func NewMarketplaceItemDescription(value interface{}) (
+func NewMarketplaceItemDescription(value any) (
 	marketplaceItemDescription MarketplaceItemDescription, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

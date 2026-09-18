@@ -4,7 +4,7 @@ import "testing"
 
 func TestServiceDescription(t *testing.T) {
 	t.Run("ValidServiceDescription", func(t *testing.T) {
-		validServiceDescription := []interface{}{
+		validServiceDescription := []any{
 			"php-webserver", "mariadb", "mysql", "postgresql", "python",
 			"java", "nodejs", "python",
 		}
@@ -20,7 +20,7 @@ func TestServiceDescription(t *testing.T) {
 	})
 
 	t.Run("InvalidServiceDescription", func(t *testing.T) {
-		invalidServiceDescription := []interface{}{
+		invalidServiceDescription := []any{
 			"", "a",
 		}
 

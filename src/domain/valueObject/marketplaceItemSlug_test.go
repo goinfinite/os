@@ -4,7 +4,7 @@ import "testing"
 
 func TestMarketplaceItemSlug(t *testing.T) {
 	t.Run("ValidMarketplaceItemSlug", func(t *testing.T) {
-		validMarketplaceItemSlugs := []interface{}{
+		validMarketplaceItemSlugs := []any{
 			"drupal", "joomla", "lamp", "lemp", "laravel", "opencart", "oc",
 			"wp", "wordpress",
 		}
@@ -18,7 +18,7 @@ func TestMarketplaceItemSlug(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemSlug", func(t *testing.T) {
-		invalidMarketplaceItemSlugs := []interface{}{
+		invalidMarketplaceItemSlugs := []any{
 			"", ".", "..", "/", "Slug with spaces", "<root>",
 		}
 

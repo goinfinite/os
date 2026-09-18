@@ -4,7 +4,7 @@ import "testing"
 
 func TestPhpSettingType(t *testing.T) {
 	t.Run("ValidPhpSettingType", func(t *testing.T) {
-		validPhpSettingTypes := []interface{}{
+		validPhpSettingTypes := []any{
 			"select", "text",
 		}
 
@@ -19,7 +19,7 @@ func TestPhpSettingType(t *testing.T) {
 	})
 
 	t.Run("InvalidPhpSettingType", func(t *testing.T) {
-		invalidPhpSettingTypes := []interface{}{
+		invalidPhpSettingTypes := []any{
 			"button", "checkbox", "datetime-local", "date", "file", "hidden", "month",
 			"reset", "submit", "week",
 		}

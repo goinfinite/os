@@ -4,7 +4,7 @@ import "testing"
 
 func TestDataFieldSpecificType(t *testing.T) {
 	t.Run("ValidDataFieldSpecificType", func(t *testing.T) {
-		validDataFieldSpecificTypes := []interface{}{
+		validDataFieldSpecificTypes := []any{
 			"password", "PASSWORD", "username", "USERNAME", "email", "EMAIL",
 		}
 
@@ -20,7 +20,7 @@ func TestDataFieldSpecificType(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldSpecificType", func(t *testing.T) {
-		invalidDataFieldSpecificTypes := []interface{}{
+		invalidDataFieldSpecificTypes := []any{
 			"button", "datetime-local", "file", "hidden", "month", "reset",
 			"submit", "week",
 		}

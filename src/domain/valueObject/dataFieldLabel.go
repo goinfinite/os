@@ -7,11 +7,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const dataFieldLabelRegex string = `^\w[\w- ]{1,127}\w$`
+var dataFieldLabelRegex = regexp.MustCompile(`^\w[\w- ]{1,127}\w$`)
 
 type DataFieldLabel string
 
-func NewDataFieldLabel(value interface{}) (
+func NewDataFieldLabel(value any) (
 	dataFieldLabel DataFieldLabel, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -19,8 +19,7 @@ func NewDataFieldLabel(value interface{}) (
 		return dataFieldLabel, errors.New("DataFieldLabelMustBeString")
 	}
 
-	re := regexp.MustCompile(dataFieldLabelRegex)
-	if !re.MatchString(stringValue) {
+	if !dataFieldLabelRegex.MatchString(stringValue) {
 		return dataFieldLabel, errors.New("InvalidDataFieldLabel")
 	}
 

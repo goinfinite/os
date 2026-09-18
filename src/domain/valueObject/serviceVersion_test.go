@@ -4,7 +4,7 @@ import "testing"
 
 func TestServiceVersion(t *testing.T) {
 	t.Run("ValidServiceVersions", func(t *testing.T) {
-		validVersionsAndAliases := []interface{}{
+		validVersionsAndAliases := []any{
 			"1.0.0", "0.1.0", "latest", "lts", "alpha", "beta", "legacy",
 			"version1.0.0",
 		}
@@ -17,7 +17,7 @@ func TestServiceVersion(t *testing.T) {
 	})
 
 	t.Run("InvalidServiceVersions", func(t *testing.T) {
-		invalidVersionsAndAliases := []interface{}{
+		invalidVersionsAndAliases := []any{
 			"", "1.0<0",
 		}
 		for _, name := range invalidVersionsAndAliases {

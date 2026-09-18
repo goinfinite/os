@@ -244,7 +244,7 @@ func (uc *CreateSecurityActivityRecord) DeleteTerminalSession(
 		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewTerminalSessionSri(ownerAccountId, deleteDto.Id),
 		},
-		RecordDetails: map[string]interface{}{
+		RecordDetails: map[string]any{
 			"ownerAccountId": ownerAccountId.String(),
 		},
 		OperatorSri:       &operatorSri,
@@ -371,7 +371,7 @@ func (uc *CreateSecurityActivityRecord) createPhpRuntimeUpdateActivityRecord(
 	operatorAccountId tkValueObject.AccountId,
 	operatorIpAddress tkValueObject.IpAddress,
 	recordCodeString string,
-	recordDetails interface{},
+	recordDetails any,
 ) {
 	operatorSri := tkValueObject.NewSriAccount(operatorAccountId)
 	createRecordDto := tkDto.CreateActivityRecord{
@@ -513,9 +513,9 @@ func (uc *CreateSecurityActivityRecord) CreateSslPair(
 		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSslSri(createDto.OperatorAccountId, sslPairId),
 		},
-		RecordDetails: map[string]interface{}{
+		RecordDetails: map[string]any{
 			"virtualHostHostnames": createDto.VirtualHostsHostnames,
-			"certificate": map[string]interface{}{
+			"certificate": map[string]any{
 				"commonName": createDto.Certificate.CommonName,
 				"altNames":   createDto.Certificate.AltNames,
 				"authority":  createDto.Certificate.CertificateAuthority,
@@ -577,7 +577,7 @@ func (uc *CreateSecurityActivityRecord) DeleteSslPairVhosts(
 		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSslSri(deleteDto.OperatorAccountId, deleteDto.SslPairId),
 		},
-		RecordDetails: map[string]interface{}{
+		RecordDetails: map[string]any{
 			"sslPairVhosts": deleteDto.VirtualHostsHostnames,
 		},
 		OperatorSri:       &operatorSri,
@@ -738,7 +738,7 @@ func (uc *CreateSecurityActivityRecord) UpdateUnixFiles(updateDto dto.UpdateUnix
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
-	details := map[string]interface{}{
+	details := map[string]any{
 		"sourcePaths": updateDto.SourcePaths,
 	}
 	if updateDto.DestinationPath != nil {
@@ -815,7 +815,7 @@ func (uc *CreateSecurityActivityRecord) UploadUnixFiles(
 		OperatorIpAddress: &uploadDto.OperatorIpAddress,
 	}
 
-	details := map[string]interface{}{"destinationPath": uploadDto.DestinationPath}
+	details := map[string]any{"destinationPath": uploadDto.DestinationPath}
 
 	fileNames := []tkValueObject.UnixFileName{}
 	for _, fileStreamHandler := range uploadDto.FileStreamHandlers {

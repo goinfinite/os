@@ -16,7 +16,7 @@ const (
 	MappingMatchPatternEndsWith   MappingMatchPattern = "ends-with"
 )
 
-func NewMappingMatchPattern(value interface{}) (
+func NewMappingMatchPattern(value any) (
 	matchPattern MappingMatchPattern, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

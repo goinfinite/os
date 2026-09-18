@@ -8,11 +8,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const urlPathRegex string = `^(\/|\/\w{1,256}[\w\/\.-]{0,256})$`
+var urlPathRegex = regexp.MustCompile(`^(\/|\/\w{1,256}[\w\/\.-]{0,256})$`)
 
 type UrlPath string
 
-func NewUrlPath(value interface{}) (urlPath UrlPath, err error) {
+func NewUrlPath(value any) (urlPath UrlPath, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return urlPath, errors.New("UrlPathValueMustBeString")
@@ -23,8 +23,7 @@ func NewUrlPath(value interface{}) (urlPath UrlPath, err error) {
 		stringValue = "/" + stringValue
 	}
 
-	re := regexp.MustCompile(urlPathRegex)
-	if !re.MatchString(stringValue) {
+	if !urlPathRegex.MatchString(stringValue) {
 		return urlPath, errors.New("InvalidUrlPath")
 	}
 

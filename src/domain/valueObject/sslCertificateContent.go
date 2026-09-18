@@ -12,7 +12,7 @@ import (
 
 type SslCertificateContent string
 
-func NewSslCertificateContent(input interface{}) (
+func NewSslCertificateContent(input any) (
 	certContent SslCertificateContent, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(input)
