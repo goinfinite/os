@@ -1,6 +1,17 @@
 # Changelog
 
 ```log
+0.3.5 - 2026/09/17
+feat(terminal): add persistent terminal sessions backed by tmux
+feat(terminal): expose sessions in the REST API with pagination and a websocket attach
+feat(terminal): add the terminal page, layout modal and footer trigger
+feat(cli): add the terminal create, list, delete and attach commands
+feat(ui): add the card component and reorganize the overview grid
+test(terminal): add the CLI lifecycle and browser suites
+chore: bake tmux into the container image
+chore: adopt biome for JavaScript lint and formatting
+chore: bump version to 0.3.5
+
 0.3.4 - 2026/09/15
 chore: update go deps
 docs: document the version bump and swag tmp exclusion

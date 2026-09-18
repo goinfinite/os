@@ -170,7 +170,7 @@ Display system health, hardware specs, uptime, IP address, and operational metri
 **Flow:**
 
 1. `src/presentation/api/controller/o11y.go` — System metrics REST endpoint
-2. `src/presentation/ui/presenter/overview/` — Web dashboard system overview page
+2. `src/presentation/ui/presenter/overview/` — Web dashboard system overview page; two-column grid with the terminal sessions tile
 3. `src/infra/o11y/` — System observability and metrics collection
 4. `src/infra/internalDatabase/` — Historical metric storage
 
@@ -279,6 +279,26 @@ Create, revoke, and manage API keys for secure programmatic access to the system
 2. `src/domain/useCase/createSecureAccessPublicKey.go` — Key generation
 3. `src/infra/auth/` — Key validation middleware
 4. `src/infra/internalDatabase/` — API key storage and retrieval
+
+---
+
+## Web Terminal
+
+Open persistent terminal sessions that run as the account's Linux user. tmux holds every session, so it survives a browser close and an os-api restart. The dashboard, the REST API and the CLI expose the same resource.
+
+**Flow:**
+
+1. `src/presentation/api/controller/terminalSession.go` — terminal session REST endpoints and the WebSocket attach
+2. `src/presentation/cli/controller/terminal.go` — CLI `terminal` commands, including an `su`-based interactive attach
+3. `src/presentation/ui/presenter/terminal/` — terminal page, layout modal fragment and the xterm.js client
+4. `src/presentation/ui/presenter/overview/` — terminal sessions tile in the overview grid
+5. `src/presentation/ui/layout/main/main.templ` — layout-level terminal management modal
+6. `src/presentation/liaison/terminalSession.go` — untrusted input to DTOs and the attach handle
+7. `src/domain/useCase/createTerminalSession.go` — owner resolution and the ten-session per-account cap
+8. `src/domain/useCase/readTerminalSessions.go` — operator-scoped read; super-admins enumerate accounts
+9. `src/domain/useCase/deleteTerminalSession.go` — authorized delete
+10. `src/infra/terminalSession/` — tmux client and PTY attach, both run as the owner
+11. `Containerfile` — tmux package
 
 ---
 
