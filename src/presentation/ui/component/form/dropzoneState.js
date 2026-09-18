@@ -3,7 +3,9 @@ UiToolset.RegisterAlpineState(() => {
     files: [],
     updateFileInput() {
       const dataTransfer = new DataTransfer();
-      this.files.forEach((file) => dataTransfer.items.add(file));
+      this.files.forEach((file) => {
+        dataTransfer.items.add(file);
+      });
       this.$refs.dropzone.files = dataTransfer.files;
     },
     removeFile(index) {

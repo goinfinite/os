@@ -29,17 +29,17 @@ UiToolset.RegisterAlpineState(() => {
           select: "#databases-page-content",
           target: "#databases-page-content",
           swap: "outerHTML transition:true",
-        }
+        },
       );
     },
     get shouldDisableCreateDatabaseSubmitButton() {
-      return this.database.name == "";
+      return this.database.name === "";
     },
     get shouldDisableCreateDatabaseUserSubmitButton() {
       return (
-        this.database.name == "" ||
-        this.databaseUser.username == "" ||
-        this.databaseUser.password == ""
+        this.database.name === "" ||
+        this.databaseUser.username === "" ||
+        this.databaseUser.password === ""
       );
     },
 
@@ -73,7 +73,7 @@ UiToolset.RegisterAlpineState(() => {
             "/" +
             encodeURIComponent(this.database.name) +
             "/",
-          { swap: "none" }
+          { swap: "none" },
         )
         .finally(() => {
           this.closeDeleteDatabaseModal();
@@ -114,7 +114,7 @@ UiToolset.RegisterAlpineState(() => {
             "/user/" +
             encodeURIComponent(this.databaseUser.username) +
             "/",
-          { swap: "none" }
+          { swap: "none" },
         )
         .finally(() => {
           this.closeDeleteDatabaseUserModal();

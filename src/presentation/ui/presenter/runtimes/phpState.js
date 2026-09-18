@@ -25,12 +25,12 @@ UiToolset.RegisterAlpineState(() => {
     displayModuleParsingFailures(parsingFailures) {
       const failureMessages = parsingFailures.map((failure) => {
         const moduleName =
-          failure.name || "module #" + (Number(failure.index) + 1);
-        return moduleName + ": " + failure.reason;
+          failure.name || `module #${Number(failure.index) + 1}`;
+        return `${moduleName}: ${failure.reason}`;
       });
       Alpine.store("toast").displayToast(
-        "PhpModulesParsingFailed: " + failureMessages.join(", "),
-        "danger"
+        `PhpModulesParsingFailed: ${failureMessages.join(", ")}`,
+        "danger",
       );
     },
     refreshRuntimesPage() {
@@ -39,7 +39,7 @@ UiToolset.RegisterAlpineState(() => {
     updatePhpConfigs() {
       const changedModules = (this.phpConfigs.modules ?? []).filter(
         (module) =>
-          this.initialPhpModuleStatuses[module.name] !== module.status
+          this.initialPhpModuleStatuses[module.name] !== module.status,
       );
       const requestBody = {
         version: this.phpConfigs.version.value,
@@ -55,7 +55,7 @@ UiToolset.RegisterAlpineState(() => {
           "/v1/runtime/php/" +
           encodeURIComponent(this.vhostHostname) +
           "/",
-        requestBody
+        requestBody,
       ).then((responseBody) => {
         const parsingFailures =
           responseBody?.failedModulesWithParsingErrors ?? [];
@@ -97,7 +97,7 @@ UiToolset.RegisterAlpineState(() => {
           {
             swap: "none",
             values: { version: this.phpConfigs.version.value },
-          }
+          },
         )
         .then(() => this.refreshRuntimesPage());
     },

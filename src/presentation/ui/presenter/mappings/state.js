@@ -3,7 +3,7 @@ UiToolset.RegisterAlpineState(() => {
     // PrimaryState
     virtualHost: {},
     get vhostHostnameWithTrailingSlash() {
-      return this.virtualHost.hostname + "/";
+      return `${this.virtualHost.hostname}/`;
     },
     mapping: {},
     resetPrimaryStates() {
@@ -38,26 +38,26 @@ UiToolset.RegisterAlpineState(() => {
       this.isCreateMappingFromVirtualHost = false;
     },
     get shouldDisableCreateVirtualHostSubmitButton() {
-      return this.virtualHost.hostname == "";
+      return this.virtualHost.hostname === "";
     },
     get shouldDisableCreateMappingSubmitButton() {
-      const isResponseCodeType = this.mapping.targetType == "response-code";
+      const isResponseCodeType = this.mapping.targetType === "response-code";
       const isTargetHttpResponseCodeRequired =
-        isResponseCodeType || this.mapping.targetType == "inline-html";
+        isResponseCodeType || this.mapping.targetType === "inline-html";
       if (
         isTargetHttpResponseCodeRequired &&
-        this.mapping.targetHttpResponseCode == ""
+        this.mapping.targetHttpResponseCode === ""
       ) {
         return true;
       }
 
       const isTargetValueRequired =
-        !isResponseCodeType && this.mapping.targetType != "static-files";
-      if (isTargetValueRequired && this.mapping.targetValue == "") {
+        !isResponseCodeType && this.mapping.targetType !== "static-files";
+      if (isTargetValueRequired && this.mapping.targetValue === "") {
         return true;
       }
 
-      return this.virtualHost.hostname == "";
+      return this.virtualHost.hostname === "";
     },
 
     // ModalState
@@ -82,7 +82,7 @@ UiToolset.RegisterAlpineState(() => {
       this.resetPrimaryStates();
 
       const vhostEntity = JSON.parse(
-        document.getElementById("vhostEntity_" + vhostHostname).textContent
+        document.getElementById(`vhostEntity_${vhostHostname}`).textContent,
       );
       this.virtualHost.hostname = vhostEntity.hostname;
       this.virtualHost.isWildcard = vhostEntity.isWildcard;
@@ -107,8 +107,11 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/vhost/" + this.virtualHost.hostname + "/",
-          { swap: "none" }
+          Infinite.OsApiBasePath +
+            "/v1/vhost/" +
+            this.virtualHost.hostname +
+            "/",
+          { swap: "none" },
         )
         .then(() => this.$dispatch("refresh:mappings-table"));
     },
@@ -136,7 +139,7 @@ UiToolset.RegisterAlpineState(() => {
       this.resetPrimaryStates();
 
       this.mapping = JSON.parse(
-        document.getElementById("mappingEntity_" + mappingId).textContent
+        document.getElementById(`mappingEntity_${mappingId}`).textContent,
       );
       this.virtualHost.hostname = this.mapping.hostname;
 
@@ -161,8 +164,8 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/vhost/mapping/" + this.mapping.id + "/",
-          { swap: "none" }
+          `${Infinite.OsApiBasePath}/v1/vhost/mapping/${this.mapping.id}/`,
+          { swap: "none" },
         )
         .then(() => this.$dispatch("refresh:mappings-table"));
     },

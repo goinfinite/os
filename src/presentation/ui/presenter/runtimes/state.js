@@ -16,7 +16,7 @@ UiToolset.RegisterAlpineState(() => {
           select: "#runtimes-page-content",
           target: "#runtimes-page-content",
           swap: "outerHTML transition:true",
-        }
+        },
       );
     },
     init() {

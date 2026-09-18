@@ -54,7 +54,7 @@ UiToolset.RegisterAlpineState(() => {
       this.resetAuxiliaryStates();
 
       const cronEntity = JSON.parse(
-        document.getElementById("cronEntity_" + id).textContent
+        document.getElementById(`cronEntity_${id}`).textContent,
       );
       this.cron.id = cronEntity.id;
       this.cron.schedule = cronEntity.schedule;
@@ -93,7 +93,7 @@ UiToolset.RegisterAlpineState(() => {
       this.resetPrimaryStates();
 
       const cronEntity = JSON.parse(
-        document.getElementById("cronEntity_" + id).textContent
+        document.getElementById(`cronEntity_${id}`).textContent,
       );
       this.cron.id = cronEntity.id;
       this.cron.comment = cronEntity.comment;
@@ -105,11 +105,9 @@ UiToolset.RegisterAlpineState(() => {
     },
     deleteCronJob() {
       htmx
-        .ajax(
-          "DELETE",
-          Infinite.OsApiBasePath + "/v1/cron/" + this.cron.id + "/",
-          { swap: "none" }
-        )
+        .ajax("DELETE", `${Infinite.OsApiBasePath}/v1/cron/${this.cron.id}/`, {
+          swap: "none",
+        })
         .then(() => {
           this.$dispatch("delete:cron");
         })

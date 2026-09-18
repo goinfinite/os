@@ -1,3 +1,4 @@
+// biome-ignore lint/suspicious/noRedundantUseStrict: additional.js loads as a classic script, so strict mode is not implied.
 "use strict";
 
 // UnoCSS customizations
@@ -67,7 +68,7 @@ function createFilterQueryParams(filtersObject, paginationObject) {
     ...filtersObject,
     ...paginationObject,
   };
-  for (let [key, value] of Object.entries(filtersAndPaginationObject)) {
+  for (const [key, value] of Object.entries(filtersAndPaginationObject)) {
     if (typeof value === "number") {
       queryParams.set(key, value);
       continue;
@@ -106,5 +107,5 @@ window.Infinite = {
   },
   CreateFilterQueryParams: createFilterQueryParams,
   DownloadFile: downloadFile,
-  OsApiBasePath: document.baseURI + "api",
+  OsApiBasePath: `${document.baseURI}api`,
 };

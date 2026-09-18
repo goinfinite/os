@@ -18,9 +18,9 @@ UiToolset.RegisterAlpineState(() => {
     // AuxiliaryState
     get shouldDisableImportSslCertificateSubmitButton() {
       return (
-        this.sslPair.virtualHostsHostnames.length == 0 ||
-        this.sslPair.certificate == "" ||
-        this.sslPair.key == ""
+        this.sslPair.virtualHostsHostnames.length === 0 ||
+        this.sslPair.certificate === "" ||
+        this.sslPair.key === ""
       );
     },
     shouldImportSslCertificateAsFile: false,
@@ -41,14 +41,13 @@ UiToolset.RegisterAlpineState(() => {
     openImportSslCertificateModal(vhostHostname = "") {
       this.resetPrimaryStates();
 
-      this.sslPair.virtualHostsHostnames = this.resolveImportSslCertificateVhostHostnames(
-        vhostHostname,
-      );
+      this.sslPair.virtualHostsHostnames =
+        this.resolveImportSslCertificateVhostHostnames(vhostHostname);
       this.isImportSslCertificateModalOpen = true;
     },
     readImportSslCertificateAvailableHostnames() {
       const hostnamesElement = document.getElementById(
-        "importSslCertificateVhostHostnames"
+        "importSslCertificateVhostHostnames",
       );
       if (!hostnamesElement) {
         return [];
@@ -57,7 +56,7 @@ UiToolset.RegisterAlpineState(() => {
       try {
         const parsedHostnames = JSON.parse(hostnamesElement.textContent);
         return Array.isArray(parsedHostnames) ? parsedHostnames : [];
-      } catch (parseError) {
+      } catch {
         return [];
       }
     },
@@ -66,8 +65,9 @@ UiToolset.RegisterAlpineState(() => {
         return [vhostHostname];
       }
 
-      const availableHostnames = this.readImportSslCertificateAvailableHostnames();
-      if (availableHostnames.length == 1) {
+      const availableHostnames =
+        this.readImportSslCertificateAvailableHostnames();
+      if (availableHostnames.length === 1) {
         return availableHostnames;
       }
 
@@ -81,12 +81,12 @@ UiToolset.RegisterAlpineState(() => {
       this.resetPrimaryStates();
 
       const sslPairEntity = JSON.parse(
-        document.getElementById("sslPairEntity_" + sslPairId).textContent
+        document.getElementById(`sslPairEntity_${sslPairId}`).textContent,
       );
 
       this.sslPair.id = sslPairId;
       this.sslPair.certificate = atob(
-        sslPairEntity.certificate.certificateContent
+        sslPairEntity.certificate.certificateContent,
       );
       this.sslPair.key = atob(sslPairEntity.key);
       this.isViewPemFilesModalOpen = true;
@@ -109,14 +109,14 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/ssl/" + this.sslPair.id + "/",
-          { swap: "none" }
+          `${Infinite.OsApiBasePath}/v1/ssl/${this.sslPair.id}/`,
+          { swap: "none" },
         )
         .then(() => this.$dispatch("refresh:ssl-pairs-table"));
     },
     createPubliclyTrusted(vhostHostname) {
       htmx
-        .ajax("POST", Infinite.OsApiBasePath + "/v1/ssl/trusted/", {
+        .ajax("POST", `${Infinite.OsApiBasePath}/v1/ssl/trusted/`, {
           values: { virtualHostHostname: vhostHostname },
           swap: "none",
         })

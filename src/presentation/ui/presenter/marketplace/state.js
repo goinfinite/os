@@ -3,16 +3,16 @@ UiToolset.RegisterAlpineState(() => {
     // PrimaryState
     marketplaceItem: {},
     get hostnameWithTrailingSlash() {
-      return this.marketplaceItem.hostname + "/";
+      return `${this.marketplaceItem.hostname}/`;
     },
     get dataFieldsAsString() {
       let dataFieldsAsString = "";
-      for (let dataField of this.marketplaceItem.dataFields) {
+      for (const dataField of this.marketplaceItem.dataFields) {
         if (!dataField.value) {
           continue;
         }
 
-        dataFieldsAsString += dataField.name + ":" + dataField.value + ";";
+        dataFieldsAsString += `${dataField.name}:${dataField.value};`;
       }
       return dataFieldsAsString.slice(0, -1);
     },
@@ -45,7 +45,7 @@ UiToolset.RegisterAlpineState(() => {
           select: "#marketplace-page-content",
           target: "#marketplace-page-content",
           swap: "outerHTML transition:true",
-        }
+        },
       );
     },
     imageLightbox: {
@@ -67,8 +67,8 @@ UiToolset.RegisterAlpineState(() => {
       this.resetPrimaryStates();
 
       const catalogItemEntity = JSON.parse(
-        document.getElementById("marketplaceCatalogItem_" + catalogItemId)
-          .textContent
+        document.getElementById(`marketplaceCatalogItem_${catalogItemId}`)
+          .textContent,
       );
       this.marketplaceItem.id = catalogItemId;
       this.marketplaceItem.name = catalogItemEntity.name;
@@ -102,7 +102,7 @@ UiToolset.RegisterAlpineState(() => {
             "/v1/marketplace/installed/" +
             this.marketplaceItem.id +
             "/",
-          { swap: "none" }
+          { swap: "none" },
         )
         .then(() => {
           this.$store.main.refreshScheduledTasksPopover();
