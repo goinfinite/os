@@ -8,11 +8,11 @@ import (
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	"github.com/goinfinite/os/src/presentation/liaison"
 	layoutLogin "github.com/goinfinite/os/src/presentation/ui/layout/login"
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	"github.com/labstack/echo/v4"
 )
 
@@ -62,6 +62,9 @@ func (presenter *LoginPresenter) Handler(echoContext echo.Context) error {
 				cookiePathStr = "/"
 			}
 
+			// The UI clears this cookie on logout through document.cookie
+			// (main/state.js), and JavaScript cannot delete an HttpOnly cookie.
+			// nosemgrep: go.lang.security.audit.net.cookie-missing-httponly.cookie-missing-httponly
 			echoContext.SetCookie(&http.Cookie{
 				Name:     infraEnvs.AccessTokenCookieKey,
 				Value:    accessToken.String(),

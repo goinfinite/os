@@ -163,7 +163,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 			TwoWayStatePath:         "sslPair.virtualHostsHostnames",
 			IsRequired:              true,
 			DropdownBackgroundColor: "os-400",
-			HintDisplay:             uiForm.InputTypeHintDisplayDescription,
+			HintDisplay:             uiForm.InputHintDisplayDescription,
 			HintValue:               "Select at least one hostname. The certificate will be installed for all selected vhosts.",
 		})
 		<input name="encodedCertificate" type="hidden" :value="btoa(sslPair.certificate)"/>
