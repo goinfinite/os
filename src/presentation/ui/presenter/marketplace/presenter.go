@@ -65,12 +65,12 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 			map[string]any{},
 		)
 		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
-			return overview, errors.New("FailedToReadInstalledItems")
+			return overview, errors.New("ReadInstalledItemsError")
 		}
 
 		typedOutputBody, assertOk := responseOutput.Body.(dto.ReadMarketplaceInstalledItemsResponse)
 		if !assertOk {
-			return overview, errors.New("FailedToReadInstalledItems")
+			return overview, errors.New("ReadInstalledItemsError")
 		}
 		installedItemsList = typedOutputBody.MarketplaceInstalledItems
 	}
@@ -81,12 +81,12 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 			map[string]any{},
 		)
 		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
-			return overview, errors.New("FailedToReadCatalogItems")
+			return overview, errors.New("ReadCatalogItemsError")
 		}
 
 		typedOutputBody, assertOk := responseOutput.Body.(dto.ReadMarketplaceCatalogItemsResponse)
 		if !assertOk {
-			return overview, errors.New("FailedToReadCatalogItems")
+			return overview, errors.New("ReadCatalogItemsError")
 		}
 		catalogItemsList = typedOutputBody.MarketplaceCatalogItems
 	}

@@ -70,7 +70,7 @@ func (uc DeleteUnixFiles) Execute(deleteDto dto.DeleteUnixFiles) error {
 				deleteDto.OperatorAccountId, deleteDto.OperatorIpAddress,
 			)
 			if err != nil {
-				slog.Debug("FailedToCleanTrash", slog.String("err", err.Error()))
+				slog.Debug("CleanTrashError", slog.String("err", err.Error()))
 			}
 
 			fileToDeleteAfterTrashPathIndex := fileToDeleteIndex + 1

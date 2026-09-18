@@ -40,7 +40,7 @@ func TestAuthQueryRepo(t *testing.T) {
 
 	authAccountId, err := accountCmdRepo.Create(createDto)
 	if err != nil {
-		t.Fatalf("FailedToCreateDummyAccount: %s", err.Error())
+		t.Fatalf("CreateDummyAccountFailed: %s", err.Error())
 	}
 	defer func() {
 		_ = accountCmdRepo.Delete(authAccountId)
@@ -137,7 +137,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenStr, err := token.SignedString([]byte(jwtSecret))
 		if err != nil {
-			t.Fatalf("FailedToCreateExpiredToken: %s", err.Error())
+			t.Fatalf("CreateExpiredTokenFailed: %s", err.Error())
 		}
 
 		tokenValue, _ := tkValueObject.NewAccessTokenValue(tokenStr)
@@ -160,7 +160,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
 		tokenStr, err := token.SignedString([]byte("wrong-secret-key"))
 		if err != nil {
-			t.Fatalf("FailedToCreateToken: %s", err.Error())
+			t.Fatalf("CreateTokenFailed: %s", err.Error())
 		}
 
 		tokenValue, _ := tkValueObject.NewAccessTokenValue(tokenStr)
@@ -182,7 +182,7 @@ func TestAuthQueryRepo(t *testing.T) {
 		noneToken := encodeSegment(headerJSON) + "." + encodeSegment(payloadJSON) + "."
 		tokenValue, err := tkValueObject.NewAccessTokenValue(noneToken)
 		if err != nil {
-			t.Fatalf("FailedToCreateTokenValue: %s", err.Error())
+			t.Fatalf("CreateTokenValueFailed: %s", err.Error())
 		}
 
 		_, err = authQueryRepo.readSessionTokenClaims(tokenValue)

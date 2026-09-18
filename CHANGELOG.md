@@ -9,6 +9,7 @@ feat(cli): add the terminal create, list, delete and attach commands
 feat(ui): add the card component and reorganize the overview grid
 test(terminal): add the CLI lifecycle and browser suites
 chore: bake tmux into the container image
+refactor: drop the FailedTo error message prefix
 chore: adopt biome for JavaScript lint and formatting
 chore: bump version to 0.3.5
 
