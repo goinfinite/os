@@ -221,6 +221,22 @@ func (router Router) sslRoutes() {
 	sslCmd.AddCommand(sslController.Delete())
 }
 
+func (router Router) terminalRoutes() {
+	var terminalCmd = &cobra.Command{
+		Use:   "terminal",
+		Short: "TerminalSessionManagement",
+	}
+	rootCmd.AddCommand(terminalCmd)
+
+	terminalController := cliController.NewTerminalController(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
+	terminalCmd.AddCommand(terminalController.Read())
+	terminalCmd.AddCommand(terminalController.Create())
+	terminalCmd.AddCommand(terminalController.Delete())
+	terminalCmd.AddCommand(terminalController.Attach())
+}
+
 func (router Router) virtualHostRoutes() {
 	var vhostCmd = &cobra.Command{
 		Use:   "vhost",
@@ -273,5 +289,6 @@ func (router Router) RegisterRoutes() {
 	router.serveRoutes()
 	router.servicesRoutes()
 	router.sslRoutes()
+	router.terminalRoutes()
 	router.virtualHostRoutes()
 }
