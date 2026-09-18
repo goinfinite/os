@@ -12,6 +12,7 @@ import (
 type DatabaseController struct {
 	persistentDbService *internalDbInfra.PersistentDatabaseService
 	databaseLiaison     *liaison.DatabaseLiaison
+	inputReader         tkPresentation.ApiRequestInputReader
 }
 
 func NewDatabaseController(
@@ -23,6 +24,7 @@ func NewDatabaseController(
 		databaseLiaison: liaison.NewDatabaseLiaison(
 			persistentDbService, trailDbSvc,
 		),
+		inputReader: tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -44,8 +46,7 @@ func NewDatabaseController(
 // @Success      200 {object} dto.ReadDatabasesResponse
 // @Router       /v1/database/{dbType}/ [get]
 func (controller *DatabaseController) Read(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -67,8 +68,7 @@ func (controller *DatabaseController) Read(echoContext echo.Context) error {
 // @Success      201 {object} object{} "DatabaseCreated"
 // @Router       /v1/database/{dbType}/ [post]
 func (controller *DatabaseController) Create(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -90,8 +90,7 @@ func (controller *DatabaseController) Create(echoContext echo.Context) error {
 // @Success      200 {object} object{} "DatabaseDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/ [delete]
 func (controller *DatabaseController) Delete(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -114,8 +113,7 @@ func (controller *DatabaseController) Delete(echoContext echo.Context) error {
 // @Success      201 {object} object{} "DatabaseUserCreated"
 // @Router       /v1/database/{dbType}/{dbName}/user/ [post]
 func (controller *DatabaseController) CreateUser(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -148,8 +146,7 @@ func (controller *DatabaseController) CreateUser(echoContext echo.Context) error
 // @Success      200 {object} object{} "DatabaseUserDeleted"
 // @Router       /v1/database/{dbType}/{dbName}/user/{dbUser}/ [delete]
 func (controller *DatabaseController) DeleteUser(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

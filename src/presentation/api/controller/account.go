@@ -10,6 +10,7 @@ import (
 
 type AccountController struct {
 	accountLiaison *liaison.AccountLiaison
+	inputReader    tkPresentation.ApiRequestInputReader
 }
 
 func NewAccountController(
@@ -18,6 +19,7 @@ func NewAccountController(
 ) *AccountController {
 	return &AccountController{
 		accountLiaison: liaison.NewAccountLiaison(persistentDbSvc, trailDbSvc),
+		inputReader:    tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -39,8 +41,7 @@ func NewAccountController(
 // @Success      200 {object} dto.ReadAccountsResponse
 // @Router       /v1/account/ [get]
 func (controller *AccountController) Read(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -61,8 +62,7 @@ func (controller *AccountController) Read(echoContext echo.Context) error {
 // @Success      201 {object} object{} "AccountCreated"
 // @Router       /v1/account/ [post]
 func (controller *AccountController) Create(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -83,8 +83,7 @@ func (controller *AccountController) Create(echoContext echo.Context) error {
 // @Success      200 {object} object{} "'AccountUpdated' message or new API key in string format"
 // @Router       /v1/account/ [put]
 func (controller *AccountController) Update(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -105,8 +104,7 @@ func (controller *AccountController) Update(echoContext echo.Context) error {
 // @Success      200 {object} object{} "AccountDeleted"
 // @Router       /v1/account/{accountId}/ [delete]
 func (controller *AccountController) Delete(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -127,8 +125,7 @@ func (controller *AccountController) Delete(echoContext echo.Context) error {
 // @Success      201 {object} object{} "SecureAccessPublicKeyCreated"
 // @Router       /v1/account/secure-access-public-key/ [post]
 func (controller *AccountController) CreateSecureAccessPublicKey(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -149,8 +146,7 @@ func (controller *AccountController) CreateSecureAccessPublicKey(echoContext ech
 // @Success      200 {object} object{} "SecureAccessPublicKeyDeleted"
 // @Router       /v1/account/secure-access-public-key/{secureAccessPublicKeyId}/ [delete]
 func (controller *AccountController) DeleteSecureAccessPublicKey(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

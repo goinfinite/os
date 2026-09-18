@@ -16,6 +16,7 @@ import (
 type SetupController struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	trailDbSvc      *internalDbInfra.TrailDatabaseService
+	inputReader     tkPresentation.ApiRequestInputReader
 }
 
 func NewSetupController(
@@ -25,6 +26,7 @@ func NewSetupController(
 	return &SetupController{
 		persistentDbSvc: persistentDbSvc,
 		trailDbSvc:      trailDbSvc,
+		inputReader:     tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -38,7 +40,7 @@ func NewSetupController(
 // @Success      201 {object} object{} "FirstAccountCreated"
 // @Router       /v1/setup/ [post]
 func (controller *SetupController) Setup(echoContext echo.Context) error {
-	requestBody, err := tkPresentation.ApiRequestInputReader{}.Reader(echoContext)
+	requestBody, err := controller.inputReader.Reader(echoContext)
 	if err != nil {
 		return err
 	}

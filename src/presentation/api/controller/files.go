@@ -21,6 +21,7 @@ type FilesController struct {
 	filesQueryRepo        *filesInfra.FilesQueryRepo
 	filesCmdRepo          *filesInfra.FilesCmdRepo
 	activityRecordCmdRepo *activityRecordInfra.ActivityRecordCmdRepo
+	inputReader           tkPresentation.ApiRequestInputReader
 }
 
 func NewFilesController(
@@ -30,6 +31,7 @@ func NewFilesController(
 		filesQueryRepo:        &filesInfra.FilesQueryRepo{},
 		filesCmdRepo:          filesInfra.NewFilesCmdRepo(),
 		activityRecordCmdRepo: activityRecordInfra.NewActivityRecordCmdRepo(trailDbSvc),
+		inputReader:           tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -46,8 +48,7 @@ func NewFilesController(
 // @Router       /v1/files/ [get]
 func (controller *FilesController) Read(echoContext echo.Context) error {
 	requiredParams := []string{"sourcePath"}
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -123,8 +124,7 @@ func (controller *FilesController) Read(echoContext echo.Context) error {
 // @Router       /v1/files/ [post]
 func (controller *FilesController) Create(echoContext echo.Context) error {
 	requiredParams := []string{"filePath"}
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -290,8 +290,7 @@ func (controller *FilesController) parseSourcePaths(
 // @Router       /v1/files/ [put]
 func (controller *FilesController) Update(echoContext echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -488,8 +487,7 @@ func (controller *FilesController) Update(echoContext echo.Context) error {
 // @Router       /v1/files/copy/ [post]
 func (controller *FilesController) Copy(echoContext echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -604,8 +602,7 @@ func (controller *FilesController) Copy(echoContext echo.Context) error {
 // @Router       /v1/files/delete/ [put]
 func (controller *FilesController) Delete(echoContext echo.Context) error {
 	requiredParams := []string{"sourcePaths"}
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -718,8 +715,7 @@ func (controller *FilesController) Delete(echoContext echo.Context) error {
 // @Router       /v1/files/compress/ [post]
 func (controller *FilesController) Compress(echoContext echo.Context) error {
 	requiredParams := []string{"sourcePaths", "destinationPath"}
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -849,8 +845,7 @@ func (controller *FilesController) Compress(echoContext echo.Context) error {
 // @Router       /v1/files/extract/ [put]
 func (controller *FilesController) Extract(echoContext echo.Context) error {
 	requiredParams := []string{"sourcePath", "destinationPath"}
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -951,8 +946,7 @@ func (controller *FilesController) Extract(echoContext echo.Context) error {
 // @Router       /v1/files/upload/ [post]
 func (controller *FilesController) Upload(echoContext echo.Context) error {
 	requiredParams := []string{"destinationPath", "files"}
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -1075,8 +1069,7 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 // @Success      200 {file} file
 // @Router       /v1/files/download/ [get]
 func (controller *FilesController) Download(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

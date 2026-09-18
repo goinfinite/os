@@ -19,6 +19,7 @@ import (
 type ServicesController struct {
 	servicesLiaison *liaison.ServicesLiaison
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
+	inputReader     tkPresentation.ApiRequestInputReader
 }
 
 func NewServicesController(
@@ -28,6 +29,7 @@ func NewServicesController(
 	return &ServicesController{
 		servicesLiaison: liaison.NewServicesLiaison(persistentDbService, trailDbSvc),
 		persistentDbSvc: persistentDbService,
+		inputReader:     tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -50,8 +52,7 @@ func NewServicesController(
 // @Success      200 {object} dto.ReadInstalledServicesItemsResponse
 // @Router       /v1/services/ [get]
 func (controller *ServicesController) ReadInstalledItems(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -80,8 +81,7 @@ func (controller *ServicesController) ReadInstalledItems(echoContext echo.Contex
 // @Success      200 {object} dto.ReadInstallableServicesItemsResponse
 // @Router       /v1/services/installables/ [get]
 func (controller *ServicesController) ReadInstallablesItems(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -244,8 +244,7 @@ func (controller *ServicesController) parseRawPortBindings(
 // @Success      201 {object} object{} "InstallableServiceCreated"
 // @Router       /v1/services/installables/ [post]
 func (controller *ServicesController) CreateInstallable(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -298,8 +297,7 @@ func (controller *ServicesController) CreateInstallable(echoContext echo.Context
 // @Success      201 {object} object{} "CustomServiceCreated"
 // @Router       /v1/services/custom/ [post]
 func (controller *ServicesController) CreateCustom(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -352,8 +350,7 @@ func (controller *ServicesController) CreateCustom(echoContext echo.Context) err
 // @Success      200 {object} object{} "ServiceUpdated"
 // @Router       /v1/services/ [put]
 func (controller *ServicesController) Update(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -402,8 +399,7 @@ func (controller *ServicesController) Update(echoContext echo.Context) error {
 // @Success      200 {object} object{} "ServiceDeleted"
 // @Router       /v1/services/{svcName}/ [delete]
 func (controller *ServicesController) Delete(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

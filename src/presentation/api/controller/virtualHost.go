@@ -11,6 +11,7 @@ import (
 
 type VirtualHostController struct {
 	virtualHostLiaison *liaison.VirtualHostLiaison
+	inputReader        tkPresentation.ApiRequestInputReader
 }
 
 func NewVirtualHostController(
@@ -19,6 +20,7 @@ func NewVirtualHostController(
 ) *VirtualHostController {
 	return &VirtualHostController{
 		virtualHostLiaison: liaison.NewVirtualHostLiaison(persistentDbSvc, trailDbSvc),
+		inputReader:        tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -44,8 +46,7 @@ func NewVirtualHostController(
 // @Success      200 {object} dto.ReadVirtualHostsResponse
 // @Router       /v1/vhost/ [get]
 func (controller *VirtualHostController) Read(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -66,8 +67,7 @@ func (controller *VirtualHostController) Read(echoContext echo.Context) error {
 // @Success      201 {object} object{} "VirtualHostCreated"
 // @Router       /v1/vhost/ [post]
 func (controller *VirtualHostController) Create(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -88,8 +88,7 @@ func (controller *VirtualHostController) Create(echoContext echo.Context) error 
 // @Success      200 {object} object{} "VirtualHostUpdated"
 // @Router       /v1/vhost/ [put]
 func (controller *VirtualHostController) Update(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -110,8 +109,7 @@ func (controller *VirtualHostController) Update(echoContext echo.Context) error 
 // @Success      200 {object} object{} "VirtualHostDeleted"
 // @Router       /v1/vhost/{hostname}/ [delete]
 func (controller *VirtualHostController) Delete(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -143,8 +141,7 @@ func (controller *VirtualHostController) Delete(echoContext echo.Context) error 
 // @Success      200 {object} dto.VirtualHostWithMappings
 // @Router       /v1/vhost/mapping/ [get]
 func (controller *VirtualHostController) ReadWithMappings(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -165,8 +162,7 @@ func (controller *VirtualHostController) ReadWithMappings(echoContext echo.Conte
 // @Success      201 {object} object{} "MappingCreated"
 // @Router       /v1/vhost/mapping/ [post]
 func (controller *VirtualHostController) CreateMapping(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -187,8 +183,7 @@ func (controller *VirtualHostController) CreateMapping(echoContext echo.Context)
 // @Success      200 {object} object{} "MappingUpdated"
 // @Router       /v1/vhost/mapping/ [put]
 func (controller *VirtualHostController) UpdateMapping(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -209,8 +204,7 @@ func (controller *VirtualHostController) UpdateMapping(echoContext echo.Context)
 // @Success      200 {object} object{} "MappingDeleted"
 // @Router       /v1/vhost/mapping/{mappingId}/ [delete]
 func (controller *VirtualHostController) DeleteMapping(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -241,8 +235,7 @@ func (controller *VirtualHostController) DeleteMapping(echoContext echo.Context)
 // @Success      200 {object} dto.ReadMappingSecurityRulesResponse
 // @Router       /v1/vhost/mapping/security-rule/ [get]
 func (controller *VirtualHostController) ReadMappingSecurityRules(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -265,8 +258,7 @@ func (controller *VirtualHostController) ReadMappingSecurityRules(echoContext ec
 // @Success      201 {object} object{} "MappingSecurityRuleCreated"
 // @Router       /v1/vhost/mapping/security-rule/ [post]
 func (controller *VirtualHostController) CreateMappingSecurityRule(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -299,8 +291,7 @@ func (controller *VirtualHostController) CreateMappingSecurityRule(echoContext e
 // @Success      200 {object} object{} "MappingSecurityRuleUpdated"
 // @Router       /v1/vhost/mapping/security-rule/ [put]
 func (controller *VirtualHostController) UpdateMappingSecurityRule(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -333,8 +324,7 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule(echoContext e
 // @Success      200 {object} object{} "MappingSecurityRuleDeleted"
 // @Router       /v1/vhost/mapping/security-rule/{id}/ [delete]
 func (controller *VirtualHostController) DeleteMappingSecurityRule(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

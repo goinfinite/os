@@ -21,6 +21,7 @@ type SslController struct {
 	persistentDbSvc *internalDbInfra.PersistentDatabaseService
 	transientDbSvc  *tkInfraDb.TransientDatabaseService
 	sslLiaison      *liaison.SslLiaison
+	inputReader     tkPresentation.ApiRequestInputReader
 }
 
 func NewSslController(
@@ -34,6 +35,7 @@ func NewSslController(
 		sslLiaison: liaison.NewSslLiaison(
 			persistentDbSvc, transientDbSvc, trailDbSvc,
 		),
+		inputReader: tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -59,8 +61,7 @@ func NewSslController(
 // @Success      200 {object} dto.ReadSslPairsResponse
 // @Router       /v1/ssl/ [get]
 func (controller *SslController) Read(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -102,8 +103,7 @@ func (controller *SslController) decodeContent(
 // @Success      201 {object} object{} "SslPairCreated"
 // @Router       /v1/ssl/ [post]
 func (controller *SslController) Create(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -189,8 +189,7 @@ func (controller *SslController) Create(echoContext echo.Context) error {
 // @Success      201 {object} object{} "PubliclyTrustedSslPairCreationScheduled"
 // @Router       /v1/ssl/trusted/ [post]
 func (controller *SslController) CreatePubliclyTrusted(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -211,8 +210,7 @@ func (controller *SslController) CreatePubliclyTrusted(echoContext echo.Context)
 // @Success      200 {object} object{} "SslPairDeleted"
 // @Router       /v1/ssl/{sslPairId}/ [delete]
 func (controller *SslController) Delete(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

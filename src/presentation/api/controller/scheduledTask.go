@@ -19,6 +19,7 @@ import (
 type ScheduledTaskController struct {
 	scheduledTaskLiaison *liaison.ScheduledTaskLiaison
 	persistentDbSvc      *internalDbInfra.PersistentDatabaseService
+	inputReader          tkPresentation.ApiRequestInputReader
 }
 
 func NewScheduledTaskController(
@@ -27,6 +28,7 @@ func NewScheduledTaskController(
 	return &ScheduledTaskController{
 		scheduledTaskLiaison: liaison.NewScheduledTaskLiaison(persistentDbSvc),
 		persistentDbSvc:      persistentDbSvc,
+		inputReader:          tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -77,8 +79,7 @@ func (controller *ScheduledTaskController) parseTaskTags(
 // @Success      200 {object} dto.ReadScheduledTasksResponse
 // @Router       /v1/scheduled-task/ [get]
 func (controller *ScheduledTaskController) Read(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -112,8 +113,7 @@ func (controller *ScheduledTaskController) Read(echoContext echo.Context) error 
 // @Success      200 {object} object{} "ScheduledTaskUpdated"
 // @Router       /v1/scheduled-task/ [put]
 func (controller *ScheduledTaskController) Update(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

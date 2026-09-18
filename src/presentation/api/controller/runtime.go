@@ -16,6 +16,7 @@ import (
 
 type RuntimeController struct {
 	runtimeLiaison *liaison.RuntimeLiaison
+	inputReader    tkPresentation.ApiRequestInputReader
 }
 
 func NewRuntimeController(
@@ -24,6 +25,7 @@ func NewRuntimeController(
 ) *RuntimeController {
 	return &RuntimeController{
 		runtimeLiaison: liaison.NewRuntimeLiaison(persistentDbService, trailDbService),
+		inputReader:    tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -38,8 +40,7 @@ func NewRuntimeController(
 // @Success      200 {object} entity.PhpConfigs
 // @Router       /v1/runtime/php/{hostname}/ [get]
 func (controller *RuntimeController) ReadPhpConfigs(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -187,8 +188,7 @@ func (controller *RuntimeController) parsePhpSettings(rawPhpSettings any) (
 // @Success      207 {object} dto.UpdatePhpConfigsResponse "PhpModuleParsingFailuresReported"
 // @Router       /v1/runtime/php/{hostname}/ [put]
 func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -230,7 +230,7 @@ func (controller *RuntimeController) UpdatePhpConfigs(echoContext echo.Context) 
 // @Success      200 {object} dto.RunPhpCommandResponse
 // @Router       /v1/runtime/php/run/ [post]
 func (controller *RuntimeController) RunPhpCommand(echoContext echo.Context) error {
-	requestData, err := tkPresentation.ApiRequestInputReader{}.Reader(echoContext)
+	requestData, err := controller.inputReader.Reader(echoContext)
 	if err != nil {
 		return err
 	}

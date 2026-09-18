@@ -18,6 +18,7 @@ import (
 type MarketplaceController struct {
 	marketplaceLiaison *liaison.MarketplaceLiaison
 	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
+	inputReader        tkPresentation.ApiRequestInputReader
 }
 
 func NewMarketplaceController(
@@ -27,6 +28,7 @@ func NewMarketplaceController(
 	return &MarketplaceController{
 		marketplaceLiaison: liaison.NewMarketplaceLiaison(persistentDbSvc, trailDbSvc),
 		persistentDbSvc:    persistentDbSvc,
+		inputReader:        tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -49,8 +51,7 @@ func NewMarketplaceController(
 // @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
 // @Router       /v1/marketplace/catalog/ [get]
 func (controller *MarketplaceController) ReadCatalog(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -148,8 +149,7 @@ func (controller *MarketplaceController) parseDataFields(
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstallationScheduled"
 // @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -194,8 +194,7 @@ func (controller *MarketplaceController) InstallCatalogItem(echoContext echo.Con
 // @Success      200 {object} dto.ReadMarketplaceInstalledItemsResponse
 // @Router       /v1/marketplace/installed/ [get]
 func (controller *MarketplaceController) ReadInstalledItems(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -217,8 +216,7 @@ func (controller *MarketplaceController) ReadInstalledItems(echoContext echo.Con
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /v1/marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
