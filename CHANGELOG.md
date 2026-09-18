@@ -15,6 +15,8 @@ chore: bump version to 0.3.5
 chore: bump xterm to 6.0.0
 chore: add zed project settings
 chore: pin biome and float dev tools in mise
+refactor: use slog and the Read naming convention
+refactor: declare errors before the nil check
 
 0.3.4 - 2026/09/15
 chore: update go deps
