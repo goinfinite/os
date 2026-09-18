@@ -6,10 +6,10 @@ import (
 )
 
 type DeleteDatabaseUser struct {
-	DatabaseName      valueObject.DatabaseName    `json:"dbName"`
+	DatabaseName      valueObject.DatabaseName     `json:"dbName"`
 	Username          valueObject.DatabaseUsername `json:"username"`
-	OperatorAccountId tkValueObject.AccountId     `json:"-"`
-	OperatorIpAddress tkValueObject.IpAddress     `json:"-"`
+	OperatorAccountId tkValueObject.AccountId      `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress      `json:"-"`
 }
 
 func NewDeleteDatabaseUser(

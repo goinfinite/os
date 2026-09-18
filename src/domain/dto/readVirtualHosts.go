@@ -8,17 +8,17 @@ import (
 )
 
 type ReadVirtualHostsRequest struct {
-	Pagination       tkDto.Pagination                     `json:"pagination"`
-	Hostname         *tkValueObject.Fqdn                  `json:"hostname"`
-	VirtualHostType  *valueObject.VirtualHostType         `json:"type"`
-	RootDirectory    *tkValueObject.UnixAbsoluteFilePath  `json:"rootDirectory"`
-	ParentHostname   *tkValueObject.Fqdn                  `json:"parentHostname"`
-	WithMappings     *bool                                `json:"withMappings"`
-	IsWildcard       *bool                                `json:"isWildcard"`
-	IsPrimary        *bool                                `json:"-"`
-	AliasesHostnames []tkValueObject.Fqdn                 `json:"aliasesHostnames"`
-	CreatedBeforeAt  *tkValueObject.UnixTime              `json:"createdBeforeAt"`
-	CreatedAfterAt   *tkValueObject.UnixTime              `json:"createdAfterAt"`
+	Pagination       tkDto.Pagination                    `json:"pagination"`
+	Hostname         *tkValueObject.Fqdn                 `json:"hostname"`
+	VirtualHostType  *valueObject.VirtualHostType        `json:"type"`
+	RootDirectory    *tkValueObject.UnixAbsoluteFilePath `json:"rootDirectory"`
+	ParentHostname   *tkValueObject.Fqdn                 `json:"parentHostname"`
+	WithMappings     *bool                               `json:"withMappings"`
+	IsWildcard       *bool                               `json:"isWildcard"`
+	IsPrimary        *bool                               `json:"-"`
+	AliasesHostnames []tkValueObject.Fqdn                `json:"aliasesHostnames"`
+	CreatedBeforeAt  *tkValueObject.UnixTime             `json:"createdBeforeAt"`
+	CreatedAfterAt   *tkValueObject.UnixTime             `json:"createdAfterAt"`
 }
 
 type VirtualHostWithMappings struct {

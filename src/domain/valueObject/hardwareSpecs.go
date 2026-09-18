@@ -8,9 +8,9 @@ import (
 )
 
 type HardwareSpecs struct {
-	CpuModel     string  `json:"cpuModel"`
-	CpuCores     float64 `json:"cpuCores"`
-	CpuFrequency float64 `json:"cpuFrequency"`
+	CpuModel     string             `json:"cpuModel"`
+	CpuCores     float64            `json:"cpuCores"`
+	CpuFrequency float64            `json:"cpuFrequency"`
 	MemoryTotal  tkValueObject.Byte `json:"memoryTotal"`
 	StorageTotal tkValueObject.Byte `json:"storageTotal"`
 }

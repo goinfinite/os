@@ -8,10 +8,10 @@ import (
 )
 
 type ReadAccountsRequest struct {
-	Pagination                          tkDto.Pagination        `json:"pagination"`
+	Pagination                          tkDto.Pagination         `json:"pagination"`
 	AccountId                           *tkValueObject.AccountId `json:"id,omitempty"`
-	AccountUsername                     *valueObject.Username   `json:"username,omitempty"`
-	ShouldIncludeSecureAccessPublicKeys *bool                   `json:"shouldIncludeSecureAccessPublicKeys,omitempty"`
+	AccountUsername                     *valueObject.Username    `json:"username,omitempty"`
+	ShouldIncludeSecureAccessPublicKeys *bool                    `json:"shouldIncludeSecureAccessPublicKeys,omitempty"`
 }
 
 type ReadAccountsResponse struct {

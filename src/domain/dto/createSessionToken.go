@@ -6,9 +6,9 @@ import (
 )
 
 type CreateSessionToken struct {
-	Username          valueObject.Username         `json:"username"`
-	Password          tkValueObject.WeakPassword   `json:"password"`
-	OperatorIpAddress tkValueObject.IpAddress      `json:"-"`
+	Username          valueObject.Username       `json:"username"`
+	Password          tkValueObject.WeakPassword `json:"password"`
+	OperatorIpAddress tkValueObject.IpAddress    `json:"-"`
 }
 
 func NewCreateSessionToken(
