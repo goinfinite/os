@@ -1,17 +1,23 @@
 [tools]
-# Product tooling.
+# Production
 go = "1.27.1"
 
-# Development tooling.
-golangci-lint = "2.13.2"
-semgrep = "1.176.0"
-# semgrep is a Python package; mise installs it through uv.
-uv = "0.10.4"
-shellcheck = "0.11.0"
-staticcheck = "2026.2.1"
-"go:golang.org/x/tools/gopls" = "v0.23.0"
+# Development
+"npm:@biomejs/biome" = "2.5.13"
+golangci-lint = "latest"
+staticcheck = "latest"
+"go:golang.org/x/tools/gopls" = "latest"
+uv = "latest"
+semgrep = "latest"
+shellcheck = "latest"
 
-# Test suite tooling (tests/tests.sh). Not used by the product.
-jq = "1.8.1"
-yq = "4.52.4"
-node = "24.21.0"
+# Test
+node = "lts"
+jq = "latest"
+yq = "latest"
+
+[settings]
+minimum_release_age = "7d"
+
+[settings.npm]
+package_manager = "npm"
