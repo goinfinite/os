@@ -276,7 +276,7 @@ func (repo *AccountCmdRepo) Update(updateDto dto.UpdateAccount) error {
 		return err
 	}
 
-	updateMap := map[string]interface{}{"updated_at": time.Now()}
+	updateMap := map[string]any{"updated_at": time.Now()}
 	if updateDto.IsSuperAdmin != nil {
 		err := repo.toggleAccountSudoPrivileges(accountEntity.Username, *updateDto.IsSuperAdmin)
 		if err != nil {

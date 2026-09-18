@@ -40,7 +40,7 @@ func NewPersistentDatabaseService() (*PersistentDatabaseService, error) {
 	return dbSvc, nil
 }
 
-func (dbSvc *PersistentDatabaseService) isTableEmpty(model interface{}) (bool, error) {
+func (dbSvc *PersistentDatabaseService) isTableEmpty(model any) (bool, error) {
 	var count int64
 	err := dbSvc.Handler.Model(&model).Count(&count).Error
 	if err != nil {
@@ -51,7 +51,7 @@ func (dbSvc *PersistentDatabaseService) isTableEmpty(model interface{}) (bool, e
 }
 
 func (dbSvc *PersistentDatabaseService) seedDatabase(
-	seedModels map[string]interface{},
+	seedModels map[string]any,
 ) error {
 	for modelName, seedModel := range seedModels {
 		isTableEmpty, err := dbSvc.isTableEmpty(seedModel)
@@ -84,7 +84,7 @@ func (dbSvc *PersistentDatabaseService) seedDatabase(
 		}
 
 		initialEntries := initialEntriesMethodResults[0].Interface()
-		for _, entry := range initialEntries.([]interface{}) {
+		for _, entry := range initialEntries.([]any) {
 			entryInnerStructure := reflect.ValueOf(entry)
 
 			entryFormatHandlerWillAccept := reflect.New(seedModelType)
@@ -117,7 +117,7 @@ func (dbSvc *PersistentDatabaseService) dbMigrate() error {
 		return errors.New("PersistentDatabaseMigrationError: " + err.Error())
 	}
 
-	modelsWithInitialEntries := map[string]interface{}{
+	modelsWithInitialEntries := map[string]any{
 		"VirtualHost":         &dbModel.VirtualHost{},
 		"InstalledService":    &dbModel.InstalledService{},
 		"MappingSecurityRule": &dbModel.MappingSecurityRule{},

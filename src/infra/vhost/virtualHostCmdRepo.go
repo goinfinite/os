@@ -51,7 +51,7 @@ func (repo *VirtualHostCmdRepo) WebServerUnitFileFactory(
 		mainServerName += " *." + vhostHostnameStr
 	}
 
-	confVariables := map[string]interface{}{
+	confVariables := map[string]any{
 		"VirtualHostHostname": vhostHostnameStr,
 		"MainServerName":      mainServerName,
 		"AliasesHostnames":    aliasesHostnamesStr,
@@ -269,7 +269,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 }
 
 func (repo *VirtualHostCmdRepo) Update(updateDto dto.UpdateVirtualHost) error {
-	zeroableFieldsUpdateMap := map[string]interface{}{}
+	zeroableFieldsUpdateMap := map[string]any{}
 	if updateDto.IsWildcard != nil {
 		zeroableFieldsUpdateMap["is_wildcard"] = *updateDto.IsWildcard
 		zeroableFieldsUpdateMap["type"] = valueObject.VirtualHostTypeWildcard.String()

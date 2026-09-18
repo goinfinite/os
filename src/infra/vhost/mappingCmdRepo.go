@@ -490,7 +490,7 @@ func (repo *MappingCmdRepo) Update(updateDto dto.UpdateMapping) error {
 		return err
 	}
 
-	updateMap := map[string]interface{}{}
+	updateMap := map[string]any{}
 
 	if updateDto.Path != nil {
 		updateMap["path"] = updateDto.Path.String()
@@ -807,7 +807,7 @@ func (repo *MappingCmdRepo) CreateSecurityRule(
 func (repo *MappingCmdRepo) UpdateSecurityRule(
 	updateDto dto.UpdateMappingSecurityRule,
 ) error {
-	updateMap := map[string]interface{}{}
+	updateMap := map[string]any{}
 
 	if updateDto.Name != nil {
 		updateMap["name"] = updateDto.Name.String()

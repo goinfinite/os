@@ -62,7 +62,7 @@ func (repo *ScheduledTaskCmdRepo) Create(
 func (repo *ScheduledTaskCmdRepo) Update(
 	updateDto dto.UpdateScheduledTask,
 ) error {
-	updateMap := map[string]interface{}{}
+	updateMap := map[string]any{}
 
 	if updateDto.Status != nil {
 		updateMap["status"] = updateDto.Status.String()
@@ -120,7 +120,7 @@ func (repo *ScheduledTaskCmdRepo) Run(
 	finishedAtUnixTime := tkValueObject.NewUnixTimeNow()
 	elapsedSecs := uint(finishedAtUnixTime.Int64() - startedAtUnixTime.Int64())
 
-	updateMap := map[string]interface{}{
+	updateMap := map[string]any{
 		"status":       finalStatus.String(),
 		"started_at":   startedAtUnixTime.ReadAsGoTime(),
 		"finished_at":  finishedAtUnixTime.ReadAsGoTime(),
