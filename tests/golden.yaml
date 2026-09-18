@@ -76,6 +76,30 @@ ssl.create:
   info_ms: 1500
   warn_ms: 3000
   relative_warn_percent: 50
+terminal.create:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 400
+  info_ms: 800
+  warn_ms: 1500
+  relative_warn_percent: 50
+terminal.list:
+  baseline_p50_ms: 150
+  baseline_p90_ms: 250
+  info_ms: 600
+  warn_ms: 1200
+  relative_warn_percent: 50
+terminal.delete:
+  baseline_p50_ms: 250
+  baseline_p90_ms: 400
+  info_ms: 800
+  warn_ms: 1500
+  relative_warn_percent: 50
+ui.browser/standard:
+  baseline_p50_ms: 30000
+  baseline_p90_ms: 60000
+  info_ms: 90000
+  warn_ms: 180000
+  relative_warn_percent: 50
 mktplace.list:
   baseline_p50_ms: 100
   baseline_p90_ms: 150

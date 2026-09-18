@@ -14,3 +14,4 @@ staticcheck = "2026.2.1"
 # Test suite tooling (tests/tests.sh). Not used by the product.
 jq = "1.8.1"
 yq = "4.52.4"
+node = "24.21.0"

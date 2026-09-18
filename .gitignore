@@ -12,6 +12,11 @@ logs/
 # Test artifacts.
 /tests/artifacts/
 
+# Browser test tooling.
+tests/ui/browser/node_modules/
+tests/ui/browser/test-results/
+tests/ui/browser/storageState.json
+
 # Local notes and tooling.
 tmp/
 TODO.md
