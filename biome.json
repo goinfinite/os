@@ -6,7 +6,7 @@
     "useIgnoreFile": true
   },
   "files": {
-    "includes": ["**", "!src/presentation/api/docs"]
+    "includes": ["**", "!src/presentation/api/docs", "!.zed"]
   },
   "formatter": {
     "indentStyle": "space",
