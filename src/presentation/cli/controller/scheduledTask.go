@@ -38,7 +38,7 @@ func (controller *ScheduledTaskController) Read() *cobra.Command {
 		Use:   "get",
 		Short: "ReadScheduledTasks",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			if taskIdUint != 0 {
 				requestBody["taskId"] = taskIdUint
@@ -142,7 +142,7 @@ func (controller *ScheduledTaskController) Update() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateScheduledTask",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"taskId": taskIdUint64,
 			}
 

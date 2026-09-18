@@ -1,8 +1,8 @@
 package uiPresenterHelper
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -17,7 +17,7 @@ func ReadVirtualHostHostnames(
 	vhostHostnames := []string{}
 	virtualHostLiaison := liaison.NewVirtualHostLiaison(persistentDbSvc, trailDbSvc)
 
-	vhostResponseLiaisonOutput := virtualHostLiaison.Read(map[string]interface{}{
+	vhostResponseLiaisonOutput := virtualHostLiaison.Read(map[string]any{
 		"itemsPerPage": 1000,
 		"withMappings": false,
 	})

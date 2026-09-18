@@ -38,7 +38,7 @@ func (controller *SslController) Read() *cobra.Command {
 		Use:   "get",
 		Short: "ReadSslPairs",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 			if sslPairIdStr != "" {
 				requestBody["sslPairId"] = sslPairIdStr
 			}
@@ -104,7 +104,7 @@ func (controller *SslController) Create() *cobra.Command {
 		Use:   "create",
 		Short: "CreateSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			vhostHostnames := tkPresentation.StringSliceValueObjectParser(
 				virtualHostsSlice, tkValueObject.NewFqdn,
@@ -159,7 +159,7 @@ func (controller *SslController) CreatePubliclyTrusted() *cobra.Command {
 		Use:   "create-trusted",
 		Short: "CreatePubliclyTrusted",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"virtualHostHostname": hostnameStr,
 			}
 
@@ -181,7 +181,7 @@ func (controller *SslController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteSslPair",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"id": sslPairIdStr,
 			}
 

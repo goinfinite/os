@@ -62,14 +62,13 @@ func (controller *MarketplaceController) ReadCatalog(echoContext echo.Context) e
 
 func (controller *MarketplaceController) transformDataFieldsIntoMap(
 	rawDataFields string,
-) []map[string]interface{} {
-	dataFieldsMapSlice := []map[string]interface{}{}
+) []map[string]any {
+	dataFieldsMapSlice := []map[string]any{}
 	if len(rawDataFields) == 0 {
 		return dataFieldsMapSlice
 	}
 
-	rawDataFieldsSlice := strings.Split(rawDataFields, ";")
-	for _, rawDataField := range rawDataFieldsSlice {
+	for rawDataField := range strings.SplitSeq(rawDataFields, ";") {
 		rawDataFieldParts := strings.Split(rawDataField, ":")
 		if len(rawDataFieldParts) != 2 {
 			slog.Debug(
@@ -79,7 +78,7 @@ func (controller *MarketplaceController) transformDataFieldsIntoMap(
 			continue
 		}
 
-		dataFieldMap := map[string]interface{}{
+		dataFieldMap := map[string]any{
 			"name":  rawDataFieldParts[0],
 			"value": rawDataFieldParts[1],
 		}
@@ -91,28 +90,28 @@ func (controller *MarketplaceController) transformDataFieldsIntoMap(
 
 // DataFields has multiple possible structures which this parser can handle:
 // "dataFieldName:dataFieldValue;dataFieldName:dataFieldValue" (string slice, semicolon separated items)
-// { "dataFieldName": "dataFieldValue" } (map[string]interface{})
-// [{ "dataFieldName": "dataFieldValue" }] (map[string]interface{} slice)
+// { "dataFieldName": "dataFieldValue" } (map[string]any)
+// [{ "dataFieldName": "dataFieldValue" }] (map[string]any slice)
 func (controller *MarketplaceController) parseDataFields(
 	dataFieldsAsUnknownType any,
 ) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
 
-	rawDataFieldsSlice := []interface{}{}
+	rawDataFieldsSlice := []any{}
 	switch dataFieldsValues := dataFieldsAsUnknownType.(type) {
-	case map[string]interface{}:
-		rawDataFieldsSlice = []interface{}{dataFieldsValues}
+	case map[string]any:
+		rawDataFieldsSlice = []any{dataFieldsValues}
 	case string:
 		dataFieldsMaps := controller.transformDataFieldsIntoMap(dataFieldsValues)
 		for _, dataFieldMap := range dataFieldsMaps {
 			rawDataFieldsSlice = append(rawDataFieldsSlice, dataFieldMap)
 		}
-	case []interface{}:
+	case []any:
 		rawDataFieldsSlice = dataFieldsValues
 	}
 
 	for index, rawDataField := range rawDataFieldsSlice {
-		rawDataFieldMap, assertOk := rawDataField.(map[string]interface{})
+		rawDataFieldMap, assertOk := rawDataField.(map[string]any)
 		if !assertOk {
 			slog.Debug("InvalidDataFieldStructure", slog.Any("fieldIndex", index))
 			continue

@@ -26,7 +26,7 @@ func NewAccountsPresenter(
 
 func (presenter *AccountsPresenter) Handler(c echo.Context) error {
 	responseOutput := presenter.accountLiaison.Read(
-		map[string]interface{}{
+		map[string]any{
 			"shouldIncludeSecureAccessPublicKeys": true,
 		},
 	)

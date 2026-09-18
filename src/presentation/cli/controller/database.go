@@ -38,7 +38,7 @@ func (controller *DatabaseController) Read() *cobra.Command {
 		Use:   "get",
 		Short: "ReadDatabases",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"dbType": dbTypeStr,
 			}
 
@@ -101,7 +101,7 @@ func (controller *DatabaseController) Create() *cobra.Command {
 		Use:   "create",
 		Short: "CreateNewDatabase",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"dbType": dbTypeStr,
 				"dbName": dbNameStr,
 			}
@@ -126,7 +126,7 @@ func (controller *DatabaseController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteDatabase",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"dbType": dbTypeStr,
 				"dbName": dbNameStr,
 			}
@@ -152,7 +152,7 @@ func (controller *DatabaseController) CreateUser() *cobra.Command {
 		Use:   "create-user",
 		Short: "CreateNewDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"dbType":   dbTypeStr,
 				"dbName":   dbNameStr,
 				"username": dbUserStr,
@@ -194,7 +194,7 @@ func (controller *DatabaseController) DeleteUser() *cobra.Command {
 		Use:   "delete-user",
 		Short: "DeleteDatabaseUser",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"dbType": dbTypeStr,
 				"dbName": dbNameStr,
 				"dbUser": dbUsernameStr,

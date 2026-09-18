@@ -31,7 +31,7 @@ func NewScheduledTaskController(
 }
 
 func (controller *ScheduledTaskController) parseTaskTags(
-	rawTags interface{},
+	rawTags any,
 ) ([]valueObject.ScheduledTaskTag, error) {
 	taskTags := []valueObject.ScheduledTaskTag{}
 

@@ -55,7 +55,7 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 				return
 			}
 
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname": hostname.String(),
 			}
 
@@ -84,7 +84,7 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 				return
 			}
 
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname": hostname.String(),
 				"version":  phpVersionStr,
 			}
@@ -146,7 +146,7 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return
 			}
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname": hostname.String(),
 				"version":  phpVersionStr,
 			}
@@ -201,7 +201,7 @@ func (controller *RuntimeController) UpdatePhpModules() *cobra.Command {
 				modules = append(modules, module)
 			}
 
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname": hostname.String(),
 				"version":  phpVersionStr,
 				"modules":  modules,
@@ -248,7 +248,7 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return
 			}
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname": hostname.String(),
 				"version":  phpVersionStr,
 			}
@@ -290,7 +290,7 @@ func (controller *RuntimeController) RunPhpCommand() *cobra.Command {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return
 			}
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname": hostname.String(),
 				"command":  commandStr,
 			}

@@ -8,10 +8,10 @@ import (
 	_ "github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/useCase"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/labstack/echo/v4"
 )
@@ -92,12 +92,12 @@ func (controller *ServicesController) ReadInstallablesItems(echoContext echo.Con
 }
 
 func (controller *ServicesController) transformRawEnvsInterfaceSliceToMap(
-	rawEnvsInterface []interface{},
-) map[string]interface{} {
-	rawEnvsMap := map[string]interface{}{}
+	rawEnvsInterface []any,
+) map[string]any {
+	rawEnvsMap := map[string]any{}
 
 	for rawEnvIndex, rawEnvInterface := range rawEnvsInterface {
-		rawEnvMap, assertOk := rawEnvInterface.(map[string]interface{})
+		rawEnvMap, assertOk := rawEnvInterface.(map[string]any)
 		if !assertOk {
 			slog.Debug("InvalidEnvStructure", slog.Int("envIndex", rawEnvIndex))
 			continue
@@ -119,15 +119,15 @@ func (controller *ServicesController) parseRawEnvs(
 ) ([]valueObject.ServiceEnv, error) {
 	serviceEnvs := []valueObject.ServiceEnv{}
 
-	rawEnvsMap := map[string]interface{}{}
+	var rawEnvsMap map[string]any
 	switch rawEnvsValues := rawEnvsUnknownType.(type) {
 	case string, []string:
 		return tkPresentation.StringSliceValueObjectParser(
 			rawEnvsValues, valueObject.NewServiceEnv,
 		), nil
-	case []interface{}:
+	case []any:
 		rawEnvsMap = controller.transformRawEnvsInterfaceSliceToMap(rawEnvsValues)
-	case map[string]interface{}:
+	case map[string]any:
 		rawEnvsMap = rawEnvsValues
 	default:
 		return serviceEnvs, errors.New("EnvsMustBeStringOrStringSliceOrMapOrMapSlice")
@@ -154,12 +154,12 @@ func (controller *ServicesController) parseRawEnvs(
 }
 
 func (controller *ServicesController) transformRawPortBindingsInterfaceSliceToMap(
-	rawPortBindingsInterface []interface{},
-) map[string]interface{} {
-	rawPortBindingsMap := map[string]interface{}{}
+	rawPortBindingsInterface []any,
+) map[string]any {
+	rawPortBindingsMap := map[string]any{}
 
 	for rawPortBindingIndex, rawPortBindingInterface := range rawPortBindingsInterface {
-		rawPortBindingMap, assertOk := rawPortBindingInterface.(map[string]interface{})
+		rawPortBindingMap, assertOk := rawPortBindingInterface.(map[string]any)
 		if !assertOk {
 			slog.Debug(
 				"InvalidPortBindingStructure",
@@ -187,16 +187,16 @@ func (controller *ServicesController) parseRawPortBindings(
 ) ([]valueObject.PortBinding, error) {
 	portBindings := []valueObject.PortBinding{}
 
-	rawPortBindingsInterfaceSlice := []interface{}{}
+	var rawPortBindingsInterfaceSlice []any
 	switch rawPortBindingsValues := rawPortBindingsUnknownType.(type) {
 	case string, []string:
 		return tkPresentation.StringSliceValueObjectParser(
 			rawPortBindingsValues, valueObject.NewPortBinding,
 		), nil
-	case []interface{}:
+	case []any:
 		rawPortBindingsInterfaceSlice = rawPortBindingsValues
-	case map[string]interface{}:
-		rawPortBindingsInterfaceSlice = []interface{}{rawPortBindingsValues}
+	case map[string]any:
+		rawPortBindingsInterfaceSlice = []any{rawPortBindingsValues}
 	default:
 		return portBindings, errors.New(
 			"PortBindingsMustBeStringOrStringSliceOrMapOrMapSlice",

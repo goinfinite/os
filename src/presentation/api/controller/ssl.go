@@ -77,7 +77,7 @@ func (controller *SslController) Read(echoContext echo.Context) error {
 }
 
 func (controller *SslController) decodeContent(
-	rawContent interface{},
+	rawContent any,
 ) (decodedContent string, err error) {
 	encodedContent, err := valueObject.NewEncodedContent(rawContent)
 	if err != nil {

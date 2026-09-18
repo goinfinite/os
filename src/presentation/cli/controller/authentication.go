@@ -30,7 +30,7 @@ func (controller *AuthenticationController) Login() *cobra.Command {
 		Use:   "login",
 		Short: "Login",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"username":          usernameStr,
 				"password":          passwordStr,
 				"operatorIpAddress": ipAddressStr,

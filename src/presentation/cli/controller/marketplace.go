@@ -38,7 +38,7 @@ func (controller *MarketplaceController) ReadCatalog() *cobra.Command {
 		Use:   "list-catalog",
 		Short: "ReadCatalogItems",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			if catalogItemIdUint != 0 {
 				requestBody["id"] = catalogItemIdUint
@@ -157,7 +157,7 @@ func (controller *MarketplaceController) InstallCatalogItem() *cobra.Command {
 		Use:   "install",
 		Short: "InstallCatalogItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"dataFields": controller.parseDataFields(dataFieldsStr),
 			}
 
@@ -205,7 +205,7 @@ func (controller *MarketplaceController) ReadInstalledItems() *cobra.Command {
 		Use:   "list",
 		Short: "ReadInstalledItems",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			if installedItemIdUint != 0 {
 				requestBody["id"] = installedItemIdUint
@@ -291,7 +291,7 @@ func (controller *MarketplaceController) DeleteInstalledItem() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteInstalledItem",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"installedId":             installedIdInt,
 				"shouldUninstallServices": shouldUninstallServicesStr,
 			}

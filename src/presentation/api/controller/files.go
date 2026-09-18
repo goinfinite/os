@@ -251,7 +251,7 @@ func (controller *FilesController) parseSourcePaths(
 		rawSourcePathsStrSlice = []string{rawSourcePathsValues}
 	case []string:
 		rawSourcePathsStrSlice = rawSourcePathsValues
-	case []interface{}:
+	case []any:
 		for _, rawSourcePath := range rawSourcePathsValues {
 			rawSourcePathStr, err := tkVoUtil.InterfaceToString(rawSourcePath)
 			if err != nil {
