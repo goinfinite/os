@@ -217,6 +217,18 @@ func (router Router) sslRoutes() {
 	go sslController.SslCertificateWatchdog()
 }
 
+func (router Router) terminalSessionRoutes() {
+	terminalSessionGroup := router.baseRoute.Group("/v1/terminal-sessions")
+	terminalSessionController := apiController.NewTerminalSessionController(
+		router.persistentDbSvc, router.trailDbSvc,
+	)
+
+	terminalSessionGroup.GET("/", terminalSessionController.Read)
+	terminalSessionGroup.POST("/", terminalSessionController.Create)
+	terminalSessionGroup.DELETE("/:id/", terminalSessionController.Delete)
+	terminalSessionGroup.GET("/:id/attach/", terminalSessionController.Attach)
+}
+
 func (router Router) vhostRoutes() {
 	vhostsGroup := router.baseRoute.Group("/v1/vhosts")
 	vhostsGroup.Any("/*", func(c echo.Context) error {
@@ -269,5 +281,6 @@ func (router Router) RegisterRoutes() {
 	router.servicesRoutes()
 	router.setupRoutes()
 	router.sslRoutes()
+	router.terminalSessionRoutes()
 	router.vhostRoutes()
 }

@@ -2,12 +2,11 @@ package apiMiddleware
 
 import (
 	"net/http"
-	"os"
 	"regexp"
 	"slices"
 	"strings"
 
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
+	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	"github.com/labstack/echo/v4"
 )
 
@@ -28,8 +27,8 @@ func IsSkippableApiCall(httpReq *http.Request, apiBasePath string) bool {
 func ReadOnlyMode(apiBasePath string) echo.MiddlewareFunc {
 	return func(subsequentHandler echo.HandlerFunc) echo.HandlerFunc {
 		return func(echoContext echo.Context) error {
-			isReadOnlyModeEnabled, err := tkVoUtil.InterfaceToBool(os.Getenv("READ_ONLY_MODE"))
-			if err != nil || !isReadOnlyModeEnabled {
+			isReadOnlyModeEnabled := infraHelper.IsReadOnlyMode()
+			if !isReadOnlyModeEnabled {
 				return subsequentHandler(echoContext)
 			}
 
@@ -41,7 +40,7 @@ func ReadOnlyMode(apiBasePath string) echo.MiddlewareFunc {
 			reqMethod := echoContext.Request().Method
 			allowedMethods := []string{"GET", "HEAD", "OPTIONS"}
 			if !slices.Contains(allowedMethods, reqMethod) {
-				return echoContext.JSON(http.StatusLocked, map[string]interface{}{
+				return echoContext.JSON(http.StatusLocked, map[string]any{
 					"status": http.StatusLocked,
 					"body":   "ReadOnlyModeEnabled",
 				})

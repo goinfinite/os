@@ -240,6 +240,15 @@ definitions:
           type: string
         type: array
     type: object
+  dto.CreateTerminalSession:
+    properties:
+      accountId:
+        type: integer
+      command:
+        type: string
+      workingDir:
+        type: string
+    type: object
   dto.CreateUnixFile:
     properties:
       filePath:
@@ -443,6 +452,15 @@ definitions:
       sslPairs:
         items:
           $ref: '#/definitions/entity.SslPair'
+        type: array
+    type: object
+  dto.ReadTerminalSessionsResponse:
+    properties:
+      pagination:
+        $ref: '#/definitions/tkDto.Pagination'
+      terminalSessions:
+        items:
+          $ref: '#/definitions/entity.TerminalSession'
         type: array
     type: object
   dto.ReadVirtualHostsResponse:
@@ -1134,6 +1152,21 @@ definitions:
       virtualHostHostname:
         type: string
     type: object
+  entity.TerminalSession:
+    properties:
+      accountUsername:
+        type: string
+      attachedClients:
+        type: integer
+      command:
+        type: string
+      createdAt:
+        type: integer
+      id:
+        type: string
+      workingDir:
+        type: string
+    type: object
   entity.UnixFile:
     properties:
       content:
@@ -1377,7 +1410,7 @@ info:
     url: https://www.eclipse.org/legal/epl-2.0/
   termsOfService: https://goinfinite.net/tos/
   title: OsApi
-  version: 0.3.4
+  version: 0.3.5
 paths:
   /v1/account/:
     get:
@@ -2833,6 +2866,123 @@ paths:
       summary: CreatePubliclyTrusted
       tags:
       - ssl
+  /v1/terminal-sessions/:
+    get:
+      consumes:
+      - application/json
+      description: List terminal sessions visible to the operator. Normal accounts
+        see their own sessions. Super-admins see every account and may filter with
+        accountId.
+      parameters:
+      - description: TerminalSessionId
+        in: query
+        name: id
+        type: string
+      - description: AccountId (super-admin only)
+        in: query
+        name: accountId
+        type: integer
+      - description: PageNumber (Pagination)
+        in: query
+        name: pageNumber
+        type: integer
+      - description: ItemsPerPage (Pagination)
+        in: query
+        name: itemsPerPage
+        type: integer
+      - description: SortBy (Pagination)
+        in: query
+        name: sortBy
+        type: string
+      - description: SortDirection (Pagination)
+        in: query
+        name: sortDirection
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dto.ReadTerminalSessionsResponse'
+      security:
+      - Bearer: []
+      summary: ReadTerminalSessions
+      tags:
+      - terminal-session
+    post:
+      consumes:
+      - application/json
+      description: Create a terminal session. The working directory must exist. The
+        account cap is ten sessions.
+      parameters:
+      - description: command is optional.
+        in: body
+        name: createTerminalSessionDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateTerminalSession'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/entity.TerminalSession'
+      security:
+      - Bearer: []
+      summary: CreateTerminalSession
+      tags:
+      - terminal-session
+  /v1/terminal-sessions/{id}/:
+    delete:
+      consumes:
+      - application/json
+      description: Kill a terminal session.
+      parameters:
+      - description: TerminalSessionId to delete.
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: TerminalSessionDeleted
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: DeleteTerminalSession
+      tags:
+      - terminal-session
+  /v1/terminal-sessions/{id}/attach/:
+    get:
+      consumes:
+      - application/json
+      description: Upgrade to WebSocket and attach to a terminal session. Binary frames
+        carry terminal bytes in both directions. Text frames carry JSON control messages.
+        The client sends {"type":"resize","cols":N,"rows":N}. The server sends {"type":"ready"},
+        {"type":"exit"} or {"type":"error"}.
+      parameters:
+      - description: TerminalSessionId to attach.
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "101":
+          description: SwitchingProtocols
+          schema:
+            type: string
+      security:
+      - Bearer: []
+      summary: AttachTerminalSession
+      tags:
+      - terminal-session
   /v1/vhost/:
     get:
       consumes:

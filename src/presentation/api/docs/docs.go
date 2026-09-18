@@ -2288,6 +2288,183 @@ const docTemplate = `{
                 }
             }
         },
+        "/v1/terminal-sessions/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "List terminal sessions visible to the operator. Normal accounts see their own sessions. Super-admins see every account and may filter with accountId.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "terminal-session"
+                ],
+                "summary": "ReadTerminalSessions",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "TerminalSessionId",
+                        "name": "id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "AccountId (super-admin only)",
+                        "name": "accountId",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "PageNumber (Pagination)",
+                        "name": "pageNumber",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "ItemsPerPage (Pagination)",
+                        "name": "itemsPerPage",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortBy (Pagination)",
+                        "name": "sortBy",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "SortDirection (Pagination)",
+                        "name": "sortDirection",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dto.ReadTerminalSessionsResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Create a terminal session. The working directory must exist. The account cap is ten sessions.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "terminal-session"
+                ],
+                "summary": "CreateTerminalSession",
+                "parameters": [
+                    {
+                        "description": "command is optional.",
+                        "name": "createTerminalSessionDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.CreateTerminalSession"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/entity.TerminalSession"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/terminal-sessions/{id}/": {
+            "delete": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Kill a terminal session.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "terminal-session"
+                ],
+                "summary": "DeleteTerminalSession",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "TerminalSessionId to delete.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "TerminalSessionDeleted",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            }
+        },
+        "/v1/terminal-sessions/{id}/attach/": {
+            "get": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Upgrade to WebSocket and attach to a terminal session. Binary frames carry terminal bytes in both directions. Text frames carry JSON control messages. The client sends {\"type\":\"resize\",\"cols\":N,\"rows\":N}. The server sends {\"type\":\"ready\"}, {\"type\":\"exit\"} or {\"type\":\"error\"}.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "terminal-session"
+                ],
+                "summary": "AttachTerminalSession",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "TerminalSessionId to attach.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "101": {
+                        "description": "SwitchingProtocols",
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
         "/v1/vhost/": {
             "get": {
                 "security": [
@@ -3290,6 +3467,20 @@ const docTemplate = `{
                 }
             }
         },
+        "dto.CreateTerminalSession": {
+            "type": "object",
+            "properties": {
+                "accountId": {
+                    "type": "integer"
+                },
+                "command": {
+                    "type": "string"
+                },
+                "workingDir": {
+                    "type": "string"
+                }
+            }
+        },
         "dto.CreateUnixFile": {
             "type": "object",
             "properties": {
@@ -3602,6 +3793,20 @@ const docTemplate = `{
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/entity.SslPair"
+                    }
+                }
+            }
+        },
+        "dto.ReadTerminalSessionsResponse": {
+            "type": "object",
+            "properties": {
+                "pagination": {
+                    "$ref": "#/definitions/tkDto.Pagination"
+                },
+                "terminalSessions": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.TerminalSession"
                     }
                 }
             }
@@ -4657,6 +4862,29 @@ const docTemplate = `{
                 }
             }
         },
+        "entity.TerminalSession": {
+            "type": "object",
+            "properties": {
+                "accountUsername": {
+                    "type": "string"
+                },
+                "attachedClients": {
+                    "type": "integer"
+                },
+                "command": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "integer"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "workingDir": {
+                    "type": "string"
+                }
+            }
+        },
         "entity.UnixFile": {
             "type": "object",
             "properties": {
@@ -5005,7 +5233,7 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "0.3.4",
+	Version:          "0.3.5",
 	Host:             "localhost:1618",
 	BasePath:         "/api",
 	Schemes:          []string{},
