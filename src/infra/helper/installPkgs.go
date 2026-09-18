@@ -2,7 +2,7 @@ package infraHelper
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"os"
 
 	tkInfra "github.com/goinfinite/tk/src/infra"
@@ -33,7 +33,7 @@ func InstallPkgs(packages []string) error {
 			break
 		}
 
-		log.Printf("InstallPkgError: %s", err.Error())
+		slog.Debug("InstallPkgError", slog.String("err", err.Error()))
 
 		if attemptNumber == nAttempts-1 {
 			installErr = errors.New("InstallAttemptsFailed")
@@ -45,7 +45,11 @@ func InstallPkgs(packages []string) error {
 	} {
 		err := os.RemoveAll(aptCacheDir)
 		if err != nil {
-			log.Printf("AptCacheCleanupFailed: %s: %s", aptCacheDir, err.Error())
+			slog.Debug(
+				"AptCacheCleanupFailed",
+				slog.String("aptCacheDir", aptCacheDir),
+				slog.String("err", err.Error()),
+			)
 		}
 	}
 

@@ -2,7 +2,7 @@ package infraHelper
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
@@ -13,7 +13,7 @@ func DownloadFile(url string, filePath string) error {
 		Args:    []string{"-q", "--no-check-certificate", "-O", filePath, url},
 	}).Run()
 	if err != nil {
-		log.Printf("DownloadFileError: %s", err)
+		slog.Error("DownloadFileError", slog.String("err", err.Error()))
 		return errors.New("DownloadFileError")
 	}
 

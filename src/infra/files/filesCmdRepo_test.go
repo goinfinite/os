@@ -169,7 +169,8 @@ func TestFilesCmdRepo(t *testing.T) {
 
 	t.Run("ApplyAccountOwnership_AppHtmlUsesNobodyNogroup", func(t *testing.T) {
 		appHtmlDir := "/app/html"
-		if _, err := os.Stat(appHtmlDir); os.IsNotExist(err) {
+		_, statErr := os.Stat(appHtmlDir)
+		if os.IsNotExist(statErr) {
 			t.Skip("AppHtmlDirNotPresent")
 		}
 
