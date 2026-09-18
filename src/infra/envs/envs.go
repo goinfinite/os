@@ -1,7 +1,7 @@
 package infraEnvs
 
 const (
-	InfiniteOsVersion                     string = "0.3.4"
+	InfiniteOsVersion                     string = "0.3.5"
 	InfiniteOsMainDir                     string = "/infinite"
 	InfiniteOsBinary                      string = InfiniteOsMainDir + "/os"
 	InfiniteOsEnvFilePath                 string = InfiniteOsMainDir + "/.env"
@@ -45,6 +45,8 @@ const (
 	GlobalStatesAssetsPath                string = "/assets/global-states"
 	DevModeEnvKey                         string = "DEV_MODE"
 	SilentExitModeEnvKey                  string = "SILENT_EXIT_MODE"
+	ReadOnlyModeEnvKey                    string = "READ_ONLY_MODE"
+	MaxTerminalSessionsPerAccountEnvKey   string = "MAX_TERMINAL_SESSIONS_PER_ACCOUNT"
 	ProcessManagerBinaryPath              string = "/usr/bin/supervisorctl"
 	ProcessManagerConfFilePath            string = InfiniteOsMainDir + "/supervisord.conf"
 	AwkBinaryPath                         string = "/usr/bin/awk"
