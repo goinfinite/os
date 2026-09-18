@@ -50,7 +50,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 	if err != nil {
 		return runResponse, err
 	}
-	phpVersionWithoutDots := phpVersionEntity.Value.GetWithoutDots()
+	phpVersionWithoutDots := phpVersionEntity.Value.RemoveDots()
 	if phpVersionWithoutDots == "" {
 		return runResponse, errors.New("PhpVersionNotFound")
 	}
@@ -323,7 +323,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		return err
 	}
 
-	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
+	newLsapiLine := "lsapi:lsphp" + version.RemoveDots()
 	lsapiLineRegex := regexp.MustCompile(`lsapi:lsphp[0-9][0-9]\b`)
 	_, err = repo.replaceFileContentByRegex(
 		phpConfFilePath, repo.resolvePhpVirtualHostTrustedOwners(),
@@ -336,7 +336,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	isPrimaryVirtualHost := repo.vhostHelpers.IsPrimaryVirtualHost(hostname)
 	if isPrimaryVirtualHost {
 		sourcePhpCliPath := "/usr/local/lsws/lsphp" +
-			version.GetWithoutDots() + "/bin/php"
+			version.RemoveDots() + "/bin/php"
 		updatePhpCliVersionCmd := "unlink /usr/bin/php; ln -s " +
 			sourcePhpCliPath + " /usr/bin/php"
 		_, err = tkInfra.NewShell(tkInfra.ShellSettings{
@@ -495,7 +495,7 @@ func (repo *RuntimeCmdRepo) phpExtensionPackageNameResolver(
 	phpVersion valueObject.PhpVersion,
 	moduleName string,
 ) string {
-	lsphpPackagePrefix := "lsphp" + phpVersion.GetWithoutDots() + "-"
+	lsphpPackagePrefix := "lsphp" + phpVersion.RemoveDots() + "-"
 	switch moduleName {
 	case "mysqli", "pdo_mysql":
 		return lsphpPackagePrefix + "mysql"
@@ -527,7 +527,7 @@ func (repo *RuntimeCmdRepo) enablePhpModule(
 	moduleEntity entity.PhpModule,
 ) error {
 	moduleNameStr := moduleEntity.Name.String()
-	lsphpDir := "/usr/local/lsws/lsphp" + phpVersion.GetWithoutDots()
+	lsphpDir := "/usr/local/lsws/lsphp" + phpVersion.RemoveDots()
 	iniRootDir := lsphpDir + "/etc/php/" + phpVersion.String()
 	modsAvailableDir := iniRootDir + "/mods-available"
 	modsDisabledDir := iniRootDir + "/mods-disabled"
@@ -576,7 +576,7 @@ func (repo *RuntimeCmdRepo) disablePhpModule(
 	}
 
 	iniRootDir := "/usr/local/lsws/lsphp" +
-		phpVersion.GetWithoutDots() + "/etc/php/" + phpVersion.String()
+		phpVersion.RemoveDots() + "/etc/php/" + phpVersion.String()
 	modsAvailableDir := iniRootDir + "/mods-available"
 	modsDisabledDir := iniRootDir + "/mods-disabled"
 

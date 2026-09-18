@@ -29,7 +29,7 @@ func NewEncodedContent(value any) (encodedContent EncodedContent, err error) {
 	return EncodedContent(stringValue), nil
 }
 
-func (vo EncodedContent) GetDecodedContent() (voStr string, err error) {
+func (vo EncodedContent) DecodeContent() (voStr string, err error) {
 	decodedContent, err := base64.StdEncoding.DecodeString(string(vo))
 	if err != nil {
 		return voStr, err

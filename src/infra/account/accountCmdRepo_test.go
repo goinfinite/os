@@ -20,7 +20,7 @@ func addDummyUser() error {
 		username, password, false, operatorAccountId, ipAddress,
 	)
 
-	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
+	accountCmdRepo := NewAccountCmdRepo(testHelpers.ReadPersistentDbSvc())
 	_, err := accountCmdRepo.Create(createDto)
 	if err != nil {
 		return err
@@ -31,7 +31,7 @@ func addDummyUser() error {
 
 func deleteDummyUser() error {
 	accountId, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
-	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
+	accountCmdRepo := NewAccountCmdRepo(testHelpers.ReadPersistentDbSvc())
 	err := accountCmdRepo.Delete(accountId)
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func resetDummyUser() {
 
 func TestAccountCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	accountCmdRepo := NewAccountCmdRepo(testHelpers.GetPersistentDbSvc())
+	accountCmdRepo := NewAccountCmdRepo(testHelpers.ReadPersistentDbSvc())
 	accountId, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))
 
 	t.Run("AddValidAccount", func(t *testing.T) {

@@ -32,6 +32,6 @@ func (vo PhpVersion) String() string {
 	return string(vo)
 }
 
-func (vo PhpVersion) GetWithoutDots() string {
+func (vo PhpVersion) RemoveDots() string {
 	return string(vo[:1]) + string(vo[2:])
 }

@@ -48,14 +48,6 @@ func NewPortBinding(value any) (portBinding PortBinding, err error) {
 	}, nil
 }
 
-func (vo PortBinding) GetPort() tkValueObject.NetworkPort {
-	return vo.Port
-}
-
-func (vo PortBinding) GetProtocol() tkValueObject.NetworkProtocol {
-	return vo.Protocol
-}
-
 func (vo PortBinding) String() string {
 	return vo.Port.String() + "/" + vo.Protocol.String()
 }

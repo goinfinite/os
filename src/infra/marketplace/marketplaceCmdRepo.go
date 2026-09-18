@@ -180,7 +180,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		cmdStepDataFieldPlaceholders := infraHelper.GetAllRegexGroupMatches(
+		cmdStepDataFieldPlaceholders := infraHelper.ReadAllRegexGroupMatches(
 			cmdStepStr, `%(\w{1,256})%`,
 		)
 
@@ -455,7 +455,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installUrlPath = *installDto.UrlPath
 	}
 
-	installDirStr := vhostEntity.RootDirectory.String() + installUrlPath.GetWithoutTrailingSlash()
+	installDirStr := vhostEntity.RootDirectory.String() + installUrlPath.RemoveTrailingSlash()
 	installDir, err := tkValueObject.NewUnixAbsoluteFilePath(installDirStr, false)
 	if err != nil {
 		return errors.New("DefineInstallDirectoryError: " + err.Error())

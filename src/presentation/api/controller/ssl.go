@@ -84,7 +84,7 @@ func (controller *SslController) decodeContent(
 	if err != nil {
 		return decodedContent, err
 	}
-	decodedContent, err = encodedContent.GetDecodedContent()
+	decodedContent, err = encodedContent.DecodeContent()
 	if err != nil {
 		return decodedContent, errors.New("CannotDecodeContent")
 	}

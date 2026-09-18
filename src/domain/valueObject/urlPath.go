@@ -34,6 +34,6 @@ func (vo UrlPath) String() string {
 	return string(vo)
 }
 
-func (vo UrlPath) GetWithoutTrailingSlash() string {
+func (vo UrlPath) RemoveTrailingSlash() string {
 	return strings.TrimSuffix(vo.String(), "/")
 }

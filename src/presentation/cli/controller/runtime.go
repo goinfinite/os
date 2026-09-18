@@ -26,7 +26,7 @@ func NewRuntimeController(
 	}
 }
 
-func getHostname(hostnameStr string) (hostname tkValueObject.Fqdn, err error) {
+func readHostname(hostnameStr string) (hostname tkValueObject.Fqdn, err error) {
 	primaryVhost, err := vhostInfra.NewVirtualHostHelpers().
 		ReadPrimaryVirtualHostHostname()
 	if err != nil {
@@ -49,7 +49,7 @@ func (controller *RuntimeController) ReadPhpConfigs() *cobra.Command {
 		Short: "GetPhpConfigs",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname, err := getHostname(hostnameStr)
+			hostname, err := readHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return
@@ -78,7 +78,7 @@ func (controller *RuntimeController) UpdatePhpConfig() *cobra.Command {
 		Short: "UpdatePhpConfigs",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname, err := getHostname(hostnameStr)
+			hostname, err := readHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return
@@ -141,7 +141,7 @@ func (controller *RuntimeController) UpdatePhpModule() *cobra.Command {
 		Short: "UpdatePhpModule",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname, err := getHostname(hostnameStr)
+			hostname, err := readHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return
@@ -185,7 +185,7 @@ func (controller *RuntimeController) UpdatePhpModules() *cobra.Command {
 		Short: "UpdatePhpModules",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname, err := getHostname(hostnameStr)
+			hostname, err := readHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return
@@ -243,7 +243,7 @@ func (controller *RuntimeController) UpdatePhpSetting() *cobra.Command {
 		Short: "UpdatePhpSetting",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname, err := getHostname(hostnameStr)
+			hostname, err := readHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return
@@ -285,7 +285,7 @@ func (controller *RuntimeController) RunPhpCommand() *cobra.Command {
 		Short: "RunPhpCommand",
 		Args:  cobra.NoArgs,
 		Run: func(cmd *cobra.Command, args []string) {
-			hostname, err := getHostname(hostnameStr)
+			hostname, err := readHostname(hostnameStr)
 			if err != nil {
 				tkPresentation.SimpleCliResponseRenderer(false, err.Error())
 				return

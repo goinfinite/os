@@ -30,7 +30,7 @@ func NewServiceVersion(value any) (
 	return ServiceVersion(stringValue), nil
 }
 
-func (vo ServiceVersion) GetWithoutPunctuation() string {
+func (vo ServiceVersion) RemovePunctuation() string {
 	return serviceVersionPunctuationRegex.ReplaceAllString(string(vo), "")
 }
 

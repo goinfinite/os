@@ -1,7 +1,7 @@
 package dbModel
 
 import (
-	"log"
+	"log/slog"
 	"strings"
 	"time"
 
@@ -74,13 +74,16 @@ func (model MarketplaceInstalledItem) ToEntity() (
 
 	serviceNamesWithVersion := []valueObject.ServiceNameWithVersion{}
 	if len(model.Services) > 0 {
-		rawServicesList := strings.Split(model.Services, ",")
-		for _, rawService := range rawServicesList {
+		for rawService := range strings.SplitSeq(model.Services, ",") {
 			serviceNameWithVersion, err := valueObject.NewServiceNameWithVersionFromString(
 				rawService,
 			)
 			if err != nil {
-				log.Printf("%s: %s", err.Error(), rawService)
+				slog.Debug(
+					"ServiceNameWithVersionParseError",
+					slog.String("rawService", rawService),
+					slog.String("err", err.Error()),
+				)
 			}
 			serviceNamesWithVersion = append(serviceNamesWithVersion, serviceNameWithVersion)
 		}

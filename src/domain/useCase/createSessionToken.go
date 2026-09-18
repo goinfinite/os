@@ -16,7 +16,7 @@ const MaxFailedLoginAttemptsPerIpAddress uint = 3
 const FailedLoginAttemptsInterval time.Duration = 15 * time.Minute
 const SessionTokenExpiresIn time.Duration = 3 * time.Hour
 
-func getFailedLoginAttemptsCount(
+func readFailedLoginAttemptsCount(
 	activityRecordQueryRepo tkRepository.ActivityRecordQueryRepo,
 	createDto dto.CreateSessionToken,
 ) uint {
@@ -45,7 +45,7 @@ func CreateSessionToken(
 	activityRecordCmdRepo tkRepository.ActivityRecordCmdRepo,
 	createDto dto.CreateSessionToken,
 ) (accessToken entity.AccessToken, err error) {
-	failedAttemptsCount := getFailedLoginAttemptsCount(activityRecordQueryRepo, createDto)
+	failedAttemptsCount := readFailedLoginAttemptsCount(activityRecordQueryRepo, createDto)
 	if failedAttemptsCount >= MaxFailedLoginAttemptsPerIpAddress {
 		return accessToken, errors.New("MaxFailedLoginAttemptsReached")
 	}

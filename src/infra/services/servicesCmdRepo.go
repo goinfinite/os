@@ -438,7 +438,7 @@ func (repo *ServicesCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		stepPlaceholders := infraHelper.GetAllRegexGroupMatches(
+		stepPlaceholders := infraHelper.ReadAllRegexGroupMatches(
 			cmdStepStr, `%(\w{1,256})%`,
 		)
 

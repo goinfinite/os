@@ -14,7 +14,7 @@ import (
 func TestAccountQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
 
-	persistentDbSvc := testHelpers.GetPersistentDbSvc()
+	persistentDbSvc := testHelpers.ReadPersistentDbSvc()
 	accountQueryRepo := NewAccountQueryRepo(persistentDbSvc)
 
 	id, _ := tkValueObject.NewAccountId(os.Getenv("DUMMY_USER_ID"))

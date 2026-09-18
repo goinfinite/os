@@ -2,7 +2,7 @@ package databaseInfra
 
 import (
 	"errors"
-	"log"
+	"log/slog"
 	"strings"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -17,7 +17,7 @@ func (repo MysqlDatabaseCmdRepo) Create(dbName valueObject.DatabaseName) error {
 		"CREATE DATABASE " + dbName.String(),
 	)
 	if err != nil {
-		log.Printf("CreateDatabaseError: %v", err)
+		slog.Error("CreateDatabaseError", slog.String("err", err.Error()))
 		return errors.New("CreateDatabaseError")
 	}
 
@@ -29,7 +29,7 @@ func (repo MysqlDatabaseCmdRepo) Delete(dbName valueObject.DatabaseName) error {
 		"DROP DATABASE " + dbName.String(),
 	)
 	if err != nil {
-		log.Printf("DeleteDatabaseError: %v", err)
+		slog.Error("DeleteDatabaseError", slog.String("err", err.Error()))
 		return errors.New("DeleteDatabaseError")
 	}
 
@@ -56,7 +56,7 @@ func (repo MysqlDatabaseCmdRepo) CreateUser(createDatabaseUser dto.CreateDatabas
 			"FLUSH PRIVILEGES;",
 	)
 	if err != nil {
-		log.Printf("CreateDatabaseUserError: %v", err)
+		slog.Error("CreateDatabaseUserError", slog.String("err", err.Error()))
 		return errors.New("CreateDatabaseUserError")
 	}
 
@@ -76,7 +76,7 @@ func (repo MysqlDatabaseCmdRepo) DeleteUser(
 			"FLUSH PRIVILEGES;",
 	)
 	if err != nil {
-		log.Printf("DeleteDatabaseUserError: %v", err)
+		slog.Error("DeleteDatabaseUserError", slog.String("err", err.Error()))
 		return errors.New("DeleteDatabaseUserError")
 	}
 

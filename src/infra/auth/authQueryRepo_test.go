@@ -16,7 +16,7 @@ import (
 
 func TestAuthQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	persistentDbSvc := testHelpers.GetPersistentDbSvc()
+	persistentDbSvc := testHelpers.ReadPersistentDbSvc()
 	authQueryRepo := NewAuthQueryRepo(persistentDbSvc)
 	accountCmdRepo := accountInfra.NewAccountCmdRepo(persistentDbSvc)
 	accountQueryRepo := accountInfra.NewAccountQueryRepo(persistentDbSvc)
