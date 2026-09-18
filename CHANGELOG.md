@@ -12,6 +12,9 @@ chore: bake tmux into the container image
 refactor: drop the FailedTo error message prefix
 chore: adopt biome for JavaScript lint and formatting
 chore: bump version to 0.3.5
+chore: bump xterm to 6.0.0
+chore: add zed project settings
+chore: pin biome and float dev tools in mise
 
 0.3.4 - 2026/09/15
 chore: update go deps
