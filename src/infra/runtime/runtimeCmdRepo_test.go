@@ -274,69 +274,156 @@ func TestPhpModuleUpdateReport(test *testing.T) {
 	}
 }
 
-func TestIsPhpModuleIniFilePresent(test *testing.T) {
+func TestPhpModuleIniFilePathResolver(test *testing.T) {
 	runtimeCmdRepo := NewRuntimeCmdRepo(nil)
 	tempDirectory := test.TempDir()
 
-	regularFilePath := filepath.Join(tempDirectory, "module.ini")
-	err := os.WriteFile(regularFilePath, []byte{}, 0644)
-	if err != nil {
-		test.Fatalf("CreateRegularIniFileFailed: %v", err)
+	writeIniFile := func(filePath string) {
+		test.Helper()
+
+		err := os.WriteFile(filePath, []byte{}, 0644)
+		if err != nil {
+			test.Fatalf("CreateIniFileFailed: %v", err)
+		}
 	}
 
-	// Module configuration can be linked to a shared file.
-	symbolicLinkPath := filepath.Join(tempDirectory, "module-link.ini")
-	err = os.Symlink(regularFilePath, symbolicLinkPath)
+	sharedIniFilePath := filepath.Join(tempDirectory, "shared.ini")
+	writeIniFile(sharedIniFilePath)
+	writeIniFile(filepath.Join(tempDirectory, "curl.ini"))
+	writeIniFile(filepath.Join(tempDirectory, "50-redis.ini"))
+	writeIniFile(filepath.Join(tempDirectory, "40-igbinary.ini"))
+	writeIniFile(filepath.Join(tempDirectory, "abc-redis.ini"))
+
+	err := os.Symlink(
+		sharedIniFilePath, filepath.Join(tempDirectory, "linked.ini"),
+	)
 	if err != nil {
 		test.Fatalf("CreateIniFileSymlinkFailed: %v", err)
 	}
 
-	directoryPath := filepath.Join(tempDirectory, "directory.ini")
-	err = os.Mkdir(directoryPath, 0755)
+	err = os.Mkdir(filepath.Join(tempDirectory, "directory.ini"), 0755)
 	if err != nil {
 		test.Fatalf("CreateIniFileDirectoryFailed: %v", err)
 	}
 
+	precedenceDir := filepath.Join(tempDirectory, "precedence")
+	err = os.Mkdir(precedenceDir, 0755)
+	if err != nil {
+		test.Fatalf("CreatePrecedenceDirFailed: %v", err)
+	}
+	writeIniFile(filepath.Join(precedenceDir, "redis.ini"))
+	writeIniFile(filepath.Join(precedenceDir, "50-redis.ini"))
+
+	nonDigitPrefixDir := filepath.Join(tempDirectory, "nonDigitPrefix")
+	err = os.Mkdir(nonDigitPrefixDir, 0755)
+	if err != nil {
+		test.Fatalf("CreateNonDigitPrefixDirFailed: %v", err)
+	}
+	writeIniFile(filepath.Join(nonDigitPrefixDir, "abc-redis.ini"))
+
+	priorityOrderDir := filepath.Join(tempDirectory, "priorityOrder")
+	err = os.Mkdir(priorityOrderDir, 0755)
+	if err != nil {
+		test.Fatalf("CreatePriorityOrderDirFailed: %v", err)
+	}
+	writeIniFile(filepath.Join(priorityOrderDir, "40-redis.ini"))
+	writeIniFile(filepath.Join(priorityOrderDir, "50-redis.ini"))
+
+	partialModuleNameDir := filepath.Join(tempDirectory, "partialModuleName")
+	err = os.Mkdir(partialModuleNameDir, 0755)
+	if err != nil {
+		test.Fatalf("CreatePartialModuleNameDirFailed: %v", err)
+	}
+	writeIniFile(filepath.Join(partialModuleNameDir, "50-foo-redis.ini"))
+
 	testCases := []struct {
 		testName         string
-		filePath         string
-		expectedPresence bool
+		modulesDir       string
+		moduleName       string
+		expectedFileName string
 	}{
 		{
-			testName:         "RegularFile",
-			filePath:         regularFilePath,
-			expectedPresence: true,
+			testName:         "ResolvesExactName",
+			modulesDir:       tempDirectory,
+			moduleName:       "curl",
+			expectedFileName: "curl.ini",
 		},
 		{
-			testName:         "SymbolicLink",
-			filePath:         symbolicLinkPath,
-			expectedPresence: true,
+			testName:         "ResolvesPriorityPrefixedName",
+			modulesDir:       tempDirectory,
+			moduleName:       "redis",
+			expectedFileName: "50-redis.ini",
 		},
 		{
-			testName:         "MissingPath",
-			filePath:         filepath.Join(tempDirectory, "missing.ini"),
-			expectedPresence: false,
+			testName:         "ResolvesOtherPriorityPrefixedName",
+			modulesDir:       tempDirectory,
+			moduleName:       "igbinary",
+			expectedFileName: "40-igbinary.ini",
 		},
 		{
-			testName:         "Directory",
-			filePath:         directoryPath,
-			expectedPresence: false,
+			testName:         "ResolvesSymlink",
+			modulesDir:       tempDirectory,
+			moduleName:       "linked",
+			expectedFileName: "linked.ini",
+		},
+		{
+			testName:         "PrefersExactNameOverPriorityPrefixedName",
+			modulesDir:       precedenceDir,
+			moduleName:       "redis",
+			expectedFileName: "redis.ini",
+		},
+		{
+			testName:         "PrefersLastLoadedPriorityPrefixedName",
+			modulesDir:       priorityOrderDir,
+			moduleName:       "redis",
+			expectedFileName: "50-redis.ini",
+		},
+		{
+			testName:   "RejectsNonDigitPrefix",
+			modulesDir: nonDigitPrefixDir,
+			moduleName: "redis",
+		},
+		{
+			testName:   "RejectsPartialModuleNameMatch",
+			modulesDir: partialModuleNameDir,
+			moduleName: "redis",
+		},
+		{
+			testName:   "IgnoresDirectory",
+			modulesDir: tempDirectory,
+			moduleName: "directory",
+		},
+		{
+			testName:   "MissingModule",
+			modulesDir: tempDirectory,
+			moduleName: "missing",
+		},
+		{
+			testName:   "MissingDirectory",
+			modulesDir: filepath.Join(tempDirectory, "no-such-dir"),
+			moduleName: "redis",
 		},
 	}
 
 	for _, testCase := range testCases {
 		test.Run(testCase.testName, func(subtest *testing.T) {
-			actualPresence, err := runtimeCmdRepo.isPhpModuleIniFilePresent(
-				testCase.filePath,
+			actualFilePath, err := runtimeCmdRepo.phpModuleIniFilePathResolver(
+				testCase.modulesDir, testCase.moduleName,
 			)
 			if err != nil {
-				subtest.Fatalf("ReadIniFilePresenceFailed: %v", err)
+				subtest.Fatalf("ResolveIniFilePathFailed: %v", err)
 			}
-			if actualPresence != testCase.expectedPresence {
+
+			expectedFilePath := ""
+			if testCase.expectedFileName != "" {
+				expectedFilePath = filepath.Join(
+					testCase.modulesDir, testCase.expectedFileName,
+				)
+			}
+			if actualFilePath != expectedFilePath {
 				subtest.Errorf(
-					"IniFilePresenceMismatch: expected %v, got %v",
-					testCase.expectedPresence,
-					actualPresence,
+					"IniFilePathMismatch: expected %q, got %q",
+					expectedFilePath, actualFilePath,
 				)
 			}
 		})
