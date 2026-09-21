@@ -17,6 +17,9 @@ chore: add zed project settings
 chore: pin biome and float dev tools in mise
 refactor: use slog and the Read naming convention
 refactor: declare errors before the nil check
+fix(runtime): resolve php module ini files by priority prefix
+test(runtime): cover the php module enable and disable lifecycle
+chore: exclude the test suite from the build context and air watch
 
 0.3.4 - 2026/09/15
 chore: update go deps
