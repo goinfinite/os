@@ -8,9 +8,9 @@ Containerfile
 .env.example
 *.db
 
-# Runtime and test output.
+# Runtime output and the host-side test suite.
 logs/
-tests/artifacts/
+tests/
 
 # Local notes and tooling.
 tmp/
