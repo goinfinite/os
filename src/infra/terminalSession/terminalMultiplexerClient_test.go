@@ -13,6 +13,7 @@ func TestParseSessionLine(t *testing.T) {
 		name               string
 		sessionLine        string
 		expectedId         string
+		expectedName       string
 		expectedWorkingDir string
 		expectedCommand    string
 		expectedClients    uint16
@@ -20,7 +21,16 @@ func TestParseSessionLine(t *testing.T) {
 	}{
 		{
 			name:               "ValidSessionLine",
-			sessionLine:        "os-managed-0123456789abcdef|1700000000|2|/app|bash",
+			sessionLine:        "os-managed-0123456789abcdef|1700000000|2|/app|bash|opencode",
+			expectedId:         "0123456789abcdef",
+			expectedName:       "opencode",
+			expectedWorkingDir: "/app",
+			expectedCommand:    "bash",
+			expectedClients:    2,
+		},
+		{
+			name:               "UnnamedSessionLine",
+			sessionLine:        "os-managed-0123456789abcdef|1700000000|2|/app|bash|",
 			expectedId:         "0123456789abcdef",
 			expectedWorkingDir: "/app",
 			expectedCommand:    "bash",
@@ -28,43 +38,43 @@ func TestParseSessionLine(t *testing.T) {
 		},
 		{
 			name:           "TooFewParts",
-			sessionLine:    "os-managed-0123456789abcdef|1700000000|0|/app",
-			expectedErrMsg: "InvalidSessionLine",
-		},
-		{
-			name:           "TooManyParts",
-			sessionLine:    "os-managed-0123456789abcdef|1700000000|0|/app|bash|extra",
+			sessionLine:    "os-managed-0123456789abcdef|1700000000|0|/app|bash",
 			expectedErrMsg: "InvalidSessionLine",
 		},
 		{
 			name:           "MissingSessionNamePrefix",
-			sessionLine:    "other-0123456789abcdef|1700000000|0|/app|bash",
+			sessionLine:    "other-0123456789abcdef|1700000000|0|/app|bash|",
 			expectedErrMsg: "NotATerminalSession",
 		},
 		{
 			name:           "InvalidSessionId",
-			sessionLine:    "os-managed-nothex|1700000000|0|/app|bash",
+			sessionLine:    "os-managed-nothex|1700000000|0|/app|bash|",
 			expectedErrMsg: "InvalidTerminalSessionId",
 		},
 		{
 			name:           "InvalidCreatedAt",
-			sessionLine:    "os-managed-0123456789abcdef|notanumber|0|/app|bash",
+			sessionLine:    "os-managed-0123456789abcdef|notanumber|0|/app|bash|",
 			expectedErrMsg: "ParseSessionCreatedAtError",
 		},
 		{
 			name:           "InvalidAttachedClients",
-			sessionLine:    "os-managed-0123456789abcdef|1700000000|notanumber|/app|bash",
+			sessionLine:    "os-managed-0123456789abcdef|1700000000|notanumber|/app|bash|",
 			expectedErrMsg: "ParseAttachedClientsError",
 		},
 		{
 			name:           "EmptyWorkingDir",
-			sessionLine:    "os-managed-0123456789abcdef|1700000000|0||bash",
+			sessionLine:    "os-managed-0123456789abcdef|1700000000|0||bash|",
 			expectedErrMsg: "UnixAbsoluteFilePathValueMustNotBeEmpty",
 		},
 		{
 			name:           "CommandTooShort",
-			sessionLine:    "os-managed-0123456789abcdef|1700000000|0|/app|x",
+			sessionLine:    "os-managed-0123456789abcdef|1700000000|0|/app|x|",
 			expectedErrMsg: "UnixCommandTooShort",
+		},
+		{
+			name:           "InvalidName",
+			sessionLine:    "os-managed-0123456789abcdef|1700000000|0|/app|bash|bad|name",
+			expectedErrMsg: "InvalidTerminalSessionName",
 		},
 	}
 
@@ -92,6 +102,18 @@ func TestParseSessionLine(t *testing.T) {
 			if session.Id.String() != testCase.expectedId {
 				t.Errorf("Expected id '%s', got '%s'", testCase.expectedId, session.Id.String())
 			}
+
+			sessionName := ""
+			if session.Name != nil {
+				sessionName = session.Name.String()
+			}
+			if sessionName != testCase.expectedName {
+				t.Errorf(
+					"Expected name '%s', got '%s'",
+					testCase.expectedName, sessionName,
+				)
+			}
+
 			if session.WorkingDir.String() != testCase.expectedWorkingDir {
 				t.Errorf(
 					"Expected working dir '%s', got '%s'",

@@ -170,7 +170,7 @@ Display system health, hardware specs, uptime, IP address, and operational metri
 **Flow:**
 
 1. `src/presentation/api/controller/o11y.go` — System metrics REST endpoint
-2. `src/presentation/ui/presenter/overview/` — Web dashboard system overview page; two-column grid with the terminal sessions tile
+2. `src/presentation/ui/presenter/overview/` — Web dashboard system overview page; paired cards around a full-width services table, with the terminal sessions, marketplace and services data tables
 3. `src/infra/o11y/` — System observability and metrics collection
 4. `src/infra/internalDatabase/` — Historical metric storage
 
@@ -284,21 +284,22 @@ Create, revoke, and manage API keys for secure programmatic access to the system
 
 ## Web Terminal
 
-Open persistent terminal sessions that run as the account's Linux user. tmux holds every session, so it survives a browser close and an os-api restart. The dashboard, the REST API and the CLI expose the same resource.
+Open persistent terminal sessions that run as the account's Linux user. tmux holds every session, so it survives a browser close and an os-api restart. The dashboard, the REST API and the CLI expose the same resource. A session carries an optional display name stored in the tmux user option `@os-name`, so the name dies with the session.
 
 **Flow:**
 
 1. `src/presentation/api/controller/terminalSession.go` — terminal session REST endpoints and the WebSocket attach
-2. `src/presentation/cli/controller/terminal.go` — CLI `terminal` commands, including an `su`-based interactive attach
-3. `src/presentation/ui/presenter/terminal/` — terminal page, layout modal fragment and the xterm.js client
-4. `src/presentation/ui/presenter/overview/` — terminal sessions tile in the overview grid
-5. `src/presentation/ui/layout/main/main.templ` — layout-level terminal management modal
+2. `src/presentation/cli/controller/terminal.go` — CLI `terminal` commands, including `rename` and an `su`-based interactive attach
+3. `src/presentation/ui/presenter/terminal/` — the sessions modal fragment with the vertical session rail, the new-session button with its gear button for the custom create form and the xterm.js client
+4. `src/presentation/ui/presenter/overview/` — terminal sessions data table with per-row attach, rename and kill, and a new-session button that creates a session with the defaults
+5. `src/presentation/ui/layout/main/main.templ` — layout-level terminal sessions modal
 6. `src/presentation/liaison/terminalSession.go` — untrusted input to DTOs and the attach handle
-7. `src/domain/useCase/createTerminalSession.go` — owner resolution and the ten-session per-account cap
+7. `src/domain/useCase/createTerminalSession.go` — owner resolution and the thirty-session per-account cap
 8. `src/domain/useCase/readTerminalSessions.go` — operator-scoped read; super-admins enumerate accounts
-9. `src/domain/useCase/deleteTerminalSession.go` — authorized delete
-10. `src/infra/terminalSession/` — tmux client and PTY attach, both run as the owner
-11. `Containerfile` — tmux package
+9. `src/domain/useCase/updateTerminalSession.go` — authorized rename
+10. `src/domain/useCase/deleteTerminalSession.go` — authorized delete
+11. `src/infra/terminalSession/` — tmux client and PTY attach, both run as the owner
+12. `Containerfile` — tmux package
 
 ---
 

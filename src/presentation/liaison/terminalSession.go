@@ -2,6 +2,7 @@ package liaison
 
 import (
 	"errors"
+	"strings"
 
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 
@@ -17,6 +18,7 @@ import (
 	terminalSessionInfra "github.com/goinfinite/os/src/infra/terminalSession"
 	liaisonHelper "github.com/goinfinite/os/src/presentation/liaison/helper"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
 type TerminalSessionLiaison struct {
@@ -167,6 +169,17 @@ func (liaison *TerminalSessionLiaison) Create(
 		)
 	}
 
+	var namePtr *valueObject.TerminalSessionName
+	if untrustedInput["name"] != nil && untrustedInput["name"] != "" {
+		name, err := valueObject.NewTerminalSessionName(untrustedInput["name"])
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
+		}
+		namePtr = &name
+	}
+
 	var workingDirPtr *tkValueObject.UnixAbsoluteFilePath
 	if untrustedInput["workingDir"] != nil && untrustedInput["workingDir"] != "" {
 		workingDir, err := tkValueObject.NewUnixAbsoluteFilePath(
@@ -203,7 +216,8 @@ func (liaison *TerminalSessionLiaison) Create(
 	}
 
 	createDto := dto.NewCreateTerminalSession(
-		workingDirPtr, commandPtr, accountIdPtr, operatorAccountId, operatorIpAddress,
+		namePtr, workingDirPtr, commandPtr, accountIdPtr, operatorAccountId,
+		operatorIpAddress,
 	)
 
 	terminalSessionId, err := useCase.NewCreateTerminalSession(
@@ -212,7 +226,7 @@ func (liaison *TerminalSessionLiaison) Create(
 		infraHelper.ReadMaxTerminalSessionsPerAccount(),
 	).Execute(createDto)
 	if err != nil {
-		if liaisonHelper.IsAnyError(
+		if tkVoUtil.IsAnyError(
 			err,
 			repository.ErrTerminalSessionAccountCapReached,
 			repository.ErrTerminalSessionWorkingDirNotFound,
@@ -239,6 +253,77 @@ func (liaison *TerminalSessionLiaison) Create(
 
 	return tkPresentation.NewLiaisonResponseNoMessage(
 		tkPresentation.LiaisonResponseStatusCreated, terminalSessionEntity,
+	)
+}
+
+func (liaison *TerminalSessionLiaison) Update(
+	untrustedInput map[string]any,
+) tkPresentation.LiaisonResponse {
+	operatorAccountId, operatorIpAddress, err := liaisonHelper.ReadOperatorContext(
+		untrustedInput,
+	)
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
+	}
+
+	terminalSessionId, err := valueObject.NewTerminalSessionId(untrustedInput["id"])
+	if err != nil {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+		)
+	}
+
+	nameValue, isNamePresent := untrustedInput["name"]
+	if !isNamePresent {
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusUserError, "TerminalSessionNameRequired",
+		)
+	}
+
+	var namePtr *valueObject.TerminalSessionName
+	if nameValue != nil {
+		nameString, err := tkVoUtil.InterfaceToString(nameValue)
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
+		}
+
+		if strings.TrimSpace(nameString) != "" {
+			name, err := valueObject.NewTerminalSessionName(nameString)
+			if err != nil {
+				return tkPresentation.NewLiaisonResponseNoMessage(
+					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+				)
+			}
+			namePtr = &name
+		}
+	}
+
+	updateDto := dto.NewUpdateTerminalSession(
+		terminalSessionId, namePtr, operatorAccountId, operatorIpAddress,
+	)
+
+	err = useCase.UpdateTerminalSession(
+		liaison.accountQueryRepo, liaison.terminalSessionQueryRepo,
+		liaison.terminalSessionCmdRepo, liaison.activityRecordCmdRepo, updateDto,
+	)
+	if err != nil {
+		if errors.Is(err, repository.ErrTerminalSessionNotFound) {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
+		}
+
+		return tkPresentation.NewLiaisonResponseNoMessage(
+			tkPresentation.LiaisonResponseStatusInfraError, err.Error(),
+		)
+	}
+
+	return tkPresentation.NewLiaisonResponseNoMessage(
+		tkPresentation.LiaisonResponseStatusSuccess, "TerminalSessionUpdated",
 	)
 }
 
@@ -311,7 +396,7 @@ func (liaison *TerminalSessionLiaison) Attach(untrustedInput map[string]any) (
 		liaison.terminalSessionCmdRepo, infraHelper.IsReadOnlyMode(),
 	).Execute(attachDto)
 	if err != nil {
-		if liaisonHelper.IsAnyError(
+		if tkVoUtil.IsAnyError(
 			err,
 			useCase.ErrReadOnlyMode,
 			repository.ErrTerminalSessionNotFound,

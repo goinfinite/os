@@ -24,6 +24,7 @@ type TerminalSessionAttachHandle interface {
 
 type TerminalSessionCmdRepo interface {
 	Create(createDto dto.CreateTerminalSession) (valueObject.TerminalSessionId, error)
+	Update(updateDto dto.UpdateTerminalSession) error
 	Delete(deleteDto dto.DeleteTerminalSession) error
 	Attach(attachDto dto.AttachTerminalSession) (TerminalSessionAttachHandle, error)
 }

@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"errors"
+	"log/slog"
 	"os"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -31,6 +32,19 @@ func (repo *TerminalSessionCmdRepo) sessionIdFactory() (
 	return valueObject.NewTerminalSessionId(hex.EncodeToString(randomBytes))
 }
 
+func (repo *TerminalSessionCmdRepo) killSessionAfterCreateFailure(
+	client *TerminalMultiplexerClient,
+	terminalSessionId valueObject.TerminalSessionId,
+) {
+	killErr := client.KillSession(terminalSessionId)
+	if killErr != nil {
+		slog.Error(
+			"KillTerminalSessionAfterCreateError",
+			slog.String("err", killErr.Error()),
+		)
+	}
+}
+
 func (repo *TerminalSessionCmdRepo) Create(
 	createDto dto.CreateTerminalSession,
 ) (terminalSessionId valueObject.TerminalSessionId, err error) {
@@ -55,16 +69,38 @@ func (repo *TerminalSessionCmdRepo) Create(
 		return terminalSessionId, err
 	}
 
-	if createDto.Command == nil {
-		return terminalSessionId, nil
+	if createDto.Name != nil {
+		err = client.SetSessionName(terminalSessionId, *createDto.Name)
+		if err != nil {
+			repo.killSessionAfterCreateFailure(client, terminalSessionId)
+			return terminalSessionId, err
+		}
 	}
 
-	err = client.SendCommand(terminalSessionId, *createDto.Command)
-	if err != nil {
-		return terminalSessionId, err
+	if createDto.Command != nil {
+		err = client.SendCommand(terminalSessionId, *createDto.Command)
+		if err != nil {
+			repo.killSessionAfterCreateFailure(client, terminalSessionId)
+			return terminalSessionId, err
+		}
 	}
 
 	return terminalSessionId, nil
+}
+
+func (repo *TerminalSessionCmdRepo) Update(
+	updateDto dto.UpdateTerminalSession,
+) error {
+	client, err := NewTerminalMultiplexerClient(updateDto.AccountUsername)
+	if err != nil {
+		return err
+	}
+
+	if updateDto.Name == nil {
+		return client.ClearSessionName(updateDto.Id)
+	}
+
+	return client.SetSessionName(updateDto.Id, *updateDto.Name)
 }
 
 func (repo *TerminalSessionCmdRepo) Delete(

@@ -254,6 +254,26 @@ func (uc *CreateSecurityActivityRecord) DeleteTerminalSession(
 	uc.createActivityRecord(createRecordDto)
 }
 
+func (uc *CreateSecurityActivityRecord) UpdateTerminalSession(
+	updateDto dto.UpdateTerminalSession,
+	ownerAccountId tkValueObject.AccountId,
+) {
+	recordCode, _ := tkValueObject.NewActivityRecordCode("TerminalSessionUpdated")
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			valueObject.NewTerminalSessionSri(ownerAccountId, updateDto.Id),
+		},
+		RecordDetails:     updateDto,
+		OperatorSri:       &operatorSri,
+		OperatorIpAddress: &updateDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
 func (uc *CreateSecurityActivityRecord) CreateDatabase(createDto dto.CreateDatabase) {
 	recordCode, _ := tkValueObject.NewActivityRecordCode("DatabaseCreated")
 	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)

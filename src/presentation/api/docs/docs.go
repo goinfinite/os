@@ -2359,7 +2359,7 @@ const docTemplate = `{
                         "Bearer": []
                     }
                 ],
-                "description": "Create a terminal session. The working directory must exist. The account cap is ten sessions.",
+                "description": "Create a terminal session. The working directory must exist. The account cap is thirty sessions.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2392,6 +2392,50 @@ const docTemplate = `{
             }
         },
         "/v1/terminal-sessions/{id}/": {
+            "put": {
+                "security": [
+                    {
+                        "Bearer": []
+                    }
+                ],
+                "description": "Rename a terminal session. An empty name clears it and falls back to the generated label. The name lives and dies with the session.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "terminal-session"
+                ],
+                "summary": "UpdateTerminalSession",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "TerminalSessionId to update.",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Only id and name are required. An empty name clears it.",
+                        "name": "updateTerminalSessionDto",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/dto.UpdateTerminalSession"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "TerminalSessionUpdated",
+                        "schema": {
+                            "type": "object"
+                        }
+                    }
+                }
+            },
             "delete": {
                 "security": [
                     {
@@ -3476,6 +3520,9 @@ const docTemplate = `{
                 "command": {
                     "type": "string"
                 },
+                "name": {
+                    "type": "string"
+                },
                 "workingDir": {
                     "type": "string"
                 }
@@ -4131,6 +4178,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workingDirectory": {
+                    "type": "string"
+                }
+            }
+        },
+        "dto.UpdateTerminalSession": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 }
             }
@@ -4878,6 +4936,9 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "id": {
+                    "type": "string"
+                },
+                "name": {
                     "type": "string"
                 },
                 "workingDir": {

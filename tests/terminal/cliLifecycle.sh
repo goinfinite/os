@@ -32,6 +32,38 @@ assertCliJq ".body.terminalSessions | map(select(.id == \"${terminalSessionId}\"
 assertCommandSucceeds "tmux session exists" \
 	osBash "su - ${accountUsername} -c 'tmux list-sessions -F \"#{session_name}\"' | grep -q 'os-managed-${terminalSessionId}'"
 
+osCliCapture terminal list -i "${terminalSessionId}"
+assertCliJq '.body.terminalSessions[0].name == null' "unnamed session exposes no name"
+
+osCliCapture terminal rename -i "${terminalSessionId}" -n "opencode"
+assertCliStatus success "rename terminal session"
+assertCliExitCode 0 "rename terminal session exit code"
+
+osCliCapture terminal list -i "${terminalSessionId}"
+assertCliJq '.body.terminalSessions[0].name == "opencode"' "renamed session exposes the name"
+
+assertCommandSucceeds "tmux session keeps the name in @os-name" \
+	osBash "su - ${accountUsername} -c 'tmux show-options -t os-managed-${terminalSessionId} @os-name' | grep -q 'opencode'"
+
+osCliCapture terminal rename -i "${terminalSessionId}" -n "bad|name"
+assertCliStatus userError "rename rejects a name carrying the list separator"
+
+osCliCapture terminal rename -i "${terminalSessionId}" -n ""
+assertCliStatus success "clear terminal session name"
+
+osCliCapture terminal list -i "${terminalSessionId}"
+assertCliJq '.body.terminalSessions[0].name == null' "cleared name falls back to absent"
+
+assertCommandFails "tmux session drops the cleared @os-name" \
+	osBash "su - ${accountUsername} -c 'tmux show-options -t os-managed-${terminalSessionId} @os-name' | grep -q 'opencode'"
+
+osCliCapture terminal create -a "${accountId}" -n "named at birth" -w /app
+assertCliStatus created "create terminal session with a name"
+namedSessionId="$(jq -r '.body.id' <<<"${cliOutput}")"
+assertCliJq '.body.name == "named at birth"' "created session exposes the given name"
+osCliCapture terminal delete -i "${namedSessionId}"
+assertCliStatus success "delete the named terminal session"
+
 osCliCapture terminal delete -i "${terminalSessionId}"
 assertCliStatus success "delete terminal session"
 assertCliExitCode 0 "delete terminal session exit code"

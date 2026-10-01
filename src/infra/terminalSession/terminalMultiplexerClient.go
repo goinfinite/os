@@ -23,8 +23,10 @@ import (
 const (
 	TerminalSessionNamePrefix = "os-managed-"
 
+	terminalMultiplexerNameOption        = "@os-name"
 	terminalMultiplexerSessionListFormat = "#{session_name}|#{session_created}|" +
-		"#{session_attached}|#{pane_current_path}|#{pane_current_command}"
+		"#{session_attached}|#{pane_current_path}|#{pane_current_command}|" +
+		"#{" + terminalMultiplexerNameOption + "}"
 )
 
 var terminalMultiplexerServerAbsentRegex = regexp.MustCompile(
@@ -33,6 +35,7 @@ var terminalMultiplexerServerAbsentRegex = regexp.MustCompile(
 
 type TerminalMultiplexerSession struct {
 	Id              valueObject.TerminalSessionId
+	Name            *valueObject.TerminalSessionName
 	CreatedAt       tkValueObject.UnixTime
 	AttachedClients uint16
 	WorkingDir      tkValueObject.UnixAbsoluteFilePath
@@ -83,6 +86,7 @@ func (client *TerminalMultiplexerClient) accountShellEnvironment() []string {
 		"LOGNAME=" + client.accountUsername.String(),
 		"SHELL=/bin/bash",
 		"TERM=xterm-256color",
+		"MISE_DATA_DIR=" + infraEnvs.ToolchainDataDir,
 	}
 }
 
@@ -131,6 +135,35 @@ func (client *TerminalMultiplexerClient) SendCommand(
 	return nil
 }
 
+func (client *TerminalMultiplexerClient) SetSessionName(
+	terminalSessionId valueObject.TerminalSessionId,
+	name valueObject.TerminalSessionName,
+) error {
+	_, err := client.runMultiplexerCommand("tmux", []string{
+		"set-option", "-t", client.buildSessionName(terminalSessionId),
+		terminalMultiplexerNameOption, name.String(),
+	})
+	if err != nil {
+		return errors.New("SetSessionNameError: " + err.Error())
+	}
+
+	return nil
+}
+
+func (client *TerminalMultiplexerClient) ClearSessionName(
+	terminalSessionId valueObject.TerminalSessionId,
+) error {
+	_, err := client.runMultiplexerCommand("tmux", []string{
+		"set-option", "-t", client.buildSessionName(terminalSessionId),
+		"-u", terminalMultiplexerNameOption,
+	})
+	if err != nil {
+		return errors.New("ClearSessionNameError: " + err.Error())
+	}
+
+	return nil
+}
+
 func (client *TerminalMultiplexerClient) KillSession(
 	terminalSessionId valueObject.TerminalSessionId,
 ) error {
@@ -156,9 +189,9 @@ func (client *TerminalMultiplexerClient) isServerAbsent(err error) bool {
 func (client *TerminalMultiplexerClient) parseSessionLine(
 	sessionLine string,
 ) (session TerminalMultiplexerSession, err error) {
-	// Example session line: os-managed-0123456789abcdef|1700000000|2|/app|bash
-	lineParts := strings.Split(sessionLine, "|")
-	if len(lineParts) != 5 {
+	// Example session line: os-managed-0123456789abcdef|1700000000|2|/app|bash|opencode
+	lineParts := strings.SplitN(sessionLine, "|", 6)
+	if len(lineParts) != 6 {
 		return session, errors.New("InvalidSessionLine")
 	}
 
@@ -199,8 +232,18 @@ func (client *TerminalMultiplexerClient) parseSessionLine(
 		return session, err
 	}
 
+	var namePtr *valueObject.TerminalSessionName
+	if sessionName := strings.TrimSpace(lineParts[5]); sessionName != "" {
+		sessionNameVo, err := valueObject.NewTerminalSessionName(sessionName)
+		if err != nil {
+			return session, err
+		}
+		namePtr = &sessionNameVo
+	}
+
 	return TerminalMultiplexerSession{
 		Id:              terminalSessionId,
+		Name:            namePtr,
 		CreatedAt:       createdAt,
 		AttachedClients: uint16(attachedClients),
 		WorkingDir:      workingDir,

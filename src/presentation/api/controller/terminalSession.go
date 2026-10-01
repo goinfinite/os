@@ -77,7 +77,7 @@ func (controller *TerminalSessionController) Read(echoContext echo.Context) erro
 
 // CreateTerminalSession	 godoc
 // @Summary      CreateTerminalSession
-// @Description  Create a terminal session. The working directory must exist. The account cap is ten sessions.
+// @Description  Create a terminal session. The working directory must exist. The account cap is thirty sessions.
 // @Tags         terminal-session
 // @Accept       json
 // @Produce      json
@@ -93,6 +93,28 @@ func (controller *TerminalSessionController) Create(echoContext echo.Context) er
 
 	return tkPresentation.LiaisonApiResponseEmitter(
 		echoContext, controller.terminalSessionLiaison.Create(requestData),
+	)
+}
+
+// UpdateTerminalSession	 godoc
+// @Summary      UpdateTerminalSession
+// @Description  Rename a terminal session. An empty name clears it and falls back to the generated label. The name lives and dies with the session.
+// @Tags         terminal-session
+// @Accept       json
+// @Produce      json
+// @Security     Bearer
+// @Param        id  path  string  true  "TerminalSessionId to update."
+// @Param        updateTerminalSessionDto  body  dto.UpdateTerminalSession  true  "Only id and name are required. An empty name clears it."
+// @Success      200 {object} object{} "TerminalSessionUpdated"
+// @Router       /v1/terminal-sessions/{id}/ [put]
+func (controller *TerminalSessionController) Update(echoContext echo.Context) error {
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
+	if requestParsingErr != nil {
+		return requestParsingErr
+	}
+
+	return tkPresentation.LiaisonApiResponseEmitter(
+		echoContext, controller.terminalSessionLiaison.Update(requestData),
 	)
 }
 

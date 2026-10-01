@@ -57,7 +57,7 @@ func (controller *TerminalController) Read() *cobra.Command {
 }
 
 func (controller *TerminalController) Create() *cobra.Command {
-	var accountIdStr, workingDirStr, commandStr string
+	var accountIdStr, nameStr, workingDirStr, commandStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -65,6 +65,9 @@ func (controller *TerminalController) Create() *cobra.Command {
 		Run: func(cmd *cobra.Command, args []string) {
 			requestBody := map[string]any{
 				"accountId": accountIdStr,
+			}
+			if nameStr != "" {
+				requestBody["name"] = nameStr
 			}
 			if workingDirStr != "" {
 				requestBody["workingDir"] = workingDirStr
@@ -81,8 +84,31 @@ func (controller *TerminalController) Create() *cobra.Command {
 
 	cmd.Flags().StringVarP(&accountIdStr, "account-id", "a", "", "AccountId")
 	cliHelper.MarkRequiredFlag(cmd, "account-id")
+	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "SessionName")
 	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDirectory")
 	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command")
+	return cmd
+}
+
+func (controller *TerminalController) Update() *cobra.Command {
+	var idStr, nameStr string
+
+	cmd := &cobra.Command{
+		Use:   "rename",
+		Short: "UpdateTerminalSession",
+		Run: func(cmd *cobra.Command, args []string) {
+			requestBody := map[string]any{"id": idStr, "name": nameStr}
+
+			tkPresentation.LiaisonCliResponseRenderer(
+				controller.terminalSessionLiaison.Update(requestBody),
+			)
+		},
+	}
+
+	cmd.Flags().StringVarP(&idStr, "id", "i", "", "TerminalSessionId")
+	cliHelper.MarkRequiredFlag(cmd, "id")
+	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "SessionName (empty clears it)")
+	cliHelper.MarkRequiredFlag(cmd, "name")
 	return cmd
 }
 

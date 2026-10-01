@@ -4,11 +4,16 @@ import (
 	_ "embed"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	uiControl "github.com/goinfinite/ui/src/control"
 	uiToolset "github.com/goinfinite/ui/src/toolset"
 )
 
 //go:embed state.js
 var terminalAlpineState string
+
+templ TerminalAlpineState() {
+	@uiToolset.MinifierTemplateJs(&terminalAlpineState)
+}
 
 templ TerminalDependencies() {
 	<!-- TerminalDependencies -->
@@ -30,101 +35,174 @@ templ TerminalDependencies() {
 	></script>
 }
 
-templ TerminalSessionsContent() {
-	<!-- TerminalSessionsContent -->
-	@uiToolset.MinifierTemplateJs(&terminalAlpineState)
-	@TerminalDependencies()
-	<div x-data="terminal" class="flex flex-col gap-4">
-		<form class="flex flex-col gap-2 md:flex-row md:items-end" @submit.prevent="createSession()">
-			<div class="grow">
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Id:                 "workingDir",
-					Label:              "Working Directory",
-					BindModelValuePath: "workingDir",
-				})
-			</div>
-			<div class="grow">
-				@componentForm.InputField(componentForm.InputFieldDto{
-					Type:               "text",
-					Id:                 "command",
-					Label:              "Command (optional)",
-					BindModelValuePath: "command",
-				})
-			</div>
-			<div class="md:w-48">
-				@componentForm.DeactivableSubmitButton(
-					"create session", "ph-plus", "", "isLoading", false,
-				)
-			</div>
-		</form>
-		<div class="space-y-2">
-			<template x-for="session in sessions" :key="session.id">
-				<div class="flex flex-wrap items-center justify-between gap-2 rounded-md bg-neutral-500/5 p-2.5 text-sm">
-					<div class="flex flex-wrap items-center gap-3">
-						<span class="flex items-center gap-2 font-mono">
-							<i class="ph-duotone ph-terminal-window text-lg"></i>
-							<span x-text="session.id"></span>
-						</span>
-						<span class="text-neutral-400" x-text="session.accountUsername"></span>
-						<span class="text-neutral-500" x-text="session.workingDir"></span>
-						<span class="text-neutral-500" x-text="session.attachedClients + ' attached'"></span>
-					</div>
-					<div class="flex items-center gap-2">
-						<button
-							type="button"
-							@click="openTab(session)"
-							:disabled="isSessionAttached(session.id)"
-							class="rounded-md border-none bg-infinite-500 px-2 py-1 text-sm font-bold lowercase text-white hover:bg-infinite-300 disabled:cursor-default disabled:opacity-50"
-						>
-							<i class="ph-bold ph-plug align-middle"></i>
-							attach
-						</button>
-						<button
-							type="button"
-							@click="killSession(session.id)"
-							class="rounded-md border-none bg-red-800 px-2 py-1 text-sm font-bold lowercase text-white hover:bg-red-600"
-						>
-							<i class="ph-bold ph-trash align-middle"></i>
-							kill
-						</button>
-					</div>
-				</div>
-			</template>
-			<template x-if="sessions.length === 0">
-				<p class="py-2 text-center italic text-slate-500">No terminal sessions.</p>
-			</template>
+templ TerminalSessionRailRow() {
+	<div
+		class="hover:bg-neutral-500/10 flex items-center justify-between gap-2 rounded-md p-2.5 text-sm"
+		:class="activeTabId === session.id ? 'bg-neutral-500/15 ring-1 ring-neutral-50/20' : 'bg-neutral-500/5'"
+	>
+		<button
+			type="button"
+			@click="openTab(session)"
+			class="flex min-w-0 grow flex-col items-start gap-0.5 border-0 bg-transparent p-0 text-left"
+		>
+			<span class="flex w-full items-center gap-2">
+				<span
+					class="h-2 w-2 shrink-0 rounded-full"
+					:class="isTabConnected(session.id) ? 'bg-emerald-500' : 'bg-neutral-500/40'"
+				></span>
+				<span class="truncate font-medium text-neutral-100" x-text="resolveSessionLabel(session)"></span>
+			</span>
+			<span class="truncate pl-4 text-xs text-neutral-500" x-text="session.workingDir"></span>
+		</button>
+		<div class="flex shrink-0 items-center gap-1">
+			@uiControl.Button(uiControl.ButtonSettings{
+				IconLeft:             "ph-pencil-simple",
+				Shape:                uiControl.ButtonShapeCircular,
+				Size:                 uiControl.ButtonSizeSm,
+				BackgroundColor:      "transparent",
+				BackgroundColorHover: "neutral-50/10",
+				TextColor:            "neutral-400",
+				TextColorHover:       "neutral-50",
+				OnClickFunc:          "startRename(session.id, session.name ?? '')",
+				AriaLabel:            "Rename",
+			})
+			@uiControl.Button(uiControl.ButtonSettings{
+				IconLeft:             "ph-trash",
+				Shape:                uiControl.ButtonShapeCircular,
+				Size:                 uiControl.ButtonSizeSm,
+				BackgroundColor:      "red-800",
+				BackgroundColorHover: "red-600",
+				OnClickFunc:          "killSession(session.id)",
+				AriaLabel:            "Kill",
+			})
 		</div>
-		<div class="flex flex-wrap gap-1 border-b border-neutral-50/10" x-show="openTabs.length > 0">
-			<template x-for="tab in openTabs" :key="tab.sessionId">
-				<button
-					type="button"
-					@click="selectTab(tab.sessionId)"
-					:class="activeTabId === tab.sessionId ? 'bg-os-300 text-neutral-50' : 'text-neutral-400'"
-					class="flex items-center gap-2 rounded-t-md px-3 py-1.5 text-sm"
-				>
-					<span class="h-2 w-2 rounded-full" :class="tab.isConnected ? 'bg-emerald-500' : 'bg-red-600'"></span>
-					<span x-text="tab.title"></span>
-					<i class="ph-bold ph-x" @click.stop="closeTab(tab.sessionId)"></i>
-				</button>
-			</template>
-		</div>
-		<template x-for="tab in openTabs" :key="tab.sessionId">
-			<div x-show="activeTabId === tab.sessionId" class="bg-os-950 h-96 w-full rounded-md p-2">
-				<div :id="'terminal-' + tab.sessionId" class="h-full w-full"></div>
-			</div>
-		</template>
 	</div>
 }
 
-templ TerminalIndex() {
-	<!-- TerminalIndex HTML -->
-	<div class="flex flex-col">
-		@componentStructural.PageTitle(
-			"Terminal",
-			"Open persistent terminal sessions that run as your account. Sessions survive a browser close and an os-api restart.",
-			"ph-terminal-window",
-		)
-		@TerminalSessionsContent()
+templ TerminalSessionRenameInput(submitRenameExpression string) {
+	<input
+		type="text"
+		x-model="renameInputValue"
+		@keydown.enter.prevent={ submitRenameExpression }
+		@keydown.escape="cancelRename()"
+		x-init="$el.focus()"
+		placeholder="session name"
+		class="bg-os-300 min-w-0 grow rounded border border-neutral-50/20 px-2 py-1 text-sm text-neutral-50"
+	/>
+}
+
+templ TerminalSessionRenameRow() {
+	<div class="bg-neutral-500/15 ring-1 ring-neutral-50/20 flex items-center gap-2 rounded-md p-2">
+		@TerminalSessionRenameInput("submitRename(session.id)")
+		@uiControl.Button(uiControl.ButtonSettings{
+			IconLeft:             "ph-check",
+			Shape:                uiControl.ButtonShapeCircular,
+			Size:                 uiControl.ButtonSizeSm,
+			BackgroundColor:      "infinite-500",
+			BackgroundColorHover: "secondary-500",
+			OnClickFunc:          "submitRename(session.id)",
+			AriaLabel:            "Save name",
+		})
+	</div>
+}
+
+templ TerminalSessionCreateForm() {
+	<form class="flex flex-col gap-2" @submit.prevent="createSession()">
+		@componentForm.InputField(componentForm.InputFieldDto{
+			Type:               "text",
+			Id:                 "name",
+			Label:              "Name (optional)",
+			BindModelValuePath: "createSessionForm.name",
+		})
+		@componentForm.InputField(componentForm.InputFieldDto{
+			Type:               "text",
+			Id:                 "workingDir",
+			Label:              "Working Directory",
+			BindModelValuePath: "createSessionForm.workingDir",
+		})
+		@componentForm.InputField(componentForm.InputFieldDto{
+			Type:               "text",
+			Id:                 "command",
+			Label:              "Command (optional)",
+			BindModelValuePath: "createSessionForm.command",
+		})
+		<div class="flex justify-end gap-2">
+			@componentStructural.LabeledButton(
+				"cancel", "", "os-200", "os-100",
+				"collapseCreateSessionForm()", true,
+			)
+			@componentForm.DeactivableSubmitButton(
+				"create session", "ph-plus", "", "isCreateSessionLoading", true,
+			)
+		</div>
+	</form>
+}
+
+templ TerminalPanePlaceholder() {
+	<div class="flex h-full flex-col items-center justify-center gap-3">
+		<i class="ph-duotone ph-terminal-window text-6xl text-neutral-600"></i>
+		<p class="text-center text-sm italic text-slate-500">
+			The terminal window will appear here. Select a session on the left or create a new one.
+		</p>
+	</div>
+}
+
+templ TerminalSessionsContent() {
+	<!-- TerminalSessionsContent -->
+	@TerminalAlpineState()
+	@TerminalDependencies()
+	<div x-data="terminal" class="flex h-full min-h-0 gap-3">
+		<aside class="bg-neutral-500/5 flex w-72 shrink-0 flex-col gap-2 overflow-y-auto rounded-md p-2">
+			<template x-for="session in sessions" :key="session.id">
+				<div>
+					<template x-if="renamingSessionId === session.id">
+						@TerminalSessionRenameRow()
+					</template>
+					<template x-if="renamingSessionId !== session.id">
+						@TerminalSessionRailRow()
+					</template>
+				</div>
+			</template>
+			<template x-if="sessions.length === 0">
+				<p class="py-4 text-center italic text-slate-500">No terminal sessions.</p>
+			</template>
+			<template x-if="!isCreateSessionFormExpanded">
+				<div class="flex items-center gap-2">
+					@uiControl.Button(uiControl.ButtonSettings{
+						Label:                "new session",
+						IconLeft:             "ph-plus",
+						IsFullWidth:          true,
+						BackgroundColor:      "infinite-500",
+						BackgroundColorHover: "infinite-300",
+						OnClickFunc:          "createSessionWithDefaults()",
+					})
+					@uiControl.Button(uiControl.ButtonSettings{
+						IconLeft:               "ph-gear",
+						Shape:                  uiControl.ButtonShapeCircular,
+						Size:                   uiControl.ButtonSizeSm,
+						BackgroundColor:        "os-200",
+						BackgroundColorHover:   "os-300",
+						OnClickFunc:            "expandCreateSessionForm()",
+						AriaLabel:              "Custom Session Settings",
+						TooltipContent:         "create with a custom working dir and command",
+						TooltipBackgroundColor: "os-200",
+						TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
+					})
+				</div>
+			</template>
+			<template x-if="isCreateSessionFormExpanded">
+				@TerminalSessionCreateForm()
+			</template>
+		</aside>
+		<div class="bg-os-950 min-w-0 grow rounded-md p-2">
+			<template x-if="openTabs.length === 0">
+				@TerminalPanePlaceholder()
+			</template>
+			<template x-for="tab in openTabs" :key="tab.sessionId">
+				<div x-show="activeTabId === tab.sessionId" class="h-full w-full">
+					<div :id="'terminal-' + tab.sessionId" class="h-full w-full"></div>
+				</div>
+			</template>
+		</div>
 	</div>
 }

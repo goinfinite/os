@@ -225,6 +225,7 @@ func (router Router) terminalSessionRoutes() {
 
 	terminalSessionGroup.GET("/", terminalSessionController.Read)
 	terminalSessionGroup.POST("/", terminalSessionController.Create)
+	terminalSessionGroup.PUT("/:id/", terminalSessionController.Update)
 	terminalSessionGroup.DELETE("/:id/", terminalSessionController.Delete)
 	terminalSessionGroup.GET("/:id/attach/", terminalSessionController.Attach)
 }

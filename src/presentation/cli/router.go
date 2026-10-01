@@ -233,6 +233,7 @@ func (router Router) terminalRoutes() {
 	)
 	terminalCmd.AddCommand(terminalController.Read())
 	terminalCmd.AddCommand(terminalController.Create())
+	terminalCmd.AddCommand(terminalController.Update())
 	terminalCmd.AddCommand(terminalController.Delete())
 	terminalCmd.AddCommand(terminalController.Attach())
 }

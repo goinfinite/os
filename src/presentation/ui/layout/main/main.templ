@@ -5,6 +5,7 @@ import (
 	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
 	layoutSidebar "github.com/goinfinite/os/src/presentation/ui/layout/sidebar"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
+	uiControl "github.com/goinfinite/ui/src/control"
 	"github.com/goinfinite/ui/src/display"
 	uiImport "github.com/goinfinite/ui/src/import"
 	"github.com/goinfinite/ui/src/toolset"
@@ -66,33 +67,38 @@ templ ScheduledTaskCompletedBanner() {
 	</div>
 }
 
+templ TerminalSessionsModalHeader() {
+	<div class="flex items-center justify-between">
+		<h2 class="text-3xl font-bold">Terminal Sessions</h2>
+		@uiControl.Button(uiControl.ButtonSettings{
+			Id:                   "terminal-sessions-modal-close",
+			IconLeft:             "ph-x",
+			Shape:                uiControl.ButtonShapeCircular,
+			Size:                 uiControl.ButtonSizeSm,
+			BackgroundColor:      "os-200",
+			BackgroundColorHover: "os-100",
+			OnClickFunc:          "$store.main.closeTerminalSessionsModal()",
+			AriaLabel:            "Close",
+		})
+	</div>
+}
+
+templ TerminalSessionsModalBody() {
+	<div id="terminal-sessions-modal-body" class="h-full min-h-0"></div>
+}
+
 templ TerminalSessionsModal() {
-	<div
-		x-data
-		x-cloak
-		x-show="$store.main.isTerminalSessionsModalOpen"
-		x-transition:enter="transition ease-out duration-300"
-		x-transition:enter-start="opacity-0"
-		x-transition:enter-end="opacity-100"
-		x-transition:leave="transition ease-in duration-150"
-		x-transition:leave-start="opacity-100"
-		x-transition:leave-end="opacity-0"
-		class="fixed left-0 top-0 z-60 mx-auto h-screen max-h-screen w-full overflow-y-auto overflow-x-hidden bg-neutral-950 bg-opacity-50"
-	>
-		<div class="bg-os-400 relative mx-auto mt-20 max-w-3/5 rounded-md p-6 drop-shadow-xl xl:mt-24 xl:max-w-3xl">
-			<div class="mb-6 flex justify-between align-middle">
-				<h2 class="text-2xl">Terminal Sessions</h2>
-				<button
-					id="terminal-sessions-modal-close"
-					type="button"
-					@click="$store.main.closeTerminalSessionsModal()"
-					class="bg-os-200 hover:bg-os-100 rounded-md border-none px-2 py-1 text-neutral-50"
-				>
-					<i class="ph-bold ph-x align-middle text-xl"></i>
-				</button>
-			</div>
-			<div id="terminal-sessions-modal-body"></div>
-		</div>
+	<div x-data>
+		@uiDisplay.Modal(uiDisplay.ModalSettings{
+			MiddleContent:                 TerminalSessionsModalBody(),
+			HeaderContent:                 TerminalSessionsModalHeader(),
+			InitialSize:                   uiDisplay.ModalSizeXxl,
+			BackgroundColor:               "os-400",
+			IsMiddleContentScrollDisabled: true,
+			IsUnresizable:                 true,
+			IsUncloseable:                 true,
+			IsVisibleTwoWayStatePath:      "$store.main.isTerminalSessionsModalOpen",
+		})
 	</div>
 }
 

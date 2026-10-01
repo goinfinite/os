@@ -174,13 +174,6 @@ func (router *Router) sslsRoutes() {
 	sslsGroup.GET("/", sslsPresenter.Handler)
 }
 
-func (router *Router) terminalRoutes() {
-	terminalGroup := router.baseRoute.Group("/terminal")
-
-	terminalPresenter := presenterTerminal.NewTerminalPresenter()
-	terminalGroup.GET("/", terminalPresenter.Handler)
-}
-
 var devWsUpgrader = websocket.Upgrader{}
 
 func (router *Router) devRoutes() {
@@ -222,6 +215,15 @@ func (router *Router) fragmentRoutes() {
 
 	terminalPresenter := presenterTerminal.NewTerminalPresenter()
 	fragmentGroup.GET("/terminal-sessions/", terminalPresenter.FragmentHandler)
+
+	overviewPresenter := presenterOverview.NewOverviewPresenter(
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
+	)
+	fragmentGroup.GET(
+		"/overview/terminal-sessions-table/", overviewPresenter.TerminalSessionsTableHandler,
+	)
+	fragmentGroup.GET("/overview/services-table/", overviewPresenter.ServicesTableHandler)
+	fragmentGroup.GET("/overview/marketplace-table/", overviewPresenter.MarketplaceTableHandler)
 }
 
 func (router *Router) RegisterRoutes() {
@@ -237,7 +239,6 @@ func (router *Router) RegisterRoutes() {
 	router.runtimesRoutes()
 	router.setupRoutes()
 	router.sslsRoutes()
-	router.terminalRoutes()
 
 	if infraHelper.IsDevMode() {
 		router.devRoutes()

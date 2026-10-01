@@ -102,12 +102,30 @@ document.addEventListener("alpine:initializing", () => {
     },
     // - TerminalSessionsState
     isTerminalSessionsModalOpen: false,
-    openTerminalSessionsModal() {
+    isTerminalSessionsContentLoaded: false,
+    pendingTerminalSessionId: "",
+    async openTerminalSessionsModal(sessionId = "") {
+      this.pendingTerminalSessionId = sessionId;
       this.isTerminalSessionsModalOpen = true;
-      htmx.ajax("GET", `${document.baseURI}fragment/terminal-sessions/`, {
-        target: "#terminal-sessions-modal-body",
-        swap: "innerHTML",
-      });
+
+      if (!this.isTerminalSessionsContentLoaded) {
+        this.isTerminalSessionsContentLoaded = true;
+        try {
+          await htmx.ajax(
+            "GET",
+            `${document.baseURI}fragment/terminal-sessions/`,
+            {
+              target: "#terminal-sessions-modal-body",
+              swap: "innerHTML",
+            },
+          );
+        } catch (error) {
+          this.isTerminalSessionsContentLoaded = false;
+          console.error(`LoadTerminalSessionsContentError: ${error}`);
+        }
+      }
+
+      window.dispatchEvent(new CustomEvent("focus:terminal-session"));
     },
     closeTerminalSessionsModal() {
       this.isTerminalSessionsModalOpen = false;

@@ -7,6 +7,7 @@ import (
 
 type CreateTerminalSession struct {
 	AccountUsername   valueObject.Username                `json:"-"`
+	Name              *valueObject.TerminalSessionName    `json:"name"`
 	WorkingDir        *tkValueObject.UnixAbsoluteFilePath `json:"workingDir"`
 	Command           *tkValueObject.UnixCommand          `json:"command"`
 	AccountId         *tkValueObject.AccountId            `json:"accountId"`
@@ -15,6 +16,7 @@ type CreateTerminalSession struct {
 }
 
 func NewCreateTerminalSession(
+	name *valueObject.TerminalSessionName,
 	workingDir *tkValueObject.UnixAbsoluteFilePath,
 	command *tkValueObject.UnixCommand,
 	accountId *tkValueObject.AccountId,
@@ -22,6 +24,7 @@ func NewCreateTerminalSession(
 	operatorIpAddress tkValueObject.IpAddress,
 ) CreateTerminalSession {
 	return CreateTerminalSession{
+		Name:              name,
 		WorkingDir:        workingDir,
 		Command:           command,
 		AccountId:         accountId,

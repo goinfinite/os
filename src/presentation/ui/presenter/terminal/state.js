@@ -1,20 +1,247 @@
-const terminalRendererRetryLimit = 25;
-const terminalRendererRetryDelayMs = 200;
-const terminalReconnectDelayMs = 2000;
-
 UiToolset.RegisterAlpineState(() => {
+  class SessionTerminalManager {
+    constructor(onConnectionStatusChange) {
+      this.onConnectionStatusChange = onConnectionStatusChange;
+      this.sessionTerminals = new Map();
+      this.mountRetryLimit = 25;
+      this.mountRetryDelayMs = 200;
+      this.reconnectDelayMs = 2000;
+    }
+
+    resize(sessionId) {
+      const sessionTerminal = this.sessionTerminals.get(sessionId);
+      if (!sessionTerminal?.socket) {
+        return;
+      }
+      if (sessionTerminal.socket.readyState !== WebSocket.OPEN) {
+        return;
+      }
+
+      sessionTerminal.fitAddon.fit();
+      sessionTerminal.socket.send(
+        JSON.stringify({
+          type: "resize",
+          cols: sessionTerminal.term.cols,
+          rows: sessionTerminal.term.rows,
+        }),
+      );
+    }
+
+    connect(sessionId) {
+      const sessionTerminal = this.sessionTerminals.get(sessionId);
+      if (!sessionTerminal) {
+        return;
+      }
+
+      const attachUrl = new URL(
+        `api/v1/terminal-sessions/${sessionId}/attach/`,
+        document.baseURI,
+      );
+      attachUrl.protocol = attachUrl.protocol === "https:" ? "wss:" : "ws:";
+
+      const socket = new WebSocket(attachUrl.toString());
+      socket.binaryType = "arraybuffer";
+      sessionTerminal.socket = socket;
+
+      socket.onopen = () => {
+        this.onConnectionStatusChange(sessionId, true);
+        this.resize(sessionId);
+      };
+      socket.onmessage = (event) => {
+        if (typeof event.data === "string") {
+          return;
+        }
+        sessionTerminal.term.write(new Uint8Array(event.data));
+      };
+      socket.onclose = () => {
+        this.onConnectionStatusChange(sessionId, false);
+        sessionTerminal.reconnectTimer = setTimeout(
+          () => this.connect(sessionId),
+          this.reconnectDelayMs,
+        );
+      };
+      socket.onerror = () => socket.close();
+    }
+
+    mount(sessionId) {
+      const sessionTerminal = this.sessionTerminals.get(sessionId);
+      if (!sessionTerminal || sessionTerminal.term) {
+        return;
+      }
+
+      const terminalContainer = document.getElementById(
+        `terminal-${sessionId}`,
+      );
+      if (!terminalContainer) {
+        return;
+      }
+
+      if (typeof Terminal === "undefined" || typeof FitAddon === "undefined") {
+        sessionTerminal.mountAttempts += 1;
+        if (sessionTerminal.mountAttempts > this.mountRetryLimit) {
+          Alpine.store("toast").displayToast(
+            "TerminalRendererUnavailable",
+            "danger",
+          );
+          return;
+        }
+        sessionTerminal.mountRetryTimer = setTimeout(
+          () => this.mount(sessionId),
+          this.mountRetryDelayMs,
+        );
+        return;
+      }
+
+      const term = new Terminal({
+        cursorBlink: true,
+        fontFamily: "monospace",
+        theme: { background: "#041118" },
+      });
+      const fitAddon = new FitAddon.FitAddon();
+      term.loadAddon(fitAddon);
+      term.open(terminalContainer);
+      fitAddon.fit();
+
+      term.onData((terminalData) => {
+        if (!sessionTerminal.socket) {
+          return;
+        }
+        if (sessionTerminal.socket.readyState !== WebSocket.OPEN) {
+          return;
+        }
+        sessionTerminal.socket.send(new TextEncoder().encode(terminalData));
+      });
+
+      sessionTerminal.term = term;
+      sessionTerminal.fitAddon = fitAddon;
+      this.connect(sessionId);
+    }
+
+    open(sessionId) {
+      if (this.sessionTerminals.has(sessionId)) {
+        return;
+      }
+
+      this.sessionTerminals.set(sessionId, {
+        term: null,
+        fitAddon: null,
+        socket: null,
+        reconnectTimer: null,
+        mountRetryTimer: null,
+        mountAttempts: 0,
+      });
+
+      this.mount(sessionId);
+    }
+
+    close(sessionId) {
+      const sessionTerminal = this.sessionTerminals.get(sessionId);
+      if (!sessionTerminal) {
+        return;
+      }
+
+      if (sessionTerminal.mountRetryTimer) {
+        clearTimeout(sessionTerminal.mountRetryTimer);
+      }
+      if (sessionTerminal.reconnectTimer) {
+        clearTimeout(sessionTerminal.reconnectTimer);
+      }
+      if (sessionTerminal.socket) {
+        sessionTerminal.socket.onclose = null;
+        sessionTerminal.socket.close();
+      }
+      if (sessionTerminal.term) {
+        sessionTerminal.term.dispose();
+      }
+
+      this.sessionTerminals.delete(sessionId);
+    }
+
+    disposeAll() {
+      for (const sessionId of this.sessionTerminals.keys()) {
+        this.close(sessionId);
+      }
+    }
+  }
+
   Alpine.data("terminal", () => ({
     // PrimaryState
     sessions: [],
-    workingDir: "/app",
-    command: "",
     openTabs: [],
     activeTabId: "",
-    isLoading: false,
+    renamingSessionId: "",
+    renameInputValue: "",
+    isCreateSessionFormExpanded: false,
+    isCreateSessionLoading: false,
+    createSessionForm: {
+      name: "",
+      workingDir: "/app",
+      command: "",
+    },
 
     // DerivedState
+    resolveSessionLabel(session) {
+      if (session.name) {
+        return session.name;
+      }
+      return `${session.accountUsername}@${session.id.slice(0, 4)}`;
+    },
+
     isSessionAttached(sessionId) {
       return this.openTabs.some((tab) => tab.sessionId === sessionId);
+    },
+
+    isTabConnected(sessionId) {
+      const openTab = this.openTabs.find((tab) => tab.sessionId === sessionId);
+      return openTab?.isConnected ?? false;
+    },
+
+    resetCreateSessionForm() {
+      this.createSessionForm.name = "";
+      this.createSessionForm.workingDir = "/app";
+      this.createSessionForm.command = "";
+    },
+
+    expandCreateSessionForm() {
+      this.isCreateSessionFormExpanded = true;
+    },
+
+    collapseCreateSessionForm() {
+      this.isCreateSessionFormExpanded = false;
+      this.resetCreateSessionForm();
+    },
+
+    selectTab(sessionId) {
+      this.activeTabId = sessionId;
+      this.$nextTick(() => this.sessionTerminalManager.resize(sessionId));
+    },
+
+    closeTab(sessionId) {
+      const tabIndex = this.openTabs.findIndex(
+        (tab) => tab.sessionId === sessionId,
+      );
+      if (tabIndex === -1) {
+        return;
+      }
+
+      this.openTabs.splice(tabIndex, 1);
+      if (this.activeTabId === sessionId) {
+        this.activeTabId =
+          this.openTabs.length > 0 ? this.openTabs[0].sessionId : "";
+      }
+      this.sessionTerminalManager.close(sessionId);
+    },
+
+    openTab(session) {
+      if (this.isSessionAttached(session.id)) {
+        this.selectTab(session.id);
+        return;
+      }
+
+      this.openTabs.push({ sessionId: session.id, isConnected: false });
+      this.activeTabId = session.id;
+
+      this.$nextTick(() => this.sessionTerminalManager.open(session.id));
     },
 
     async loadSessions() {
@@ -32,6 +259,15 @@ UiToolset.RegisterAlpineState(() => {
 
         const jsonResponse = await response.json();
         this.sessions = jsonResponse.body.terminalSessions;
+
+        for (const tab of [...this.openTabs]) {
+          const sessionStillExists = this.sessions.some(
+            (session) => session.id === tab.sessionId,
+          );
+          if (!sessionStillExists) {
+            this.closeTab(tab.sessionId);
+          }
+        }
       } catch (error) {
         console.error(`ReadTerminalSessionsError: ${error}`);
         Alpine.store("toast").displayToast(
@@ -41,12 +277,24 @@ UiToolset.RegisterAlpineState(() => {
       }
     },
 
+    isModalWorkspace() {
+      return this.$el.closest("#terminal-sessions-modal-body") !== null;
+    },
+
     async createSession() {
-      this.isLoading = true;
+      if (this.isCreateSessionLoading) {
+        return;
+      }
+      this.isCreateSessionLoading = true;
       try {
-        const requestBody = { workingDir: this.workingDir };
-        if (this.command.length > 0) {
-          requestBody.command = this.command;
+        const requestBody = {
+          workingDir: this.createSessionForm.workingDir,
+        };
+        if (this.createSessionForm.name.length > 0) {
+          requestBody.name = this.createSessionForm.name;
+        }
+        if (this.createSessionForm.command.length > 0) {
+          requestBody.command = this.createSessionForm.command;
         }
 
         const response = await fetch(
@@ -62,14 +310,25 @@ UiToolset.RegisterAlpineState(() => {
           throw new Error(jsonResponse.body || "CreateTerminalSessionFailed");
         }
 
-        this.command = "";
+        const createdSession = jsonResponse.body;
+        this.collapseCreateSessionForm();
         await this.loadSessions();
-        this.openTab(jsonResponse.body);
+        window.dispatchEvent(new Event("update:terminal-session"));
+        if (this.isModalWorkspace()) {
+          this.openTab(createdSession);
+          return;
+        }
+        this.$store.main.openTerminalSessionsModal(createdSession.id);
       } catch (error) {
         Alpine.store("toast").displayToast(error.message, "danger");
       } finally {
-        this.isLoading = false;
+        this.isCreateSessionLoading = false;
       }
+    },
+
+    async createSessionWithDefaults() {
+      this.resetCreateSessionForm();
+      await this.createSession();
     },
 
     async killSession(sessionId) {
@@ -84,170 +343,118 @@ UiToolset.RegisterAlpineState(() => {
 
         this.closeTab(sessionId);
         await this.loadSessions();
+        window.dispatchEvent(new Event("update:terminal-session"));
       } catch (error) {
         Alpine.store("toast").displayToast(error.message, "danger");
       }
     },
 
-    openTab(session) {
-      if (this.isSessionAttached(session.id)) {
-        this.activeTabId = session.id;
-        return;
-      }
-
-      const tab = {
-        sessionId: session.id,
-        title: `${session.accountUsername}@${session.id.slice(0, 4)}`,
-        term: null,
-        fitAddon: null,
-        socket: null,
-        isConnected: false,
-        reconnectTimer: null,
-        mountAttempts: 0,
-      };
-      this.openTabs.push(tab);
-      this.activeTabId = session.id;
-
-      this.$nextTick(() => this.mountTerminal(tab));
+    startRename(sessionId, currentName) {
+      this.renamingSessionId = sessionId;
+      this.renameInputValue = currentName;
     },
 
-    mountTerminal(tab) {
-      const terminalContainer = document.getElementById(
-        `terminal-${tab.sessionId}`,
-      );
-      if (!terminalContainer) {
-        return;
-      }
-
-      if (typeof Terminal === "undefined" || typeof FitAddon === "undefined") {
-        tab.mountAttempts += 1;
-        if (tab.mountAttempts > terminalRendererRetryLimit) {
-          Alpine.store("toast").displayToast(
-            "TerminalRendererUnavailable",
-            "danger",
-          );
-          return;
-        }
-        setTimeout(() => this.mountTerminal(tab), terminalRendererRetryDelayMs);
-        return;
-      }
-
-      const term = new Terminal({
-        cursorBlink: true,
-        fontFamily: "monospace",
-        theme: { background: "#041118" },
-      });
-      const fitAddon = new FitAddon.FitAddon();
-      term.loadAddon(fitAddon);
-      term.open(terminalContainer);
-      fitAddon.fit();
-
-      term.onData((terminalData) => {
-        if (!tab.socket || tab.socket.readyState !== WebSocket.OPEN) {
-          return;
-        }
-        tab.socket.send(new TextEncoder().encode(terminalData));
-      });
-
-      tab.term = term;
-      tab.fitAddon = fitAddon;
-      this.connectTab(tab);
+    cancelRename() {
+      this.renamingSessionId = "";
+      this.renameInputValue = "";
     },
 
-    connectTab(tab) {
-      const attachUrl = new URL(
-        `api/v1/terminal-sessions/${tab.sessionId}/attach/`,
-        document.baseURI,
-      );
-      attachUrl.protocol = attachUrl.protocol === "https:" ? "wss:" : "ws:";
-
-      const socket = new WebSocket(attachUrl.toString());
-      socket.binaryType = "arraybuffer";
-      tab.socket = socket;
-
-      socket.onopen = () => {
-        tab.isConnected = true;
-        this.sendResize(tab);
-      };
-      socket.onmessage = (event) => {
-        if (typeof event.data === "string") {
-          return;
-        }
-        tab.term.write(new Uint8Array(event.data));
-      };
-      socket.onclose = () => {
-        tab.isConnected = false;
-        tab.reconnectTimer = setTimeout(
-          () => this.connectTab(tab),
-          terminalReconnectDelayMs,
+    async submitRename(sessionId) {
+      try {
+        const response = await fetch(
+          `${Infinite.OsApiBasePath}/v1/terminal-sessions/${sessionId}/`,
+          {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              id: sessionId,
+              name: this.renameInputValue,
+            }),
+          },
         );
-      };
-      socket.onerror = () => socket.close();
-    },
-
-    sendResize(tab) {
-      if (!tab.socket || tab.socket.readyState !== WebSocket.OPEN) {
-        return;
-      }
-
-      tab.fitAddon.fit();
-      tab.socket.send(
-        JSON.stringify({
-          type: "resize",
-          cols: tab.term.cols,
-          rows: tab.term.rows,
-        }),
-      );
-    },
-
-    selectTab(sessionId) {
-      this.activeTabId = sessionId;
-      this.$nextTick(() => {
-        const tab = this.openTabs.find((item) => item.sessionId === sessionId);
-        if (!tab?.fitAddon) {
-          return;
+        const jsonResponse = await response.json().catch(() => ({}));
+        if (!response.ok) {
+          throw new Error(jsonResponse.body || "UpdateTerminalSessionFailed");
         }
-        this.sendResize(tab);
-      });
-    },
 
-    disposeTab(tab) {
-      if (tab.reconnectTimer) {
-        clearTimeout(tab.reconnectTimer);
-      }
-      if (tab.socket) {
-        tab.socket.onclose = null;
-        tab.socket.close();
-      }
-      if (tab.term) {
-        tab.term.dispose();
+        this.cancelRename();
+        await this.loadSessions();
+        window.dispatchEvent(new Event("update:terminal-session"));
+      } catch (error) {
+        Alpine.store("toast").displayToast(error.message, "danger");
       }
     },
 
-    closeTab(sessionId) {
-      const tabIndex = this.openTabs.findIndex(
-        (tab) => tab.sessionId === sessionId,
-      );
-      if (tabIndex === -1) {
+    openTerminalSession(sessionId) {
+      this.$store.main.openTerminalSessionsModal(sessionId);
+    },
+
+    async openPendingSession() {
+      await this.loadSessions();
+
+      if (!this.isModalWorkspace()) {
         return;
       }
 
-      this.disposeTab(this.openTabs[tabIndex]);
-      this.openTabs.splice(tabIndex, 1);
-      if (this.activeTabId === sessionId) {
-        this.activeTabId =
-          this.openTabs.length > 0 ? this.openTabs[0].sessionId : "";
+      const pendingSessionId = this.$store.main.pendingTerminalSessionId;
+      if (!pendingSessionId) {
+        return;
       }
+      this.$store.main.pendingTerminalSessionId = "";
+
+      const session = this.sessions.find(
+        (candidateSession) => candidateSession.id === pendingSessionId,
+      );
+      if (!session) {
+        return;
+      }
+      this.openTab(session);
     },
+
+    sessionTerminalManager: null,
+    focusPendingSessionHandler: null,
+    refreshSessionsHandler: null,
 
     init() {
-      this.loadSessions();
+      this.sessionTerminalManager = new SessionTerminalManager(
+        (sessionId, isConnected) => {
+          const openTab = this.openTabs.find(
+            (tab) => tab.sessionId === sessionId,
+          );
+          if (!openTab) {
+            return;
+          }
+          openTab.isConnected = isConnected;
+        },
+      );
+
+      this.focusPendingSessionHandler = () => this.openPendingSession();
+      this.refreshSessionsHandler = () => this.loadSessions();
+      window.addEventListener(
+        "focus:terminal-session",
+        this.focusPendingSessionHandler,
+      );
+      window.addEventListener(
+        "update:terminal-session",
+        this.refreshSessionsHandler,
+      );
+      this.openPendingSession();
     },
 
     destroy() {
-      for (const tab of this.openTabs) {
-        this.disposeTab(tab);
+      if (this.focusPendingSessionHandler) {
+        window.removeEventListener(
+          "focus:terminal-session",
+          this.focusPendingSessionHandler,
+        );
       }
+      if (this.refreshSessionsHandler) {
+        window.removeEventListener(
+          "update:terminal-session",
+          this.refreshSessionsHandler,
+        );
+      }
+      this.sessionTerminalManager.disposeAll();
       this.openTabs = [];
     },
   }));

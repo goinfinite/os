@@ -246,6 +246,8 @@ definitions:
         type: integer
       command:
         type: string
+      name:
+        type: string
       workingDir:
         type: string
     type: object
@@ -673,6 +675,13 @@ definitions:
       version:
         type: string
       workingDirectory:
+        type: string
+    type: object
+  dto.UpdateTerminalSession:
+    properties:
+      id:
+        type: string
+      name:
         type: string
     type: object
   dto.UpdateUnixFiles:
@@ -1163,6 +1172,8 @@ definitions:
       createdAt:
         type: integer
       id:
+        type: string
+      name:
         type: string
       workingDir:
         type: string
@@ -2914,7 +2925,7 @@ paths:
       consumes:
       - application/json
       description: Create a terminal session. The working directory must exist. The
-        account cap is ten sessions.
+        account cap is thirty sessions.
       parameters:
       - description: command is optional.
         in: body
@@ -2955,6 +2966,35 @@ paths:
       security:
       - Bearer: []
       summary: DeleteTerminalSession
+      tags:
+      - terminal-session
+    put:
+      consumes:
+      - application/json
+      description: Rename a terminal session. An empty name clears it and falls back
+        to the generated label. The name lives and dies with the session.
+      parameters:
+      - description: TerminalSessionId to update.
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Only id and name are required. An empty name clears it.
+        in: body
+        name: updateTerminalSessionDto
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateTerminalSession'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: TerminalSessionUpdated
+          schema:
+            type: object
+      security:
+      - Bearer: []
+      summary: UpdateTerminalSession
       tags:
       - terminal-session
   /v1/terminal-sessions/{id}/attach/:

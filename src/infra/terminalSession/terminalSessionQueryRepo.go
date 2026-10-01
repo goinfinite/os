@@ -71,9 +71,10 @@ func (repo *TerminalSessionQueryRepo) readAccountTerminalSessions(
 		}
 
 		terminalSessions = append(terminalSessions, entity.NewTerminalSession(
-			multiplexerSession.Id, accountEntity.Id, accountEntity.Username,
-			multiplexerSession.WorkingDir, multiplexerSession.Command,
-			multiplexerSession.CreatedAt, multiplexerSession.AttachedClients,
+			multiplexerSession.Id, multiplexerSession.Name, accountEntity.Id,
+			accountEntity.Username, multiplexerSession.WorkingDir,
+			multiplexerSession.Command, multiplexerSession.CreatedAt,
+			multiplexerSession.AttachedClients,
 		))
 	}
 
@@ -105,6 +106,8 @@ func (repo *TerminalSessionQueryRepo) sortTerminalSessions(
 		switch sortByStr {
 		case "id", "terminalSessionId":
 			return strings.Compare(first.Id.String(), second.Id.String())
+		case "name":
+			return strings.Compare(first.ReadName(), second.ReadName())
 		case "accountUsername":
 			return strings.Compare(
 				first.AccountUsername.String(), second.AccountUsername.String(),
