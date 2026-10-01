@@ -277,7 +277,7 @@ UiToolset.RegisterAlpineState(() => {
       }
     },
 
-    isModalWorkspace() {
+    isInsideSessionsModal() {
       return this.$el.closest("#terminal-sessions-modal-body") !== null;
     },
 
@@ -314,7 +314,7 @@ UiToolset.RegisterAlpineState(() => {
         this.collapseCreateSessionForm();
         await this.loadSessions();
         window.dispatchEvent(new Event("update:terminal-session"));
-        if (this.isModalWorkspace()) {
+        if (this.isInsideSessionsModal()) {
           this.openTab(createdSession);
           return;
         }
@@ -392,7 +392,7 @@ UiToolset.RegisterAlpineState(() => {
     async openPendingSession() {
       await this.loadSessions();
 
-      if (!this.isModalWorkspace()) {
+      if (!this.isInsideSessionsModal()) {
         return;
       }
 
