@@ -30,12 +30,21 @@ func ReadVirtualHostHostnames(
 		return vhostHostnames, errors.New("AssertReadVirtualHostsResponseFailed")
 	}
 
+	primaryHostname := ""
 	for _, vhostEntity := range vhostReadResponse.VirtualHosts {
 		if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
 			continue
 		}
+		if vhostEntity.IsPrimary {
+			primaryHostname = vhostEntity.Hostname.String()
+			continue
+		}
 
 		vhostHostnames = append(vhostHostnames, vhostEntity.Hostname.String())
+	}
+
+	if primaryHostname != "" {
+		vhostHostnames = append([]string{primaryHostname}, vhostHostnames...)
 	}
 
 	return vhostHostnames, nil
