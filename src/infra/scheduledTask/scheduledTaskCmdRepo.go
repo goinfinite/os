@@ -106,10 +106,9 @@ func (repo *ScheduledTaskCmdRepo) Run(
 	startedAtUnixTime := tkValueObject.NewUnixTimeNow()
 
 	rawOutput, rawError := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command:                       pendingTask.Command.String(),
-		ShouldUseSubShell:             true,
-		ExecutionTimeoutSecs:          timeoutSecs,
-		ShouldDisableTimeoutHardLimit: true,
+		Command:              pendingTask.Command.String(),
+		ShouldUseSubShell:    true,
+		ExecutionTimeoutSecs: timeoutSecs,
 	}).Run()
 
 	finalStatus, _ := valueObject.NewScheduledTaskStatus("completed")
