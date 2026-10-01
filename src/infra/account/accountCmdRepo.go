@@ -4,9 +4,11 @@ import (
 	"crypto/sha3"
 	"encoding/hex"
 	"errors"
+	"fmt"
 	"log/slog"
 	"os"
 	"os/user"
+	"strings"
 	"time"
 
 	"github.com/goinfinite/os/src/domain/dto"
@@ -54,7 +56,7 @@ func (repo *AccountCmdRepo) toggleAccountSudoPrivileges(
 	accountNameStr := accountName.String()
 	toggleUserGroupSettings := tkInfra.ShellSettings{
 		Command: "usermod",
-		Args:    []string{"-G", "sudo", accountNameStr},
+		Args:    []string{"-aG", "sudo", accountNameStr},
 	}
 	if !shouldPromoteAccount {
 		toggleUserGroupSettings.Command = "deluser"
@@ -118,10 +120,10 @@ func (repo *AccountCmdRepo) createAuthorizedKeysFile(
 
 	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
 		Command: "chown",
-		Args:    []string{"-R", accountUsernameStr, authorizedKeysFilePath},
+		Args:    []string{"-R", accountUsernameStr, sshDirPath},
 	}).Run()
 	if err != nil {
-		return errors.New("ChownAuthorizedKeysFileError: " + err.Error())
+		return errors.New("ChownSshDirectoryError: " + err.Error())
 	}
 
 	return nil
@@ -153,6 +155,14 @@ func (repo *AccountCmdRepo) Create(
 	}).Run()
 	if err != nil {
 		return accountId, errors.New("UserAddFailed: " + err.Error())
+	}
+
+	_, err = tkInfra.NewShell(tkInfra.ShellSettings{
+		Command: "usermod",
+		Args:    []string{"-aG", infraEnvs.PhpWebServerGroupName, usernameStr},
+	}).Run()
+	if err != nil {
+		return accountId, errors.New("GrantApplicationRootDirWriteAccessError: " + err.Error())
 	}
 
 	if createDto.IsSuperAdmin {
@@ -353,10 +363,15 @@ func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
 		return err
 	}
 
-	keysFileContent := "# Please, don't edit manually as this will be automatically recreated.\n\n"
+	keysFileContentBuilder := strings.Builder{}
+	keysFileContentBuilder.WriteString(
+		"# Please, don't edit manually as this will be automatically recreated.\n\n",
+	)
 	for _, keyEntity := range readPublicKeysResponseDto.SecureAccessPublicKeys {
-		keysFileContent += keyEntity.Content.String() + " " +
-			keyEntity.Name.String() + "\n"
+		fmt.Fprintf(
+			&keysFileContentBuilder, "%s %s\n",
+			keyEntity.Content.String(), keyEntity.Name.String(),
+		)
 	}
 
 	authorizedKeysFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
@@ -377,7 +392,7 @@ func (repo *AccountCmdRepo) rebuildAuthorizedKeysFile(
 		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
 			authorizedKeysOwnerUsername,
 		},
-	}, []byte(keysFileContent))
+	}, []byte(keysFileContentBuilder.String()))
 	if err != nil {
 		return errors.New("UpdateAuthorizedKeysFileContentError: " + err.Error())
 	}
