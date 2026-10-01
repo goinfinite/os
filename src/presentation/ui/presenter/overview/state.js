@@ -1,98 +1,4 @@
 UiToolset.RegisterAlpineState(() => {
-  Alpine.data("marketplace", () => ({
-    // PrimaryState
-    marketplaceItem: {},
-    get hostnameWithTrailingSlash() {
-      return `${this.marketplaceItem.hostname}/`;
-    },
-    get dataFieldsAsString() {
-      let dataFieldsAsString = "";
-      for (const dataField of this.marketplaceItem.dataFields) {
-        if (!dataField.value) {
-          continue;
-        }
-
-        dataFieldsAsString += `${dataField.name}:${dataField.value};`;
-      }
-      return dataFieldsAsString.slice(0, -1);
-    },
-    installedServicesCurrentPageNumber: 0,
-    resetPrimaryStates() {
-      this.marketplaceItem = {
-        id: "",
-        name: "",
-        hostname: "",
-        urlPath: "",
-        dataFields: [],
-      };
-    },
-    init() {
-      this.resetPrimaryStates();
-      this.installedServicesCurrentPageNumber = document.getElementById(
-        "installedServicesCurrentPageNumber",
-      ).value;
-    },
-
-    // AuxiliaryState
-    selectedMarketplaceItemType: "apps",
-    selectedMarketplaceItemId: 0,
-    updateSelectedMarketplaceItem(marketplaceItemId) {
-      this.selectedMarketplaceItemId = marketplaceItemId;
-
-      const catalogItemEntity = JSON.parse(
-        document.getElementById(`marketplaceCatalogItem_${marketplaceItemId}`)
-          .textContent,
-      );
-      this.marketplaceItem.id = marketplaceItemId;
-      this.marketplaceItem.name = catalogItemEntity.name;
-
-      this.marketplaceItem.dataFields = [];
-      for (const dataField of catalogItemEntity.dataFields) {
-        dataField.value = dataField.defaultValue;
-        this.marketplaceItem.dataFields.push(dataField);
-      }
-    },
-    resetAuxiliaryStates() {
-      this.selectedMarketplaceItemType = "apps";
-      this.selectedMarketplaceItemId = 0;
-    },
-
-    // ModalState
-    isMarketplaceItemInstallationModalOpen: false,
-    openMarketplaceItemInstallationModal() {
-      this.resetPrimaryStates();
-      this.resetAuxiliaryStates();
-      this.isMarketplaceItemInstallationModalOpen = true;
-    },
-    closeMarketplaceItemInstallationModal() {
-      this.isMarketplaceItemInstallationModalOpen = false;
-    },
-    isUninstallMarketplaceItemModalOpen: false,
-    openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
-      this.resetPrimaryStates();
-
-      this.marketplaceItem.id = installedItemId;
-      this.marketplaceItem.name = installedItemName;
-      this.isUninstallMarketplaceItemModalOpen = true;
-    },
-    closeUninstallMarketplaceItemModal() {
-      this.isUninstallMarketplaceItemModalOpen = false;
-    },
-    uninstallMarketplaceItem() {
-      htmx
-        .ajax(
-          "DELETE",
-          Infinite.OsApiBasePath +
-            "/v1/marketplace/installed/" +
-            this.marketplaceItem.id +
-            "/",
-          { swap: "none" },
-        )
-        .then(() => this.$store.main.refreshScheduledTasksPopover());
-      this.closeUninstallMarketplaceItemModal();
-    },
-  }));
-
   Alpine.data("resourceUsage", () => ({
     // AuxiliaryState
     refreshIntervalSecs: 20,
@@ -330,33 +236,6 @@ UiToolset.RegisterAlpineState(() => {
     },
 
     // AuxiliaryState
-    installedServicesFilters: {
-      name: "",
-      nature: "",
-      type: "",
-      status: "",
-    },
-    installedServicesPagination: {
-      pageNumber: this.installedServicesCurrentPageNumber,
-      itemsPerPage: 5,
-    },
-    reloadInstalledServicesTable() {
-      const filterQueryParams = Infinite.CreateFilterQueryParams(
-        this.installedServicesFilters,
-        this.installedServicesPagination,
-      );
-
-      htmx.ajax(
-        "GET",
-        `${document.baseURI}overview/?${filterQueryParams.toString()}`,
-        {
-          source: "#htmx-indicator-attributes-element",
-          select: "#installed-services-table",
-          target: "#installed-services-table",
-          swap: "outerHTML transition:true",
-        },
-      );
-    },
     targetServiceType: "installables",
     selectedInstallableServiceType: "runtime",
     selectedInstallableServiceName: "",
@@ -384,19 +263,9 @@ UiToolset.RegisterAlpineState(() => {
           swap: "none",
           values: { name: serviceName, status: desiredStatus },
         })
-        .then(() => this.$dispatch("update:service"));
+        .then(() => window.dispatchEvent(new Event("update:service")));
     },
     resetAuxiliaryStates() {
-      this.installedServicesFilters = {
-        name: "",
-        nature: "",
-        type: "",
-        status: "",
-      };
-      this.installedServicesPagination = {
-        pageNumber: this.installedServicesCurrentPageNumber,
-        itemsPerPage: 5,
-      };
       this.targetServiceType = "installables";
       this.selectedInstallableServiceType = "runtime";
       this.selectedInstallableServiceName = "";
@@ -442,7 +311,7 @@ UiToolset.RegisterAlpineState(() => {
       )
         .then(() => {
           if (this.targetServiceType === "custom") {
-            return this.$dispatch("install:custom-service");
+            return window.dispatchEvent(new Event("install:custom-service"));
           }
 
           this.$store.main.refreshScheduledTasksPopover();
@@ -476,6 +345,9 @@ UiToolset.RegisterAlpineState(() => {
           `installedServiceEntity_${installedServiceName}`,
         ).textContent,
       );
+      // The entity comes from the server-rendered JSON script, not from user
+      // input, and the API validates every field on update.
+      // nosemgrep: javascript.lang.security.insecure-object-assign.insecure-object-assign
       this.service = Object.assign({}, installedServiceEntity);
 
       this.service.envs = this.parseInstalledServiceEnvs(
@@ -530,7 +402,7 @@ UiToolset.RegisterAlpineState(() => {
         `${Infinite.OsApiBasePath}/v1/services/`,
         serviceAttributesToUpdate,
       )
-        .then(() => this.$dispatch("update:service"))
+        .then(() => window.dispatchEvent(new Event("update:service")))
         .catch((error) =>
           Alpine.store("toast").displayToast(error.message, "danger"),
         );
@@ -554,7 +426,7 @@ UiToolset.RegisterAlpineState(() => {
             swap: "none",
           },
         )
-        .then(() => this.$dispatch("delete:service"))
+        .then(() => window.dispatchEvent(new Event("delete:service")))
         .finally(() => this.closeUninstallServiceModal());
     },
   }));

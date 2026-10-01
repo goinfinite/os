@@ -18,15 +18,9 @@ import (
 	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/labstack/echo/v4"
 )
-
-type TerminalSessionsOverview struct {
-	TotalCount     int
-	RecentSessions []entity.TerminalSession
-}
 
 type OverviewPresenter struct {
 	persistentDbSvc        *internalDbInfra.PersistentDatabaseService
@@ -89,32 +83,17 @@ func (presenter *OverviewPresenter) installableServicesGroupedByTypeFactory(
 func (presenter *OverviewPresenter) readInstalledServices(c echo.Context) (
 	responseDto dto.ReadInstalledServicesItemsResponse, err error,
 ) {
-	pageNumber := uint16(0)
-	pageNumberQueryParam := c.QueryParam("pageNumber")
-	if pageNumberQueryParam != "" {
-		pageNumber, _ = tkVoUtil.InterfaceToUint16(pageNumberQueryParam)
-	}
+	readInstalledServicesRequestBody := presenterHelper.ReadPaginationRequestParams(c)
+	readInstalledServicesRequestBody["shouldIncludeMetrics"] = true
 
-	itemsPerPage := uint16(5)
-	itemsPerPageQueryParam := c.QueryParam("itemsPerPage")
-	if itemsPerPageQueryParam != "" {
-		itemsPerPage, _ = tkVoUtil.InterfaceToUint16(itemsPerPageQueryParam)
-	}
-
-	readInstalledServicesRequestBody := map[string]any{
-		"pageNumber":           pageNumber,
-		"itemsPerPage":         itemsPerPage,
-		"shouldIncludeMetrics": true,
+	natureQueryParam := c.QueryParam("nature")
+	if natureQueryParam != "" {
+		readInstalledServicesRequestBody["nature"] = natureQueryParam
 	}
 
 	nameQueryParam := c.QueryParam("name")
 	if nameQueryParam != "" {
 		readInstalledServicesRequestBody["name"] = nameQueryParam
-	}
-
-	natureQueryParam := c.QueryParam("nature")
-	if natureQueryParam != "" {
-		readInstalledServicesRequestBody["nature"] = natureQueryParam
 	}
 
 	typeQueryParam := c.QueryParam("type")
@@ -173,40 +152,62 @@ func (presenter *OverviewPresenter) servicesOverviewFactory(c echo.Context) (
 	}, nil
 }
 
-const terminalSessionsOverviewRecentLimit = 3
-
-func (presenter *OverviewPresenter) terminalSessionsOverviewFactory(
-	echoContext echo.Context,
-) (overview TerminalSessionsOverview, err error) {
-	operatorAccountId, assertOk := echoContext.Get("operatorAccountId").(tkValueObject.AccountId)
+func (presenter *OverviewPresenter) readTerminalSessions(c echo.Context) (
+	responseDto dto.ReadTerminalSessionsResponse, err error,
+) {
+	operatorAccountId, assertOk := c.Get("operatorAccountId").(tkValueObject.AccountId)
 	if !assertOk {
-		return overview, errors.New("OperatorAccountIdNotFound")
+		return responseDto, errors.New("OperatorAccountIdNotFound")
 	}
 
-	responseOutput := presenter.terminalSessionLiaison.Read(map[string]any{
-		"operatorAccountId": operatorAccountId,
-		"itemsPerPage":      terminalSessionsOverviewRecentLimit,
-		"sortBy":            "createdAt",
-		"sortDirection":     "desc",
-	})
+	readRequestBody := presenterHelper.ReadPaginationRequestParams(c)
+	readRequestBody["operatorAccountId"] = operatorAccountId
+
+	responseOutput := presenter.terminalSessionLiaison.Read(readRequestBody)
 	if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
-		return overview, errors.New("ReadTerminalSessionsLiaisonBadResponse")
+		return responseDto, errors.New("ReadTerminalSessionsLiaisonBadResponse")
 	}
 
-	responseDto, assertOk := responseOutput.Body.(dto.ReadTerminalSessionsResponse)
+	typedOutputBody, assertOk := responseOutput.Body.(dto.ReadTerminalSessionsResponse)
 	if !assertOk {
-		return overview, errors.New("AssertReadTerminalSessionsResponseFailed")
+		return responseDto, errors.New("AssertReadTerminalSessionsResponseFailed")
 	}
 
-	totalCount := 0
-	if responseDto.Pagination.ItemsTotal != nil {
-		totalCount = int(*responseDto.Pagination.ItemsTotal)
+	return typedOutputBody, nil
+}
+
+func (presenter *OverviewPresenter) TerminalSessionsTableHandler(c echo.Context) error {
+	responseDto, err := presenter.readTerminalSessions(c)
+	if err != nil {
+		slog.Error("ReadTerminalSessionsError", slog.String("err", err.Error()))
+		return c.NoContent(http.StatusInternalServerError)
 	}
 
-	return TerminalSessionsOverview{
-		TotalCount:     totalCount,
-		RecentSessions: responseDto.TerminalSessions,
-	}, nil
+	return TerminalSessionsDataTable(responseDto).Render(c.Request().Context(), c.Response())
+}
+
+func (presenter *OverviewPresenter) ServicesTableHandler(c echo.Context) error {
+	responseDto, err := presenter.readInstalledServices(c)
+	if err != nil {
+		slog.Error("ReadInstalledServicesError", slog.String("err", err.Error()))
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return InstalledServicesDataTable(responseDto).Render(c.Request().Context(), c.Response())
+}
+
+func (presenter *OverviewPresenter) MarketplaceTableHandler(c echo.Context) error {
+	marketplaceOverview, err := presenter.marketplacePresenter.MarketplaceOverviewFactory(
+		"installed", presenterHelper.ReadPaginationRequestParams(c),
+	)
+	if err != nil {
+		slog.Error("ReadInstalledMarketplaceItemsError", slog.String("err", err.Error()))
+		return c.NoContent(http.StatusInternalServerError)
+	}
+
+	return InstalledMarketplaceItemsDataTable(marketplaceOverview).Render(
+		c.Request().Context(), c.Response(),
+	)
 }
 
 func (presenter *OverviewPresenter) Handler(echoContext echo.Context) error {
@@ -218,7 +219,9 @@ func (presenter *OverviewPresenter) Handler(echoContext echo.Context) error {
 		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
-	marketplaceOverview, err := presenter.marketplacePresenter.MarketplaceOverviewFactory("all")
+	marketplaceOverview, err := presenter.marketplacePresenter.MarketplaceOverviewFactory(
+		"all", presenterHelper.ReadPaginationRequestParams(echoContext),
+	)
 	if err != nil {
 		slog.Error("MarketplaceOverviewFactoryError", slog.String("err", err.Error()))
 		return echoContext.NoContent(http.StatusInternalServerError)
@@ -237,15 +240,15 @@ func (presenter *OverviewPresenter) Handler(echoContext echo.Context) error {
 		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
-	terminalSessionsOverview, err := presenter.terminalSessionsOverviewFactory(echoContext)
+	terminalSessionsResponseDto, err := presenter.readTerminalSessions(echoContext)
 	if err != nil {
-		slog.Error("TerminalSessionsOverviewFactoryError", slog.String("err", err.Error()))
+		slog.Error("ReadTerminalSessionsError", slog.String("err", err.Error()))
 		return echoContext.NoContent(http.StatusInternalServerError)
 	}
 
 	pageContent := OverviewIndex(
 		vhostsHostnames, marketplaceOverview, o11yOverview, servicesOverview,
-		terminalSessionsOverview,
+		terminalSessionsResponseDto,
 	)
 	return uiLayout.Renderer(uiLayout.LayoutRendererSettings{
 		EchoContext:  echoContext,
