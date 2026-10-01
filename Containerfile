@@ -12,7 +12,8 @@ RUN curl -sL --proto '=https' --tlsv1.2 "https://nginx.org/keys/nginx_signing.ke
 	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
 	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nginx logrotate \
 	&& mkdir -p /app/conf/pki \
-	&& chown -R nobody:nogroup /app
+	&& chown -R nobody:nogroup /app \
+	&& chmod 1775 /app
 
 RUN curl -sL --proto '=https' --tlsv1.2 "https://mise.run" \
 	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
