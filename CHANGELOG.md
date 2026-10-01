@@ -20,6 +20,14 @@ refactor: declare errors before the nil check
 fix(runtime): resolve php module ini files by priority prefix
 test(runtime): cover the php module enable and disable lifecycle
 chore: exclude the test suite from the build context and air watch
+chore(deps): bump tk, ui and echo
+feat(terminal): rename sessions
+refactor(ui): take buttons and dialogs from goinfinite/ui
+fix(ui): list the primary virtual host first in install forms
+refactor(pagination): keep the page defaults in the use case
+refactor(ui): render the overview data tables from goinfinite/ui
+fix(account): keep sudo membership and chown the ssh directory
+fix(container): set the sticky bit on /app
 
 0.3.4 - 2026/09/15
 chore: update go deps
