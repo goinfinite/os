@@ -1,6 +1,6 @@
 package uiLayout
 
-import "github.com/goinfinite/ui/src/display"
+import "github.com/goinfinite/ui/src/structural"
 
 import (
 	_ "embed"
@@ -18,7 +18,6 @@ type SidebarItem struct {
 
 var SidebarItems = []SidebarItem{
 	{Label: "Overview", Icon: "ph-speedometer", Link: "/overview/"},
-	{Label: "Terminal", Icon: "ph-terminal-window", Link: "/terminal/"},
 	{Label: "Accounts", Icon: "ph-users-three", Link: "/accounts/"},
 	{Label: "Databases", Icon: "ph-database", Link: "/databases/"},
 	{Label: "Runtime", Icon: "ph-code", Link: "/runtimes/"},
@@ -114,12 +113,12 @@ templ SidebarFooter() {
 templ Sidebar(baseHref string) {
 	<!-- Sidebar HTML -->
 	<div x-data="{isSidebarCollapsed: $persist(false).as('osDash.isSidebarCollapsed')}">
-		@uiDisplay.Sidebar(uiDisplay.SidebarSettings{
+		@uiStructural.Sidebar(uiStructural.SidebarSettings{
 			MiddleContent:              SidebarMiddle(baseHref),
 			HeaderContent:              SidebarHeader(),
 			FooterContent:              SidebarFooter(),
 			IsCollapsedTwoWayStatePath: "isSidebarCollapsed",
-			AttachmentMode:             uiDisplay.SidebarAttachmentModeFixed,
+			AttachmentMode:             uiStructural.SidebarAttachmentModeFixed,
 			BackgroundColor:            "bg-primary-800",
 			Width:                      "w-42",
 		})

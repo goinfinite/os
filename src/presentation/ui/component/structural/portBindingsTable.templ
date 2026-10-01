@@ -6,15 +6,12 @@ import (
 )
 
 templ PortBindingsTable(portBindings []valueObject.PortBinding) {
-	<div x-data="{ isExpanded: false }">
-		<table
-			id="port-bindings-table"
-			class="w-full table-fixed border-collapse rounded-md"
-		>
+	<div x-data="{ isExpanded: false }" class="w-fit">
+		<table class="table-auto border-collapse rounded-md">
 			<thead class="bg-os-700 text-[10px] lowercase text-neutral-400">
 				<tr class="border-b border-neutral-500 border-opacity-90 text-center">
-					<th class="w-[20%] p-1">Port</th>
-					<th class="w-[30%] rounded-tr-md p-1">Protocol</th>
+					<th class="px-3 py-1">Port</th>
+					<th class="rounded-tr-md px-3 py-1">Protocol</th>
 				</tr>
 			</thead>
 			<tbody>
@@ -23,8 +20,8 @@ templ PortBindingsTable(portBindings []valueObject.PortBinding) {
 						x-show={ "isExpanded || " + strconv.Itoa(bindingIndex) + " < 3" }
 						class="odd:bg-os-300 even:bg-os-400 border-b border-neutral-500 border-opacity-30 text-center text-xs last:border-b-0"
 					>
-						<td class="w-[20%] py-1.5">{ portBinding.Port.String() }</td>
-						<td class="w-[30%] py-1.5">{ portBinding.Protocol.String() }</td>
+						<td class="px-3 py-1.5">{ portBinding.Port.String() }</td>
+						<td class="px-3 py-1.5">{ portBinding.Protocol.String() }</td>
 					</tr>
 				}
 			</tbody>

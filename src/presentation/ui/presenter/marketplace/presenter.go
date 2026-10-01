@@ -2,6 +2,7 @@ package uiPresenter
 
 import (
 	"errors"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
@@ -56,13 +57,16 @@ func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 	}
 }
 
-func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType string) (
+func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(
+	listType string, installedItemsRequest map[string]any,
+) (
 	overview MarketplaceOverview, err error,
 ) {
 	installedItemsList := []entity.MarketplaceInstalledItem{}
+	installedItemsPagination := tkDto.PaginationUnpaginated
 	if listType == "installed" || listType == "all" {
 		responseOutput := presenter.marketplaceLiaison.ReadInstalledItems(
-			map[string]any{},
+			installedItemsRequest,
 		)
 		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 			return overview, errors.New("ReadInstalledItemsError")
@@ -73,6 +77,7 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 			return overview, errors.New("ReadInstalledItemsError")
 		}
 		installedItemsList = typedOutputBody.MarketplaceInstalledItems
+		installedItemsPagination = typedOutputBody.Pagination
 	}
 
 	catalogItemsList := []entity.MarketplaceCatalogItem{}
@@ -92,9 +97,10 @@ func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType strin
 	}
 
 	return MarketplaceOverview{
-		ListType:           listType,
-		InstalledItemsList: installedItemsList,
-		CatalogItemsList:   presenter.catalogItemsGroupedByTypeFactory(catalogItemsList),
+		ListType:                 listType,
+		InstalledItemsList:       installedItemsList,
+		InstalledItemsPagination: installedItemsPagination,
+		CatalogItemsList:         presenter.catalogItemsGroupedByTypeFactory(catalogItemsList),
 	}, nil
 }
 
@@ -116,7 +122,9 @@ func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	marketplaceOverview, err := presenter.MarketplaceOverviewFactory(listType)
+	marketplaceOverview, err := presenter.MarketplaceOverviewFactory(
+		listType, map[string]any{},
+	)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil
