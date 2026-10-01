@@ -28,6 +28,7 @@ refactor(pagination): keep the page defaults in the use case
 refactor(ui): render the overview data tables from goinfinite/ui
 fix(account): keep sudo membership and chown the ssh directory
 fix(container): set the sticky bit on /app
+docs(ui): correct the card wrapper and session manager notes
 
 0.3.4 - 2026/09/15
 chore: update go deps
