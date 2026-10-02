@@ -18,6 +18,9 @@ RUN curl -sL --proto '=https' --tlsv1.2 "https://nginx.org/keys/nginx_signing.ke
 RUN curl -sL --proto '=https' --tlsv1.2 "https://mise.run" \
 	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
 	&& chmod +x /usr/local/bin/mise \
+	&& mkdir -p /usr/local/share/mise/config /usr/local/share/mise/state \
+	&& chown -R nobody:nogroup /usr/local/share/mise \
+	&& chmod 2775 /usr/local/share/mise /usr/local/share/mise/config /usr/local/share/mise/state \
 	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile
 
 ENV MISE_DATA_DIR=/usr/local/share/mise

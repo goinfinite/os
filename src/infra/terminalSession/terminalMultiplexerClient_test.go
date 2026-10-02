@@ -5,6 +5,8 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/goinfinite/os/src/domain/valueObject"
+	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
 
@@ -187,5 +189,31 @@ func TestIsServerAbsent(t *testing.T) {
 				t.Errorf("Expected %t, got %t", testCase.expectedAbsent, isAbsent)
 			}
 		})
+	}
+}
+
+func TestAccountShellEnvironment(t *testing.T) {
+	username, err := valueObject.NewUsername("dev")
+	if err != nil {
+		t.Fatalf("NewUsernameFailed: %v", err)
+	}
+
+	client := &TerminalMultiplexerClient{accountUsername: username}
+	environment := map[string]string{}
+	for _, variable := range client.accountShellEnvironment() {
+		name, value, _ := strings.Cut(variable, "=")
+		environment[name] = value
+	}
+
+	expectedEnvironment := map[string]string{
+		"MISE_DATA_DIR":   infraEnvs.ToolchainDataDir,
+		"MISE_CONFIG_DIR": infraEnvs.ToolchainDataDir + "/config",
+		"MISE_STATE_DIR":  infraEnvs.ToolchainDataDir + "/state",
+		"MISE_CACHE_DIR":  "/home/dev/.cache/mise",
+	}
+	for name, expectedValue := range expectedEnvironment {
+		if environment[name] != expectedValue {
+			t.Errorf("Expected %s=%s, got %s", name, expectedValue, environment[name])
+		}
 	}
 }
