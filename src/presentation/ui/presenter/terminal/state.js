@@ -175,9 +175,11 @@ UiToolset.RegisterAlpineState(() => {
     isCreateSessionLoading: false,
     createSessionForm: {
       name: "",
+      runAsUsername: "nobody",
       workingDir: "/app",
       command: "",
     },
+    accountHomeDir: "",
 
     // DerivedState
     resolveSessionLabel(session) {
@@ -198,8 +200,17 @@ UiToolset.RegisterAlpineState(() => {
 
     resetCreateSessionForm() {
       this.createSessionForm.name = "";
+      this.createSessionForm.runAsUsername = "nobody";
       this.createSessionForm.workingDir = "/app";
       this.createSessionForm.command = "";
+    },
+
+    applyRunAsUsernameDefault() {
+      if (this.createSessionForm.runAsUsername === "nobody") {
+        this.createSessionForm.workingDir = "/app";
+        return;
+      }
+      this.createSessionForm.workingDir = this.accountHomeDir;
     },
 
     expandCreateSessionForm() {
@@ -289,6 +300,7 @@ UiToolset.RegisterAlpineState(() => {
       try {
         const requestBody = {
           workingDir: this.createSessionForm.workingDir,
+          runAsUsername: this.createSessionForm.runAsUsername,
         };
         if (this.createSessionForm.name.length > 0) {
           requestBody.name = this.createSessionForm.name;
@@ -416,6 +428,7 @@ UiToolset.RegisterAlpineState(() => {
     refreshSessionsHandler: null,
 
     init() {
+      this.accountHomeDir = this.$el.dataset.accountHomeDir ?? "";
       this.sessionTerminalManager = new SessionTerminalManager(
         (sessionId, isConnected) => {
           const openTab = this.openTabs.find(

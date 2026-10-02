@@ -9,6 +9,8 @@ import (
 
 var usernameRegex = regexp.MustCompile(`^[a-z_]([a-z0-9_-]{0,31}|[a-z0-9_-]{0,30}\$)$`)
 
+const UsernameNobody Username = "nobody"
+
 type Username string
 
 func NewUsername(value any) (username Username, err error) {

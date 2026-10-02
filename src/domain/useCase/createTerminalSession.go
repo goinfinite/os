@@ -11,6 +11,7 @@ import (
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	tkRepository "github.com/goinfinite/tk/src/domain/repository"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
 type CreateTerminalSession struct {
@@ -69,14 +70,42 @@ func (uc CreateTerminalSession) resolveOwnerAccount(
 	return ownerAccountEntity, nil
 }
 
+func (uc CreateTerminalSession) resolveRunAsUsername(
+	createDto dto.CreateTerminalSession,
+	ownerAccountEntity entity.Account,
+) (runAsUsername valueObject.Username, err error) {
+	if createDto.RunAsUsername == "" {
+		return valueObject.UsernameNobody, nil
+	}
+
+	runAsUsername = createDto.RunAsUsername
+	isOwnerUser := runAsUsername == ownerAccountEntity.Username
+	if !isOwnerUser && runAsUsername != valueObject.UsernameNobody {
+		return runAsUsername, repository.ErrTerminalSessionRunAsUserInvalid
+	}
+
+	return runAsUsername, nil
+}
+
+func (uc CreateTerminalSession) resolveWorkingDir(
+	createDto dto.CreateTerminalSession,
+	ownerAccountEntity entity.Account,
+	runAsUsername valueObject.Username,
+) tkValueObject.UnixAbsoluteFilePath {
+	if createDto.WorkingDir != nil {
+		return *createDto.WorkingDir
+	}
+
+	if runAsUsername == ownerAccountEntity.Username {
+		return ownerAccountEntity.HomeDirectory
+	}
+
+	return valueObject.UnixFilePathAppWorkingDir
+}
+
 func (uc CreateTerminalSession) Execute(
 	createDto dto.CreateTerminalSession,
 ) (terminalSessionId valueObject.TerminalSessionId, err error) {
-	if createDto.WorkingDir == nil {
-		defaultWorkingDir := valueObject.UnixFilePathAppWorkingDir
-		createDto.WorkingDir = &defaultWorkingDir
-	}
-
 	ownerAccountEntity, err := uc.resolveOwnerAccount(createDto)
 	if err != nil {
 		slog.Error("ResolveTerminalSessionOwnerError", slog.String("err", err.Error()))
@@ -84,6 +113,15 @@ func (uc CreateTerminalSession) Execute(
 	}
 
 	createDto.AccountUsername = ownerAccountEntity.Username
+
+	runAsUsername, err := uc.resolveRunAsUsername(createDto, ownerAccountEntity)
+	if err != nil {
+		return terminalSessionId, err
+	}
+	createDto.RunAsUsername = runAsUsername
+
+	workingDir := uc.resolveWorkingDir(createDto, ownerAccountEntity, runAsUsername)
+	createDto.WorkingDir = &workingDir
 
 	ownerTerminalSessionsResponse, err := uc.terminalSessionQueryRepo.Read(
 		dto.ReadTerminalSessionsRequest{

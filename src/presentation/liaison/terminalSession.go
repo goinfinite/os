@@ -215,9 +215,19 @@ func (liaison *TerminalSessionLiaison) Create(
 		accountIdPtr = &accountId
 	}
 
+	var runAsUsername valueObject.Username
+	if untrustedInput["runAsUsername"] != nil && untrustedInput["runAsUsername"] != "" {
+		runAsUsername, err = valueObject.NewUsername(untrustedInput["runAsUsername"])
+		if err != nil {
+			return tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+			)
+		}
+	}
+
 	createDto := dto.NewCreateTerminalSession(
-		namePtr, workingDirPtr, commandPtr, accountIdPtr, operatorAccountId,
-		operatorIpAddress,
+		namePtr, workingDirPtr, commandPtr, runAsUsername, accountIdPtr,
+		operatorAccountId, operatorIpAddress,
 	)
 
 	terminalSessionId, err := useCase.NewCreateTerminalSession(
@@ -231,6 +241,7 @@ func (liaison *TerminalSessionLiaison) Create(
 			repository.ErrTerminalSessionAccountCapReached,
 			repository.ErrTerminalSessionWorkingDirNotFound,
 			repository.ErrTerminalSessionAccountRequired,
+			repository.ErrTerminalSessionRunAsUserInvalid,
 		) {
 			return tkPresentation.NewLiaisonResponseNoMessage(
 				tkPresentation.LiaisonResponseStatusUserError, err.Error(),

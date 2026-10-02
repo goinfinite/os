@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"strings"
 	"syscall"
 
 	"github.com/goinfinite/os/src/domain/entity"
@@ -57,7 +58,7 @@ func (controller *TerminalController) Read() *cobra.Command {
 }
 
 func (controller *TerminalController) Create() *cobra.Command {
-	var accountIdStr, nameStr, workingDirStr, commandStr string
+	var accountIdStr, nameStr, workingDirStr, commandStr, runAsUsernameStr string
 
 	cmd := &cobra.Command{
 		Use:   "create",
@@ -75,6 +76,9 @@ func (controller *TerminalController) Create() *cobra.Command {
 			if commandStr != "" {
 				requestBody["command"] = commandStr
 			}
+			if runAsUsernameStr != "" {
+				requestBody["runAsUsername"] = runAsUsernameStr
+			}
 
 			tkPresentation.LiaisonCliResponseRenderer(
 				controller.terminalSessionLiaison.Create(requestBody),
@@ -87,6 +91,7 @@ func (controller *TerminalController) Create() *cobra.Command {
 	cmd.Flags().StringVarP(&nameStr, "name", "n", "", "SessionName")
 	cmd.Flags().StringVarP(&workingDirStr, "working-dir", "w", "", "WorkingDirectory")
 	cmd.Flags().StringVarP(&commandStr, "command", "c", "", "Command")
+	cmd.Flags().StringVarP(&runAsUsernameStr, "run-as-username", "r", "", "RunAsUsername")
 	return cmd
 }
 
@@ -152,9 +157,18 @@ func (controller *TerminalController) Attach() *cobra.Command {
 				os.Exit(1)
 			}
 
-			tmuxSessionName := terminalSessionInfra.TerminalSessionNamePrefix +
-				terminalSessionEntity.Id.String()
-			attachCommand := "tmux attach -t " + tmuxSessionName
+			terminalSessionClient, err := terminalSessionInfra.NewTerminalMultiplexerClient(
+				terminalSessionEntity.AccountUsername,
+				terminalSessionEntity.RunAsUsername,
+			)
+			if err != nil {
+				fmt.Println("CreateTerminalMultiplexerClientError: ", err)
+				os.Exit(1)
+			}
+
+			attachCommand := "tmux " + strings.Join(
+				terminalSessionClient.BuildAttachArgs(terminalSessionEntity.Id), " ",
+			)
 
 			suBinaryPath, err := exec.LookPath("su")
 			if err != nil {
@@ -165,7 +179,8 @@ func (controller *TerminalController) Attach() *cobra.Command {
 			execErr := syscall.Exec(
 				suBinaryPath,
 				[]string{
-					"su", "-", terminalSessionEntity.AccountUsername.String(),
+					"su", "-s", "/bin/bash",
+					terminalSessionEntity.RunAsUsername.String(),
 					"-c", attachCommand,
 				},
 				os.Environ(),

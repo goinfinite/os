@@ -3,6 +3,8 @@ import { expect, type Page, test } from "@playwright/test";
 const marker = `os-browser-marker-${Date.now()}`;
 
 const modalBody = (page: Page) => page.locator("#terminal-sessions-modal-body");
+const modalCloseButton = (page: Page) =>
+  page.locator("#terminal-sessions-modal button:has(i.ph-x)");
 const modalRail = (page: Page) => modalBody(page).locator("aside");
 
 async function createSession(rail: ReturnType<typeof modalRail>) {
@@ -35,7 +37,7 @@ test.describe("terminal", () => {
     await page.keyboard.press("Enter");
     await expect(terminal).toContainText(marker);
 
-    await page.locator("#terminal-sessions-modal-close").click();
+    await modalCloseButton(page).click();
     await expect(modalBody(page)).not.toBeVisible();
 
     await page.locator("#terminal-sessions-footer-trigger").click();
@@ -110,6 +112,42 @@ test.describe("terminal", () => {
     await expect(sessionLabel).toHaveCount(0);
   });
 
+  test("creates an account-user session from the custom form", async ({
+    page,
+  }) => {
+    await page.goto("overview/");
+    await page.locator("#terminal-sessions-footer-trigger").click();
+    await expect(modalRail(page)).toBeVisible();
+
+    await modalRail(page)
+      .locator('button[aria-label="Custom Session Settings"]')
+      .click();
+    const runAsSelect = modalRail(page).locator('select[name="runAsUsername"]');
+    const accountUsername = await runAsSelect
+      .locator("option")
+      .nth(1)
+      .getAttribute("value");
+    expect(accountUsername).toBeTruthy();
+    await runAsSelect.selectOption(accountUsername as string);
+
+    const workingDirInput = modalRail(page).locator('input[name="workingDir"]');
+    await expect(workingDirInput).toHaveValue(`/home/${accountUsername}`);
+
+    await modalRail(page)
+      .locator('button[type="submit"]:has-text("create session")')
+      .click();
+    await expect(modalBody(page).locator(".xterm").first()).toBeVisible();
+
+    const listResponse = await page.request.get("/api/v1/terminal-sessions/");
+    const listBody = await listResponse.json();
+    const createdSession = listBody.body.terminalSessions.find(
+      (session: { runAsUsername: string }) =>
+        session.runAsUsername === accountUsername,
+    );
+    expect(createdSession).toBeTruthy();
+    expect(createdSession.workingDir).toBe(`/home/${accountUsername}`);
+  });
+
   test("redirects the removed terminal page to the overview", async ({
     page,
   }) => {
@@ -133,9 +171,18 @@ test.describe("terminal", () => {
     await page.locator("#terminal-sessions-footer-trigger").click();
     await expect(modalRail(page)).toHaveCount(0);
 
-    await page.locator("#terminal-sessions-modal-close").click();
+    await modalCloseButton(page).click();
     await page.locator("#terminal-sessions-footer-trigger").click();
     await expect(modalRail(page)).toBeVisible();
+  });
+
+  test("closes the sessions modal from the backdrop", async ({ page }) => {
+    await page.goto("overview/");
+    await page.locator("#terminal-sessions-footer-trigger").click();
+    await expect(modalRail(page)).toBeVisible();
+
+    await page.mouse.click(10, 300);
+    await expect(modalBody(page)).not.toBeVisible();
   });
 
   test("rejects reading another account's sessions", async ({ page }) => {

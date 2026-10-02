@@ -59,7 +59,9 @@ func (repo *TerminalSessionCmdRepo) Create(
 		return terminalSessionId, err
 	}
 
-	client, err := NewTerminalMultiplexerClient(createDto.AccountUsername)
+	client, err := NewTerminalMultiplexerClient(
+		createDto.AccountUsername, createDto.RunAsUsername,
+	)
 	if err != nil {
 		return terminalSessionId, err
 	}
@@ -91,7 +93,9 @@ func (repo *TerminalSessionCmdRepo) Create(
 func (repo *TerminalSessionCmdRepo) Update(
 	updateDto dto.UpdateTerminalSession,
 ) error {
-	client, err := NewTerminalMultiplexerClient(updateDto.AccountUsername)
+	client, err := NewTerminalMultiplexerClient(
+		updateDto.AccountUsername, updateDto.RunAsUsername,
+	)
 	if err != nil {
 		return err
 	}
@@ -106,7 +110,9 @@ func (repo *TerminalSessionCmdRepo) Update(
 func (repo *TerminalSessionCmdRepo) Delete(
 	deleteDto dto.DeleteTerminalSession,
 ) error {
-	client, err := NewTerminalMultiplexerClient(deleteDto.AccountUsername)
+	client, err := NewTerminalMultiplexerClient(
+		deleteDto.AccountUsername, deleteDto.RunAsUsername,
+	)
 	if err != nil {
 		return err
 	}
@@ -117,7 +123,9 @@ func (repo *TerminalSessionCmdRepo) Delete(
 func (repo *TerminalSessionCmdRepo) Attach(
 	attachDto dto.AttachTerminalSession,
 ) (repository.TerminalSessionAttachHandle, error) {
-	client, err := NewTerminalMultiplexerClient(attachDto.AccountUsername)
+	client, err := NewTerminalMultiplexerClient(
+		attachDto.AccountUsername, attachDto.RunAsUsername,
+	)
 	if err != nil {
 		return nil, err
 	}

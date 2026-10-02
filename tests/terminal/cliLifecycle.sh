@@ -28,9 +28,11 @@ assertCliStatus success "list terminal sessions"
 assertCliJq ".body.pagination.itemsTotal >= 1" "list reports the total item count"
 assertCliJq ".body.terminalSessions | map(select(.id == \"${terminalSessionId}\")) | length == 1" "created session is listed"
 assertCliJq ".body.terminalSessions | map(select(.id == \"${terminalSessionId}\" and .accountUsername == \"${accountUsername}\")) | length == 1" "session owner matches"
+assertCliJq ".body.terminalSessions | map(select(.id == \"${terminalSessionId}\" and .runAsUsername == \"nobody\")) | length == 1" "default session runs as nobody"
 
-assertCommandSucceeds "tmux session exists" \
-	osBash "su - ${accountUsername} -c 'tmux list-sessions -F \"#{session_name}\"' | grep -q 'os-managed-${terminalSessionId}'"
+nobodySocket="os-${accountUsername}-nobody"
+assertCommandSucceeds "tmux session exists on the nobody socket" \
+	osBash "su -s /bin/bash nobody -c 'tmux -L ${nobodySocket} list-sessions -F \"#{session_name}\"' | grep -q 'os-managed-${terminalSessionId}'"
 
 osCliCapture terminal list -i "${terminalSessionId}"
 assertCliJq '.body.terminalSessions[0].name == null' "unnamed session exposes no name"
@@ -43,7 +45,7 @@ osCliCapture terminal list -i "${terminalSessionId}"
 assertCliJq '.body.terminalSessions[0].name == "opencode"' "renamed session exposes the name"
 
 assertCommandSucceeds "tmux session keeps the name in @os-name" \
-	osBash "su - ${accountUsername} -c 'tmux show-options -t os-managed-${terminalSessionId} @os-name' | grep -q 'opencode'"
+	osBash "su -s /bin/bash nobody -c 'tmux -L ${nobodySocket} show-options -t os-managed-${terminalSessionId} @os-name' | grep -q 'opencode'"
 
 osCliCapture terminal rename -i "${terminalSessionId}" -n "bad|name"
 assertCliStatus userError "rename rejects a name carrying the list separator"
@@ -55,7 +57,7 @@ osCliCapture terminal list -i "${terminalSessionId}"
 assertCliJq '.body.terminalSessions[0].name == null' "cleared name falls back to absent"
 
 assertCommandFails "tmux session drops the cleared @os-name" \
-	osBash "su - ${accountUsername} -c 'tmux show-options -t os-managed-${terminalSessionId} @os-name' | grep -q 'opencode'"
+	osBash "su -s /bin/bash nobody -c 'tmux -L ${nobodySocket} show-options -t os-managed-${terminalSessionId} @os-name' | grep -q 'opencode'"
 
 osCliCapture terminal create -a "${accountId}" -n "named at birth" -w /app
 assertCliStatus created "create terminal session with a name"
@@ -72,7 +74,22 @@ osCliCapture terminal list
 assertCliJq ".body.terminalSessions | map(select(.id == \"${terminalSessionId}\")) | length == 0" "deleted session is absent"
 
 assertCommandFails "tmux session is gone" \
-	osBash "su - ${accountUsername} -c 'tmux list-sessions -F \"#{session_name}\"' | grep -q 'os-managed-${terminalSessionId}'"
+	osBash "su -s /bin/bash nobody -c 'tmux -L ${nobodySocket} list-sessions -F \"#{session_name}\"' | grep -q 'os-managed-${terminalSessionId}'"
+
+osCliCapture terminal create -a "${accountId}" -r "${accountUsername}"
+assertCliStatus created "create terminal session as the account user"
+accountUserSessionId="$(jq -r '.body.id' <<<"${cliOutput}")"
+assertCliJq ".body.runAsUsername == \"${accountUsername}\"" "account user session exposes its run-as user"
+assertCliJq ".body.workingDir == \"/home/${accountUsername}\"" "account user session defaults to the account home"
+
+assertCommandSucceeds "tmux session exists on the account socket" \
+	osBash "su - ${accountUsername} -c 'tmux list-sessions -F \"#{session_name}\"' | grep -q 'os-managed-${accountUserSessionId}'"
+
+osCliCapture terminal delete -i "${accountUserSessionId}"
+assertCliStatus success "delete the account user terminal session"
+
+osCliCapture terminal create -a "${accountId}" -r root
+assertCliStatus userError "create rejects a run-as user that is not nobody nor the account"
 
 osCliCapture terminal create -a "${accountId}" -w /nonexistent-directory
 assertCliStatus userError "create rejects a missing working directory"

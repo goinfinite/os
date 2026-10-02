@@ -8,6 +8,7 @@ import (
 type AttachTerminalSession struct {
 	Id                valueObject.TerminalSessionId `json:"id"`
 	AccountUsername   valueObject.Username          `json:"-"`
+	RunAsUsername     valueObject.Username          `json:"-"`
 	OperatorAccountId tkValueObject.AccountId       `json:"-"`
 }
 

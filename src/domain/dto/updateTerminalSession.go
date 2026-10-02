@@ -9,6 +9,7 @@ type UpdateTerminalSession struct {
 	Id                valueObject.TerminalSessionId    `json:"id"`
 	Name              *valueObject.TerminalSessionName `json:"name"`
 	AccountUsername   valueObject.Username             `json:"-"`
+	RunAsUsername     valueObject.Username             `json:"-"`
 	OperatorAccountId tkValueObject.AccountId          `json:"-"`
 	OperatorIpAddress tkValueObject.IpAddress          `json:"-"`
 }

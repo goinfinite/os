@@ -193,27 +193,85 @@ func TestIsServerAbsent(t *testing.T) {
 }
 
 func TestAccountShellEnvironment(t *testing.T) {
-	username, err := valueObject.NewUsername("dev")
+	accountUsername, err := valueObject.NewUsername("dev")
 	if err != nil {
 		t.Fatalf("NewUsernameFailed: %v", err)
 	}
 
-	client := &TerminalMultiplexerClient{accountUsername: username}
-	environment := map[string]string{}
-	for _, variable := range client.accountShellEnvironment() {
-		name, value, _ := strings.Cut(variable, "=")
-		environment[name] = value
+	testCases := []struct {
+		name                string
+		runAsUsername       valueObject.Username
+		expectedEnvironment map[string]string
+	}{
+		{
+			name:          "OwnUser",
+			runAsUsername: accountUsername,
+			expectedEnvironment: map[string]string{
+				"HOME":            "/home/dev",
+				"USER":            "dev",
+				"MISE_DATA_DIR":   "/home/dev/.local/share/mise",
+				"MISE_CONFIG_DIR": "/home/dev/.config/mise",
+				"MISE_STATE_DIR":  "/home/dev/.local/state/mise",
+				"MISE_CACHE_DIR":  "/home/dev/.cache/mise",
+			},
+		},
+		{
+			name:          "Nobody",
+			runAsUsername: valueObject.UsernameNobody,
+			expectedEnvironment: map[string]string{
+				"HOME":            "/app",
+				"USER":            "nobody",
+				"MISE_DATA_DIR":   infraEnvs.ToolchainDataDir,
+				"MISE_CONFIG_DIR": infraEnvs.ToolchainDataDir + "/config",
+				"MISE_STATE_DIR":  infraEnvs.ToolchainDataDir + "/state",
+				"MISE_CACHE_DIR":  infraEnvs.ToolchainDataDir + "/cache",
+			},
+		},
 	}
 
-	expectedEnvironment := map[string]string{
-		"MISE_DATA_DIR":   infraEnvs.ToolchainDataDir,
-		"MISE_CONFIG_DIR": infraEnvs.ToolchainDataDir + "/config",
-		"MISE_STATE_DIR":  infraEnvs.ToolchainDataDir + "/state",
-		"MISE_CACHE_DIR":  "/home/dev/.cache/mise",
+	for _, testCase := range testCases {
+		t.Run(testCase.name, func(t *testing.T) {
+			client := &TerminalMultiplexerClient{
+				accountUsername: accountUsername,
+				runAsUsername:   testCase.runAsUsername,
+			}
+
+			environment := map[string]string{}
+			for _, variable := range client.buildAccountShellEnvironment() {
+				name, value, _ := strings.Cut(variable, "=")
+				environment[name] = value
+			}
+
+			for name, expectedValue := range testCase.expectedEnvironment {
+				if environment[name] != expectedValue {
+					t.Errorf("Expected %s=%s, got %s", name, expectedValue, environment[name])
+				}
+			}
+		})
 	}
-	for name, expectedValue := range expectedEnvironment {
-		if environment[name] != expectedValue {
-			t.Errorf("Expected %s=%s, got %s", name, expectedValue, environment[name])
-		}
+}
+
+func TestTerminalMultiplexerSocketName(t *testing.T) {
+	accountUsername, err := valueObject.NewUsername("root")
+	if err != nil {
+		t.Fatalf("NewUsernameFailed: %v", err)
+	}
+
+	ownUserClient, err := NewTerminalMultiplexerClient(accountUsername, accountUsername)
+	if err != nil {
+		t.Fatalf("NewTerminalMultiplexerClientFailed: %v", err)
+	}
+	if ownUserClient.tmuxSocketName != "" {
+		t.Errorf("Expected default socket, got %s", ownUserClient.tmuxSocketName)
+	}
+
+	nobodyClient, err := NewTerminalMultiplexerClient(
+		accountUsername, valueObject.UsernameNobody,
+	)
+	if err != nil {
+		t.Fatalf("NewTerminalMultiplexerClientFailed: %v", err)
+	}
+	if nobodyClient.tmuxSocketName != "os-root-nobody" {
+		t.Errorf("Expected os-root-nobody, got %s", nobodyClient.tmuxSocketName)
 	}
 }

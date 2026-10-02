@@ -8,6 +8,7 @@ import (
 type DeleteTerminalSession struct {
 	Id                valueObject.TerminalSessionId `json:"id"`
 	AccountUsername   valueObject.Username          `json:"-"`
+	RunAsUsername     valueObject.Username          `json:"-"`
 	OperatorAccountId tkValueObject.AccountId       `json:"-"`
 	OperatorIpAddress tkValueObject.IpAddress       `json:"-"`
 }

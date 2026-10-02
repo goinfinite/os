@@ -50,11 +50,14 @@ func (repo *TerminalSessionQueryRepo) resolveTargetAccounts(
 	return accountsResponse.Accounts, nil
 }
 
-func (repo *TerminalSessionQueryRepo) readAccountTerminalSessions(
+func (repo *TerminalSessionQueryRepo) readRunAsTerminalSessions(
 	accountEntity entity.Account,
+	runAsUsername valueObject.Username,
 	terminalSessionIdPtr *valueObject.TerminalSessionId,
 ) (terminalSessions []entity.TerminalSession, err error) {
-	client, err := NewTerminalMultiplexerClient(accountEntity.Username)
+	client, err := NewTerminalMultiplexerClient(
+		accountEntity.Username, runAsUsername,
+	)
 	if err != nil {
 		return terminalSessions, err
 	}
@@ -72,10 +75,45 @@ func (repo *TerminalSessionQueryRepo) readAccountTerminalSessions(
 
 		terminalSessions = append(terminalSessions, entity.NewTerminalSession(
 			multiplexerSession.Id, multiplexerSession.Name, accountEntity.Id,
-			accountEntity.Username, multiplexerSession.WorkingDir,
+			accountEntity.Username, runAsUsername, multiplexerSession.WorkingDir,
 			multiplexerSession.Command, multiplexerSession.CreatedAt,
 			multiplexerSession.AttachedClients,
 		))
+	}
+
+	return terminalSessions, nil
+}
+
+func (repo *TerminalSessionQueryRepo) readAccountTerminalSessions(
+	accountEntity entity.Account,
+	terminalSessionIdPtr *valueObject.TerminalSessionId,
+) (terminalSessions []entity.TerminalSession, err error) {
+	runAsUsernames := []valueObject.Username{
+		accountEntity.Username, valueObject.UsernameNobody,
+	}
+
+	terminalSessions = []entity.TerminalSession{}
+	readErrorCount := 0
+	for _, runAsUsername := range runAsUsernames {
+		runAsSessions, err := repo.readRunAsTerminalSessions(
+			accountEntity, runAsUsername, terminalSessionIdPtr,
+		)
+		if err != nil {
+			readErrorCount++
+			slog.Error(
+				"ReadRunAsTerminalSessionsError",
+				slog.String("accountUsername", accountEntity.Username.String()),
+				slog.String("runAsUsername", runAsUsername.String()),
+				slog.String("err", err.Error()),
+			)
+			continue
+		}
+
+		terminalSessions = append(terminalSessions, runAsSessions...)
+	}
+
+	if readErrorCount == len(runAsUsernames) {
+		return terminalSessions, errors.New("ReadAccountTerminalSessionsError")
 	}
 
 	return terminalSessions, nil

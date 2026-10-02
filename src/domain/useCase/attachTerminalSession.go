@@ -49,6 +49,7 @@ func (uc AttachTerminalSession) Execute(
 	}
 
 	attachDto.AccountUsername = terminalSessionEntity.AccountUsername
+	attachDto.RunAsUsername = terminalSessionEntity.RunAsUsername
 
 	attachHandle, err = uc.terminalSessionCmdRepo.Attach(attachDto)
 	if err != nil {

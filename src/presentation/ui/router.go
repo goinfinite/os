@@ -213,7 +213,7 @@ func (router *Router) fragmentRoutes() {
 	)
 	fragmentGroup.GET("/footer/", footerPresenter.Handler)
 
-	terminalPresenter := presenterTerminal.NewTerminalPresenter()
+	terminalPresenter := presenterTerminal.NewTerminalPresenter(router.persistentDbSvc)
 	fragmentGroup.GET("/terminal-sessions/", terminalPresenter.FragmentHandler)
 
 	overviewPresenter := presenterOverview.NewOverviewPresenter(

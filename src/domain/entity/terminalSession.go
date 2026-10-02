@@ -10,6 +10,7 @@ type TerminalSession struct {
 	Name            *valueObject.TerminalSessionName   `json:"name,omitempty"`
 	AccountId       tkValueObject.AccountId            `json:"-"`
 	AccountUsername valueObject.Username               `json:"accountUsername"`
+	RunAsUsername   valueObject.Username               `json:"runAsUsername"`
 	WorkingDir      tkValueObject.UnixAbsoluteFilePath `json:"workingDir"`
 	Command         tkValueObject.UnixCommand          `json:"command"`
 	CreatedAt       tkValueObject.UnixTime             `json:"createdAt"`
@@ -21,6 +22,7 @@ func NewTerminalSession(
 	name *valueObject.TerminalSessionName,
 	accountId tkValueObject.AccountId,
 	accountUsername valueObject.Username,
+	runAsUsername valueObject.Username,
 	workingDir tkValueObject.UnixAbsoluteFilePath,
 	command tkValueObject.UnixCommand,
 	createdAt tkValueObject.UnixTime,
@@ -31,6 +33,7 @@ func NewTerminalSession(
 		Name:            name,
 		AccountId:       accountId,
 		AccountUsername: accountUsername,
+		RunAsUsername:   runAsUsername,
 		WorkingDir:      workingDir,
 		Command:         command,
 		CreatedAt:       createdAt,

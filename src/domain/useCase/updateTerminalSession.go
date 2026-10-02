@@ -27,6 +27,7 @@ func UpdateTerminalSession(
 	}
 
 	updateDto.AccountUsername = terminalSessionEntity.AccountUsername
+	updateDto.RunAsUsername = terminalSessionEntity.RunAsUsername
 
 	err = terminalSessionCmdRepo.Update(updateDto)
 	if err != nil {

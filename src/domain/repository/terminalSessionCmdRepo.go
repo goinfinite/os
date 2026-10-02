@@ -12,6 +12,9 @@ var (
 	ErrTerminalSessionAccountCapReached  = errors.New("TerminalSessionAccountCapReached")
 	ErrTerminalSessionAccountRequired    = errors.New("TerminalSessionAccountRequired")
 	ErrTerminalSessionWorkingDirNotFound = errors.New("TerminalSessionWorkingDirNotFound")
+	ErrTerminalSessionRunAsUserInvalid   = errors.New(
+		"TerminalSessionRunAsUserInvalid",
+	)
 )
 
 type TerminalSessionAttachHandle interface {

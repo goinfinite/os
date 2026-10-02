@@ -27,6 +27,7 @@ func DeleteTerminalSession(
 	}
 
 	deleteDto.AccountUsername = terminalSessionEntity.AccountUsername
+	deleteDto.RunAsUsername = terminalSessionEntity.RunAsUsername
 
 	err = terminalSessionCmdRepo.Delete(deleteDto)
 	if err != nil {

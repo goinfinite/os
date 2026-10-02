@@ -24,6 +24,7 @@ const (
 	TerminalSessionNamePrefix = "os-managed-"
 
 	terminalMultiplexerNameOption        = "@os-name"
+	terminalMultiplexerSocketNamePrefix  = "os-"
 	terminalMultiplexerSessionListFormat = "#{session_name}|#{session_created}|" +
 		"#{session_attached}|#{pane_current_path}|#{pane_current_command}|" +
 		"#{" + terminalMultiplexerNameOption + "}"
@@ -44,16 +45,18 @@ type TerminalMultiplexerSession struct {
 
 type TerminalMultiplexerClient struct {
 	accountUsername valueObject.Username
+	runAsUsername   valueObject.Username
+	tmuxSocketName  string
 	userId          uint32
 	groupId         uint32
 }
 
 func NewTerminalMultiplexerClient(
-	accountUsername valueObject.Username,
+	accountUsername, runAsUsername valueObject.Username,
 ) (*TerminalMultiplexerClient, error) {
-	userInfo, err := user.Lookup(accountUsername.String())
+	userInfo, err := user.Lookup(runAsUsername.String())
 	if err != nil {
-		return nil, errors.New("AccountUserLookupError: " + err.Error())
+		return nil, errors.New("RunAsUserLookupError: " + err.Error())
 	}
 
 	userId, err := strconv.ParseUint(userInfo.Uid, 10, 32)
@@ -66,8 +69,16 @@ func NewTerminalMultiplexerClient(
 		return nil, errors.New("ParseGroupIdError: " + err.Error())
 	}
 
+	tmuxSocketName := ""
+	if runAsUsername != accountUsername {
+		tmuxSocketName = terminalMultiplexerSocketNamePrefix +
+			accountUsername.String() + "-" + runAsUsername.String()
+	}
+
 	return &TerminalMultiplexerClient{
 		accountUsername: accountUsername,
+		runAsUsername:   runAsUsername,
+		tmuxSocketName:  tmuxSocketName,
 		userId:          uint32(userId),
 		groupId:         uint32(groupId),
 	}, nil
@@ -79,19 +90,43 @@ func (client *TerminalMultiplexerClient) buildSessionName(
 	return TerminalSessionNamePrefix + terminalSessionId.String()
 }
 
-func (client *TerminalMultiplexerClient) accountShellEnvironment() []string {
-	return []string{
-		"HOME=" + infraEnvs.ApplicationRootDir,
-		"USER=" + client.accountUsername.String(),
-		"LOGNAME=" + client.accountUsername.String(),
+func (client *TerminalMultiplexerClient) buildAccountShellEnvironment() []string {
+	runAsUsernameStr := client.runAsUsername.String()
+	environment := []string{
+		"USER=" + runAsUsernameStr,
+		"LOGNAME=" + runAsUsernameStr,
 		"SHELL=/bin/bash",
 		"TERM=xterm-256color",
-		"MISE_DATA_DIR=" + infraEnvs.ToolchainDataDir,
-		"MISE_CONFIG_DIR=" + infraEnvs.ToolchainDataDir + "/config",
-		"MISE_STATE_DIR=" + infraEnvs.ToolchainDataDir + "/state",
-		"MISE_CACHE_DIR=" + infraEnvs.UserDataBaseDirectory + "/" +
-			client.accountUsername.String() + "/.cache/mise",
 	}
+
+	accountHomeDir := infraEnvs.UserDataBaseDirectory + "/" + client.accountUsername.String()
+	if client.runAsUsername == valueObject.UsernameNobody {
+		return append(environment,
+			"HOME="+infraEnvs.ApplicationRootDir,
+			"MISE_DATA_DIR="+infraEnvs.ToolchainDataDir,
+			"MISE_CONFIG_DIR="+infraEnvs.ToolchainDataDir+"/config",
+			"MISE_STATE_DIR="+infraEnvs.ToolchainDataDir+"/state",
+			"MISE_CACHE_DIR="+infraEnvs.ToolchainDataDir+"/cache",
+		)
+	}
+
+	return append(environment,
+		"HOME="+accountHomeDir,
+		"MISE_DATA_DIR="+accountHomeDir+"/.local/share/mise",
+		"MISE_CONFIG_DIR="+accountHomeDir+"/.config/mise",
+		"MISE_STATE_DIR="+accountHomeDir+"/.local/state/mise",
+		"MISE_CACHE_DIR="+accountHomeDir+"/.cache/mise",
+	)
+}
+
+func (client *TerminalMultiplexerClient) buildMultiplexerSocketArgs(
+	args []string,
+) []string {
+	if client.tmuxSocketName == "" {
+		return args
+	}
+
+	return append([]string{"-L", client.tmuxSocketName}, args...)
 }
 
 func (client *TerminalMultiplexerClient) runMultiplexerCommand(
@@ -100,10 +135,10 @@ func (client *TerminalMultiplexerClient) runMultiplexerCommand(
 ) (string, error) {
 	shellSettings := tkInfra.ShellSettings{
 		Command:           command,
-		Args:              args,
+		Args:              client.buildMultiplexerSocketArgs(args),
 		ShouldUseCleanEnv: true,
-		Username:          client.accountUsername.String(),
-		Envs:              client.accountShellEnvironment(),
+		Username:          client.runAsUsername.String(),
+		Envs:              client.buildAccountShellEnvironment(),
 	}
 
 	return tkInfra.NewShell(shellSettings).Run()
@@ -372,15 +407,22 @@ func (handle *terminalMultiplexerAttachHandle) Close() error {
 	return handle.closeErr
 }
 
+func (client *TerminalMultiplexerClient) BuildAttachArgs(
+	terminalSessionId valueObject.TerminalSessionId,
+) []string {
+	return client.buildMultiplexerSocketArgs([]string{
+		"attach", "-t", client.buildSessionName(terminalSessionId),
+	})
+}
+
 func (client *TerminalMultiplexerClient) Attach(
 	terminalSessionId valueObject.TerminalSessionId,
 ) (repository.TerminalSessionAttachHandle, error) {
-	attachCmd := exec.Command(
-		"tmux", "attach", "-t", client.buildSessionName(terminalSessionId),
-	)
+	attachArgs := client.BuildAttachArgs(terminalSessionId)
+	attachCmd := exec.Command("tmux", attachArgs...)
 	attachCmd.Dir = infraEnvs.ApplicationRootDir
 	attachCmd.Env = append(
-		client.accountShellEnvironment(),
+		client.buildAccountShellEnvironment(),
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 	)
 	attachCmd.SysProcAttr = &syscall.SysProcAttr{

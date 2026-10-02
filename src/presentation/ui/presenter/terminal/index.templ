@@ -52,7 +52,7 @@ templ TerminalSessionRailRow() {
 				></span>
 				<span class="truncate font-medium text-neutral-100" x-text="resolveSessionLabel(session)"></span>
 			</span>
-			<span class="truncate pl-4 text-xs text-neutral-500" x-text="session.workingDir"></span>
+			<span class="truncate pl-4 text-xs text-neutral-500" x-text="session.runAsUsername + ' · ' + session.workingDir"></span>
 		</button>
 		<div class="flex shrink-0 items-center gap-1">
 			@uiControl.Button(uiControl.ButtonSettings{
@@ -106,7 +106,7 @@ templ TerminalSessionRenameRow() {
 	</div>
 }
 
-templ TerminalSessionCreateForm() {
+templ TerminalSessionCreateForm(accountUsername string) {
 	<form class="flex flex-col gap-2" @submit.prevent="createSession()">
 		@componentForm.InputField(componentForm.InputFieldDto{
 			Type:               "text",
@@ -114,6 +114,10 @@ templ TerminalSessionCreateForm() {
 			Label:              "Name (optional)",
 			BindModelValuePath: "createSessionForm.name",
 		})
+		@componentForm.SelectInput(
+			"runAsUsername", "Run as", "createSessionForm.runAsUsername",
+			"applyRunAsUsernameDefault()", []string{"nobody", accountUsername}, false,
+		)
 		@componentForm.InputField(componentForm.InputFieldDto{
 			Type:               "text",
 			Id:                 "workingDir",
@@ -147,11 +151,11 @@ templ TerminalPanePlaceholder() {
 	</div>
 }
 
-templ TerminalSessionsContent() {
+templ TerminalSessionsContent(accountUsername string, accountHomeDir string) {
 	<!-- TerminalSessionsContent -->
 	@TerminalAlpineState()
 	@TerminalDependencies()
-	<div x-data="terminal" class="flex h-full min-h-0 gap-3">
+	<div x-data="terminal" data-account-home-dir={ accountHomeDir } class="flex h-full min-h-0 gap-3">
 		<aside class="bg-neutral-500/5 flex w-72 shrink-0 flex-col gap-2 overflow-y-auto rounded-md p-2">
 			<template x-for="session in sessions" :key="session.id">
 				<div>
@@ -191,7 +195,7 @@ templ TerminalSessionsContent() {
 				</div>
 			</template>
 			<template x-if="isCreateSessionFormExpanded">
-				@TerminalSessionCreateForm()
+				@TerminalSessionCreateForm(accountUsername)
 			</template>
 		</aside>
 		<div class="bg-os-950 min-w-0 grow rounded-md p-2">
