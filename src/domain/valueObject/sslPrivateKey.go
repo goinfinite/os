@@ -11,7 +11,7 @@ import (
 type SslPrivateKey tkValueObject.EnvelopedPrivateKey
 
 func NewSslPrivateKey(
-	value interface{},
+	value any,
 ) (privateKey SslPrivateKey, err error) {
 	envelopedKey, err := tkValueObject.NewEnvelopedPrivateKey(
 		value,

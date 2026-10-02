@@ -6,6 +6,7 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	uiControl "github.com/goinfinite/ui/src/control"
+	uiDisplay "github.com/goinfinite/ui/src/display"
 	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 )
@@ -115,26 +116,50 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 						</td>
 						<td>
 							<div class="inline-flex space-x-2">
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-file-magnifying-glass", "neutral-50/10", "neutral-50/30",
-									"openViewPemFilesModal('"+sslPairEntity.Id.String()+"')",
-									"view PEM files", "neutral-50/10",
-								)
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-swap", "cyan-800/50", "cyan-600/50",
-									"openImportSslCertificateModal('"+sslPairEntity.VirtualHostHostname.String()+"')",
-									"replace/import certificate", "cyan-500",
-								)
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-certificate", "green-800/50", "green-600/50",
-									"createPubliclyTrusted('"+sslPairEntity.VirtualHostHostname.String()+"')",
-									"issue trusted certificate", "green-500",
-								)
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-trash", "red-800", "red-600",
-									"openSwapToSelfSignedModal('"+sslPairEntity.Id.String()+"')",
-									"swap to self-signed", "red-500",
-								)
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-file-magnifying-glass",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "neutral-50/10",
+									BackgroundColorHover:   "neutral-50/30",
+									OnClickFunc:            "openViewPemFilesModal('" + sslPairEntity.Id.String() + "')",
+									AriaLabel:              "view PEM files",
+									TooltipContent:         "view PEM files",
+									TooltipBackgroundColor: "neutral-50/10",
+								})
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-swap",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "cyan-800/50",
+									BackgroundColorHover:   "cyan-600/50",
+									OnClickFunc:            "openImportSslCertificateModal('" + sslPairEntity.VirtualHostHostname.String() + "')",
+									AriaLabel:              "replace/import certificate",
+									TooltipContent:         "replace/import certificate",
+									TooltipBackgroundColor: "cyan-500",
+								})
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-certificate",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "green-800/50",
+									BackgroundColorHover:   "green-600/50",
+									OnClickFunc:            "createPubliclyTrusted('" + sslPairEntity.VirtualHostHostname.String() + "')",
+									AriaLabel:              "issue trusted certificate",
+									TooltipContent:         "issue trusted certificate",
+									TooltipBackgroundColor: "green-500",
+								})
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-trash",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "red-800",
+									BackgroundColorHover:   "red-600",
+									OnClickFunc:            "openSwapToSelfSignedModal('" + sslPairEntity.Id.String() + "')",
+									AriaLabel:              "swap to self-signed",
+									TooltipContent:         "swap to self-signed",
+									TooltipBackgroundColor: "red-500",
+								})
 							</div>
 						</td>
 					</tr>
@@ -163,26 +188,28 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 			TwoWayStatePath:         "sslPair.virtualHostsHostnames",
 			IsRequired:              true,
 			DropdownBackgroundColor: "os-400",
-			HintDisplay:             uiForm.InputTypeHintDisplayDescription,
+			HintDisplay:             uiForm.InputHintDisplayDescription,
 			HintValue:               "Select at least one hostname. The certificate will be installed for all selected vhosts.",
 		})
 		<input name="encodedCertificate" type="hidden" :value="btoa(sslPair.certificate)"/>
 		<input name="encodedChainCertificates" type="hidden" :value="btoa(sslPair.chainCertificates)"/>
 		<input name="encodedKey" type="hidden" :value="btoa(sslPair.key)"/>
 		<div x-show="!shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
-			@componentForm.TextArea(componentForm.TextAreaDto{
-				Label:              "Certificate",
-				BindModelValuePath: "sslPair.certificate",
-				InfoTooltipContent: "Certificate in PEM format, with or without CA chain.<br />Separate each certificate with a new line.",
+			@uiForm.TextArea(uiForm.TextAreaSettings{
+				Label:           "Certificate",
+				TwoWayStatePath: "sslPair.certificate",
+				HintValue:       "Certificate in PEM format, with or without CA chain. Separate each certificate with a new line.",
+				HintDisplay:     uiForm.InputHintDisplayTooltip,
 			})
-			@componentForm.TextArea(componentForm.TextAreaDto{
-				Label:              "CA Chain/Bundle Certificates",
-				BindModelValuePath: "sslPair.chainCertificates",
-				InfoTooltipContent: "Optional. CA chain/bundle certificates in PEM format.<br />It's usually provided by the CA when you issue the certificate.<br />Separate each certificate with a new line.",
+			@uiForm.TextArea(uiForm.TextAreaSettings{
+				Label:           "CA Chain/Bundle Certificates",
+				TwoWayStatePath: "sslPair.chainCertificates",
+				HintValue:       "Optional. CA chain/bundle certificates in PEM format. It's usually provided by the CA when you issue the certificate. Separate each certificate with a new line.",
+				HintDisplay:     uiForm.InputHintDisplayTooltip,
 			})
-			@componentForm.TextArea(componentForm.TextAreaDto{
-				Label:              "Private Key",
-				BindModelValuePath: "sslPair.key",
+			@uiForm.TextArea(uiForm.TextAreaSettings{
+				Label:           "Private Key",
+				TwoWayStatePath: "sslPair.key",
 			})
 		</div>
 		<div x-show="shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
@@ -216,46 +243,53 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 }
 
 templ ImportSslCertificateModal(vhostsHostnames []string) {
-	@componentStructural.RegularModal(
-		"Import SSL certificate", "isImportSslCertificateModalOpen",
-		"closeImportSslCertificateModal()", "",
-	) {
-		@ImportSslCertificateForm(vhostsHostnames)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            ImportSslCertificateForm(vhostsHostnames),
+		Title:                    "Import SSL certificate",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isImportSslCertificateModalOpen",
+		OnCloseFunc:              "closeImportSslCertificateModal()",
+	})
+}
+
+templ ViewPemFilesContent() {
+	<div class="space-y-6">
+		@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", "")
+		<div class="space-y-1">
+			@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
+				Id:                 "certificate",
+				Label:              "Certificate",
+				BindModelValuePath: "sslPair.certificate",
+			})
+			@componentForm.SubmitButton(
+				"download-certificate-pem-file-button", "Download certificate",
+				"ph-download-simple", "downloadPemFile(false)", false,
+			)
+		</div>
+		<div class="space-y-1">
+			@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
+				Id:                 "key",
+				Label:              "Private Key",
+				BindModelValuePath: "sslPair.key",
+			})
+			@componentForm.SubmitButton(
+				"download-key-pem-file-button", "Download private key",
+				"ph-download-simple", "downloadPemFile(true)", false,
+			)
+		</div>
+	</div>
 }
 
 templ ViewPemFilesModal() {
-	<!-- ViewPemFilesModal -->
-	@componentStructural.RegularModal(
-		"PEM files", "isViewPemFilesModalOpen",
-		"closeViewPemFilesModal()", "",
-	) {
-		<div class="space-y-6">
-			@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", "")
-			<div class="space-y-1">
-				@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
-					Id:                 "certificate",
-					Label:              "Certificate",
-					BindModelValuePath: "sslPair.certificate",
-				})
-				@componentForm.SubmitButton(
-					"download-certificate-pem-file-button", "Download certificate",
-					"ph-download-simple", "downloadPemFile(false)", false,
-				)
-			</div>
-			<div class="space-y-1">
-				@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
-					Id:                 "key",
-					Label:              "Private Key",
-					BindModelValuePath: "sslPair.key",
-				})
-				@componentForm.SubmitButton(
-					"download-key-pem-file-button", "Download private key",
-					"ph-download-simple", "downloadPemFile(true)", false,
-				)
-			</div>
-		</div>
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            ViewPemFilesContent(),
+		Title:                    "PEM files",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isViewPemFilesModalOpen",
+		OnCloseFunc:              "closeViewPemFilesModal()",
+	})
 }
 
 templ SwapToSelfSignedCriticalWarningContent() {
@@ -267,11 +301,14 @@ templ SwapToSelfSignedCriticalWarningContent() {
 }
 
 templ SwapToSelfSignedModal() {
-	@componentStructural.CriticalModal(
-		"isSwapToSelfSignedModalOpen", "closeSwapToSelfSignedModal()",
-		"Cancel", "swapToSelfSigned()", "swap-to-self-signed-button",
-		"ph-trash", "yes, replace it!",
-	) {
-		@SwapToSelfSignedCriticalWarningContent()
-	}
+	@uiDisplay.CriticalDialog(uiDisplay.ConfirmationDialogSettings{
+		IsVisibleTwoWayStatePath: "isSwapToSelfSignedModalOpen",
+		OnConfirmFunc:            "swapToSelfSigned()",
+		MessageContent:           SwapToSelfSignedCriticalWarningContent(),
+		TargetIdStatePath:        "sslPair.id",
+		HeaderTitle:              "Replace SSL Certificate",
+		CancelButtonLabel:        "Cancel",
+		ConfirmButtonLabel:       "yes, replace it!",
+		ConfirmButtonIcon:        "ph-trash",
+	})
 }

@@ -26,7 +26,7 @@ func NewMappingSecurityRulesPresenter(
 }
 
 func (presenter *MappingSecurityRulesPresenter) Handler(c echo.Context) error {
-	requestBody := map[string]interface{}{
+	requestBody := map[string]any{
 		"itemsPerPage": 1000,
 	}
 

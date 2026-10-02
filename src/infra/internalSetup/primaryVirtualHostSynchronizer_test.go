@@ -8,7 +8,7 @@ import (
 
 func TestPrimaryVirtualHostSynchronizer(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	persistentDbSvc := testHelpers.GetPersistentDbSvc()
+	persistentDbSvc := testHelpers.ReadPersistentDbSvc()
 	sync := NewPrimaryVirtualHostSynchronizer(persistentDbSvc)
 
 	t.Run("PhpConfUpdaterSkipsWhenPhpUninstalled", func(t *testing.T) {

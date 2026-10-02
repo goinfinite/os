@@ -4,7 +4,7 @@ import "testing"
 
 func TestServiceEnv(t *testing.T) {
 	t.Run("ValidServiceEnv", func(t *testing.T) {
-		validServiceEnv := []interface{}{
+		validServiceEnv := []any{
 			"NODE_ENV=development", "LOG_LEVEL=debug",
 			"RUN_IN_BACKGROUND_MODE=true",
 		}
@@ -20,7 +20,7 @@ func TestServiceEnv(t *testing.T) {
 	})
 
 	t.Run("InvalidServiceEnv", func(t *testing.T) {
-		invalidServiceEnv := []interface{}{
+		invalidServiceEnv := []any{
 			"", "=development", "LOG_LEVEL=", "=", "NODE_ENV", true,
 		}
 

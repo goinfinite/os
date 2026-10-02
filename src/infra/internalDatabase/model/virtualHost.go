@@ -24,7 +24,7 @@ type VirtualHost struct {
 	UpdatedAt      time.Time     `gorm:"not null"`
 }
 
-func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
+func (model VirtualHost) InitialEntries() (entries []any, err error) {
 	rawPrimaryHostnameStr := os.Getenv(infraEnvs.PrimaryVirtualHostEnvKey)
 	if rawPrimaryHostnameStr == "" {
 		rawPrimaryHostnameStr = infraEnvs.PrimaryVirtualHostPlaceholderHostname
@@ -45,7 +45,7 @@ func (model VirtualHost) InitialEntries() (entries []interface{}, err error) {
 		IsWildcard:    false,
 	}
 
-	return []interface{}{primaryEntry}, nil
+	return []any{primaryEntry}, nil
 }
 
 func (model VirtualHost) ToEntity() (vhost entity.VirtualHost, err error) {

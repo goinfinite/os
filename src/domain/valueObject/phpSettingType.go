@@ -12,7 +12,7 @@ type PhpSettingType string
 
 var validPhpSettingTypes = []string{"select", "text"}
 
-func NewPhpSettingType(value interface{}) (phpSettingType PhpSettingType, err error) {
+func NewPhpSettingType(value any) (phpSettingType PhpSettingType, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return phpSettingType, errors.New("PhpSettingTypeMustBeString")

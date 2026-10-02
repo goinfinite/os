@@ -14,7 +14,7 @@ var validDataFieldSpecificTypes = []string{
 	"password", "username", "email",
 }
 
-func NewDataFieldSpecificType(value interface{}) (
+func NewDataFieldSpecificType(value any) (
 	dataFieldSpecificType DataFieldSpecificType, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

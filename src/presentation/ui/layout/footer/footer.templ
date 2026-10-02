@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
+	uiControl "github.com/goinfinite/ui/src/control"
 )
 
 templ FooterSkeleton() {
@@ -235,6 +236,16 @@ templ Footer(
 			scheduledTasksStatusesFactory(scheduledTasksEntities),
 		)
 		<!-- Footer Layout HTML -->
+		<div class="mr-2 flex h-full items-center">
+			@uiControl.Button(uiControl.ButtonSettings{
+				Id:                   "terminal-sessions-footer-trigger",
+				IconLeft:             "ph-terminal-window",
+				BackgroundColor:      "transparent",
+				BackgroundColorHover: "os-300",
+				OnClickFunc:          "$store.main.openTerminalSessionsModal()",
+				AriaLabel:            "Terminal Sessions",
+			})
+		</div>
 		<div
 			class="mr-5 flex h-full items-center"
 			:class="$store.main.displayScheduledTasksPopover ? 'bg-os-300' : 'bg-os-800'"

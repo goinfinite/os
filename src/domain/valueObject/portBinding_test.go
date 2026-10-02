@@ -4,7 +4,7 @@ import "testing"
 
 func TestPortBinding(t *testing.T) {
 	t.Run("ValidPortBindings", func(t *testing.T) {
-		validPortBindings := []interface{}{
+		validPortBindings := []any{
 			80, "80/http", "443/https", "3306/tcp", "8000",
 		}
 
@@ -19,7 +19,7 @@ func TestPortBinding(t *testing.T) {
 	})
 
 	t.Run("InvalidPortBindings", func(t *testing.T) {
-		invalidPortBindings := []interface{}{
+		invalidPortBindings := []any{
 			"", "8000/",
 		}
 

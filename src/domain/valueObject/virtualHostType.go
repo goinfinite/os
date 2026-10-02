@@ -22,7 +22,7 @@ var AvailableVirtualHostsTypes = []string{
 	VirtualHostTypeAlias.String(), VirtualHostTypeWildcard.String(),
 }
 
-func NewVirtualHostType(value interface{}) (vhostType VirtualHostType, err error) {
+func NewVirtualHostType(value any) (vhostType VirtualHostType, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return vhostType, errors.New("VirtualHostTypeMustBeString")

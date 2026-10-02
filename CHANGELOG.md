@@ -1,6 +1,48 @@
 # Changelog
 
 ```log
+0.3.5 - 2026/09/17
+feat(terminal): add persistent terminal sessions backed by tmux
+feat(terminal): expose sessions in the REST API with pagination and a websocket attach
+feat(terminal): add the terminal page, layout modal and footer trigger
+feat(cli): add the terminal create, list, delete and attach commands
+feat(ui): add the card component and reorganize the overview grid
+test(terminal): add the CLI lifecycle and browser suites
+chore: bake tmux into the container image
+refactor: drop the FailedTo error message prefix
+chore: adopt biome for JavaScript lint and formatting
+chore: bump version to 0.3.5
+chore: bump xterm to 6.0.0
+chore: add zed project settings
+chore: pin biome and float dev tools in mise
+refactor: use slog and the Read naming convention
+refactor: declare errors before the nil check
+fix(runtime): resolve php module ini files by priority prefix
+test(runtime): cover the php module enable and disable lifecycle
+chore: exclude the test suite from the build context and air watch
+chore(deps): bump tk, ui and echo
+feat(terminal): rename sessions
+refactor(ui): take buttons and dialogs from goinfinite/ui
+fix(ui): list the primary virtual host first in install forms
+refactor(pagination): keep the page defaults in the use case
+refactor(ui): render the overview data tables from goinfinite/ui
+fix(account): keep sudo membership and chown the ssh directory
+fix(container): set the sticky bit on /app
+docs(ui): correct the card wrapper and session manager notes
+refactor(terminal): rename the modal context check
+refactor(ui): take the tooltip form fields from goinfinite/ui
+fix(terminal): share the mise toolchain and stop the attach process once
+fix(ui): align the install form fields and password button with goinfinite/ui
+fix(terminal): use the standard modal header
+feat(terminal): run sessions as nobody by default with an own-user option
+fix(container): keep nginx configs and certificates root-owned
+refactor(ui): take the terminal controls from goinfinite/ui
+fix(terminal): add the local bin to PATH and enable truecolor
+fix(terminal): refit the pane on resize and render TUI glyphs
+fix(ui): set the dropdown color on the marketplace hostname select
+fix(terminal): set the UTF-8 locale on the session environment
+chore: resolve sonar findings
+
 0.3.4 - 2026/09/15
 chore: update go deps
 docs: document the version bump and swag tmp exclusion

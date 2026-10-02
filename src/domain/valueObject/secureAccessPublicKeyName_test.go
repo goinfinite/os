@@ -6,7 +6,7 @@ import (
 
 func TestSecureAccessPublicKeyName(t *testing.T) {
 	t.Run("ValidSecureAccessPublicKeyName", func(t *testing.T) {
-		rawValidSecureAccessPublicKeyName := []interface{}{
+		rawValidSecureAccessPublicKeyName := []any{
 			"myMachine@pop-os", "thats-my-only-pc", "tryingWithThisTypeOfName",
 		}
 
@@ -21,7 +21,7 @@ func TestSecureAccessPublicKeyName(t *testing.T) {
 	})
 
 	t.Run("InvalidSecureAccessPublicKeyName", func(t *testing.T) {
-		rawInvalidSecureAccessPublicKeyName := []interface{}{
+		rawInvalidSecureAccessPublicKeyName := []any{
 			"", "that's not allowed, u know?", "maybe-with-#",
 			"thisIsAnEnormousNameToTestVoLength", "@name", "-name", "_name",
 		}

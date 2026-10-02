@@ -4,11 +4,14 @@ import (
 	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	uiControl "github.com/goinfinite/ui/src/control"
 	uiDisplay "github.com/goinfinite/ui/src/display"
+	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 )
 
@@ -19,20 +22,25 @@ type CatalogItemsGroupedByType struct {
 }
 
 type MarketplaceOverview struct {
-	ListType           string
-	InstalledItemsList []entity.MarketplaceInstalledItem
-	CatalogItemsList   CatalogItemsGroupedByType
+	ListType                 string
+	InstalledItemsList       []entity.MarketplaceInstalledItem
+	InstalledItemsPagination tkDto.Pagination
+	CatalogItemsList         CatalogItemsGroupedByType
 }
 
 //go:embed state.js
 var marketplaceIndexAlpineState string
+
+templ MarketplaceAlpineState() {
+	@uiToolset.MinifierTemplateJs(&marketplaceIndexAlpineState)
+}
 
 templ MarketplaceIndex(
 	vhostsHostnames []string,
 	marketplaceOverview MarketplaceOverview,
 ) {
 	<!-- Marketplace Page JavaScript -->
-	@uiToolset.MinifierTemplateJs(&marketplaceIndexAlpineState)
+	@MarketplaceAlpineState()
 	<!-- Marketplace Page HTML -->
 	<div class="flex flex-col" x-data="marketplace">
 		@componentStructural.PageTitle(
@@ -50,12 +58,15 @@ templ MarketplaceIndex(
 		>
 			@MarketplaceTabs(marketplaceOverview)
 			@MarketplaceCatalogItemCarouselImageLightbox()
-			@componentStructural.ScheduleDeletionModal(
-				"isUninstallMarketplaceItemModalOpen",
-				"closeUninstallMarketplaceItemModal()",
-				"uninstallMarketplaceItem()",
-				"marketplaceItem.name", "marketplaceItem.id",
-			)
+			@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+				IsVisibleTwoWayStatePath: "isUninstallMarketplaceItemModalOpen",
+				OnConfirmFunc:            "uninstallMarketplaceItem()",
+				CancelButtonLabel:        "No, Keep it.",
+				TargetNameStatePath:      "marketplaceItem.name",
+				TargetIdStatePath:        "marketplaceItem.id",
+				ConfirmButtonLabel:       "Yes, Schedule Delete!",
+				ConfirmButtonIcon:        "ph-queue",
+			})
 			@ScheduleSelectedMarketplaceItemInstallationModal(vhostsHostnames)
 		</div>
 	</div>
@@ -81,6 +92,7 @@ templ MarketplaceInstalledItemsTable(
 		<tbody>
 			for _, installedItem := range installedItemsList {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+					@templ.JSONScript("installedMarketplaceItem_"+installedItem.Id.String(), installedItem)
 					<th scope="row" class="w-1/6 px-5 py-3 text-left font-normal">
 						<div class="inline-flex items-center">
 							<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
@@ -95,11 +107,17 @@ templ MarketplaceInstalledItemsTable(
 					<th scope="row" class="w-1/6 px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
 					<th scope="row" class="w-1/6 px-5 py-3 text-right font-normal">
 						<div class="inline-flex">
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-trash", "red-800", "red-600",
-								"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
-								"Uninstall", "red-500",
-							)
+							@uiControl.Button(uiControl.ButtonSettings{
+								IconLeft:               "ph-trash",
+								Shape:                  uiControl.ButtonShapeCircular,
+								Size:                   uiControl.ButtonSizeSm,
+								BackgroundColor:        "red-800",
+								BackgroundColorHover:   "red-600",
+								OnClickFunc:            "openUninstallMarketplaceItemModal('" + installedItem.Id.String() + "')",
+								AriaLabel:              "Uninstall",
+								TooltipContent:         "Uninstall",
+								TooltipBackgroundColor: "red-500",
+							})
 						</div>
 					</th>
 				</tr>
@@ -264,22 +282,30 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 	>
 		<input type="hidden" name="id" :value="marketplaceItem.id"/>
 		<input type="hidden" name="dataFields" :value="dataFieldsAsString"/>
+		@templ.JSONScript("marketplaceInstallVhostHostnames", vhostsHostnames)
 		<div class="my-6 space-y-2">
 			<div class="w-100% inline-flex space-x-2">
 				<div class="w-60%">
-					@componentForm.SelectInput(
-						"hostname", "Hostname", "marketplaceItem.hostname",
-						"", vhostsHostnames, true,
-					)
+					@uiForm.SelectInput(uiForm.SelectInputSettings{
+						InputName:                "hostname",
+						Label:                    "Hostname",
+						FlatOptions:              vhostsHostnames,
+						TwoWayStatePath:          "marketplaceItem.hostname",
+						Size:                     uiForm.SelectInputSizeLg,
+						ShouldIncludeBlankOption: true,
+						DropdownBackgroundColor:  "primary-500/95",
+					})
 				</div>
 				<div class="w-40%">
-					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-						Type:                "text",
-						Id:                  "urlPath",
-						Label:               "URL Path",
-						BindInputValuePath:  "marketplaceItem.urlPath",
-						BindPrefixValuePath: "hostnameWithTrailingSlash",
-						InfoTooltipContent:  "Path where the respective installed item will be available for access.",
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:          uiForm.InputTypeText,
+						InputName:          "urlPath",
+						Label:              "URL Path",
+						TwoWayStatePath:    "marketplaceItem.urlPath",
+						AffixLeftStatePath: "hostnameWithTrailingSlash",
+						HintValue:          "Path where the respective installed item will be available for access.",
+						HintDisplay:        uiForm.InputHintDisplayTooltip,
+						Size:               uiForm.InputFieldSizeLg,
 					})
 				</div>
 			</div>
@@ -325,10 +351,12 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 }
 
 templ ScheduleSelectedMarketplaceItemInstallationModal(vhostsHostnames []string) {
-	@componentStructural.RegularModal(
-		"Install Marketplace Item", "isScheduleSelectedMarketplaceItemInstallationModalOpen",
-		"closeScheduleSelectedMarketplaceItemInstallationModal()", "marketplaceItem.name",
-	) {
-		@ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames),
+		TitleOneWayStatePath:     "'Install Marketplace Item #' + marketplaceItem.name",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isScheduleSelectedMarketplaceItemInstallationModalOpen",
+		OnCloseFunc:              "closeScheduleSelectedMarketplaceItemInstallationModal()",
+	})
 }

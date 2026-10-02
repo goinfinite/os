@@ -72,6 +72,53 @@ osBash "printf '<?php echo \"${pageMarker}\";' > /app/html/${vhostHostname}/inde
 servedContent="$(curl -s --max-time 10 -H "Host: ${vhostHostname}" "http://127.0.0.1:${OS_TEST_HTTP_PORT}/")"
 assertEquals "${pageMarker}" "${servedContent}" "php virtual host executes php and serves the result"
 
+osCliCapture runtime php get -n "${vhostHostname}"
+latestPhpVersion="$(jq -r '.body.version.options[]' <<<"${cliOutput}" | sort -V | tail -1)"
+assertNotEmpty "${latestPhpVersion}" "latest installed php version is resolved"
+
+osCliCapture runtime php update -n "${vhostHostname}" -v "${latestPhpVersion}"
+assertCliStatus success "update php to the latest version"
+assertCliExitCode 0 "update php to the latest version exit code"
+
+osCliCapture runtime php get -n "${vhostHostname}"
+assertCliStatus success "read php configs for the latest version"
+assertCliJq ".body.version.value == \"${latestPhpVersion}\"" "php configs report the latest version"
+phpModuleCount="$(jq -r '.body.modules | length' <<<"${cliOutput}")"
+assertNumberGreaterThan 0 "${phpModuleCount}" "latest php version lists supported modules"
+
+enableModuleFlags=()
+disableModuleFlags=()
+while IFS= read -r moduleName; do
+	[[ -n "${moduleName}" ]] || continue
+	enableModuleFlags+=(-m "${moduleName}:true")
+	disableModuleFlags+=(-m "${moduleName}:false")
+done < <(jq -r '.body.modules[].name' <<<"${cliOutput}")
+
+osCliCapture runtime php update-modules -n "${vhostHostname}" -v "${latestPhpVersion}" "${enableModuleFlags[@]}"
+assertCliStatus success "enable every php module on the latest version"
+assertCliExitCode 0 "enable every php module exit code"
+assertCliJq '.body.failedModulesWithReason | length == 0' "no php module failed to enable"
+assertCliJq '.body.modulesSuccessfullyUpdated | length > 0' "at least one php module was enabled"
+
+osCliCapture runtime php get -n "${vhostHostname}"
+assertCliJq '.body.modules | map(select(.status == false)) | length == 0' "every php module reports enabled"
+
+osCliCapture runtime php update-modules -n "${vhostHostname}" -v "${latestPhpVersion}" "${disableModuleFlags[@]}"
+assertCliStatus success "disable every php module on the latest version"
+assertCliExitCode 0 "disable every php module exit code"
+assertCliJq '.body.failedModulesWithReason | length == 0' "no php module failed to disable"
+
+osCliCapture runtime php get -n "${vhostHostname}"
+assertCliJq '.body.modules | map(select(.status == true)) | length == 0' "every php module reports disabled"
+
+osCliCapture runtime php update-modules -n "${vhostHostname}" -v "${latestPhpVersion}" "${enableModuleFlags[@]}"
+assertCliStatus success "re-enable every php module on the latest version"
+assertCliExitCode 0 "re-enable every php module exit code"
+assertCliJq '.body.failedModulesWithReason | length == 0' "no php module failed to re-enable"
+
+osCliCapture runtime php get -n "${vhostHostname}"
+assertCliJq '.body.modules | map(select(.status == false)) | length == 0' "every php module reports enabled after the round trip"
+
 osCliCapture vhost mapping get -n "${vhostHostname}"
 mappingId="$(jq -r '.body.virtualHostWithMappings[0].mappings[0].id' <<<"${cliOutput}")"
 

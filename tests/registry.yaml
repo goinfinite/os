@@ -118,10 +118,21 @@ features:
       level: standard
       run: go test ./src/infra/ssl/...
       provisional: true
+  terminal:
+    - scope: cli
+      level: fast
+      run: tests/terminal/cliLifecycle.sh
+    - scope: unit
+      level: standard
+      run: go test ./src/infra/terminalSession/...
+      provisional: true
   ui:
     - scope: cli
       level: fast
       run: tests/ui/cliBaseHref.sh
+    - scope: browser
+      level: standard
+      run: tests/ui/browserSuite.sh
   vhost:
     - scope: cli
       level: fast

@@ -33,10 +33,13 @@ templ MappingSecurityRulesIndex(mappingSecurityRules []entity.MappingSecurityRul
 		@MappingSecurityRulesTable(mappingSecurityRules)
 		@CreateMappingSecurityRuleModal()
 		@UpdateMappingSecurityRuleModal()
-		@componentStructural.DeleteModal(
-			"isDeleteMappingSecurityRuleModalOpen", "closeDeleteMappingSecurityRuleModal()",
-			"deleteMappingSecurityRule()", "mappingSecurityRule.name", "mappingSecurityRule.id",
-		)
+		@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+			IsVisibleTwoWayStatePath: "isDeleteMappingSecurityRuleModalOpen",
+			OnConfirmFunc:            "deleteMappingSecurityRule()",
+			CancelButtonLabel:        "No, Keep it.",
+			TargetNameStatePath:      "mappingSecurityRule.name",
+			TargetIdStatePath:        "mappingSecurityRule.id",
+		})
 	</div>
 }
 
@@ -444,19 +447,23 @@ templ MappingSecurityRuleForm(isUpdate bool) {
 }
 
 templ CreateMappingSecurityRuleModal() {
-	@componentStructural.RegularModal(
-		"Create Mapping Security Rule", "isCreateMappingSecurityRuleModalOpen",
-		"closeCreateMappingSecurityRuleModal()", "",
-	) {
-		@MappingSecurityRuleForm(false)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            MappingSecurityRuleForm(false),
+		Title:                    "Create Mapping Security Rule",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateMappingSecurityRuleModalOpen",
+		OnCloseFunc:              "closeCreateMappingSecurityRuleModal()",
+	})
 }
 
 templ UpdateMappingSecurityRuleModal() {
-	@componentStructural.RegularModal(
-		"Update Mapping Security Rule", "isUpdateMappingSecurityRuleModalOpen",
-		"closeUpdateMappingSecurityRuleModal()", "",
-	) {
-		@MappingSecurityRuleForm(true)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            MappingSecurityRuleForm(true),
+		Title:                    "Update Mapping Security Rule",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateMappingSecurityRuleModalOpen",
+		OnCloseFunc:              "closeUpdateMappingSecurityRuleModal()",
+	})
 }

@@ -49,7 +49,7 @@ func (presenter *FooterPresenter) Handler(echoContext echo.Context) error {
 
 	scheduledTaskLiaison := liaison.NewScheduledTaskLiaison(presenter.persistentDbSvc)
 
-	scheduledTaskReadRequestBody := map[string]interface{}{
+	scheduledTaskReadRequestBody := map[string]any{
 		"pageNumber":    0,
 		"itemsPerPage":  5,
 		"sortBy":        "id",

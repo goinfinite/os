@@ -213,12 +213,13 @@ templ UpdatePhpVersionWarningContent() {
 }
 
 templ UpdatePhpVersionModal() {
-	<!-- UpdatePhpVersionModal -->
-	@componentStructural.WarningModal(
-		"isUpdatePhpVersionModalOpen", "closeUpdatePhpVersionModal()",
-		"Cancel", "updatePhpVersion()",
-		"update-version-button", "ph-swap", "Yes, change version",
-	) {
-		@UpdatePhpVersionWarningContent()
-	}
+	@uiDisplay.WarningDialog(uiDisplay.ConfirmationDialogSettings{
+		IsVisibleTwoWayStatePath: "isUpdatePhpVersionModalOpen",
+		OnConfirmFunc:            "updatePhpVersion()",
+		MessageContent:           UpdatePhpVersionWarningContent(),
+		ConfirmButtonId:          "update-version-button",
+		CancelButtonLabel:        "Cancel",
+		ConfirmButtonLabel:       "Yes, change version",
+		ConfirmButtonIcon:        "ph-swap",
+	})
 }

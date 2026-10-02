@@ -32,7 +32,7 @@ func (controller *AccountController) Read() *cobra.Command {
 		Use:   "get",
 		Short: "ReadAccounts",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"shouldIncludeSecureAccessPublicKeys": shouldIncludeSecureAccessPublicKeysStr,
 			}
 
@@ -107,7 +107,7 @@ func (controller *AccountController) Create() *cobra.Command {
 		Use:   "create",
 		Short: "CreateNewAccount",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"username":     usernameStr,
 				"password":     passwordStr,
 				"isSuperAdmin": isSuperAdminStr,
@@ -137,7 +137,7 @@ func (controller *AccountController) Update() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateAccount (pass or apiKey)",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"shouldUpdateApiKey": shouldUpdateApiKeyStr,
 			}
 
@@ -180,7 +180,7 @@ func (controller *AccountController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteAccount",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"accountId": accountIdUint64,
 			}
 
@@ -203,7 +203,7 @@ func (controller *AccountController) CreateSecureAccessPublicKey() *cobra.Comman
 		Use:   "create-public-key",
 		Short: "CreateSecureAccessPublicKey",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"accountId": accountIdUint64,
 				"content":   keyContentStr,
 			}
@@ -238,7 +238,7 @@ func (controller *AccountController) DeleteSecureAccessPublicKey() *cobra.Comman
 		Use:   "delete-key",
 		Short: "DeleteSecureAccessPublicKey",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"accountId":               accountIdUint64,
 				"secureAccessPublicKeyId": keyIdUint16,
 			}

@@ -16,7 +16,7 @@ func TestServiceNature(t *testing.T) {
 	})
 
 	t.Run("InvalidServiceNature", func(t *testing.T) {
-		invalidServiceNature := []interface{}{
+		invalidServiceNature := []any{
 			"installable", "executable", "downloadable",
 		}
 

@@ -3,24 +3,43 @@ UiToolset.RegisterAlpineState(() => {
     // PrimaryState
     marketplaceItem: {},
     get hostnameWithTrailingSlash() {
-      return this.marketplaceItem.hostname + "/";
+      return `${this.marketplaceItem.hostname}/`;
     },
     get dataFieldsAsString() {
       let dataFieldsAsString = "";
-      for (let dataField of this.marketplaceItem.dataFields) {
+      for (const dataField of this.marketplaceItem.dataFields) {
         if (!dataField.value) {
           continue;
         }
 
-        dataFieldsAsString += dataField.name + ":" + dataField.value + ";";
+        dataFieldsAsString += `${dataField.name}:${dataField.value};`;
       }
       return dataFieldsAsString.slice(0, -1);
+    },
+    readInstallVhostHostnames() {
+      const hostnamesElement = document.getElementById(
+        "marketplaceInstallVhostHostnames",
+      );
+      if (!hostnamesElement) {
+        return [];
+      }
+
+      try {
+        const parsedHostnames = JSON.parse(hostnamesElement.textContent);
+        return Array.isArray(parsedHostnames) ? parsedHostnames : [];
+      } catch {
+        return [];
+      }
+    },
+    get defaultInstallHostname() {
+      const availableHostnames = this.readInstallVhostHostnames();
+      return availableHostnames.length > 0 ? availableHostnames[0] : "";
     },
     resetPrimaryStates() {
       this.marketplaceItem = {
         id: "",
         name: "",
-        hostname: "",
+        hostname: this.defaultInstallHostname,
         urlPath: "",
         dataFields: [],
       };
@@ -30,6 +49,28 @@ UiToolset.RegisterAlpineState(() => {
     },
 
     // AuxiliaryState
+    selectedMarketplaceItemType: "apps",
+    selectedMarketplaceItemId: 0,
+    updateSelectedMarketplaceItem(marketplaceItemId) {
+      this.selectedMarketplaceItemId = marketplaceItemId;
+
+      const catalogItemEntity = JSON.parse(
+        document.getElementById(`marketplaceCatalogItem_${marketplaceItemId}`)
+          .textContent,
+      );
+      this.marketplaceItem.id = marketplaceItemId;
+      this.marketplaceItem.name = catalogItemEntity.name;
+
+      this.marketplaceItem.dataFields = [];
+      for (const dataField of catalogItemEntity.dataFields) {
+        dataField.value = dataField.defaultValue;
+        this.marketplaceItem.dataFields.push(dataField);
+      }
+    },
+    resetAuxiliaryStates() {
+      this.selectedMarketplaceItemType = "apps";
+      this.selectedMarketplaceItemId = 0;
+    },
     selectedMarketplaceCatalogVerticalTab: "apps",
     updateSelectedMarketplaceCatalogVerticalTab(tabName) {
       this.selectedMarketplaceCatalogVerticalTab = tabName;
@@ -45,7 +86,7 @@ UiToolset.RegisterAlpineState(() => {
           select: "#marketplace-page-content",
           target: "#marketplace-page-content",
           swap: "outerHTML transition:true",
-        }
+        },
       );
     },
     imageLightbox: {
@@ -62,13 +103,22 @@ UiToolset.RegisterAlpineState(() => {
     },
 
     // ModalState
+    isMarketplaceItemInstallationModalOpen: false,
+    openMarketplaceItemInstallationModal() {
+      this.resetPrimaryStates();
+      this.resetAuxiliaryStates();
+      this.isMarketplaceItemInstallationModalOpen = true;
+    },
+    closeMarketplaceItemInstallationModal() {
+      this.isMarketplaceItemInstallationModalOpen = false;
+    },
     isScheduleSelectedMarketplaceItemInstallationModalOpen: false,
     openScheduleSelectedMarketplaceItemInstallationModal(catalogItemId) {
       this.resetPrimaryStates();
 
       const catalogItemEntity = JSON.parse(
-        document.getElementById("marketplaceCatalogItem_" + catalogItemId)
-          .textContent
+        document.getElementById(`marketplaceCatalogItem_${catalogItemId}`)
+          .textContent,
       );
       this.marketplaceItem.id = catalogItemId;
       this.marketplaceItem.name = catalogItemEntity.name;
@@ -84,11 +134,15 @@ UiToolset.RegisterAlpineState(() => {
       this.isScheduleSelectedMarketplaceItemInstallationModalOpen = false;
     },
     isUninstallMarketplaceItemModalOpen: false,
-    openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
+    openUninstallMarketplaceItemModal(installedItemId) {
       this.resetPrimaryStates();
 
+      const installedItemEntity = JSON.parse(
+        document.getElementById(`installedMarketplaceItem_${installedItemId}`)
+          .textContent,
+      );
       this.marketplaceItem.id = installedItemId;
-      this.marketplaceItem.name = installedItemName;
+      this.marketplaceItem.name = installedItemEntity.name;
       this.isUninstallMarketplaceItemModalOpen = true;
     },
     closeUninstallMarketplaceItemModal() {
@@ -102,11 +156,11 @@ UiToolset.RegisterAlpineState(() => {
             "/v1/marketplace/installed/" +
             this.marketplaceItem.id +
             "/",
-          { swap: "none" }
+          { swap: "none" },
         )
         .then(() => {
           this.$store.main.refreshScheduledTasksPopover();
-          this.$dispatch("uninstall:marketplace-item");
+          window.dispatchEvent(new Event("uninstall:marketplace-item"));
         })
         .finally(() => {
           this.closeUninstallMarketplaceItemModal();

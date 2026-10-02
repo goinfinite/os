@@ -10,7 +10,7 @@ import (
 
 func TestActivityRecordCmdRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	trailDbSvc := testHelpers.GetTrailDbSvc()
+	trailDbSvc := testHelpers.ReadTrailDbSvc()
 	activityRecordCmdRepo := NewActivityRecordCmdRepo(trailDbSvc)
 	level := tkValueObject.ActivityRecordLevelSecurity
 	recordCode, _ := tkValueObject.NewActivityRecordCode("LoginFailed")

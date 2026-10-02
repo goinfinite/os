@@ -9,7 +9,7 @@ import (
 var NewSystemResourceIdentifier = tkValueObject.NewSystemResourceIdentifier
 
 func NewSystemResourceIdentifierMustCreate(
-	value interface{},
+	value any,
 ) tkValueObject.SystemResourceIdentifier {
 	return tkValueObject.NewSystemResourceIdentifierMustCreate(value)
 }
@@ -153,5 +153,15 @@ func NewMappingSecurityRuleSri(
 ) tkValueObject.SystemResourceIdentifier {
 	return NewSystemResourceIdentifierMustCreate(
 		"sri://" + accountId.String() + ":mappingSecurityRule/" + mappingSecurityRuleId.String(),
+	)
+}
+
+func NewTerminalSessionSri(
+	accountId tkValueObject.AccountId,
+	terminalSessionId TerminalSessionId,
+) tkValueObject.SystemResourceIdentifier {
+	return NewSystemResourceIdentifierMustCreate(
+		"sri://" + accountId.String() + ":terminalSession/" +
+			terminalSessionId.String(),
 	)
 }

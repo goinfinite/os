@@ -14,7 +14,7 @@ var validMarketplaceItemTypes = []string{
 	"app", "framework", "stack",
 }
 
-func NewMarketplaceItemType(value interface{}) (
+func NewMarketplaceItemType(value any) (
 	marketplaceItemType MarketplaceItemType, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

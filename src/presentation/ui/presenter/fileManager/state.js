@@ -18,7 +18,7 @@ UiToolset.RegisterAlpineState(() => {
       this.resetAuxiliaryStates();
 
       this.currentWorkingDirPath = document.getElementById(
-        "current-source-path"
+        "current-source-path",
       ).value;
       this.desiredWorkingDirPath = this.currentWorkingDirPath;
     },
@@ -31,12 +31,14 @@ UiToolset.RegisterAlpineState(() => {
 
       htmx.ajax(
         "GET",
-        document.baseURI + "file-manager/?workingDirPath=" + this.desiredWorkingDirPath,
+        document.baseURI +
+          "file-manager/?workingDirPath=" +
+          this.desiredWorkingDirPath,
         {
           select: "#file-manager-content",
           target: "#file-manager-content",
           swap: "outerHTML transition:true",
-        }
+        },
       );
     },
     lastFiveAccessedWorkingDirPaths: { previous: [], next: [] },
@@ -46,7 +48,7 @@ UiToolset.RegisterAlpineState(() => {
       }
       if (this.currentWorkingDirPath !== this.desiredWorkingDirPath) {
         this.lastFiveAccessedWorkingDirPaths[historyObjKey].push(
-          this.currentWorkingDirPath
+          this.currentWorkingDirPath,
         );
       }
     },
@@ -150,7 +152,7 @@ UiToolset.RegisterAlpineState(() => {
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
-        document.getElementById("fileEntity_" + fileName).textContent
+        document.getElementById(`fileEntity_${fileName}`).textContent,
       );
 
       return !this.codeEditorSupportedMimeTypes.includes(fileEntity.mimeType);
@@ -158,7 +160,7 @@ UiToolset.RegisterAlpineState(() => {
     selectedFileNames: [],
     handleSelectAllSourcePaths() {
       const selectAllSourcePathsCheckbox = document.getElementById(
-        "selectAllSourcePaths"
+        "selectAllSourcePaths",
       );
       const allSelectSourcePathCheckboxes =
         document.getElementsByName("selectSourcePath");
@@ -180,7 +182,7 @@ UiToolset.RegisterAlpineState(() => {
           selectSourcePathCheckbox.checked = false;
 
           const selectedFileNameIndex = this.selectedFileNames.indexOf(
-            selectSourcePathCheckbox.value
+            selectSourcePathCheckbox.value,
           );
           this.selectedFileNames.splice(selectedFileNameIndex, 1);
         }
@@ -198,20 +200,20 @@ UiToolset.RegisterAlpineState(() => {
     downloadFile() {
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
-        document.getElementById("fileEntity_" + fileName).textContent
+        document.getElementById(`fileEntity_${fileName}`).textContent,
       );
 
       window.open(
         Infinite.OsApiBasePath +
           "/v1/files/download/?sourcePath=" +
           fileEntity.path,
-        "_blank"
+        "_blank",
       );
     },
     handleSelectPermission(
       permissionClass,
       permissionValue,
-      isCheckboxChecked
+      isCheckboxChecked,
     ) {
       if (!isCheckboxChecked) {
         this.file.permissions[permissionClass] -= permissionValue;
@@ -235,12 +237,12 @@ UiToolset.RegisterAlpineState(() => {
     decompressFile() {
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
-        document.getElementById("fileEntity_" + fileName).textContent
+        document.getElementById(`fileEntity_${fileName}`).textContent,
       );
       const destinationPath = fileEntity.path.split(".")[0];
 
       htmx
-        .ajax("PUT", Infinite.OsApiBasePath + "/v1/files/extract/", {
+        .ajax("PUT", `${Infinite.OsApiBasePath}/v1/files/extract/`, {
           swap: "none",
           values: {
             sourcePath: fileEntity.path,
@@ -284,7 +286,7 @@ UiToolset.RegisterAlpineState(() => {
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
-        document.getElementById("fileEntity_" + fileName).textContent
+        document.getElementById(`fileEntity_${fileName}`).textContent,
       );
 
       if (!this.codeEditorSupportedMimeTypes.includes(fileEntity.mimeType)) {
@@ -304,9 +306,9 @@ UiToolset.RegisterAlpineState(() => {
       const shouldDisplayToast = false;
       UiToolset.JsonAjax(
         "GET",
-        Infinite.OsApiBasePath + "/v1/files/?sourcePath=" + fileEntity.path,
+        `${Infinite.OsApiBasePath}/v1/files/?sourcePath=${fileEntity.path}`,
         {},
-        shouldDisplayToast
+        shouldDisplayToast,
       )
         .then((readFilesResponseDto) => {
           const desiredFile = readFilesResponseDto.files[0];
@@ -393,8 +395,7 @@ UiToolset.RegisterAlpineState(() => {
           };
           let codeEditorMode = "ace/mode/plain_text";
           if (fileEntity.extension in supportedLanguages) {
-            codeEditorMode =
-              "ace/mode/" + supportedLanguages[fileEntity.extension];
+            codeEditorMode = `ace/mode/${supportedLanguages[fileEntity.extension]}`;
           }
 
           this.codeEditorInstance = ace.edit("code-editor");
@@ -411,15 +412,14 @@ UiToolset.RegisterAlpineState(() => {
           this.isUpdateFileContentModalOpen = true;
         })
         .catch((error) =>
-          Alpine.store("toast").displayToast(error.message, "danger")
+          Alpine.store("toast").displayToast(error.message, "danger"),
         );
     },
     closeUpdateFileContentModal() {
       this.resetAuxiliaryStates();
 
-      document.getElementById(
-        "selectSourcePath_" + this.file.name
-      ).checked = false;
+      document.getElementById(`selectSourcePath_${this.file.name}`).checked =
+        false;
 
       this.isUpdateFileContentModalOpen = false;
       this.codeEditorInstance.destroy();
@@ -461,7 +461,7 @@ UiToolset.RegisterAlpineState(() => {
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
-        document.getElementById("fileEntity_" + fileName).textContent
+        document.getElementById(`fileEntity_${fileName}`).textContent,
       );
       this.file.name = fileEntity.name;
       this.file.path = fileEntity.path;
@@ -477,7 +477,7 @@ UiToolset.RegisterAlpineState(() => {
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
-        document.getElementById("fileEntity_" + fileName).textContent
+        document.getElementById(`fileEntity_${fileName}`).textContent,
       );
       this.file.name = fileEntity.name;
       this.file.path = fileEntity.path;
@@ -493,7 +493,7 @@ UiToolset.RegisterAlpineState(() => {
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
-        document.getElementById("fileEntity_" + fileName).textContent
+        document.getElementById(`fileEntity_${fileName}`).textContent,
       );
       this.file.name = fileEntity.name;
       this.file.path = fileEntity.path;
@@ -525,12 +525,12 @@ UiToolset.RegisterAlpineState(() => {
       const sourcePaths = [];
       for (const fileName of this.selectedFileNames) {
         const fileEntity = JSON.parse(
-          document.getElementById("fileEntity_" + fileName).textContent
+          document.getElementById(`fileEntity_${fileName}`).textContent,
         );
         sourcePaths.push(fileEntity.path);
       }
 
-      UiToolset.JsonAjax("PUT", Infinite.OsApiBasePath + "/v1/files/delete/", {
+      UiToolset.JsonAjax("PUT", `${Infinite.OsApiBasePath}/v1/files/delete/`, {
         sourcePaths: sourcePaths,
         hardDelete: shouldHardDelete,
       }).then(() => {
@@ -544,15 +544,15 @@ UiToolset.RegisterAlpineState(() => {
 
       const fileName = this.selectedFileNames[0];
       const fileEntity = JSON.parse(
-        document.getElementById("fileEntity_" + fileName).textContent
+        document.getElementById(`fileEntity_${fileName}`).textContent,
       );
       this.file.path = fileEntity.path;
 
       const filePermissionsParts = fileEntity.permissions.split("");
       this.file.permissions = {
-        owner: parseInt(filePermissionsParts[0]),
-        group: parseInt(filePermissionsParts[1]),
-        others: parseInt(filePermissionsParts[2]),
+        owner: parseInt(filePermissionsParts[0], 10),
+        group: parseInt(filePermissionsParts[1], 10),
+        others: parseInt(filePermissionsParts[2], 10),
       };
 
       this.isUpdateFilePermissionsModalOpen = true;

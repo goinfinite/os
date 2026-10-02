@@ -66,6 +66,24 @@ templ ScheduledTaskCompletedBanner() {
 	</div>
 }
 
+templ TerminalSessionsModalBody() {
+	<div id="terminal-sessions-modal-body" class="h-full min-h-0"></div>
+}
+
+templ TerminalSessionsModal() {
+	<div id="terminal-sessions-modal" x-data>
+		@uiDisplay.Modal(uiDisplay.ModalSettings{
+			MiddleContent:                 TerminalSessionsModalBody(),
+			Title:                         "Terminal Sessions",
+			InitialSize:                   uiDisplay.ModalSizeXxl,
+			BackgroundColor:               "os-400",
+			IsMiddleContentScrollDisabled: true,
+			IsUnresizable:                 true,
+			IsVisibleTwoWayStatePath:      "$store.main.isTerminalSessionsModalOpen",
+		})
+	</div>
+}
+
 templ Main(componentSettings MainLayoutSettings) {
 	<!DOCTYPE html>
 	<html>
@@ -85,6 +103,7 @@ templ Main(componentSettings MainLayoutSettings) {
 				@componentSettings.PageContent
 			</section>
 			@ScheduledTaskCompletedBanner()
+			@TerminalSessionsModal()
 			@layoutFooter.FooterSkeleton()
 			@uiDisplay.Toast(uiDisplay.ToastSettings{})
 		</body>

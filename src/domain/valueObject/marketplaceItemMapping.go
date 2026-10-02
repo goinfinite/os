@@ -3,12 +3,12 @@ package valueObject
 import tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 
 type MarketplaceItemMapping struct {
-	Path                          MappingPath         `json:"path"`
-	MatchPattern                  MappingMatchPattern `json:"matchPattern"`
-	TargetType                    MappingTargetType   `json:"targetType"`
-	TargetValue                   *MappingTargetValue `json:"targetValue"`
-	TargetHttpResponseCode        *tkValueObject.HttpStatusCode   `json:"targetHttpResponseCode"`
-	ShouldUpgradeInsecureRequests *bool               `json:"shouldUpgradeInsecureRequests"`
+	Path                          MappingPath                   `json:"path"`
+	MatchPattern                  MappingMatchPattern           `json:"matchPattern"`
+	TargetType                    MappingTargetType             `json:"targetType"`
+	TargetValue                   *MappingTargetValue           `json:"targetValue"`
+	TargetHttpResponseCode        *tkValueObject.HttpStatusCode `json:"targetHttpResponseCode"`
+	ShouldUpgradeInsecureRequests *bool                         `json:"shouldUpgradeInsecureRequests"`
 }
 
 func NewMarketplaceItemMapping(

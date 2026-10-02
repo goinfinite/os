@@ -126,7 +126,8 @@ func TestReadSupportedPhpModuleNames(test *testing.T) {
   "8.5":
     - curl
 `)
-	if err := os.WriteFile(assetFilePath, assetContent, 0644); err != nil {
+	err := os.WriteFile(assetFilePath, assetContent, 0644)
+	if err != nil {
 		test.Fatalf("WritePhpModulesAssetFailed: %v", err)
 	}
 

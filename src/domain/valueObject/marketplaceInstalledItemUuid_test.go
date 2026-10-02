@@ -4,7 +4,7 @@ import "testing"
 
 func TestMarketplaceInstalledItemUuid(t *testing.T) {
 	t.Run("ValidMarketplaceInstalledItemUuid", func(t *testing.T) {
-		validUuids := []interface{}{
+		validUuids := []any{
 			"abc123def4", "1234567890ab", "abcdef123456", "9876543210ab",
 			"1234abcd5678",
 		}
@@ -18,7 +18,7 @@ func TestMarketplaceInstalledItemUuid(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceInstalledItemUuid", func(t *testing.T) {
-		invalidUuids := []interface{}{
+		invalidUuids := []any{
 			"abc123", "tolongmarketplaceinstalleditemuuid", "12345678!@#",
 			"short12",
 		}

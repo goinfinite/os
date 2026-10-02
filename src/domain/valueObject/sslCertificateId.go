@@ -8,7 +8,7 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const sslCertificateIdExpression = "^[a-fA-F0-9]{64}$"
+var sslCertificateIdRegex = regexp.MustCompile(`^[a-fA-F0-9]{64}$`)
 
 type SslCertificateId string
 
@@ -18,8 +18,7 @@ func NewSslCertificateId(value any) (sslCertificateId SslCertificateId, err erro
 		return sslCertificateId, errors.New("SslCertificateIdMustBeString")
 	}
 
-	re := regexp.MustCompile(sslCertificateIdExpression)
-	if !re.MatchString(stringValue) {
+	if !sslCertificateIdRegex.MatchString(stringValue) {
 		return sslCertificateId, errors.New("InvalidSslCertificateId")
 	}
 

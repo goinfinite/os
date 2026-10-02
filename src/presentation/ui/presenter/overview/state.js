@@ -1,122 +1,28 @@
 UiToolset.RegisterAlpineState(() => {
-  Alpine.data("marketplace", () => ({
-    // PrimaryState
-    marketplaceItem: {},
-    get hostnameWithTrailingSlash() {
-      return this.marketplaceItem.hostname + "/";
-    },
-    get dataFieldsAsString() {
-      let dataFieldsAsString = "";
-      for (let dataField of this.marketplaceItem.dataFields) {
-        if (!dataField.value) {
-          continue;
-        }
-
-        dataFieldsAsString += dataField.name + ":" + dataField.value + ";";
-      }
-      return dataFieldsAsString.slice(0, -1);
-    },
-    installedServicesCurrentPageNumber: 0,
-    resetPrimaryStates() {
-      this.marketplaceItem = {
-        id: "",
-        name: "",
-        hostname: "",
-        urlPath: "",
-        dataFields: [],
-      };
-    },
-    init() {
-      this.resetPrimaryStates();
-      this.installedServicesCurrentPageNumber = document.getElementById(
-        "installedServicesCurrentPageNumber"
-      ).value;
-    },
-
-    // AuxiliaryState
-    selectedMarketplaceItemType: "apps",
-    selectedMarketplaceItemId: 0,
-    updateSelectedMarketplaceItem(marketplaceItemId) {
-      this.selectedMarketplaceItemId = marketplaceItemId;
-
-      const catalogItemEntity = JSON.parse(
-        document.getElementById("marketplaceCatalogItem_" + marketplaceItemId)
-          .textContent
-      );
-      this.marketplaceItem.id = marketplaceItemId;
-      this.marketplaceItem.name = catalogItemEntity.name;
-
-      this.marketplaceItem.dataFields = [];
-      for (const dataField of catalogItemEntity.dataFields) {
-        dataField.value = dataField.defaultValue;
-        this.marketplaceItem.dataFields.push(dataField);
-      }
-    },
-    resetAuxiliaryStates() {
-      this.selectedMarketplaceItemType = "apps";
-      this.selectedMarketplaceItemId = 0;
-    },
-
-    // ModalState
-    isMarketplaceItemInstallationModalOpen: false,
-    openMarketplaceItemInstallationModal() {
-      this.resetPrimaryStates();
-      this.resetAuxiliaryStates();
-      this.isMarketplaceItemInstallationModalOpen = true;
-    },
-    closeMarketplaceItemInstallationModal() {
-      this.isMarketplaceItemInstallationModalOpen = false;
-    },
-    isUninstallMarketplaceItemModalOpen: false,
-    openUninstallMarketplaceItemModal(installedItemId, installedItemName) {
-      this.resetPrimaryStates();
-
-      this.marketplaceItem.id = installedItemId;
-      this.marketplaceItem.name = installedItemName;
-      this.isUninstallMarketplaceItemModalOpen = true;
-    },
-    closeUninstallMarketplaceItemModal() {
-      this.isUninstallMarketplaceItemModalOpen = false;
-    },
-    uninstallMarketplaceItem() {
-      htmx
-        .ajax(
-          "DELETE",
-          Infinite.OsApiBasePath +
-            "/v1/marketplace/installed/" +
-            this.marketplaceItem.id +
-            "/",
-          { swap: "none" }
-        )
-        .then(() => this.$store.main.refreshScheduledTasksPopover());
-      this.closeUninstallMarketplaceItemModal();
-    },
-  }));
-
   Alpine.data("resourceUsage", () => ({
     // AuxiliaryState
     refreshIntervalSecs: 20,
     async updateResourceUsageCharts(chartInstance) {
       const o11yCurrentUsageResource = await fetch(
-        Infinite.OsApiBasePath + "/v1/o11y/overview/",
+        `${Infinite.OsApiBasePath}/v1/o11y/overview/`,
         {
           method: "GET",
           headers: {
             Accept: "application/json",
             "Content-Type": "application/json",
           },
-        }
+        },
       )
         .then((apiResponse) => {
           if (!apiResponse.ok) {
-            throw new Error("BadHttpResponseCode: " + apiResponse.status);
+            throw new Error(`BadHttpResponseCode: ${apiResponse.status}`);
           }
 
           return apiResponse.json();
         })
         .then((jsonResponse) => jsonResponse.body.currentUsage)
         .catch((error) => {
-          console.error("ReadO11yOverviewError: " + error);
+          console.error(`ReadO11yOverviewError: ${error}`);
           return null;
         });
 
@@ -291,13 +197,13 @@ UiToolset.RegisterAlpineState(() => {
         tooltip: { theme: "dark" },
       }).then((chartInstance) => {
         setTimeout(() => {
-          this.updateResourceUsageCharts(chartInstance.view);
+          void this.updateResourceUsageCharts(chartInstance.view);
           window.dispatchEvent(new Event("resize"));
         }, 1000);
 
         setInterval(() => {
-          this.updateResourceUsageCharts(chartInstance.view);
-        }, parseInt(this.refreshIntervalSecs) * 1000);
+          void this.updateResourceUsageCharts(chartInstance.view);
+        }, Number.parseInt(this.refreshIntervalSecs, 10) * 1000);
       });
     },
   }));
@@ -330,33 +236,6 @@ UiToolset.RegisterAlpineState(() => {
     },
 
     // AuxiliaryState
-    installedServicesFilters: {
-      name: "",
-      nature: "",
-      type: "",
-      status: "",
-    },
-    installedServicesPagination: {
-      pageNumber: this.installedServicesCurrentPageNumber,
-      itemsPerPage: 5,
-    },
-    reloadInstalledServicesTable() {
-      const filterQueryParams = Infinite.CreateFilterQueryParams(
-        this.installedServicesFilters,
-        this.installedServicesPagination
-      );
-
-      htmx.ajax(
-        "GET",
-        document.baseURI + "overview/?" + filterQueryParams.toString(),
-        {
-          source: "#htmx-indicator-attributes-element",
-          select: "#installed-services-table",
-          target: "#installed-services-table",
-          swap: "outerHTML transition:true",
-        }
-      );
-    },
     targetServiceType: "installables",
     selectedInstallableServiceType: "runtime",
     selectedInstallableServiceName: "",
@@ -366,8 +245,8 @@ UiToolset.RegisterAlpineState(() => {
 
       const installableService = JSON.parse(
         document.getElementById(
-          "installableServiceEntity_" + installableServiceName
-        ).textContent
+          `installableServiceEntity_${installableServiceName}`,
+        ).textContent,
       );
 
       this.service.name = installableServiceName;
@@ -380,23 +259,13 @@ UiToolset.RegisterAlpineState(() => {
     },
     updateServiceStatus(serviceName, desiredStatus) {
       return htmx
-        .ajax("PUT", Infinite.OsApiBasePath + "/v1/services/", {
+        .ajax("PUT", `${Infinite.OsApiBasePath}/v1/services/`, {
           swap: "none",
           values: { name: serviceName, status: desiredStatus },
         })
-        .then(() => this.$dispatch("update:service"));
+        .then(() => window.dispatchEvent(new Event("update:service")));
     },
     resetAuxiliaryStates() {
-      this.installedServicesFilters = {
-        name: "",
-        nature: "",
-        type: "",
-        status: "",
-      };
-      this.installedServicesPagination = {
-        pageNumber: this.installedServicesCurrentPageNumber,
-        itemsPerPage: 5,
-      };
       this.targetServiceType = "installables";
       this.selectedInstallableServiceType = "runtime";
       this.selectedInstallableServiceName = "";
@@ -417,12 +286,9 @@ UiToolset.RegisterAlpineState(() => {
     installService() {
       const serviceInstallationAttributes = Object.assign({}, this.service);
       for (const [serviceAttrName, serviceAttrValue] of Object.entries(
-        serviceInstallationAttributes
+        serviceInstallationAttributes,
       )) {
-        if (
-          serviceAttrValue === null ||
-          serviceAttrValue === undefined
-        ) {
+        if (serviceAttrValue === null || serviceAttrValue === undefined) {
           delete serviceInstallationAttributes[serviceAttrName];
           continue;
         }
@@ -440,18 +306,18 @@ UiToolset.RegisterAlpineState(() => {
 
       UiToolset.JsonAjax(
         "POST",
-        Infinite.OsApiBasePath + "/v1/services/" + this.targetServiceType + "/",
-        serviceInstallationAttributes
+        `${Infinite.OsApiBasePath}/v1/services/${this.targetServiceType}/`,
+        serviceInstallationAttributes,
       )
         .then(() => {
-          if (this.targetServiceType == "custom") {
-            return this.$dispatch("install:custom-service");
+          if (this.targetServiceType === "custom") {
+            return window.dispatchEvent(new Event("install:custom-service"));
           }
 
           this.$store.main.refreshScheduledTasksPopover();
         })
         .catch((error) => {
-          throw new Error("InstallServiceError: " + error.message);
+          throw new Error(`InstallServiceError: ${error.message}`);
         });
     },
     isUpdateInstalledServiceModalOpen: false,
@@ -476,13 +342,16 @@ UiToolset.RegisterAlpineState(() => {
 
       const installedServiceEntity = JSON.parse(
         document.getElementById(
-          "installedServiceEntity_" + installedServiceName
-        ).textContent
+          `installedServiceEntity_${installedServiceName}`,
+        ).textContent,
       );
+      // The entity comes from the server-rendered JSON script, not from user
+      // input, and the API validates every field on update.
+      // nosemgrep: javascript.lang.security.insecure-object-assign.insecure-object-assign
       this.service = Object.assign({}, installedServiceEntity);
 
       this.service.envs = this.parseInstalledServiceEnvs(
-        installedServiceEntity.envs
+        installedServiceEntity.envs,
       );
 
       if (this.service.nature !== "custom") {
@@ -492,8 +361,8 @@ UiToolset.RegisterAlpineState(() => {
 
         const installableServiceEntity = JSON.parse(
           document.getElementById(
-            "installableServiceEntity_" + installedServiceName
-          ).textContent
+            `installableServiceEntity_${installedServiceName}`,
+          ).textContent,
         );
         this.selectedInstallableServiceAvailableVersions =
           installableServiceEntity.versions;
@@ -507,16 +376,13 @@ UiToolset.RegisterAlpineState(() => {
     async updateService() {
       const serviceAttributesToUpdate = Object.assign({}, this.service);
       for (const [serviceAttrName, serviceAttrValue] of Object.entries(
-        serviceAttributesToUpdate
+        serviceAttributesToUpdate,
       )) {
         if (serviceAttrName === "status") {
           continue;
         }
 
-        if (
-          serviceAttrValue === null ||
-          serviceAttrValue === undefined
-        ) {
+        if (serviceAttrValue === null || serviceAttrValue === undefined) {
           delete serviceAttributesToUpdate[serviceAttrName];
           continue;
         }
@@ -533,12 +399,12 @@ UiToolset.RegisterAlpineState(() => {
 
       UiToolset.JsonAjax(
         "PUT",
-        Infinite.OsApiBasePath + "/v1/services/",
-        serviceAttributesToUpdate
+        `${Infinite.OsApiBasePath}/v1/services/`,
+        serviceAttributesToUpdate,
       )
-        .then(() => this.$dispatch("update:service"))
+        .then(() => window.dispatchEvent(new Event("update:service")))
         .catch((error) =>
-          Alpine.store("toast").displayToast(error.message, "danger")
+          Alpine.store("toast").displayToast(error.message, "danger"),
         );
     },
     isUninstallServiceModalOpen: false,
@@ -555,12 +421,12 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/services/" + this.service.name + "/",
+          `${Infinite.OsApiBasePath}/v1/services/${this.service.name}/`,
           {
             swap: "none",
-          }
+          },
         )
-        .then(() => this.$dispatch("delete:service"))
+        .then(() => window.dispatchEvent(new Event("delete:service")))
         .finally(() => this.closeUninstallServiceModal());
     },
   }));

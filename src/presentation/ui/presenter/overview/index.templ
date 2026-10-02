@@ -2,6 +2,7 @@ package uiPresenter
 
 import (
 	_ "embed"
+	"encoding/json"
 	"fmt"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/entity"
@@ -9,10 +10,14 @@ import (
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	presenterHelper "github.com/goinfinite/os/src/presentation/ui/presenter/helper"
 	presenterMarketplace "github.com/goinfinite/os/src/presentation/ui/presenter/marketplace"
+	presenterTerminal "github.com/goinfinite/os/src/presentation/ui/presenter/terminal"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
 	uiControl "github.com/goinfinite/ui/src/control"
 	uiDisplay "github.com/goinfinite/ui/src/display"
 	uiForm "github.com/goinfinite/ui/src/form"
+	uiStructural "github.com/goinfinite/ui/src/structural"
 	"github.com/goinfinite/ui/src/toolset"
 	"math"
 	"strconv"
@@ -38,9 +43,12 @@ templ OverviewIndex(
 	marketplaceOverview presenterMarketplace.MarketplaceOverview,
 	o11yOverview entity.O11yOverview,
 	servicesOverview ServicesOverview,
+	terminalSessionsResponseDto dto.ReadTerminalSessionsResponse,
 ) {
 	<!-- OverviewIndex JavaScript -->
 	@uiToolset.MinifierTemplateJs(&overviewIndexAlpineState)
+	@presenterMarketplace.MarketplaceAlpineState()
+	@presenterTerminal.TerminalAlpineState()
 	<!-- OverviewIndex HTML -->
 	<div class="flex flex-col">
 		@componentStructural.PageTitle(
@@ -48,92 +56,376 @@ templ OverviewIndex(
 			"Welcome! Take a quick peek at your installed services and marketplace items, as well as OS performance such as the server resource usage and system information.",
 			"ph-speedometer",
 		)
-		<div class="space-y-5">
-			<div id="marketplace" class="card w-full" x-data="marketplace">
-				@InstalledMarketplaceItemsTable(marketplaceOverview.InstalledItemsList)
-				@componentStructural.ScheduleDeletionModal(
-					"isUninstallMarketplaceItemModalOpen",
-					"closeUninstallMarketplaceItemModal()",
-					"uninstallMarketplaceItem()", "marketplaceItem.name",
-					"marketplaceItem.id",
-				)
-				@ScheduleMarketplaceItemInstallationModal(
-					vhostsHostnames, marketplaceOverview.CatalogItemsList,
-				)
+		<div class="flex flex-col gap-5">
+			<div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
+				<div id="marketplace" x-data="marketplace">
+					@uiStructural.Card(uiStructural.CardSettings{
+						HeaderContent: componentStructural.PageSubHeading(
+							"Marketplace", "", "ph-storefront",
+						),
+						MiddleContent: templ.Join(
+							InstalledMarketplaceItemsDataTable(marketplaceOverview),
+							uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+								IsVisibleTwoWayStatePath: "isUninstallMarketplaceItemModalOpen",
+								OnConfirmFunc:            "uninstallMarketplaceItem()",
+								CancelButtonLabel:        "No, Keep it.",
+								TargetNameStatePath:      "marketplaceItem.name",
+								TargetIdStatePath:        "marketplaceItem.id",
+								ConfirmButtonLabel:       "Yes, Schedule Delete!",
+								ConfirmButtonIcon:        "ph-queue",
+							}),
+							ScheduleMarketplaceItemInstallationModal(
+								vhostsHostnames, marketplaceOverview.CatalogItemsList,
+							),
+						),
+					})
+				</div>
+				<div id="terminal-sessions" x-data="terminal">
+					@uiStructural.Card(uiStructural.CardSettings{
+						HeaderContent: componentStructural.PageSubHeading(
+							"Terminal Sessions", "", "ph-terminal-window",
+						),
+						MiddleContent: TerminalSessionsDataTable(
+							terminalSessionsResponseDto,
+						),
+					})
+				</div>
 			</div>
-			<div id="system-info" class="card w-full" x-data="resourceUsage">
-				@SystemInfoTableAndGraphic(o11yOverview)
+			<div id="services" x-data="services">
+				@uiStructural.Card(uiStructural.CardSettings{
+					HeaderContent: componentStructural.PageSubHeading(
+						"Services", "", "ph-package",
+					),
+					MiddleContent: templ.Join(
+						InstalledServicesDataTable(
+							servicesOverview.InstalledServicesResponseDto,
+						),
+						ServiceInstallationModal(servicesOverview.InstallableServices),
+						UpdateInstalledServiceModal(),
+						uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+							IsVisibleTwoWayStatePath: "isUninstallServiceModalOpen",
+							OnConfirmFunc:            "uninstallService()",
+							CancelButtonLabel:        "No, Keep it.",
+							TargetNameStatePath:      "service.name",
+						}),
+					),
+				})
 			</div>
-			<div id="services" class="card w-full" x-data="services">
-				@InstalledServicesItemsTable(servicesOverview.InstalledServicesResponseDto)
-				@ServiceInstallationModal(servicesOverview.InstallableServices)
-				@UpdateInstalledServiceModal()
-				@componentStructural.DeleteModal(
-					"isUninstallServiceModalOpen", "closeUninstallServiceModal()",
-					"uninstallService()", "service.name", "",
-				)
+			<div class="grid grid-cols-1 items-start gap-5 lg:grid-cols-2">
+				<div id="system-info">
+					@uiStructural.Card(uiStructural.CardSettings{
+						HeaderContent: componentStructural.PageSubHeading(
+							"System Information", "", "ph-info",
+						),
+						MiddleContent: SystemInfoTable(o11yOverview),
+					})
+				</div>
+				<div id="resource-usage" x-data="resourceUsage">
+					@uiStructural.Card(uiStructural.CardSettings{
+						HeaderContent: componentStructural.PageSubHeading(
+							"Resource Usage", "", "ph-chart-line",
+						),
+						MiddleContent: ResourceUsageGraph(),
+					})
+				</div>
 			</div>
 		</div>
 	</div>
 }
 
-templ InstalledMarketplaceItemsTable(installedItemsList []entity.MarketplaceInstalledItem) {
-	<div class="rounded-lg bg-neutral-950/20 p-5">
-		<div class="mb-2">
-			@componentStructural.PageSubHeading("Marketplace", "", "ph-storefront")
+templ DataTableTextCell(text string) {
+	<span class="text-neutral-300">{ text }</span>
+}
+
+templ DataTableCarouselStyleEmptyState(
+	icon, message, ctaLabel, ctaIcon, ctaOnClick string,
+) {
+	<div class="bg-os-500 mx-auto flex w-fit items-center gap-4 rounded-md p-4">
+		<i class={ "ph-duotone " + icon + " text-3xl text-infinite-500" }></i>
+		<div class="text-wrap max-w-56 break-words text-sm text-neutral-300">
+			{ message }
 		</div>
-		<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
-			<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
-				<tr class="*:p-3 border-y border-neutral-50/10 text-center">
-					<th scope="col" class="w-[25%] text-left">Name</th>
-					<th scope="col" class="w-[20%]">Type/Installation Path</th>
-					<th scope="col" class="w-[20%]">Installation Directory</th>
-					<th scope="col" class="w-[15%]">Created At</th>
-					<th scope="col" class="w-[20%]">
-						@componentForm.SubmitButton(
-							"", "install catalog item", "ph-arrow-line-down",
-							"openMarketplaceItemInstallationModal()", false,
-						)
-					</th>
-				</tr>
-			</thead>
-			<tbody>
-				for _, installedItem := range installedItemsList {
-					<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
-						<td class="text-left">
-							<div class="flex items-center gap-2">
-								<img class="h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
-								{ installedItem.Name.String() }
-							</div>
-						</td>
-						<td>
-							<div class="flex items-center justify-center">
-								@componentStructural.Tag(
-									"", installedItem.Type.String(),
-									installedItem.Hostname.String()+installedItem.UrlPath.String(),
-									"infinite-500",
-								)
-							</div>
-						</td>
-						<td>{ installedItem.InstallDirectory.String() }</td>
-						<td>{ installedItem.CreatedAt.ReadDateOnly() }</td>
-						<td class="float-right text-right">
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-trash", "red-800", "red-600",
-								"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
-								"Uninstall", "red-500",
-							)
-						</td>
-					</tr>
-				}
-				if len(installedItemsList) == 0 {
-					<tr class="border-b border-neutral-500 border-opacity-30 bg-neutral-950 bg-opacity-20">
-						<td class="px-3 py-4 text-center italic text-slate-500" colspan="12">No marketplace items installed yet.</td>
-					</tr>
-				}
-			</tbody>
-		</table>
+		<div class="shrink-0">
+			@uiControl.Button(uiControl.ButtonSettings{
+				Label:                ctaLabel,
+				IconLeft:             ctaIcon,
+				Size:                 uiControl.ButtonSizeSm,
+				BackgroundColor:      "infinite-500",
+				BackgroundColorHover: "infinite-300",
+				OnClickFunc:          ctaOnClick,
+			})
+		</div>
 	</div>
+}
+
+templ TerminalSessionNameCell(session entity.TerminalSession) {
+	<template x-if={ "renamingSessionId !== '" + session.Id.String() + "'" }>
+		<div class="flex flex-col gap-1">
+			<span class="font-medium text-neutral-100">{ session.ReadName() }</span>
+			<span class="font-mono text-xs italic text-neutral-500">{ session.Id.String() }</span>
+			@uiDisplay.Tag(uiDisplay.TagSettings{
+				Size:                 uiDisplay.TagSizeXs,
+				OuterBackgroundColor: "infinite-800",
+				OuterLeftLabel:       "path",
+				InnerLabel:           session.WorkingDir.String(),
+			})
+		</div>
+	</template>
+	<template x-if={ "renamingSessionId === '" + session.Id.String() + "'" }>
+		@presenterTerminal.TerminalSessionRenameInput(
+			"submitRename('" + session.Id.String() + "')",
+		)
+	</template>
+}
+
+func terminalSessionRenameOnClickResolver(session entity.TerminalSession) string {
+	currentName := ""
+	if session.Name != nil {
+		currentName = session.Name.String()
+	}
+	currentNameJson, _ := json.Marshal(currentName)
+
+	return "startRename('" + session.Id.String() + "', " + string(currentNameJson) + ")"
+}
+
+templ TerminalSessionActionsCell(session entity.TerminalSession) {
+	<div class="flex items-center justify-end gap-2">
+		@uiControl.Button(uiControl.ButtonSettings{
+			IconLeft:               "ph-plug",
+			Shape:                  uiControl.ButtonShapeCircular,
+			Size:                   uiControl.ButtonSizeSm,
+			BackgroundColor:        "cyan-900",
+			BackgroundColorHover:   "cyan-700",
+			OnClickFunc:            "openTerminalSession('" + session.Id.String() + "')",
+			AriaLabel:              "Attach",
+			TooltipContent:         "Attach",
+			TooltipBackgroundColor: "cyan-700",
+		})
+		@uiControl.Button(uiControl.ButtonSettings{
+			IconLeft:               "ph-pencil-simple",
+			Shape:                  uiControl.ButtonShapeCircular,
+			Size:                   uiControl.ButtonSizeSm,
+			BackgroundColor:        "os-200",
+			BackgroundColorHover:   "os-300",
+			OnClickFunc:            terminalSessionRenameOnClickResolver(session),
+			AriaLabel:              "Rename",
+			TooltipContent:         "Rename",
+			TooltipBackgroundColor: "os-200",
+		})
+		@uiControl.Button(uiControl.ButtonSettings{
+			IconLeft:               "ph-trash",
+			Shape:                  uiControl.ButtonShapeCircular,
+			Size:                   uiControl.ButtonSizeSm,
+			BackgroundColor:        "red-800",
+			BackgroundColorHover:   "red-600",
+			OnClickFunc:            "killSession('" + session.Id.String() + "')",
+			AriaLabel:              "Kill",
+			TooltipContent:         "Kill",
+			TooltipBackgroundColor: "red-500",
+		})
+	</div>
+}
+
+func terminalSessionsTableSettingsBuilder(
+	responseDto dto.ReadTerminalSessionsResponse,
+) uiStructural.DataTableSettings[entity.TerminalSession] {
+	paginationSettings := presenterHelper.DataTablePaginationSettingsResolver(
+		responseDto.Pagination,
+	)
+
+	return uiStructural.DataTableSettings[entity.TerminalSession]{
+		Columns: []uiStructural.DataTableColumnSettings[entity.TerminalSession]{
+			{
+				Label:        "Name",
+				SortKey:      "name",
+				WidthPercent: 45,
+				CellRenderer: func(session entity.TerminalSession) templ.Component {
+					return TerminalSessionNameCell(session)
+				},
+			},
+			{
+				Label:        "Attached",
+				Alignment:    uiStructural.DataTableAlignmentCenter,
+				WidthPercent: 15,
+				CellRenderer: func(session entity.TerminalSession) templ.Component {
+					return DataTableTextCell(strconv.Itoa(int(session.AttachedClients)))
+				},
+			},
+			{
+				Label:        "Created At",
+				SortKey:      "createdAt",
+				WidthPercent: 20,
+				CellRenderer: func(session entity.TerminalSession) templ.Component {
+					return DataTableTextCell(session.CreatedAt.ReadDateOnly())
+				},
+			},
+			{
+				Label:        "",
+				Alignment:    uiStructural.DataTableAlignmentRight,
+				WidthPercent: 20,
+				CellRenderer: func(session entity.TerminalSession) templ.Component {
+					return TerminalSessionActionsCell(session)
+				},
+			},
+		},
+		Rows:                 responseDto.TerminalSessions,
+		ItemsTotal:           paginationSettings.ItemsTotal,
+		PagesTotal:           paginationSettings.PagesTotal,
+		InitialSortKey:       paginationSettings.SortKey,
+		InitialSortDirection: paginationSettings.SortDirection,
+		Id:                   "terminal-sessions-table",
+		IsStriped:            true,
+		EmptyState: DataTableCarouselStyleEmptyState(
+			"ph-terminal-window",
+			"Open a terminal session and run commands with one-click.",
+			"new session", "ph-plus", "createSessionWithDefaults()",
+		),
+		PageNumber:   paginationSettings.PageNumber,
+		ItemsPerPage: uiStructural.DataTablePageSize(paginationSettings.ItemsPerPage),
+		QueryUrlTemplate: "fragment/overview/terminal-sessions-table/?" +
+			"pageNumber=" + uiStructural.DataTableUrlPlaceholderPageNumber +
+			"&itemsPerPage=" + uiStructural.DataTableUrlPlaceholderItemsPerPage +
+			"&sortBy=" + uiStructural.DataTableUrlPlaceholderSortKey +
+			"&sortDirection=" + uiStructural.DataTableUrlPlaceholderSortDirection,
+		RefreshOnEvents: []string{"update:terminal-session"},
+		HeaderActions: uiControl.Button(uiControl.ButtonSettings{
+			Label:                "new session",
+			IconLeft:             "ph-plus",
+			Size:                 uiControl.ButtonSizeSm,
+			BackgroundColor:      "infinite-500",
+			BackgroundColorHover: "infinite-300",
+			OnClickFunc:          "createSessionWithDefaults()",
+		}),
+	}
+}
+
+templ TerminalSessionsDataTable(responseDto dto.ReadTerminalSessionsResponse) {
+	@uiStructural.DataTable(terminalSessionsTableSettingsBuilder(responseDto))
+}
+
+templ MarketplaceInstalledItemNameCell(installedItem entity.MarketplaceInstalledItem) {
+	<div class="flex items-center gap-2">
+		<img class="h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
+		{ installedItem.Name.String() }
+	</div>
+}
+
+templ MarketplaceInstalledItemActionsCell(installedItem entity.MarketplaceInstalledItem) {
+	<div class="flex items-center justify-end">
+		@templ.JSONScript("installedMarketplaceItem_"+installedItem.Id.String(), installedItem)
+		@uiControl.Button(uiControl.ButtonSettings{
+			IconLeft:               "ph-trash",
+			Shape:                  uiControl.ButtonShapeCircular,
+			Size:                   uiControl.ButtonSizeSm,
+			BackgroundColor:        "red-800",
+			BackgroundColorHover:   "red-600",
+			OnClickFunc:            "openUninstallMarketplaceItemModal('" + installedItem.Id.String() + "')",
+			AriaLabel:              "Uninstall",
+			TooltipContent:         "Uninstall",
+			TooltipBackgroundColor: "red-500",
+		})
+	</div>
+}
+
+func marketplaceItemsTableSettingsBuilder(
+	installedItemsList []entity.MarketplaceInstalledItem,
+	pagination tkDto.Pagination,
+) uiStructural.DataTableSettings[entity.MarketplaceInstalledItem] {
+	paginationSettings := presenterHelper.DataTablePaginationSettingsResolver(pagination)
+
+	return uiStructural.DataTableSettings[entity.MarketplaceInstalledItem]{
+		Columns: []uiStructural.DataTableColumnSettings[entity.MarketplaceInstalledItem]{
+			{
+				Label:        "Name",
+				SortKey:      "name",
+				WidthPercent: 30,
+				Alignment:    uiStructural.DataTableAlignmentLeft,
+				CellRenderer: func(
+					installedItem entity.MarketplaceInstalledItem,
+				) templ.Component {
+					return MarketplaceInstalledItemNameCell(installedItem)
+				},
+			},
+			{
+				Label:        "Type/Installation Path",
+				SortKey:      "type",
+				WidthPercent: 25,
+				CellRenderer: func(
+					installedItem entity.MarketplaceInstalledItem,
+				) templ.Component {
+					return uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "infinite-800",
+						OuterLeftLabel:       installedItem.Type.String(),
+						InnerLabel: installedItem.Hostname.String() +
+							installedItem.UrlPath.String(),
+					})
+				},
+			},
+			{
+				Label:        "Installation Directory",
+				WidthPercent: 20,
+				CellRenderer: func(
+					installedItem entity.MarketplaceInstalledItem,
+				) templ.Component {
+					return DataTableTextCell(installedItem.InstallDirectory.String())
+				},
+			},
+			{
+				Label:        "Created At",
+				SortKey:      "createdAt",
+				WidthPercent: 15,
+				CellRenderer: func(
+					installedItem entity.MarketplaceInstalledItem,
+				) templ.Component {
+					return DataTableTextCell(installedItem.CreatedAt.ReadDateOnly())
+				},
+			},
+			{
+				Label:        "",
+				Alignment:    uiStructural.DataTableAlignmentRight,
+				WidthPercent: 10,
+				CellRenderer: func(
+					installedItem entity.MarketplaceInstalledItem,
+				) templ.Component {
+					return MarketplaceInstalledItemActionsCell(installedItem)
+				},
+			},
+		},
+		Rows:                 installedItemsList,
+		ItemsTotal:           paginationSettings.ItemsTotal,
+		PagesTotal:           paginationSettings.PagesTotal,
+		InitialSortKey:       paginationSettings.SortKey,
+		InitialSortDirection: paginationSettings.SortDirection,
+		Id:                   "marketplace-items-table",
+		IsStriped:            true,
+		EmptyState: DataTableCarouselStyleEmptyState(
+			"ph-storefront",
+			"Install your favorite app/platform with one-click.",
+			"install catalog item", "ph-arrow-line-down",
+			"openMarketplaceItemInstallationModal()",
+		),
+		PageNumber:   paginationSettings.PageNumber,
+		ItemsPerPage: uiStructural.DataTablePageSize(paginationSettings.ItemsPerPage),
+		QueryUrlTemplate: "fragment/overview/marketplace-table/?" +
+			"pageNumber=" + uiStructural.DataTableUrlPlaceholderPageNumber +
+			"&itemsPerPage=" + uiStructural.DataTableUrlPlaceholderItemsPerPage +
+			"&sortBy=" + uiStructural.DataTableUrlPlaceholderSortKey +
+			"&sortDirection=" + uiStructural.DataTableUrlPlaceholderSortDirection,
+		RefreshOnEvents: []string{"uninstall:marketplace-item"},
+		HeaderActions: componentForm.SubmitButton(
+			"", "install catalog item", "ph-arrow-line-down",
+			"openMarketplaceItemInstallationModal()", true,
+		),
+	}
+}
+
+templ InstalledMarketplaceItemsDataTable(
+	marketplaceOverview presenterMarketplace.MarketplaceOverview,
+) {
+	@uiStructural.DataTable(marketplaceItemsTableSettingsBuilder(
+		marketplaceOverview.InstalledItemsList, marketplaceOverview.InstalledItemsPagination,
+	))
 }
 
 templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalogItem) {
@@ -163,10 +455,11 @@ templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalo
 						{ catalogItemEntity.Description.String() }
 					</div>
 					<div class="basis-1/4 space-y-1.5">
-						@componentStructural.TinyTag(componentStructural.TinyTagDto{
-							HighlightedIcon: "ph-hard-drives",
-							TagValue:        catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(),
-							TagColor:        "infinite-500",
+						@uiDisplay.Tag(uiDisplay.TagSettings{
+							Size:                 uiDisplay.TagSizeXs,
+							OuterBackgroundColor: "infinite-800",
+							OuterLeftIcon:        "ph-hard-drives",
+							InnerLabel:           catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(),
 						})
 					</div>
 				</div>
@@ -194,6 +487,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 	<!-- ScheduleMarketplaceItemInstallationForm -->
 	<form
 		id="schedule-marketplace-item-installation-form"
+		class="pb-16"
 		hx-post="api/v1/marketplace/catalog/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -201,22 +495,30 @@ templ ScheduleMarketplaceItemInstallationForm(
 	>
 		<input type="hidden" name="id" :value="marketplaceItem.id"/>
 		<input type="hidden" name="dataFields" :value="dataFieldsAsString"/>
+		@templ.JSONScript("marketplaceInstallVhostHostnames", vhostsHostnames)
 		<div class="my-6 space-y-2">
 			<div class="w-100% inline-flex space-x-2">
 				<div class="w-60%">
-					@componentForm.SelectInput(
-						"hostname", "Hostname", "marketplaceItem.hostname",
-						"", vhostsHostnames, true,
-					)
+					@uiForm.SelectInput(uiForm.SelectInputSettings{
+						InputName:                "hostname",
+						Label:                    "Hostname",
+						FlatOptions:              vhostsHostnames,
+						TwoWayStatePath:          "marketplaceItem.hostname",
+						Size:                     uiForm.SelectInputSizeLg,
+						ShouldIncludeBlankOption: true,
+						DropdownBackgroundColor:  "primary-500/95",
+					})
 				</div>
 				<div class="w-40%">
-					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-						Type:                "text",
-						Id:                  "urlPath",
-						Label:               "URL Path",
-						BindInputValuePath:  "marketplaceItem.urlPath",
-						BindPrefixValuePath: "hostnameWithTrailingSlash",
-						InfoTooltipContent:  "Path where the respective installed item will be available for access.",
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:          uiForm.InputTypeText,
+						InputName:          "urlPath",
+						Label:              "URL Path",
+						TwoWayStatePath:    "marketplaceItem.urlPath",
+						AffixLeftStatePath: "hostnameWithTrailingSlash",
+						HintValue:          "Path where the respective installed item will be available for access.",
+						HintDisplay:        uiForm.InputHintDisplayTooltip,
+						Size:               uiForm.InputFieldSizeLg,
 					})
 				</div>
 			</div>
@@ -302,14 +604,14 @@ templ ScheduleMarketplaceItemInstallationModal(
 	vhostsHostnames []string,
 	marketplaceCatalogItems presenterMarketplace.CatalogItemsGroupedByType,
 ) {
-	@componentStructural.RegularModal(
-		"Install Marketplace Item", "isMarketplaceItemInstallationModalOpen",
-		"closeMarketplaceItemInstallationModal()", "",
-	) {
-		@ScheduleMarketplaceItemInstallationForm(
-			vhostsHostnames, marketplaceCatalogItems,
-		)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            ScheduleMarketplaceItemInstallationForm(vhostsHostnames, marketplaceCatalogItems),
+		Title:                    "Install Marketplace Item",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isMarketplaceItemInstallationModalOpen",
+		OnCloseFunc:              "closeMarketplaceItemInstallationModal()",
+	})
 }
 
 func transformUptimeSecsIntoHumanReadable(uptimeSecs uint64) string {
@@ -325,245 +627,362 @@ func transformCpuInfoIntoHumanReadable(cpuCores float64, cpuFrequency float64) s
 	return fmt.Sprintf("%.0f CPU @ %.1f GHz", cpuCores, cpuFrequency)
 }
 
-templ SystemInfoTableAndGraphic(o11yOverview entity.O11yOverview) {
-	<!-- SystemInfoTableAndGraphic -->
-	<div class="rounded-lg bg-neutral-950/20 p-5">
-		<div class="mb-2">
-			@componentStructural.PageSubHeading("System Information", "", "ph-chart-line")
+templ SystemInfoTable(o11yOverview entity.O11yOverview) {
+	<!-- SystemInfoTable -->
+	<div class="*:text-sm *:rounded-md *:p-2.5 *:flex *:justify-between *:bg-neutral-500/5 *:items-center flex flex-col space-y-2 rounded-lg p-3">
+		<div>
+			<span class="font-bold">Hostname</span>
+			<span class="text-right">{ o11yOverview.Hostname.String() }</span>
 		</div>
-		<div class="grid grid-cols-3 items-center gap-3">
-			<!-- Observability Table -->
-			<div class="*:text-sm *:rounded-md *:p-2.5 *:flex *:justify-between *:bg-neutral-500/5 *:items-center flex flex-col space-y-2 rounded-lg p-3">
-				<div>
-					<span class="font-bold">Hostname</span>
-					<span class="text-right">{ o11yOverview.Hostname.String() }</span>
+		<div>
+			<span class="font-bold">Uptime</span>
+			<span class="text-right">{ transformUptimeSecsIntoHumanReadable(o11yOverview.UptimeSecs) }</span>
+		</div>
+		<div>
+			<span class="font-bold">Hardware Specs</span>
+			<div class="space-y-2">
+				<div class="flex justify-end">
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "infinite-800",
+						OuterLeftIcon:        "ph-memory",
+						InnerLabel:           o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+					})
 				</div>
-				<div>
-					<span class="font-bold">Uptime</span>
-					<span class="text-right">{ transformUptimeSecsIntoHumanReadable(o11yOverview.UptimeSecs) }</span>
+				<div class="flex justify-end">
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "infinite-800",
+						OuterLeftIcon:        "ph-cpu",
+						InnerLabel:           transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+					})
 				</div>
-				<div>
-					<span class="font-bold">Hardware Specs</span>
-					<div class="space-y-2">
-						<div class="flex justify-end">
-							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-memory",
-								TagValue:        o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
-								TagColor:        "infinite-500",
-							})
-						</div>
-						<div class="flex justify-end">
-							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-cpu",
-								TagValue:        transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
-								TagColor:        "infinite-500",
-							})
-						</div>
-						<div class="flex justify-end">
-							@componentStructural.TinyTag(componentStructural.TinyTagDto{
-								HighlightedIcon: "ph-sim-card",
-								TagValue:        o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
-								TagColor:        "infinite-500",
-							})
-						</div>
-					</div>
-				</div>
-				<div>
-					<span class="font-bold">Public IP Address</span>
-					<span class="text-right">{ o11yOverview.PublicIpAddress.String() }</span>
+				<div class="flex justify-end">
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "infinite-800",
+						OuterLeftIcon:        "ph-sim-card",
+						InnerLabel:           o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
+					})
 				</div>
 			</div>
-			<!-- Resource Usage Graphic -->
-			<div class="col-span-2 rounded-md bg-neutral-950/20 p-4">
-				<div class="flex cursor-default flex-row items-center justify-center gap-2 text-[11px] text-neutral-300">
-					<div class="flex flex-row items-center gap-1">
-						<span class="h-4 w-4 rounded-full border-2 border-[#145952] bg-[#0E3E39]"></span>
-						Memory Usage (%)
-					</div>
-					<div class="flex flex-row items-center gap-1">
-						<span class="h-4 w-4 rounded-full border-2 border-[#E89500] bg-[#A26800]"></span>
-						CPU Usage (%)
-					</div>
-					<div class="flex flex-row items-center gap-1">
-						<span class="h-4 w-4 rounded-full border-2 border-[#281B86] bg-[#1C125D]"></span>
-						Storage Usage (%)
-					</div>
-				</div>
-				<div class="h-64 w-full p-2">
-					<div id="cpuAndMemoryUsageChart" class="h-full w-full"></div>
-				</div>
-			</div>
+		</div>
+		<div>
+			<span class="font-bold">Public IP Address</span>
+			<span class="text-right">{ o11yOverview.PublicIpAddress.String() }</span>
 		</div>
 	</div>
 }
 
-templ InstalledServicesItemsTable(
-	installedServicesResponseDto dto.ReadInstalledServicesItemsResponse,
-) {
-	<!-- InstalledServicesItemsTable -->
-	<div class="rounded-lg bg-neutral-950/20 p-5">
-		<div class="mb-2">
-			@componentStructural.PageSubHeading("Services", "", "ph-package")
+templ ResourceUsageGraph() {
+	<!-- ResourceUsageGraph -->
+	<div class="rounded-md bg-neutral-950/20 p-4">
+		<div class="flex cursor-default flex-row items-center justify-center gap-2 text-[11px] text-neutral-300">
+			<div class="flex flex-row items-center gap-1">
+				<span class="h-4 w-4 rounded-full border-2 border-[#145952] bg-[#0E3E39]"></span>
+				Memory Usage (%)
+			</div>
+			<div class="flex flex-row items-center gap-1">
+				<span class="h-4 w-4 rounded-full border-2 border-[#E89500] bg-[#A26800]"></span>
+				CPU Usage (%)
+			</div>
+			<div class="flex flex-row items-center gap-1">
+				<span class="h-4 w-4 rounded-full border-2 border-[#281B86] bg-[#1C125D]"></span>
+				Storage Usage (%)
+			</div>
 		</div>
-		<div
-			id="installed-services-table"
-			hx-get="overview/"
-			hx-trigger="install:custom-service from:window delay:250ms, update:service from:window delay:250ms, delete:service from:window delay:250ms"
-			hx-select="#installed-services-table"
-			hx-target="#installed-services-table"
-			hx-swap="outerHTML transition:true"
-			@update:installed-services-pagination="reloadInstalledServicesTable()"
-			@update:installed-services-record-filters="reloadInstalledServicesTable()"
-		>
-			<div class="bg-neutral-950/15 rounded-t-md p-2">
-				@componentStructural.RecordFilters("installed-services", "installedServicesFilters")
-			</div>
-			<table class="w-full table-auto border-collapse rounded-md transition-all duration-300 ease-in-out">
-				<thead class="bg-neutral-950/20 text-xs uppercase text-neutral-400">
-					<tr class="*:p-3 border-y border-neutral-50/10 text-center">
-						<th scope="col" class="w-[35%] text-left">Service</th>
-						<th scope="col" class="w-[7.5%]">Status</th>
-						<th scope="col" class="w-[7.5%]">CPU</th>
-						<th scope="col" class="w-[7.5%]">RAM</th>
-						<th scope="col">Port Bindings</th>
-						<th scope="col" class="w-[20%]">
-							@componentForm.SubmitButton(
-								"", "install service", "ph-arrow-line-down",
-								"openServiceInstallationModal()", false,
-							)
-						</th>
-					</tr>
-				</thead>
-				<tbody>
-					for _, installedServiceEntity := range installedServicesResponseDto.InstalledServicesWithMetrics {
-						<tr class="*:py-4 *:px-2.5 border-b border-neutral-50/10 text-center even:bg-neutral-500/5">
-							@templ.JSONScript("installedServiceEntity_"+installedServiceEntity.Name.String(), installedServiceEntity)
-							<td class="text-left">
-								<div class="mb-2 flex items-center gap-2">
-									<img
-										class="h-10 w-10 rounded-full"
-										if installedServiceEntity.AvatarUrl != nil {
-											src={ installedServiceEntity.AvatarUrl.String() }
-										} else {
-											src="assets/default-avatar.jpg"
-										}
-									/>
-									{ installedServiceEntity.Name.String() }
-								</div>
-								<div class="flex flex-wrap items-center justify-normal gap-2">
-									@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
-										HighlightedLabel: "type",
-										TagValue:         installedServiceEntity.Type.String(),
-										TagColor:         "infinite-500",
-										FilterValue:      installedServiceEntity.Type.String(),
-										FilterBindPath:   "installedServicesFilters['type']",
-									})
-									@componentStructural.Tag(
-										"", "version", installedServiceEntity.Version.String(),
-										"infinite-500",
-									)
-									@componentStructural.TagWithFilter(componentStructural.TagWithFilterDto{
-										HighlightedLabel: "nature",
-										TagValue:         installedServiceEntity.Nature.String(),
-										TagColor:         "infinite-500",
-										FilterValue:      installedServiceEntity.Nature.String(),
-										FilterBindPath:   "installedServicesFilters['nature']",
-									})
-								</div>
-							</td>
-							<td>
-								{ installedServiceEntity.Status.String() }
-							</td>
-							<td>
-								if installedServiceEntity.Metrics != nil {
-									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
-										ComponentColor:       "os-950",
-										CompletionRate:       uint8(installedServiceEntity.Metrics.CpuUsagePercent),
-										Label:                fmt.Sprintf("%.2f", installedServiceEntity.Metrics.CpuUsagePercent) + "%",
-										LabelBackgroundColor: "os-200",
-									})
-								} else {
-									<span class="text-center text-slate-500">--</span>
-								}
-							</td>
-							<td>
-								if installedServiceEntity.Metrics != nil {
-									@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
-										ComponentColor:       "os-950",
-										CompletionRate:       uint8(installedServiceEntity.Metrics.MemUsagePercent),
-										Label:                fmt.Sprintf("%.2f", installedServiceEntity.Metrics.MemUsagePercent) + "%",
-										LabelBackgroundColor: "os-200",
-									})
-								} else {
-									<span class="text-center text-slate-500">--</span>
-								}
-							</td>
-							<td>
-								if installedServiceEntity.PortBindings != nil && len(installedServiceEntity.PortBindings) > 0 {
-									@componentStructural.PortBindingsTable(installedServiceEntity.PortBindings)
-								} else {
-									<span class="text-center text-slate-500">--</span>
-								}
-							</td>
-							<td>
-								<div class="flex justify-end space-x-2">
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-arrow-clockwise", "os-200", "os-300",
-										"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'restart')",
-										"Restart", "os-200",
-									)
-									if installedServiceEntity.Type != valueObject.ServiceTypeSystem {
-										switch installedServiceEntity.Status {
-											case valueObject.ServiceStatusRunning:
-												@componentStructural.CircularIconButtonWithTooltip(
-													"ph-pause", "yellow-900", "yellow-700",
-													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'pause')",
-													"Pause", "yellow-700",
-												)
-											case valueObject.ServiceStatusStopped:
-												@componentStructural.CircularIconButtonWithTooltip(
-													"ph-play", "cyan-900", "cyan-700",
-													"updateServiceStatus('"+installedServiceEntity.Name.String()+"', 'start')",
-													"Start", "cyan-700",
-												)
-										}
-										if installedServiceEntity.Nature != valueObject.ServiceNatureSolo {
-											@componentStructural.CircularIconButtonWithTooltip(
-												"ph-gear", "os-200", "os-300",
-												"openUpdateInstalledServiceModal('"+installedServiceEntity.Name.String()+"')",
-												"Edit", "os-200",
-											)
-										}
-										@componentStructural.CircularIconButtonWithTooltip(
-											"ph-trash", "red-800", "red-600",
-											"openUninstallServiceModal('"+installedServiceEntity.Name.String()+"')",
-											"Uninstall", "red-500",
-										)
-									}
-								</div>
-							</td>
-						</tr>
-					}
-					if len(installedServicesResponseDto.InstalledServicesWithMetrics) == 0 {
-						<tr class="border-b border-neutral-500 border-opacity-30 bg-neutral-950 bg-opacity-20 text-center">
-							<td class="px-3 py-4 text-center italic text-slate-500" colspan="12">No services installed yet.</td>
-						</tr>
-					}
-				</tbody>
-			</table>
-			<div class="bg-os-800 border-t border-neutral-500 border-opacity-90 p-3">
-				<data
-					id="installedServicesCurrentPageNumber"
-					class="hidden"
-					value={ strconv.Itoa(int(installedServicesResponseDto.Pagination.PageNumber)) }
-				></data>
-				@componentStructural.Pagination(
-					"installed-services", installedServicesResponseDto.Pagination,
-					"installedServicesPagination.pageNumber", "installedServicesPagination.itemsPerPage",
-				)
-			</div>
+		<div class="h-64 w-full p-2">
+			<div id="cpuAndMemoryUsageChart" class="h-full w-full"></div>
 		</div>
 	</div>
+}
+
+templ InstalledServiceNameCell(
+	installedServiceEntity dto.InstalledServiceWithMetrics,
+) {
+	@templ.JSONScript(
+		"installedServiceEntity_"+installedServiceEntity.Name.String(),
+		installedServiceEntity,
+	)
+	<div class="flex items-center gap-2">
+		<img
+			class="h-8 w-8 rounded-full"
+			if installedServiceEntity.AvatarUrl != nil {
+				src={ installedServiceEntity.AvatarUrl.String() }
+			} else {
+				src="assets/default-avatar.jpg"
+			}
+		/>
+		{ installedServiceEntity.Name.String() }
+	</div>
+	<div class="mt-1 flex flex-wrap items-center justify-normal gap-1.5">
+		@uiDisplay.Tag(uiDisplay.TagSettings{
+			Size:                 uiDisplay.TagSizeXs,
+			OuterBackgroundColor: "infinite-800",
+			OuterLeftLabel:       "type",
+			InnerLabel:           installedServiceEntity.Type.String(),
+		})
+		@uiDisplay.Tag(uiDisplay.TagSettings{
+			Size:                 uiDisplay.TagSizeXs,
+			OuterBackgroundColor: "infinite-800",
+			OuterLeftLabel:       "version",
+			InnerLabel:           installedServiceEntity.Version.String(),
+		})
+		@uiDisplay.Tag(uiDisplay.TagSettings{
+			Size:                 uiDisplay.TagSizeXs,
+			OuterBackgroundColor: "infinite-800",
+			OuterLeftLabel:       "nature",
+			InnerLabel:           installedServiceEntity.Nature.String(),
+		})
+	</div>
+}
+
+templ InstalledServiceMetricsCell(usagePercentPtr *float64) {
+	if usagePercentPtr == nil {
+		<span class="text-center text-slate-500">--</span>
+	} else {
+		@componentMisc.ProgressBar(componentMisc.ProgressBarInputDto{
+			ComponentColor:       "os-950",
+			CompletionRate:       uint8(*usagePercentPtr),
+			Label:                fmt.Sprintf("%.2f", *usagePercentPtr) + "%",
+			LabelBackgroundColor: "os-200",
+		})
+	}
+}
+
+templ InstalledServiceActionsCell(
+	installedServiceEntity dto.InstalledServiceWithMetrics,
+) {
+	<div class="flex justify-end space-x-2">
+		@uiControl.Button(uiControl.ButtonSettings{
+			IconLeft:               "ph-arrow-clockwise",
+			Shape:                  uiControl.ButtonShapeCircular,
+			Size:                   uiControl.ButtonSizeSm,
+			BackgroundColor:        "os-200",
+			BackgroundColorHover:   "os-300",
+			OnClickFunc:            "updateServiceStatus('" + installedServiceEntity.Name.String() + "', 'restart')",
+			AriaLabel:              "Restart",
+			TooltipContent:         "Restart",
+			TooltipBackgroundColor: "os-200",
+			TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
+		})
+		if installedServiceEntity.Type != valueObject.ServiceTypeSystem {
+			switch installedServiceEntity.Status {
+				case valueObject.ServiceStatusRunning:
+					@uiControl.Button(uiControl.ButtonSettings{
+						IconLeft:               "ph-pause",
+						Shape:                  uiControl.ButtonShapeCircular,
+						Size:                   uiControl.ButtonSizeSm,
+						BackgroundColor:        "yellow-900",
+						BackgroundColorHover:   "yellow-700",
+						OnClickFunc:            "updateServiceStatus('" + installedServiceEntity.Name.String() + "', 'pause')",
+						AriaLabel:              "Pause",
+						TooltipContent:         "Pause",
+						TooltipBackgroundColor: "yellow-700",
+						TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
+					})
+				case valueObject.ServiceStatusStopped:
+					@uiControl.Button(uiControl.ButtonSettings{
+						IconLeft:               "ph-play",
+						Shape:                  uiControl.ButtonShapeCircular,
+						Size:                   uiControl.ButtonSizeSm,
+						BackgroundColor:        "cyan-900",
+						BackgroundColorHover:   "cyan-700",
+						OnClickFunc:            "updateServiceStatus('" + installedServiceEntity.Name.String() + "', 'start')",
+						AriaLabel:              "Start",
+						TooltipContent:         "Start",
+						TooltipBackgroundColor: "cyan-700",
+						TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
+					})
+			}
+			if installedServiceEntity.Nature != valueObject.ServiceNatureSolo {
+				@uiControl.Button(uiControl.ButtonSettings{
+					IconLeft:               "ph-gear",
+					Shape:                  uiControl.ButtonShapeCircular,
+					Size:                   uiControl.ButtonSizeSm,
+					BackgroundColor:        "os-200",
+					BackgroundColorHover:   "os-300",
+					OnClickFunc:            "openUpdateInstalledServiceModal('" + installedServiceEntity.Name.String() + "')",
+					AriaLabel:              "Edit",
+					TooltipContent:         "Edit",
+					TooltipBackgroundColor: "os-200",
+					TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
+				})
+			}
+			@uiControl.Button(uiControl.ButtonSettings{
+				IconLeft:               "ph-trash",
+				Shape:                  uiControl.ButtonShapeCircular,
+				Size:                   uiControl.ButtonSizeSm,
+				BackgroundColor:        "red-800",
+				BackgroundColorHover:   "red-600",
+				OnClickFunc:            "openUninstallServiceModal('" + installedServiceEntity.Name.String() + "')",
+				AriaLabel:              "Uninstall",
+				TooltipContent:         "Uninstall",
+				TooltipBackgroundColor: "red-500",
+				TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
+			})
+		}
+	</div>
+}
+
+func installedServicesTableSettingsBuilder(
+	responseDto dto.ReadInstalledServicesItemsResponse,
+) uiStructural.DataTableSettings[dto.InstalledServiceWithMetrics] {
+	paginationSettings := presenterHelper.DataTablePaginationSettingsResolver(
+		responseDto.Pagination,
+	)
+
+	typeFilterOptions := []uiForm.SelectLabelValueOption{
+		{Label: "system", Value: "system"},
+		{Label: "database", Value: "database"},
+		{Label: "runtime", Value: "runtime"},
+		{Label: "webserver", Value: "webserver"},
+		{Label: "other", Value: "other"},
+	}
+	natureFilterOptions := []uiForm.SelectLabelValueOption{
+		{Label: "solo", Value: "solo"},
+		{Label: "multi", Value: "multi"},
+		{Label: "custom", Value: "custom"},
+	}
+	statusFilterOptions := []uiForm.SelectLabelValueOption{
+		{Label: "running", Value: "running"},
+		{Label: "stopped", Value: "stopped"},
+		{Label: "restarting", Value: "restarting"},
+		{Label: "uninstalled", Value: "uninstalled"},
+	}
+
+	return uiStructural.DataTableSettings[dto.InstalledServiceWithMetrics]{
+		Columns: []uiStructural.DataTableColumnSettings[dto.InstalledServiceWithMetrics]{
+			{
+				Label:        "Service",
+				SortKey:      "name",
+				WidthPercent: 30,
+				Alignment:    uiStructural.DataTableAlignmentLeft,
+				CellRenderer: func(
+					installedServiceEntity dto.InstalledServiceWithMetrics,
+				) templ.Component {
+					return InstalledServiceNameCell(installedServiceEntity)
+				},
+			},
+			{
+				Label:        "Status",
+				WidthPercent: 8,
+				CellRenderer: func(
+					installedServiceEntity dto.InstalledServiceWithMetrics,
+				) templ.Component {
+					return DataTableTextCell(installedServiceEntity.Status.String())
+				},
+			},
+			{
+				Label:        "CPU",
+				WidthPercent: 8,
+				CellRenderer: func(
+					installedServiceEntity dto.InstalledServiceWithMetrics,
+				) templ.Component {
+					if installedServiceEntity.Metrics == nil {
+						return InstalledServiceMetricsCell(nil)
+					}
+					return InstalledServiceMetricsCell(
+						&installedServiceEntity.Metrics.CpuUsagePercent,
+					)
+				},
+			},
+			{
+				Label:        "RAM",
+				WidthPercent: 8,
+				CellRenderer: func(
+					installedServiceEntity dto.InstalledServiceWithMetrics,
+				) templ.Component {
+					if installedServiceEntity.Metrics == nil {
+						return InstalledServiceMetricsCell(nil)
+					}
+					memoryUsagePercent := float64(
+						installedServiceEntity.Metrics.MemUsagePercent,
+					)
+					return InstalledServiceMetricsCell(&memoryUsagePercent)
+				},
+			},
+			{
+				Label:        "Port Bindings",
+				WidthPercent: 18,
+				CellRenderer: func(
+					installedServiceEntity dto.InstalledServiceWithMetrics,
+				) templ.Component {
+					if installedServiceEntity.PortBindings == nil ||
+						len(installedServiceEntity.PortBindings) == 0 {
+						return DataTableTextCell("--")
+					}
+					return componentStructural.PortBindingsTable(
+						installedServiceEntity.PortBindings,
+					)
+				},
+			},
+			{
+				Label:        "",
+				Alignment:    uiStructural.DataTableAlignmentRight,
+				WidthPercent: 28,
+				CellRenderer: func(
+					installedServiceEntity dto.InstalledServiceWithMetrics,
+				) templ.Component {
+					return InstalledServiceActionsCell(installedServiceEntity)
+				},
+			},
+		},
+		Rows:                 responseDto.InstalledServicesWithMetrics,
+		ItemsTotal:           paginationSettings.ItemsTotal,
+		PagesTotal:           paginationSettings.PagesTotal,
+		InitialSortKey:       paginationSettings.SortKey,
+		InitialSortDirection: paginationSettings.SortDirection,
+		Id:                   "installed-services-table",
+		IsStriped:            true,
+		Density:              uiStructural.DataTableDensityDense,
+		PageNumber:           paginationSettings.PageNumber,
+		ItemsPerPage:         uiStructural.DataTablePageSize(paginationSettings.ItemsPerPage),
+		Filters: []uiStructural.FilterSettings{
+			{
+				Key:   "name",
+				Label: "Name",
+				Kind:  uiStructural.FilterKindTextContains,
+			},
+			{
+				Key:     "type",
+				Label:   "Type",
+				Kind:    uiStructural.FilterKindEnumSelect,
+				Options: typeFilterOptions,
+			},
+			{
+				Key:     "nature",
+				Label:   "Nature",
+				Kind:    uiStructural.FilterKindEnumSelect,
+				Options: natureFilterOptions,
+			},
+			{
+				Key:     "status",
+				Label:   "Status",
+				Kind:    uiStructural.FilterKindEnumSelect,
+				Options: statusFilterOptions,
+			},
+		},
+		FilterDropdownBackgroundColor: "primary-500/95",
+		QueryUrlTemplate: "fragment/overview/services-table/?" +
+			"pageNumber=" + uiStructural.DataTableUrlPlaceholderPageNumber +
+			"&itemsPerPage=" + uiStructural.DataTableUrlPlaceholderItemsPerPage +
+			"&sortBy=" + uiStructural.DataTableUrlPlaceholderSortKey +
+			"&sortDirection=" + uiStructural.DataTableUrlPlaceholderSortDirection,
+		RefreshOnEvents: []string{
+			"install:custom-service", "update:service", "delete:service",
+		},
+		HeaderActions: componentForm.SubmitButton(
+			"", "install service", "ph-arrow-line-down",
+			"openServiceInstallationModal()", true,
+		),
+	}
+}
+
+templ InstalledServicesDataTable(
+	installedServicesResponseDto dto.ReadInstalledServicesItemsResponse,
+) {
+	@uiStructural.DataTable(installedServicesTableSettingsBuilder(installedServicesResponseDto))
 }
 
 templ InstallableServiceItemsCarousel(installableServiceEntity entity.InstallableService) {
@@ -593,10 +1012,11 @@ templ InstallableServiceItemsCarousel(installableServiceEntity entity.Installabl
 						{ installableServiceEntity.Description.String() }
 					</div>
 					<div class="basis-1/4 space-y-1.5">
-						@componentStructural.TinyTag(componentStructural.TinyTagDto{
-							HighlightedIcon: "ph-memory",
-							TagValue:        installableServiceEntity.EstimatedSizeBytes.StringWithSuffix(),
-							TagColor:        "infinite-500",
+						@uiDisplay.Tag(uiDisplay.TagSettings{
+							Size:                 uiDisplay.TagSizeXs,
+							OuterBackgroundColor: "infinite-800",
+							OuterLeftIcon:        "ph-memory",
+							InnerLabel:           installableServiceEntity.EstimatedSizeBytes.StringWithSuffix(),
 						})
 					</div>
 				</div>
@@ -798,7 +1218,7 @@ templ CustomServiceAdvancedSettings() {
 				Label:                             "Exec User",
 				TwoWayStatePath:                   "service.execUser",
 				HintValue:                         "Unix user that will be used to execute your service commands.",
-				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplay:                       uiForm.InputHintDisplayTooltip,
 				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 			@uiForm.InputField(uiForm.InputFieldSettings{
@@ -823,7 +1243,7 @@ templ CustomServiceAdvancedSettings() {
 				Label:                             "Log Output Path",
 				TwoWayStatePath:                   "service.logOutputPath",
 				HintValue:                         "Path to the file that will receive the custom service output logs.",
-				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplay:                       uiForm.InputHintDisplayTooltip,
 				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 			@uiForm.InputField(uiForm.InputFieldSettings{
@@ -832,7 +1252,7 @@ templ CustomServiceAdvancedSettings() {
 				Label:                             "Log Error Path",
 				TwoWayStatePath:                   "service.logErrorPath",
 				HintValue:                         "Path to the file that will receive the custom service error logs.",
-				HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+				HintDisplay:                       uiForm.InputHintDisplayTooltip,
 				HintDisplayTooltipBackgroundColor: "os-400",
 			})
 		</div>
@@ -888,7 +1308,7 @@ templ CustomServiceForm(
 					Label:                             "Start Command",
 					TwoWayStatePath:                   "service.startCmd",
 					HintValue:                         `Example: "/usr/bin/binary". If you need to install multiple packages to run your software, you must use the Terminal (SSH).`,
-					HintDisplay:                       uiForm.InputTypeHintDisplayTooltip,
+					HintDisplay:                       uiForm.InputHintDisplayTooltip,
 					HintDisplayTooltipBackgroundColor: "os-400",
 				})
 			</div>
@@ -953,12 +1373,14 @@ templ ServiceInstallationForm(installableServices InstallableServicesGroupedByTy
 templ ServiceInstallationModal(
 	installableServices InstallableServicesGroupedByType,
 ) {
-	@componentStructural.RegularModal(
-		"Install Service", "isServiceInstallationModalOpen",
-		"closeServiceInstallationModal()", "",
-	) {
-		@ServiceInstallationForm(installableServices)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            ServiceInstallationForm(installableServices),
+		Title:                    "Install Service",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isServiceInstallationModalOpen",
+		OnCloseFunc:              "closeServiceInstallationModal()",
+	})
 }
 
 templ UpdateInstalledServiceForm() {
@@ -979,10 +1401,12 @@ templ UpdateInstalledServiceForm() {
 }
 
 templ UpdateInstalledServiceModal() {
-	@componentStructural.RegularModal(
-		"Update Service", "isUpdateInstalledServiceModalOpen",
-		"closeUpdateInstalledServiceModal()", "service.name",
-	) {
-		@UpdateInstalledServiceForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UpdateInstalledServiceForm(),
+		TitleOneWayStatePath:     "'Update Service #' + service.name",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateInstalledServiceModalOpen",
+		OnCloseFunc:              "closeUpdateInstalledServiceModal()",
+	})
 }

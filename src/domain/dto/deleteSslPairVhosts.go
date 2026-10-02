@@ -6,10 +6,10 @@ import (
 )
 
 type DeleteSslPairVhosts struct {
-	SslPairId             valueObject.SslPairId    `json:"sslPairId"`
-	VirtualHostsHostnames []tkValueObject.Fqdn     `json:"virtualHostsHostnames"`
-	OperatorAccountId     tkValueObject.AccountId  `json:"-"`
-	OperatorIpAddress     tkValueObject.IpAddress  `json:"-"`
+	SslPairId             valueObject.SslPairId   `json:"sslPairId"`
+	VirtualHostsHostnames []tkValueObject.Fqdn    `json:"virtualHostsHostnames"`
+	OperatorAccountId     tkValueObject.AccountId `json:"-"`
+	OperatorIpAddress     tkValueObject.IpAddress `json:"-"`
 }
 
 func NewDeleteSslPairVhosts(

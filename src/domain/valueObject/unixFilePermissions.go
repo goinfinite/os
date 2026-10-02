@@ -7,7 +7,7 @@ import (
 	"strconv"
 )
 
-const unixFilePermissionsRegexExpression = `^[0-7]{3,4}$`
+var unixFilePermissionsRegex = regexp.MustCompile(`^[0-7]{3,4}$`)
 
 type UnixFilePermissions string
 
@@ -15,7 +15,7 @@ type UnixFilePermissions string
  * The "interfaceToUint" helper was not used due to the problem of octal
  * base vs decimal base in file permissions in C-like language.
  */
-func NewUnixFilePermissions(value interface{}) (
+func NewUnixFilePermissions(value any) (
 	unixFilePermission UnixFilePermissions, err error,
 ) {
 	stringValue, assertOk := value.(string)
@@ -23,8 +23,7 @@ func NewUnixFilePermissions(value interface{}) (
 		return unixFilePermission, errors.New("UnixFilePermissionsMustBeString")
 	}
 
-	re := regexp.MustCompile(unixFilePermissionsRegexExpression)
-	if !re.MatchString(stringValue) {
+	if !unixFilePermissionsRegex.MatchString(stringValue) {
 		return unixFilePermission, errors.New("InvalidUnixFilePermissions")
 	}
 
@@ -39,7 +38,7 @@ func NewUnixDirDefaultPermissions() UnixFilePermissions {
 	return UnixFilePermissions("755")
 }
 
-func (vo UnixFilePermissions) GetFileMode() fs.FileMode {
+func (vo UnixFilePermissions) FileMode() fs.FileMode {
 	intValue, _ := strconv.ParseInt(string(vo), 8, 64)
 	return fs.FileMode(intValue)
 }

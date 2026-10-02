@@ -9,7 +9,7 @@ import (
 
 type MappingSecurityRuleId uint64
 
-func NewMappingSecurityRuleId(value interface{}) (
+func NewMappingSecurityRuleId(value any) (
 	mappingSecurityRuleId MappingSecurityRuleId,
 	err error,
 ) {

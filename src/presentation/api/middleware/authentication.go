@@ -12,7 +12,7 @@ import (
 )
 
 func authError(message string) *echo.HTTPError {
-	return echo.NewHTTPError(http.StatusUnauthorized, map[string]interface{}{
+	return echo.NewHTTPError(http.StatusUnauthorized, map[string]any{
 		"status": http.StatusUnauthorized,
 		"body":   message,
 	})

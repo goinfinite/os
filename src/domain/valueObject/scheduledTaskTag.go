@@ -8,11 +8,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const scheduledTaskTagRegex string = `^[a-zA-Z][\w\-]{1,256}$`
+var scheduledTaskTagRegex = regexp.MustCompile(`^[a-zA-Z][\w\-]{1,256}$`)
 
 type ScheduledTaskTag string
 
-func NewScheduledTaskTag(value interface{}) (
+func NewScheduledTaskTag(value any) (
 	scheduledTaskTag ScheduledTaskTag, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -21,8 +21,7 @@ func NewScheduledTaskTag(value interface{}) (
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	re := regexp.MustCompile(scheduledTaskTagRegex)
-	if !re.MatchString(stringValue) {
+	if !scheduledTaskTagRegex.MatchString(stringValue) {
 		return scheduledTaskTag, errors.New("InvalidScheduledTaskTag")
 	}
 

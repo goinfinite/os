@@ -5,6 +5,8 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	uiControl "github.com/goinfinite/ui/src/control"
+	uiDisplay "github.com/goinfinite/ui/src/display"
 	"github.com/goinfinite/ui/src/toolset"
 )
 
@@ -35,10 +37,12 @@ templ CronsIndex(crons []entity.Cron) {
 		</div>
 		@CreateCronJobModal()
 		@UpdateCronJobModal()
-		@componentStructural.DeleteModal(
-			"isDeleteCronJobModalOpen", "closeDeleteCronJobModal()", "deleteCronJob()",
-			"cron.comment", "cron.id",
-		)
+		@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+			IsVisibleTwoWayStatePath: "isDeleteCronJobModalOpen",
+			OnConfirmFunc:            "deleteCronJob()",
+			CancelButtonLabel:        "No, Keep it.",
+			TargetIdStatePath:        "cron.id",
+		})
 	</div>
 }
 
@@ -79,16 +83,28 @@ templ CronsTable(crons []entity.Cron) {
 							</th>
 							<th scope="row" class="w-2/4 px-5 py-3 text-right">
 								<div class="inline-flex space-x-2">
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-pencil", "os-200", "os-100",
-										"openUpdateCronJobModal("+cronEntity.Id.String()+")",
-										"update job", "os-100",
-									)
-									@componentStructural.CircularIconButtonWithTooltip(
-										"ph-trash", "red-800", "red-600",
-										"openDeleteCronJobModal("+cronEntity.Id.String()+")",
-										"delete job", "red-500",
-									)
+									@uiControl.Button(uiControl.ButtonSettings{
+										IconLeft:               "ph-pencil",
+										Shape:                  uiControl.ButtonShapeCircular,
+										Size:                   uiControl.ButtonSizeSm,
+										BackgroundColor:        "os-200",
+										BackgroundColorHover:   "os-100",
+										OnClickFunc:            "openUpdateCronJobModal(" + cronEntity.Id.String() + ")",
+										AriaLabel:              "update job",
+										TooltipContent:         "update job",
+										TooltipBackgroundColor: "os-100",
+									})
+									@uiControl.Button(uiControl.ButtonSettings{
+										IconLeft:               "ph-trash",
+										Shape:                  uiControl.ButtonShapeCircular,
+										Size:                   uiControl.ButtonSizeSm,
+										BackgroundColor:        "red-800",
+										BackgroundColorHover:   "red-600",
+										OnClickFunc:            "openDeleteCronJobModal(" + cronEntity.Id.String() + ")",
+										AriaLabel:              "delete job",
+										TooltipContent:         "delete job",
+										TooltipBackgroundColor: "red-500",
+									})
 								</div>
 							</th>
 						</tr>
@@ -262,11 +278,14 @@ templ CreateCronJobForm() {
 }
 
 templ CreateCronJobModal() {
-	@componentStructural.RegularModal(
-		"Create Job", "isCreateCronJobModalOpen", "closeCreateCronJobModal()", "",
-	) {
-		@CreateCronJobForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateCronJobForm(),
+		Title:                    "Create Job",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateCronJobModalOpen",
+		OnCloseFunc:              "closeCreateCronJobModal()",
+	})
 }
 
 templ UpdateCronJobForm() {
@@ -325,10 +344,12 @@ templ UpdateCronJobForm() {
 }
 
 templ UpdateCronJobModal() {
-	@componentStructural.RegularModal(
-		"Update Job", "isUpdateCronJobModalOpen", "closeUpdateCronJobModal()",
-		"cron.id",
-	) {
-		@UpdateCronJobForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UpdateCronJobForm(),
+		TitleOneWayStatePath:     "'Update Job #' + cron.id",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateCronJobModalOpen",
+		OnCloseFunc:              "closeUpdateCronJobModal()",
+	})
 }

@@ -1,3 +1,4 @@
+// biome-ignore lint/suspicious/noRedundantUseStrict: additional.js loads as a classic script, so strict mode is not implied.
 "use strict";
 
 // UnoCSS customizations
@@ -60,29 +61,6 @@ window.__unocss = {
   },
 };
 
-function createFilterQueryParams(filtersObject, paginationObject) {
-  const queryParams = new URLSearchParams();
-
-  const filtersAndPaginationObject = {
-    ...filtersObject,
-    ...paginationObject,
-  };
-  for (let [key, value] of Object.entries(filtersAndPaginationObject)) {
-    if (typeof value === "number") {
-      queryParams.set(key, value);
-      continue;
-    }
-
-    const trimValue = value.trim();
-    if (trimValue === "") {
-      continue;
-    }
-    queryParams.set(key, trimValue);
-  }
-
-  return queryParams;
-}
-
 // JavaScript doesn't provide any API capable of directly downloading a blob
 // file, so it's necessary to create an invisible anchor element and artificially
 // trigger a click on it to emulate this process.
@@ -104,7 +82,6 @@ window.Infinite = {
   Envs: {
     AccessTokenCookieKey: "os-access-token",
   },
-  CreateFilterQueryParams: createFilterQueryParams,
   DownloadFile: downloadFile,
-  OsApiBasePath: document.baseURI + "api",
+  OsApiBasePath: `${document.baseURI}api`,
 };

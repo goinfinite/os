@@ -12,7 +12,7 @@ type RuntimeType string
 
 var runtimeTypes = []string{"php"}
 
-func NewRuntimeType(value interface{}) (runtimeType RuntimeType, err error) {
+func NewRuntimeType(value any) (runtimeType RuntimeType, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return runtimeType, errors.New("RuntimeTypeMustBeString")

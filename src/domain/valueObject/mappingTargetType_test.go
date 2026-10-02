@@ -4,7 +4,7 @@ import "testing"
 
 func TestMappingTargetType(t *testing.T) {
 	t.Run("ValidMappingTargetType", func(t *testing.T) {
-		validMappingTargetTypes := []interface{}{
+		validMappingTargetTypes := []any{
 			"url", "service", "response-code", "inline-html", "static-files",
 		}
 
@@ -17,7 +17,7 @@ func TestMappingTargetType(t *testing.T) {
 	})
 
 	t.Run("InvalidMappingTargetType", func(t *testing.T) {
-		invalidMappingTargetTypes := []interface{}{
+		invalidMappingTargetTypes := []any{
 			"response-header", "reverse-proxy", "template",
 		}
 

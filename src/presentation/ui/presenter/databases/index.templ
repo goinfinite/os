@@ -34,7 +34,7 @@ templ DatabasesIndex(selectedDbOverview DatabaseOverview) {
 		<div
 			id="databases-page-content"
 			hx-get={ "databases/?dbType=" + selectedDbOverview.Type.String() }
-			hx-trigger="submit from:form delay:500ms, click from:button#delete-element delay:500ms"
+			hx-trigger="submit from:form delay:500ms, click from:button#delete-database-element delay:500ms, click from:button#delete-database-user-element delay:500ms"
 			hx-select="#databases-page-content"
 			hx-target="#databases-page-content"
 			hx-swap="outerHTML transition:true"
@@ -44,17 +44,21 @@ templ DatabasesIndex(selectedDbOverview DatabaseOverview) {
 				@DatabasesTabs(selectedDbOverview)
 			</div>
 			@CreateDatabaseModal(selectedDbOverview.Type)
-			@componentStructural.DeleteModal(
-				"isDeleteDatabaseModalOpen", "closeDeleteDatabaseModal()",
-				"deleteDatabaseElement('"+selectedDbOverview.Type.String()+"')",
-				"database.name", "",
-			)
+			@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+				IsVisibleTwoWayStatePath: "isDeleteDatabaseModalOpen",
+				OnConfirmFunc:            "deleteDatabaseElement('" + selectedDbOverview.Type.String() + "')",
+				ConfirmButtonId:          "delete-database-element",
+				CancelButtonLabel:        "No, Keep it.",
+				TargetNameStatePath:      "database.name",
+			})
 			@CreateDatabaseUserModal(selectedDbOverview)
-			@componentStructural.DeleteModal(
-				"isDeleteDatabaseUserModalOpen", "closeDeleteDatabaseUserModal()",
-				"deleteDatabaseUserElement('"+selectedDbOverview.Type.String()+"')",
-				"databaseUser.username", "",
-			)
+			@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+				IsVisibleTwoWayStatePath: "isDeleteDatabaseUserModalOpen",
+				OnConfirmFunc:            "deleteDatabaseUserElement('" + selectedDbOverview.Type.String() + "')",
+				ConfirmButtonId:          "delete-database-user-element",
+				CancelButtonLabel:        "No, Keep it.",
+				TargetNameStatePath:      "databaseUser.username",
+			})
 		</div>
 	</div>
 }
@@ -102,11 +106,17 @@ templ DatabasesTabs(selectedDbOverview DatabaseOverview) {
 											<div class="bg-os-800 my-1.5 flex items-center justify-between rounded-md p-3">
 												<span class="font-normal">{ user.Username.String() }</span>
 												<div class="flex space-x-2">
-													@componentStructural.CircularIconButtonWithTooltip(
-														"ph-trash", "red-800", "red-600",
-														"openDeleteDatabaseUserModal('"+database.Name.String()+"', '"+user.Username.String()+"')",
-														"delete user", "red-500",
-													)
+													@uiControl.Button(uiControl.ButtonSettings{
+														IconLeft:               "ph-trash",
+														Shape:                  uiControl.ButtonShapeCircular,
+														Size:                   uiControl.ButtonSizeSm,
+														BackgroundColor:        "red-800",
+														BackgroundColorHover:   "red-600",
+														OnClickFunc:            "openDeleteDatabaseUserModal('" + database.Name.String() + "', '" + user.Username.String() + "')",
+														AriaLabel:              "delete user",
+														TooltipContent:         "delete user",
+														TooltipBackgroundColor: "red-500",
+													})
 												</div>
 											</div>
 										}
@@ -129,10 +139,17 @@ templ DatabasesTabs(selectedDbOverview DatabaseOverview) {
 								</td>
 								<td scope="row" class="px-5 py-3 text-right">
 									<div class="inline-flex">
-										@componentStructural.CircularIconButtonWithTooltip(
-											"ph-trash", "red-800", "red-600", "openDeleteDatabaseModal('"+database.Name.String()+"')",
-											"delete database", "red-500",
-										)
+										@uiControl.Button(uiControl.ButtonSettings{
+											IconLeft:               "ph-trash",
+											Shape:                  uiControl.ButtonShapeCircular,
+											Size:                   uiControl.ButtonSizeSm,
+											BackgroundColor:        "red-800",
+											BackgroundColorHover:   "red-600",
+											OnClickFunc:            "openDeleteDatabaseModal('" + database.Name.String() + "')",
+											AriaLabel:              "delete database",
+											TooltipContent:         "delete database",
+											TooltipBackgroundColor: "red-500",
+										})
 									</div>
 								</td>
 							</tr>
@@ -171,11 +188,14 @@ templ CreateDatabaseForm(selectedDbType valueObject.DatabaseType) {
 }
 
 templ CreateDatabaseModal(selectedDbType valueObject.DatabaseType) {
-	@componentStructural.RegularModal(
-		"Create Database", "isCreateDatabaseModalOpen", "closeCreateDatabaseModal()", "",
-	) {
-		@CreateDatabaseForm(selectedDbType)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateDatabaseForm(selectedDbType),
+		Title:                    "Create Database",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateDatabaseModalOpen",
+		OnCloseFunc:              "closeCreateDatabaseModal()",
+	})
 }
 
 func getOnlyDatabasesNames(selectedDbDatabases []entity.Database) []string {
@@ -234,10 +254,12 @@ templ CreateDatabaseUserForm(selectedDbOverview DatabaseOverview) {
 templ CreateDatabaseUserModal(
 	selectedDbOverview DatabaseOverview,
 ) {
-	@componentStructural.RegularModal(
-		"Create Database User", "isCreateDatabaseUserModalOpen",
-		"closeCreateDatabaseUserModal()", "",
-	) {
-		@CreateDatabaseUserForm(selectedDbOverview)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateDatabaseUserForm(selectedDbOverview),
+		Title:                    "Create Database User",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateDatabaseUserModalOpen",
+		OnCloseFunc:              "closeCreateDatabaseUserModal()",
+	})
 }

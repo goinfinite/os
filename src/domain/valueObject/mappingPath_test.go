@@ -4,7 +4,7 @@ import "testing"
 
 func TestNewMappingPath(t *testing.T) {
 	t.Run("ValidMappingPath", func(t *testing.T) {
-		validMappingPaths := []interface{}{
+		validMappingPaths := []any{
 			"", "/", "/img/", "/index.html", ".(png|gif|ico|jpg|jpeg)",
 			"/(media|images|cache|tmp|logs)/.*.(php|jsp|pl|py|asp|cgi|sh)$",
 			"something", "@opencart",
@@ -21,7 +21,7 @@ func TestNewMappingPath(t *testing.T) {
 	})
 
 	t.Run("InvalidMappingPath", func(t *testing.T) {
-		invalidMappingPaths := []interface{}{
+		invalidMappingPaths := []any{
 			"UNION SELECT * FROM USERS", "/path\n/path", "?param=value",
 			"https://www.google.com", "/path/'; DROP TABLE users; --",
 		}

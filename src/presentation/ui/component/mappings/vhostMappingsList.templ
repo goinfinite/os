@@ -4,7 +4,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
-	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	uiControl "github.com/goinfinite/ui/src/control"
 	"github.com/goinfinite/ui/src/display"
 )
 
@@ -114,16 +114,28 @@ templ VirtualHostMappingsList(
 			}
 		</div>
 		<div class="flex gap-2">
-			@componentStructural.CircularIconButtonWithTooltip(
-				"ph-pencil", "neutral-50/10", "neutral-50/30",
-				"openUpdateMappingModal('"+mappingEntity.Id.String()+"')", "update",
-				"neutral-50/10",
-			)
-			@componentStructural.CircularIconButtonWithTooltip(
-				"ph-trash", "red-800", "red-600",
-				"openDeleteMappingModal('"+mappingEntity.Id.String()+"', '"+mappingEntity.Path.String()+"')",
-				"delete", "red-500",
-			)
+			@uiControl.Button(uiControl.ButtonSettings{
+				IconLeft:               "ph-pencil",
+				Shape:                  uiControl.ButtonShapeCircular,
+				Size:                   uiControl.ButtonSizeSm,
+				BackgroundColor:        "neutral-50/10",
+				BackgroundColorHover:   "neutral-50/30",
+				OnClickFunc:            "openUpdateMappingModal('" + mappingEntity.Id.String() + "')",
+				AriaLabel:              "update",
+				TooltipContent:         "update",
+				TooltipBackgroundColor: "neutral-50/10",
+			})
+			@uiControl.Button(uiControl.ButtonSettings{
+				IconLeft:               "ph-trash",
+				Shape:                  uiControl.ButtonShapeCircular,
+				Size:                   uiControl.ButtonSizeSm,
+				BackgroundColor:        "red-800",
+				BackgroundColorHover:   "red-600",
+				OnClickFunc:            "openDeleteMappingModal('" + mappingEntity.Id.String() + "', '" + mappingEntity.Path.String() + "')",
+				AriaLabel:              "delete",
+				TooltipContent:         "delete",
+				TooltipBackgroundColor: "red-500",
+			})
 		</div>
 	</div>
 }

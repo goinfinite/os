@@ -33,7 +33,7 @@ func NewSslsPresenter(
 }
 
 func (presenter *SslsPresenter) Handler(c echo.Context) error {
-	sslPairsReadResponseLiaisonOutput := presenter.sslLiaison.Read(map[string]interface{}{
+	sslPairsReadResponseLiaisonOutput := presenter.sslLiaison.Read(map[string]any{
 		"itemsPerPage": 1000,
 	})
 	if sslPairsReadResponseLiaisonOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {

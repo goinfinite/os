@@ -9,7 +9,7 @@ import (
 
 type SecureAccessPublicKeyId uint16
 
-func NewSecureAccessPublicKeyId(value interface{}) (keyId SecureAccessPublicKeyId, err error) {
+func NewSecureAccessPublicKeyId(value any) (keyId SecureAccessPublicKeyId, err error) {
 	uintValue, err := tkVoUtil.InterfaceToUint(value)
 	if err != nil {
 		return keyId, errors.New("SecureAccessPublicKeyIdMustBeUint")

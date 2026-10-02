@@ -6,24 +6,27 @@ WORKDIR /infinite
 RUN apt-get update && apt-get upgrade -y \
 	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends bind9-dnsutils build-essential ca-certificates certbot cron \
 	curl debian-archive-keyring git gnupg2 haveged lsb-release procps rsync supervisor \
-	tar unzip vim wget zip unattended-upgrades
+	tar tmux unzip vim wget zip unattended-upgrades
 
 RUN curl -sL --proto '=https' --tlsv1.2 "https://nginx.org/keys/nginx_signing.key" | gpg --dearmor >"/usr/share/keyrings/nginx-archive-keyring.gpg" \
 	&& echo "deb [signed-by=/usr/share/keyrings/nginx-archive-keyring.gpg] https://nginx.org/packages/debian $(lsb_release -cs) nginx" >"/etc/apt/sources.list.d/nginx.list" \
 	&& DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends nginx logrotate \
 	&& mkdir -p /app/conf/pki \
-	&& chown -R nobody:nogroup /app
+	&& chown root:nogroup /app \
+	&& chmod 1775 /app
 
 RUN curl -sL --proto '=https' --tlsv1.2 "https://mise.run" \
 	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
 	&& chmod +x /usr/local/bin/mise \
-	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile
+	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile \
+	&& echo 'export PATH="$HOME/.local/bin:$PATH"' >>/etc/profile \
+	&& echo 'set -as terminal-features ",*:RGB"' >/etc/tmux.conf
 
 ENV MISE_DATA_DIR=/usr/local/share/mise
 
 COPY /container/nginx/root/* /etc/nginx/
 
-COPY --chown=nobody:nogroup /container/nginx/user/ /app/conf/nginx/
+COPY --chown=root:root /container/nginx/user/ /app/conf/nginx/
 
 COPY /container/supervisord.conf /infinite/supervisord.conf
 

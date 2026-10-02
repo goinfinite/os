@@ -4,7 +4,7 @@ import "testing"
 
 func TestServiceStatus(t *testing.T) {
 	t.Run("ValidServiceStatuses", func(t *testing.T) {
-		validStatusAndAliases := []interface{}{
+		validStatusAndAliases := []any{
 			"running", "run", "up", "true", "false", "off", "no", "stop", "stopped",
 			"halt", "uninstall", "uninstalled", "remove", "purge",
 		}
@@ -18,7 +18,7 @@ func TestServiceStatus(t *testing.T) {
 	})
 
 	t.Run("InvalidServiceStatuses", func(t *testing.T) {
-		invalidStatusAndAliases := []interface{}{
+		invalidStatusAndAliases := []any{
 			"runningg", "runn", "upp", "truee", "falsee", "offf", "runn1ng",
 			"un11install",
 		}

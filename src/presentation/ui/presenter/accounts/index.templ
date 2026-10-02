@@ -5,7 +5,9 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	uiControl "github.com/goinfinite/ui/src/control"
 	uiDisplay "github.com/goinfinite/ui/src/display"
+	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 	"strconv"
 )
@@ -39,17 +41,22 @@ templ AccountsIndex(accountsEntities []entity.Account) {
 		@CreateAccountModal()
 		@UpdateAccountModal()
 		@UpdateApiKeyModal()
-		@componentStructural.DeleteModal(
-			"isDeleteAccountModalOpen", "closeDeleteAccountModal()", "deleteAccount()",
-			"account.username", "account.id",
-		)
+		@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+			IsVisibleTwoWayStatePath: "isDeleteAccountModalOpen",
+			OnConfirmFunc:            "deleteAccount()",
+			CancelButtonLabel:        "No, Keep it.",
+			TargetNameStatePath:      "account.username",
+			TargetIdStatePath:        "account.id",
+		})
 		@SecureAccessPublicKeysModal()
 		@CreateSecureAccessPublicKeyModal()
-		@componentStructural.DeleteModal(
-			"isDeleteSecureAccessPublicKeyModalOpen", "closeDeleteSecureAccessPublicKeyModal()",
-			"deleteSecureAccessPublicKey(); closeSecureAccessPublicKeysModal()",
-			"secureAccessPublicKey.name", "secureAccessPublicKey.id",
-		)
+		@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+			IsVisibleTwoWayStatePath: "isDeleteSecureAccessPublicKeyModalOpen",
+			OnConfirmFunc:            "deleteSecureAccessPublicKey(); closeSecureAccessPublicKeysModal()",
+			CancelButtonLabel:        "No, Keep it.",
+			TargetNameStatePath:      "secureAccessPublicKey.name",
+			TargetIdStatePath:        "secureAccessPublicKey.id",
+		})
 	</div>
 }
 
@@ -95,26 +102,50 @@ templ AccountsTable(accountsEntities []entity.Account) {
 						<td class="w-1/5">{ accountEntity.CreatedAt.ReadDateOnly() }</td>
 						<td class="float-right">
 							<div class="flex gap-2">
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-gear", "os-200", "os-100",
-									"openUpdateAccountModal("+accountEntity.Id.String()+", "+strconv.FormatBool(accountEntity.IsSuperAdmin)+")",
-									"update account", "os-100",
-								)
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-key", "os-200", "os-100",
-									"openUpdateApiKeyModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
-									"update api key", "os-100",
-								)
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-fingerprint", "os-200", "os-100",
-									"openSecureAccessPublicKeysModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
-									"view secure access public keys", "os-100",
-								)
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-trash", "red-800", "red-600",
-									"openDeleteAccountModal("+accountEntity.Id.String()+", '"+accountEntity.Username.String()+"')",
-									"delete account", "red-500",
-								)
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-gear",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "os-200",
+									BackgroundColorHover:   "os-100",
+									OnClickFunc:            "openUpdateAccountModal(" + accountEntity.Id.String() + ", " + strconv.FormatBool(accountEntity.IsSuperAdmin) + ")",
+									AriaLabel:              "update account",
+									TooltipContent:         "update account",
+									TooltipBackgroundColor: "os-100",
+								})
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-key",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "os-200",
+									BackgroundColorHover:   "os-100",
+									OnClickFunc:            "openUpdateApiKeyModal(" + accountEntity.Id.String() + ", '" + accountEntity.Username.String() + "')",
+									AriaLabel:              "update api key",
+									TooltipContent:         "update api key",
+									TooltipBackgroundColor: "os-100",
+								})
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-fingerprint",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "os-200",
+									BackgroundColorHover:   "os-100",
+									OnClickFunc:            "openSecureAccessPublicKeysModal(" + accountEntity.Id.String() + ", '" + accountEntity.Username.String() + "')",
+									AriaLabel:              "view secure access public keys",
+									TooltipContent:         "view secure access public keys",
+									TooltipBackgroundColor: "os-100",
+								})
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-trash",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "red-800",
+									BackgroundColorHover:   "red-600",
+									OnClickFunc:            "openDeleteAccountModal(" + accountEntity.Id.String() + ", '" + accountEntity.Username.String() + "')",
+									AriaLabel:              "delete account",
+									TooltipContent:         "delete account",
+									TooltipBackgroundColor: "red-500",
+								})
 							</div>
 						</td>
 					</tr>
@@ -164,11 +195,14 @@ templ CreateAccountForm() {
 }
 
 templ CreateAccountModal() {
-	@componentStructural.RegularModal(
-		"Create Account", "isCreateAccountModalOpen", "closeCreateAccountModal()", "",
-	) {
-		@CreateAccountForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateAccountForm(),
+		Title:                    "Create Account",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateAccountModalOpen",
+		OnCloseFunc:              "closeCreateAccountModal()",
+	})
 }
 
 templ UpdateAccountForm() {
@@ -203,12 +237,14 @@ templ UpdateAccountForm() {
 }
 
 templ UpdateAccountModal() {
-	@componentStructural.RegularModal(
-		"Update Account", "isUpdateAccountModalOpen", "closeUpdateAccountModal()",
-		"account.id",
-	) {
-		@UpdateAccountForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UpdateAccountForm(),
+		TitleOneWayStatePath:     "'Update Account #' + account.id",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateAccountModalOpen",
+		OnCloseFunc:              "closeUpdateAccountModal()",
+	})
 }
 
 templ UpdateApiKeyContent() {
@@ -236,12 +272,14 @@ templ UpdateApiKeyContent() {
 }
 
 templ UpdateApiKeyModal() {
-	@componentStructural.RegularModal(
-		"Update Api Key", "isUpdateApiKeyModalOpen", "closeUpdateApiKeyModal()",
-		"account.username",
-	) {
-		@UpdateApiKeyContent()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UpdateApiKeyContent(),
+		TitleOneWayStatePath:     "'Update Api Key #' + account.username",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateApiKeyModalOpen",
+		OnCloseFunc:              "closeUpdateApiKeyModal()",
+	})
 }
 
 templ SecureAccessPublicKeysList() {
@@ -265,11 +303,17 @@ templ SecureAccessPublicKeysList() {
 					</div>
 					<div class="w-10% flex flex-col justify-center">
 						<div class="ml-auto">
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-trash", "red-800", "red-600",
-								"openDeleteSecureAccessPublicKeyModal(key.id, key.name)",
-								"delete public key", "red-500",
-							)
+							@uiControl.Button(uiControl.ButtonSettings{
+								IconLeft:               "ph-trash",
+								Shape:                  uiControl.ButtonShapeCircular,
+								Size:                   uiControl.ButtonSizeSm,
+								BackgroundColor:        "red-800",
+								BackgroundColorHover:   "red-600",
+								OnClickFunc:            "openDeleteSecureAccessPublicKeyModal(key.id, key.name)",
+								AriaLabel:              "delete public key",
+								TooltipContent:         "delete public key",
+								TooltipBackgroundColor: "red-500",
+							})
 						</div>
 					</div>
 				</div>
@@ -288,12 +332,14 @@ templ SecureAccessPublicKeysList() {
 }
 
 templ SecureAccessPublicKeysModal() {
-	@componentStructural.RegularModal(
-		"Secure Access Public Keys", "isSecureAccessPublicKeysModalOpen",
-		"closeSecureAccessPublicKeysModal()", "account.username",
-	) {
-		@SecureAccessPublicKeysList()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            SecureAccessPublicKeysList(),
+		TitleOneWayStatePath:     "'Secure Access Public Keys #' + account.username",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isSecureAccessPublicKeysModalOpen",
+		OnCloseFunc:              "closeSecureAccessPublicKeysModal()",
+	})
 }
 
 templ CreateSecureAccessPublicKeyForm() {
@@ -305,18 +351,20 @@ templ CreateSecureAccessPublicKeyForm() {
 	>
 		<div class="mb-6 space-y-6">
 			<input type="hidden" name="accountId" x-bind:value="account.id"/>
-			@componentForm.InputField(componentForm.InputFieldDto{
-				Type:               "text",
-				Id:                 "name",
-				Label:              "Key Name (Aliases)",
-				BindModelValuePath: "secureAccessPublicKey.name",
-				InfoTooltipContent: "Optional as long as there is a name in the key's content. Otherwise, must be provided.",
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:       uiForm.InputTypeText,
+				InputName:       "name",
+				Label:           "Key Name (Aliases)",
+				TwoWayStatePath: "secureAccessPublicKey.name",
+				HintValue:       "Optional as long as there is a name in the key's content. Otherwise, must be provided.",
+				HintDisplay:     uiForm.InputHintDisplayTooltip,
 			})
-			@componentForm.TextArea(componentForm.TextAreaDto{
-				Id:                 "content",
-				Label:              "Key Content",
-				BindModelValuePath: "secureAccessPublicKey.content",
-				InfoTooltipContent: "If no name is provide, the name from the content added here will be used.",
+			@uiForm.TextArea(uiForm.TextAreaSettings{
+				InputName:       "content",
+				Label:           "Key Content",
+				TwoWayStatePath: "secureAccessPublicKey.content",
+				HintValue:       "If no name is provide, the name from the content added here will be used.",
+				HintDisplay:     uiForm.InputHintDisplayTooltip,
 			})
 		</div>
 		@componentForm.SubmitButton(
@@ -329,10 +377,12 @@ templ CreateSecureAccessPublicKeyForm() {
 }
 
 templ CreateSecureAccessPublicKeyModal() {
-	@componentStructural.RegularModal(
-		"Upload Secure Access Key", "isCreateSecureAccessPublicKeyModalOpen",
-		"closeCreateSecureAccessPublicKeyModal()", "account.username",
-	) {
-		@CreateSecureAccessPublicKeyForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateSecureAccessPublicKeyForm(),
+		TitleOneWayStatePath:     "'Upload Secure Access Key #' + account.username",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateSecureAccessPublicKeyModalOpen",
+		OnCloseFunc:              "closeCreateSecureAccessPublicKeyModal()",
+	})
 }

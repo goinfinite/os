@@ -2,7 +2,6 @@ package o11yInfra
 
 import (
 	"errors"
-	"log"
 	"log/slog"
 	"os"
 	"os/exec"
@@ -38,7 +37,7 @@ func NewO11yQueryRepo(
 	}
 }
 
-func (repo *O11yQueryRepo) getUptime() (uint64, error) {
+func (repo *O11yQueryRepo) readUptime() (uint64, error) {
 	nowEpoch := tkValueObject.NewUnixTimeNow()
 	rawFirstPidEpoch, err := tkInfra.NewShell(tkInfra.ShellSettings{
 		Command:           "stat -c '%Y' /proc/1",
@@ -83,7 +82,7 @@ func (repo *O11yQueryRepo) isCgroupV2() bool {
 	return err == nil
 }
 
-func (repo *O11yQueryRepo) getFileContent(file string) (string, error) {
+func (repo *O11yQueryRepo) readFileContent(file string) (string, error) {
 	fileContent, err := repo.fileClerk.ReadFileContent(file, nil)
 	if err != nil {
 		return "", err
@@ -92,19 +91,19 @@ func (repo *O11yQueryRepo) getFileContent(file string) (string, error) {
 	return strings.TrimSpace(fileContent), nil
 }
 
-func (repo *O11yQueryRepo) getCpuCores() (float64, error) {
-	cpuQuotaStr, err := repo.getFileContent("/sys/fs/cgroup/cpu/cpu.cfs_quota_us")
+func (repo *O11yQueryRepo) readCpuCores() (float64, error) {
+	cpuQuotaStr, err := repo.readFileContent("/sys/fs/cgroup/cpu/cpu.cfs_quota_us")
 	if err != nil {
 		cpuQuotaStr = "max"
 	}
 
-	cpuPeriodStr, err := repo.getFileContent("/sys/fs/cgroup/cpu/cpu.cfs_period_us")
+	cpuPeriodStr, err := repo.readFileContent("/sys/fs/cgroup/cpu/cpu.cfs_period_us")
 	if err != nil {
 		cpuPeriodStr = "100000"
 	}
 
 	if repo.isCgroupV2() {
-		cpuQuotaPeriodStr, err := repo.getFileContent("/sys/fs/cgroup/cpu.max")
+		cpuQuotaPeriodStr, err := repo.readFileContent("/sys/fs/cgroup/cpu.max")
 		if err != nil {
 			cpuQuotaPeriodStr = "max 100000"
 		}
@@ -128,13 +127,13 @@ func (repo *O11yQueryRepo) getCpuCores() (float64, error) {
 	return cpuQuotaInt / cpuPeriodInt, nil
 }
 
-func (repo *O11yQueryRepo) getMemoryLimit() (tkValueObject.Byte, error) {
+func (repo *O11yQueryRepo) readMemoryLimit() (tkValueObject.Byte, error) {
 	memLimitFile := "/sys/fs/cgroup/memory/memory.limit_in_bytes"
 	if repo.isCgroupV2() {
 		memLimitFile = "/sys/fs/cgroup/memory.max"
 	}
 
-	memLimit, err := repo.getFileContent(memLimitFile)
+	memLimit, err := repo.readFileContent(memLimitFile)
 	if err != nil {
 		memLimit = "max"
 	}
@@ -144,7 +143,7 @@ func (repo *O11yQueryRepo) getMemoryLimit() (tkValueObject.Byte, error) {
 		var sysInfo syscall.Sysinfo_t
 		err = syscall.Sysinfo(&sysInfo)
 		if err != nil {
-			return 0, errors.New("GetSysInfoError")
+			return 0, errors.New("ReadSysInfoError")
 		}
 
 		memLimitInt = int64(sysInfo.Totalram * uint64(sysInfo.Unit))
@@ -153,7 +152,7 @@ func (repo *O11yQueryRepo) getMemoryLimit() (tkValueObject.Byte, error) {
 	return tkValueObject.NewByte(memLimitInt)
 }
 
-func (repo *O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
+func (repo *O11yQueryRepo) readStorageInfo() (valueObject.StorageInfo, error) {
 	var storageInfo valueObject.StorageInfo
 
 	var stat syscall.Statfs_t
@@ -187,7 +186,7 @@ func (repo *O11yQueryRepo) getStorageInfo() (valueObject.StorageInfo, error) {
 	), nil
 }
 
-func (repo *O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error) {
+func (repo *O11yQueryRepo) readHardwareSpecs() (valueObject.HardwareSpecs, error) {
 	cmd := exec.Command(
 		infraEnvs.AwkBinaryPath,
 		"-F:",
@@ -196,8 +195,8 @@ func (repo *O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error)
 	)
 	output, err := cmd.Output()
 	if err != nil {
-		log.Printf("GetCpuSpecsFailed: %v", err)
-		return valueObject.HardwareSpecs{}, errors.New("GetCpuSpecsFailed")
+		slog.Error("ReadCpuSpecsFailed", slog.String("err", err.Error()))
+		return valueObject.HardwareSpecs{}, errors.New("ReadCpuSpecsFailed")
 	}
 	trimmedOutput := strings.TrimSpace(string(output))
 	if trimmedOutput == "" {
@@ -213,23 +212,23 @@ func (repo *O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error)
 	cpuFrequency := strings.TrimSpace(cpuInfo[1])
 	cpuFrequencyFloat, err := strconv.ParseFloat(cpuFrequency, 64)
 	if err != nil {
-		log.Printf("GetCpuFrequencyFailed: %v", err)
-		return valueObject.HardwareSpecs{}, errors.New("GetCpuFrequencyFailed")
+		slog.Error("ReadCpuFrequencyFailed", slog.String("err", err.Error()))
+		return valueObject.HardwareSpecs{}, errors.New("ReadCpuFrequencyFailed")
 	}
 
-	cpuCores, err := repo.getCpuCores()
+	cpuCores, err := repo.readCpuCores()
 	if err != nil {
-		return valueObject.HardwareSpecs{}, errors.New("GetCpuQuotaFailed")
+		return valueObject.HardwareSpecs{}, errors.New("ReadCpuQuotaFailed")
 	}
 
-	memoryLimit, err := repo.getMemoryLimit()
+	memoryLimit, err := repo.readMemoryLimit()
 	if err != nil {
-		return valueObject.HardwareSpecs{}, errors.New("GetMemoryLimitFailed")
+		return valueObject.HardwareSpecs{}, errors.New("ReadMemoryLimitFailed")
 	}
 
-	storageInfo, err := repo.getStorageInfo()
+	storageInfo, err := repo.readStorageInfo()
 	if err != nil {
-		return valueObject.HardwareSpecs{}, errors.New("GetStorageInfoFailed")
+		return valueObject.HardwareSpecs{}, errors.New("ReadStorageInfoFailed")
 	}
 
 	return valueObject.NewHardwareSpecs(
@@ -241,27 +240,27 @@ func (repo *O11yQueryRepo) getHardwareSpecs() (valueObject.HardwareSpecs, error)
 	), nil
 }
 
-func (repo *O11yQueryRepo) getCpuUsagePercent() (float64, error) {
+func (repo *O11yQueryRepo) readCpuUsagePercent() (float64, error) {
 	cpuUsageFile := "/sys/fs/cgroup/cpuacct/cpuacct.usage"
 	if repo.isCgroupV2() {
 		cpuUsageFile = "/sys/fs/cgroup/cpu.stat"
 	}
 
 	readUsageFileErr := false
-	startCpuUsage, err := repo.getFileContent(cpuUsageFile)
+	startCpuUsage, err := repo.readFileContent(cpuUsageFile)
 	if err != nil {
 		readUsageFileErr = true
-		startCpuUsage, err = repo.getFileContent("/proc/stat")
+		startCpuUsage, err = repo.readFileContent("/proc/stat")
 		if err != nil {
 			return 0, errors.New("CpuStartUsageFileError")
 		}
 		startCpuUsage = strings.Fields(startCpuUsage)[2]
 	}
 	time.Sleep(time.Second)
-	endCpuUsage, err := repo.getFileContent(cpuUsageFile)
+	endCpuUsage, err := repo.readFileContent(cpuUsageFile)
 	if err != nil {
 		readUsageFileErr = true
-		endCpuUsage, err = repo.getFileContent("/proc/stat")
+		endCpuUsage, err = repo.readFileContent("/proc/stat")
 		if err != nil {
 			return 0, errors.New("CpuEndUsageFileError")
 		}
@@ -282,9 +281,9 @@ func (repo *O11yQueryRepo) getCpuUsagePercent() (float64, error) {
 		return 0, errors.New("ParseCpuEndUsageFailed")
 	}
 
-	cpuCores, err := repo.getCpuCores()
+	cpuCores, err := repo.readCpuCores()
 	if err != nil {
-		return 0, errors.New("GetCpuCoresFailed")
+		return 0, errors.New("ReadCpuCoresFailed")
 	}
 	cpuCoresUs := cpuCores * 1000000
 
@@ -300,13 +299,13 @@ func (repo *O11yQueryRepo) getCpuUsagePercent() (float64, error) {
 	return cpuUsagePercent, nil
 }
 
-func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
+func (repo *O11yQueryRepo) readMemUsagePercent() (float64, error) {
 	memUsageFile := "/sys/fs/cgroup/memory/memory.usage_in_bytes"
 	if repo.isCgroupV2() {
 		memUsageFile = "/sys/fs/cgroup/memory.current"
 	}
 
-	memUsageStr, err := repo.getFileContent(memUsageFile)
+	memUsageStr, err := repo.readFileContent(memUsageFile)
 	if err != nil {
 		memUsageCmd := exec.Command(
 			infraEnvs.AwkBinaryPath,
@@ -315,7 +314,7 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 		)
 		cmdOutput, err := memUsageCmd.Output()
 		if err != nil {
-			return 0, errors.New("GetMemUsageFailed")
+			return 0, errors.New("ReadMemUsageFailed")
 		}
 
 		memUsageStr = strings.TrimSpace(string(cmdOutput))
@@ -325,9 +324,9 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 		return 0, errors.New("ParseMemUsageFailed")
 	}
 
-	memLimit, err := repo.getMemoryLimit()
+	memLimit, err := repo.readMemoryLimit()
 	if err != nil {
-		return 0, errors.New("GetMemoryLimitFailed")
+		return 0, errors.New("ReadMemoryLimitFailed")
 	}
 	memUsagePercent := (memUsageFloat / float64(memLimit)) * 100
 	if memUsagePercent > 100 {
@@ -337,20 +336,20 @@ func (repo *O11yQueryRepo) getMemUsagePercent() (float64, error) {
 	return memUsagePercent, nil
 }
 
-func (repo *O11yQueryRepo) getCurrentResourceUsage() (
+func (repo *O11yQueryRepo) readCurrentResourceUsage() (
 	resourceUsage valueObject.CurrentResourceUsage,
 	err error,
 ) {
-	cpuUsagePercent, err := repo.getCpuUsagePercent()
+	cpuUsagePercent, err := repo.readCpuUsagePercent()
 	if err != nil {
 		return resourceUsage, err
 	}
-	memUsagePercent, err := repo.getMemUsagePercent()
+	memUsagePercent, err := repo.readMemUsagePercent()
 	if err != nil {
 		return resourceUsage, err
 	}
 
-	storageInfo, err := repo.getStorageInfo()
+	storageInfo, err := repo.readStorageInfo()
 	if err != nil {
 		return resourceUsage, errors.New("ReadStorageInfoFailed")
 	}
@@ -383,10 +382,10 @@ func (repo *O11yQueryRepo) ReadOverview(
 
 	hostname, err := tkValueObject.NewFqdn(hostnameStr)
 	if err != nil {
-		return o11yOverview, errors.New("GetHostnameFailed")
+		return o11yOverview, errors.New("ReadHostnameFailed")
 	}
 
-	uptimeSecs, err := repo.getUptime()
+	uptimeSecs, err := repo.readUptime()
 	if err != nil {
 		uptimeSecs = 0
 	}
@@ -404,14 +403,14 @@ func (repo *O11yQueryRepo) ReadOverview(
 		publicIpAddress, _ = tkValueObject.NewIpAddress("0.0.0.0")
 	}
 
-	hardwareSpecs, err := repo.getHardwareSpecs()
+	hardwareSpecs, err := repo.readHardwareSpecs()
 	if err != nil {
 		return o11yOverview, errors.New("ReadHardwareSpecsFailed: " + err.Error())
 	}
 
 	resourceUsage := valueObject.CurrentResourceUsage{}
 	if withResourceUsage {
-		currentResourceUsage, err := repo.getCurrentResourceUsage()
+		currentResourceUsage, err := repo.readCurrentResourceUsage()
 		if err != nil {
 			return o11yOverview, errors.New("ReadCurrentResourceUsageFailed: " + err.Error())
 		}

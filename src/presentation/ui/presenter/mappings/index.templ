@@ -69,20 +69,26 @@ templ MappingsIndex(
 		@MappingsFormTable(vhostsWithMappings)
 		@CreateVirtualHostModal(vhostsHostnames)
 		@UpdateVirtualHostModal()
-		@componentStructural.DeleteModal(
-			"isDeleteVirtualHostModalOpen", "closeDeleteVirtualHostModal()", "deleteVirtualHostElement()",
-			"virtualHost.hostname", "virtualHost.hostname",
-		)
+		@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+			IsVisibleTwoWayStatePath: "isDeleteVirtualHostModalOpen",
+			OnConfirmFunc:            "deleteVirtualHostElement()",
+			CancelButtonLabel:        "No, Keep it.",
+			TargetNameStatePath:      "virtualHost.hostname",
+			TargetIdStatePath:        "virtualHost.hostname",
+		})
 		@CreateMappingModal(
 			vhostsHostnames, installedServiceNames, secRulesLabelValueOptions,
 		)
 		@UpdateMappingModal(
 			installedServiceNames, secRulesLabelValueOptions,
 		)
-		@componentStructural.DeleteModal(
-			"isDeleteMappingModalOpen", "closeDeleteMappingModal()", "deleteMappingElement()",
-			"mapping.path", "mapping.id",
-		)
+		@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+			IsVisibleTwoWayStatePath: "isDeleteMappingModalOpen",
+			OnConfirmFunc:            "deleteMappingElement()",
+			CancelButtonLabel:        "No, Keep it.",
+			TargetNameStatePath:      "mapping.path",
+			TargetIdStatePath:        "mapping.id",
+		})
 	</div>
 }
 
@@ -115,22 +121,40 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 							{ vhostHostname }
 						</p>
 						<div class="flex space-x-2">
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-plus", "infinite-500", "infinite-200",
-								"openCreateMappingFromVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
-								"create mapping", "neutral-50/10",
-							)
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-pencil", "neutral-50/10", "neutral-50/30",
-								"openUpdateVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
-								"update vhost", "neutral-50/10",
-							)
+							@uiControl.Button(uiControl.ButtonSettings{
+								IconLeft:               "ph-plus",
+								Shape:                  uiControl.ButtonShapeCircular,
+								Size:                   uiControl.ButtonSizeSm,
+								BackgroundColor:        "infinite-500",
+								BackgroundColorHover:   "infinite-200",
+								OnClickFunc:            "openCreateMappingFromVirtualHostModal('" + vhostWithMappings.Hostname.String() + "')",
+								AriaLabel:              "create mapping",
+								TooltipContent:         "create mapping",
+								TooltipBackgroundColor: "neutral-50/10",
+							})
+							@uiControl.Button(uiControl.ButtonSettings{
+								IconLeft:               "ph-pencil",
+								Shape:                  uiControl.ButtonShapeCircular,
+								Size:                   uiControl.ButtonSizeSm,
+								BackgroundColor:        "neutral-50/10",
+								BackgroundColorHover:   "neutral-50/30",
+								OnClickFunc:            "openUpdateVirtualHostModal('" + vhostWithMappings.Hostname.String() + "')",
+								AriaLabel:              "update vhost",
+								TooltipContent:         "update vhost",
+								TooltipBackgroundColor: "neutral-50/10",
+							})
 							if !vhostWithMappings.IsPrimary {
-								@componentStructural.CircularIconButtonWithTooltip(
-									"ph-trash", "red-800", "red-600",
-									"openDeleteVirtualHostModal('"+vhostWithMappings.Hostname.String()+"')",
-									"delete vhost", "red-500",
-								)
+								@uiControl.Button(uiControl.ButtonSettings{
+									IconLeft:               "ph-trash",
+									Shape:                  uiControl.ButtonShapeCircular,
+									Size:                   uiControl.ButtonSizeSm,
+									BackgroundColor:        "red-800",
+									BackgroundColorHover:   "red-600",
+									OnClickFunc:            "openDeleteVirtualHostModal('" + vhostWithMappings.Hostname.String() + "')",
+									AriaLabel:              "delete vhost",
+									TooltipContent:         "delete vhost",
+									TooltipBackgroundColor: "red-500",
+								})
 							}
 						</div>
 					</div>
@@ -267,12 +291,14 @@ templ CreateVirtualHostForm(existingHostnames []string) {
 }
 
 templ CreateVirtualHostModal(existingHostnames []string) {
-	@componentStructural.RegularModal(
-		"Create Virtual Host", "isCreateVirtualHostModalOpen", "closeCreateVirtualHostModal()",
-		"",
-	) {
-		@CreateVirtualHostForm(existingHostnames)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateVirtualHostForm(existingHostnames),
+		Title:                    "Create Virtual Host",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateVirtualHostModalOpen",
+		OnCloseFunc:              "closeCreateVirtualHostModal()",
+	})
 }
 
 templ UpdateVirtualHostForm() {
@@ -297,12 +323,14 @@ templ UpdateVirtualHostForm() {
 }
 
 templ UpdateVirtualHostModal() {
-	@componentStructural.RegularModal(
-		"Update Virtual Host", "isUpdateVirtualHostModalOpen",
-		"closeUpdateVirtualHostModal()", "",
-	) {
-		@UpdateVirtualHostForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UpdateVirtualHostForm(),
+		Title:                    "Update Virtual Host",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateVirtualHostModalOpen",
+		OnCloseFunc:              "closeUpdateVirtualHostModal()",
+	})
 }
 
 templ MappingFormAdvancedSettings(secRulesLabelValueOptions []uiForm.SelectLabelValueOption) {
@@ -441,12 +469,14 @@ templ CreateMappingModal(
 	installedServiceNames []string,
 	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
-	@componentStructural.RegularModal(
-		"Create Mapping", "isCreateMappingModalOpen", "closeCreateMappingModal()",
-		"",
-	) {
-		@CreateMappingForm(vhostsHostnames, installedServiceNames, secRulesLabelValueOptions)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateMappingForm(vhostsHostnames, installedServiceNames, secRulesLabelValueOptions),
+		Title:                    "Create Mapping",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateMappingModalOpen",
+		OnCloseFunc:              "closeCreateMappingModal()",
+	})
 }
 
 templ UpdateMappingForm(
@@ -531,9 +561,12 @@ templ UpdateMappingModal(
 	installedServiceNames []string,
 	secRulesLabelValueOptions []uiForm.SelectLabelValueOption,
 ) {
-	@componentStructural.RegularModal(
-		"Update Mapping", "isUpdateMappingModalOpen", "closeUpdateMappingModal()", "mapping.id",
-	) {
-		@UpdateMappingForm(installedServiceNames, secRulesLabelValueOptions)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UpdateMappingForm(installedServiceNames, secRulesLabelValueOptions),
+		TitleOneWayStatePath:     "'Update Mapping #' + mapping.id",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateMappingModalOpen",
+		OnCloseFunc:              "closeUpdateMappingModal()",
+	})
 }
