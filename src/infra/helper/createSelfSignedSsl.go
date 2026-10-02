@@ -5,7 +5,6 @@ import (
 	"log/slog"
 	"os"
 
-	infraEnvs "github.com/goinfinite/os/src/infra/envs"
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	tkInfra "github.com/goinfinite/tk/src/infra"
 )
@@ -50,18 +49,12 @@ func CreateSelfSignedSsl(
 		return errors.New("SelfSignedCertificateGenerationError: " + err.Error())
 	}
 
-	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
-
 	privateKeyPermissions := os.FileMode(0600)
 	err = fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
 		FilePath:        keyFilePath,
 		Permissions:     &privateKeyPermissions,
 		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-		OwnerUsername:   &webServerUsername,
-		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-			webServerUsername,
-		},
 	}, []byte(keyPem))
 	if err != nil {
 		return errors.New("WritePrivateKeyError: " + err.Error())
@@ -73,10 +66,6 @@ func CreateSelfSignedSsl(
 		Permissions:     &certificatePermissions,
 		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-		OwnerUsername:   &webServerUsername,
-		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-			webServerUsername,
-		},
 	}, []byte(certPem))
 	if err != nil {
 		return errors.New("WriteCertificateError: " + err.Error())
