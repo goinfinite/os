@@ -41,6 +41,7 @@ fix(terminal): add the local bin to PATH and enable truecolor
 fix(terminal): refit the pane on resize and render TUI glyphs
 fix(ui): set the dropdown color on the marketplace hostname select
 fix(terminal): set the UTF-8 locale on the session environment
+chore: resolve sonar findings
 
 0.3.4 - 2026/09/15
 chore: update go deps
