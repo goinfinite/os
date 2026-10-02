@@ -30,6 +30,8 @@ fix(account): keep sudo membership and chown the ssh directory
 fix(container): set the sticky bit on /app
 docs(ui): correct the card wrapper and session manager notes
 refactor(terminal): rename the modal context check
+refactor(ui): take the tooltip form fields from goinfinite/ui
+fix(terminal): share the mise toolchain and stop the attach process once
 
 0.3.4 - 2026/09/15
 chore: update go deps
