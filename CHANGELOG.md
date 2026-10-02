@@ -32,6 +32,10 @@ docs(ui): correct the card wrapper and session manager notes
 refactor(terminal): rename the modal context check
 refactor(ui): take the tooltip form fields from goinfinite/ui
 fix(terminal): share the mise toolchain and stop the attach process once
+fix(ui): align the install form fields and password button with goinfinite/ui
+fix(terminal): use the standard modal header
+feat(terminal): run sessions as nobody by default with an own-user option
+fix(container): keep nginx configs and certificates root-owned
 
 0.3.4 - 2026/09/15
 chore: update go deps
