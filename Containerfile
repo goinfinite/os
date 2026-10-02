@@ -18,7 +18,9 @@ RUN curl -sL --proto '=https' --tlsv1.2 "https://nginx.org/keys/nginx_signing.ke
 RUN curl -sL --proto '=https' --tlsv1.2 "https://mise.run" \
 	| MISE_INSTALL_PATH=/usr/local/bin/mise sh \
 	&& chmod +x /usr/local/bin/mise \
-	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile
+	&& echo 'eval "$(/usr/local/bin/mise activate bash)"' >>/etc/profile \
+	&& echo 'export PATH="$HOME/.local/bin:$PATH"' >>/etc/profile \
+	&& echo 'set -as terminal-features ",*:RGB"' >/etc/tmux.conf
 
 ENV MISE_DATA_DIR=/usr/local/share/mise
 

@@ -150,7 +150,7 @@ func (client *TerminalMultiplexerClient) CreateSession(
 ) error {
 	_, err := client.runMultiplexerCommand("tmux", []string{
 		"new-session", "-d", "-s", client.buildSessionName(terminalSessionId),
-		"-c", workingDir.String(),
+		"-c", workingDir.String(), "-e", "COLORTERM=truecolor",
 	})
 	if err != nil {
 		return errors.New("CreateSessionError: " + err.Error())

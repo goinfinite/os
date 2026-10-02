@@ -284,7 +284,7 @@ Create, revoke, and manage API keys for secure programmatic access to the system
 
 ## Web Terminal
 
-Open persistent terminal sessions. By default a session runs as `nobody`, the same user that owns the web files, so the account can manage `/app` and its sites. The custom create form can run the session as the account's own Linux user instead, with the account home as the working directory. tmux holds every session, so it survives a browser close and an os-api restart. The dashboard, the REST API and the CLI expose the same resource. A session carries an optional display name stored in the tmux user option `@os-name`, so the name dies with the session.
+Open persistent terminal sessions. By default a session runs as `nobody`, the same user that owns the web files, so the account can manage `/app` and its sites. The custom create form can run the session as the account's own Linux user instead, with the account home as the working directory. tmux holds every session, so it survives a browser close and an os-api restart. The dashboard, the REST API and the CLI expose the same resource. A session carries an optional display name stored in the tmux user option `@os-name`, so the name dies with the session. Sessions get `$HOME/.local/bin` on PATH and `COLORTERM=truecolor`, and tmux advertises RGB to the browser, so installed tools and truecolor TUIs work.
 
 **Flow:**
 
@@ -299,7 +299,7 @@ Open persistent terminal sessions. By default a session runs as `nobody`, the sa
 9. `src/domain/useCase/updateTerminalSession.go` — authorized rename
 10. `src/domain/useCase/deleteTerminalSession.go` — authorized delete
 11. `src/infra/terminalSession/` — tmux client and PTY attach; each identity gets its own credential, environment and socket, and the query repo merges the owner's and the nobody lists
-12. `Containerfile` — tmux package, the root-owned `/app` with the group-writable sticky bit, and the shared mise toolchain dir
+12. `Containerfile` — tmux package, the root-owned `/app` with the group-writable sticky bit, the shared mise toolchain dir, the `$HOME/.local/bin` PATH entry and the tmux RGB config
 
 ---
 
