@@ -97,6 +97,7 @@ func (client *TerminalMultiplexerClient) buildAccountShellEnvironment() []string
 		"LOGNAME=" + runAsUsernameStr,
 		"SHELL=/bin/bash",
 		"TERM=xterm-256color",
+		"LANG=C.UTF-8",
 	}
 
 	accountHomeDir := infraEnvs.UserDataBaseDirectory + "/" + client.accountUsername.String()
