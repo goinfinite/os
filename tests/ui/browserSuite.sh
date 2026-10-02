@@ -31,10 +31,10 @@ startedAtMs="$(( $(date +%s) * 1000 ))"
 
 pushd "${browserDir}" >/dev/null || exit 1
 if [[ ! -d node_modules ]]; then
-	npm install --no-audit --no-fund
+	npm install --no-audit --no-fund --ignore-scripts
 fi
-npx playwright install chromium
-npx playwright test
+./node_modules/.bin/playwright install chromium
+./node_modules/.bin/playwright test
 suiteExitCode=$?
 popd >/dev/null || true
 

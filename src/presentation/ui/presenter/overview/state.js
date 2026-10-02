@@ -197,13 +197,13 @@ UiToolset.RegisterAlpineState(() => {
         tooltip: { theme: "dark" },
       }).then((chartInstance) => {
         setTimeout(() => {
-          this.updateResourceUsageCharts(chartInstance.view);
+          void this.updateResourceUsageCharts(chartInstance.view);
           window.dispatchEvent(new Event("resize"));
         }, 1000);
 
         setInterval(() => {
-          this.updateResourceUsageCharts(chartInstance.view);
-        }, parseInt(this.refreshIntervalSecs, 10) * 1000);
+          void this.updateResourceUsageCharts(chartInstance.view);
+        }, Number.parseInt(this.refreshIntervalSecs, 10) * 1000);
       });
     },
   }));

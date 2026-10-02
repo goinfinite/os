@@ -208,7 +208,7 @@ UiToolset.RegisterAlpineState(() => {
         lastSentRows: 0,
       });
 
-      this.mount(sessionId);
+      void this.mount(sessionId);
     }
 
     close(sessionId) {
@@ -531,7 +531,7 @@ UiToolset.RegisterAlpineState(() => {
         "update:terminal-session",
         this.refreshSessionsHandler,
       );
-      this.openPendingSession();
+      void this.openPendingSession();
     },
 
     destroy() {

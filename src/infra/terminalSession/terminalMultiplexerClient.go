@@ -424,6 +424,7 @@ func (client *TerminalMultiplexerClient) Attach(
 	attachCmd.Dir = infraEnvs.ApplicationRootDir
 	attachCmd.Env = append(
 		client.buildAccountShellEnvironment(),
+		// NOSONAR - every PATH directory is root-owned and fixed; the run-as user cannot write to any of them.
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 	)
 	attachCmd.SysProcAttr = &syscall.SysProcAttr{

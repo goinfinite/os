@@ -1,6 +1,8 @@
 // biome-ignore lint/correctness/noUnusedVariables: called from server-rendered markup via templ.JSFuncCall.
 function devWsHotReload() {
-  hotReloadWs = new WebSocket(`wss://${document.location.host}/dev/hot-reload`);
+  const hotReloadWs = new WebSocket(
+    `wss://${document.location.host}/dev/hot-reload`,
+  );
   hotReloadWs.onclose = () => {
     setTimeout(() => {
       location.reload();
