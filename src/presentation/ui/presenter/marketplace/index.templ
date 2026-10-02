@@ -286,10 +286,14 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 		<div class="my-6 space-y-2">
 			<div class="w-100% inline-flex space-x-2">
 				<div class="w-60%">
-					@componentForm.SelectInput(
-						"hostname", "Hostname", "marketplaceItem.hostname",
-						"", vhostsHostnames, true,
-					)
+					@uiForm.SelectInput(uiForm.SelectInputSettings{
+						InputName:                "hostname",
+						Label:                    "Hostname",
+						FlatOptions:              vhostsHostnames,
+						TwoWayStatePath:          "marketplaceItem.hostname",
+						Size:                     uiForm.SelectInputSizeLg,
+						ShouldIncludeBlankOption: true,
+					})
 				</div>
 				<div class="w-40%">
 					@uiForm.InputField(uiForm.InputFieldSettings{
@@ -300,6 +304,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 						AffixLeftStatePath: "hostnameWithTrailingSlash",
 						HintValue:          "Path where the respective installed item will be available for access.",
 						HintDisplay:        uiForm.InputHintDisplayTooltip,
+						Size:               uiForm.InputFieldSizeLg,
 					})
 				</div>
 			</div>
