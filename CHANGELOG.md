@@ -36,6 +36,10 @@ fix(ui): align the install form fields and password button with goinfinite/ui
 fix(terminal): use the standard modal header
 feat(terminal): run sessions as nobody by default with an own-user option
 fix(container): keep nginx configs and certificates root-owned
+refactor(ui): take the terminal controls from goinfinite/ui
+fix(terminal): add the local bin to PATH and enable truecolor
+fix(terminal): refit the pane on resize and render TUI glyphs
+fix(ui): set the dropdown color on the marketplace hostname select
 
 0.3.4 - 2026/09/15
 chore: update go deps
