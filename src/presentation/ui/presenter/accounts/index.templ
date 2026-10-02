@@ -7,6 +7,7 @@ import (
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	uiControl "github.com/goinfinite/ui/src/control"
 	uiDisplay "github.com/goinfinite/ui/src/display"
+	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 	"strconv"
 )
@@ -350,18 +351,20 @@ templ CreateSecureAccessPublicKeyForm() {
 	>
 		<div class="mb-6 space-y-6">
 			<input type="hidden" name="accountId" x-bind:value="account.id"/>
-			@componentForm.InputField(componentForm.InputFieldDto{
-				Type:               "text",
-				Id:                 "name",
-				Label:              "Key Name (Aliases)",
-				BindModelValuePath: "secureAccessPublicKey.name",
-				InfoTooltipContent: "Optional as long as there is a name in the key's content. Otherwise, must be provided.",
+			@uiForm.InputField(uiForm.InputFieldSettings{
+				InputType:       uiForm.InputTypeText,
+				InputName:       "name",
+				Label:           "Key Name (Aliases)",
+				TwoWayStatePath: "secureAccessPublicKey.name",
+				HintValue:       "Optional as long as there is a name in the key's content. Otherwise, must be provided.",
+				HintDisplay:     uiForm.InputHintDisplayTooltip,
 			})
-			@componentForm.TextArea(componentForm.TextAreaDto{
-				Id:                 "content",
-				Label:              "Key Content",
-				BindModelValuePath: "secureAccessPublicKey.content",
-				InfoTooltipContent: "If no name is provide, the name from the content added here will be used.",
+			@uiForm.TextArea(uiForm.TextAreaSettings{
+				InputName:       "content",
+				Label:           "Key Content",
+				TwoWayStatePath: "secureAccessPublicKey.content",
+				HintValue:       "If no name is provide, the name from the content added here will be used.",
+				HintDisplay:     uiForm.InputHintDisplayTooltip,
 			})
 		</div>
 		@componentForm.SubmitButton(

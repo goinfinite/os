@@ -493,13 +493,14 @@ templ ScheduleMarketplaceItemInstallationForm(
 					)
 				</div>
 				<div class="w-40%">
-					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-						Type:                "text",
-						Id:                  "urlPath",
-						Label:               "URL Path",
-						BindInputValuePath:  "marketplaceItem.urlPath",
-						BindPrefixValuePath: "hostnameWithTrailingSlash",
-						InfoTooltipContent:  "Path where the respective installed item will be available for access.",
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:          uiForm.InputTypeText,
+						InputName:          "urlPath",
+						Label:              "URL Path",
+						TwoWayStatePath:    "marketplaceItem.urlPath",
+						AffixLeftStatePath: "hostnameWithTrailingSlash",
+						HintValue:          "Path where the respective installed item will be available for access.",
+						HintDisplay:        uiForm.InputHintDisplayTooltip,
 					})
 				</div>
 			</div>
@@ -921,9 +922,9 @@ func installedServicesTableSettingsBuilder(
 		ItemsPerPage:         uiStructural.DataTablePageSize(paginationSettings.ItemsPerPage),
 		Filters: []uiStructural.FilterSettings{
 			{
-				Key:  "name",
+				Key:   "name",
 				Label: "Name",
-				Kind: uiStructural.FilterKindTextContains,
+				Kind:  uiStructural.FilterKindTextContains,
 			},
 			{
 				Key:     "type",

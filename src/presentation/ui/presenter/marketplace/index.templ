@@ -4,13 +4,14 @@ import (
 	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkDto "github.com/goinfinite/tk/src/domain/dto"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	uiControl "github.com/goinfinite/ui/src/control"
 	uiDisplay "github.com/goinfinite/ui/src/display"
+	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 )
 
@@ -21,10 +22,10 @@ type CatalogItemsGroupedByType struct {
 }
 
 type MarketplaceOverview struct {
-	ListType                string
-	InstalledItemsList      []entity.MarketplaceInstalledItem
+	ListType                 string
+	InstalledItemsList       []entity.MarketplaceInstalledItem
 	InstalledItemsPagination tkDto.Pagination
-	CatalogItemsList        CatalogItemsGroupedByType
+	CatalogItemsList         CatalogItemsGroupedByType
 }
 
 //go:embed state.js
@@ -291,13 +292,14 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 					)
 				</div>
 				<div class="w-40%">
-					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-						Type:                "text",
-						Id:                  "urlPath",
-						Label:               "URL Path",
-						BindInputValuePath:  "marketplaceItem.urlPath",
-						BindPrefixValuePath: "hostnameWithTrailingSlash",
-						InfoTooltipContent:  "Path where the respective installed item will be available for access.",
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:          uiForm.InputTypeText,
+						InputName:          "urlPath",
+						Label:              "URL Path",
+						TwoWayStatePath:    "marketplaceItem.urlPath",
+						AffixLeftStatePath: "hostnameWithTrailingSlash",
+						HintValue:          "Path where the respective installed item will be available for access.",
+						HintDisplay:        uiForm.InputHintDisplayTooltip,
 					})
 				</div>
 			</div>

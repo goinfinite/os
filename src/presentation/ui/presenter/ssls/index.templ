@@ -195,19 +195,21 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 		<input name="encodedChainCertificates" type="hidden" :value="btoa(sslPair.chainCertificates)"/>
 		<input name="encodedKey" type="hidden" :value="btoa(sslPair.key)"/>
 		<div x-show="!shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
-			@componentForm.TextArea(componentForm.TextAreaDto{
-				Label:              "Certificate",
-				BindModelValuePath: "sslPair.certificate",
-				InfoTooltipContent: "Certificate in PEM format, with or without CA chain.<br />Separate each certificate with a new line.",
+			@uiForm.TextArea(uiForm.TextAreaSettings{
+				Label:           "Certificate",
+				TwoWayStatePath: "sslPair.certificate",
+				HintValue:       "Certificate in PEM format, with or without CA chain. Separate each certificate with a new line.",
+				HintDisplay:     uiForm.InputHintDisplayTooltip,
 			})
-			@componentForm.TextArea(componentForm.TextAreaDto{
-				Label:              "CA Chain/Bundle Certificates",
-				BindModelValuePath: "sslPair.chainCertificates",
-				InfoTooltipContent: "Optional. CA chain/bundle certificates in PEM format.<br />It's usually provided by the CA when you issue the certificate.<br />Separate each certificate with a new line.",
+			@uiForm.TextArea(uiForm.TextAreaSettings{
+				Label:           "CA Chain/Bundle Certificates",
+				TwoWayStatePath: "sslPair.chainCertificates",
+				HintValue:       "Optional. CA chain/bundle certificates in PEM format. It's usually provided by the CA when you issue the certificate. Separate each certificate with a new line.",
+				HintDisplay:     uiForm.InputHintDisplayTooltip,
 			})
-			@componentForm.TextArea(componentForm.TextAreaDto{
-				Label:              "Private Key",
-				BindModelValuePath: "sslPair.key",
+			@uiForm.TextArea(uiForm.TextAreaSettings{
+				Label:           "Private Key",
+				TwoWayStatePath: "sslPair.key",
 			})
 		</div>
 		<div x-show="shouldImportSslCertificateAsFile" class="flex flex-col gap-4">
