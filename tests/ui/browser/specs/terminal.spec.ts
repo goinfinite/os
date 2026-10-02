@@ -122,13 +122,14 @@ test.describe("terminal", () => {
     await modalRail(page)
       .locator('button[aria-label="Custom Session Settings"]')
       .click();
-    const runAsSelect = modalRail(page).locator('select[name="runAsUsername"]');
-    const accountUsername = await runAsSelect
-      .locator("option")
-      .nth(1)
-      .getAttribute("value");
+    const accountUsername = process.env.OS_TEST_ACCOUNT_USERNAME as string;
     expect(accountUsername).toBeTruthy();
-    await runAsSelect.selectOption(accountUsername as string);
+    const runAsForm = modalRail(page).locator("form");
+    await runAsForm.locator('div[role="button"]').click();
+    await runAsForm
+      .locator("label")
+      .filter({ hasText: accountUsername })
+      .click();
 
     const workingDirInput = modalRail(page).locator('input[name="workingDir"]');
     await expect(workingDirInput).toHaveValue(`/home/${accountUsername}`);
@@ -181,7 +182,9 @@ test.describe("terminal", () => {
     await page.locator("#terminal-sessions-footer-trigger").click();
     await expect(modalRail(page)).toBeVisible();
 
-    await page.mouse.click(10, 300);
+    await page
+      .locator("#terminal-sessions-modal .fixed.inset-0")
+      .click({ position: { x: 10, y: 300 } });
     await expect(modalBody(page)).not.toBeVisible();
   });
 

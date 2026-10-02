@@ -146,7 +146,14 @@ templ DataTableCarouselStyleEmptyState(
 			{ message }
 		</div>
 		<div class="shrink-0">
-			@componentForm.SubmitButton("", ctaLabel, ctaIcon, ctaOnClick, true)
+			@uiControl.Button(uiControl.ButtonSettings{
+				Label:                ctaLabel,
+				IconLeft:             ctaIcon,
+				Size:                 uiControl.ButtonSizeSm,
+				BackgroundColor:      "infinite-500",
+				BackgroundColorHover: "infinite-300",
+				OnClickFunc:          ctaOnClick,
+			})
 		</div>
 	</div>
 }
@@ -281,10 +288,14 @@ func terminalSessionsTableSettingsBuilder(
 			"&sortBy=" + uiStructural.DataTableUrlPlaceholderSortKey +
 			"&sortDirection=" + uiStructural.DataTableUrlPlaceholderSortDirection,
 		RefreshOnEvents: []string{"update:terminal-session"},
-		HeaderActions: componentForm.SubmitButton(
-			"", "new session", "ph-plus",
-			"createSessionWithDefaults()", true,
-		),
+		HeaderActions: uiControl.Button(uiControl.ButtonSettings{
+			Label:                "new session",
+			IconLeft:             "ph-plus",
+			Size:                 uiControl.ButtonSizeSm,
+			BackgroundColor:      "infinite-500",
+			BackgroundColorHover: "infinite-300",
+			OnClickFunc:          "createSessionWithDefaults()",
+		}),
 	}
 }
 
@@ -495,6 +506,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 						TwoWayStatePath:          "marketplaceItem.hostname",
 						Size:                     uiForm.SelectInputSizeLg,
 						ShouldIncludeBlankOption: true,
+						DropdownBackgroundColor:  "primary-500/95",
 					})
 				</div>
 				<div class="w-40%">

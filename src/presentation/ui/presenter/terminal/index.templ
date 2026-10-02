@@ -2,9 +2,8 @@ package uiPresenter
 
 import (
 	_ "embed"
-	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
-	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
 	uiControl "github.com/goinfinite/ui/src/control"
+	uiForm "github.com/goinfinite/ui/src/form"
 	uiToolset "github.com/goinfinite/ui/src/toolset"
 )
 
@@ -17,6 +16,13 @@ templ TerminalAlpineState() {
 
 templ TerminalDependencies() {
 	<!-- TerminalDependencies -->
+	<link rel="preconnect" href="https://fonts.googleapis.com"/>
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+	<link
+		id="terminal-font-stylesheet"
+		rel="stylesheet"
+		href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap"
+	/>
 	<link
 		rel="stylesheet"
 		href="https://cdn.jsdelivr.net/npm/@xterm/xterm@6.0.0/css/xterm.css"
@@ -108,36 +114,47 @@ templ TerminalSessionRenameRow() {
 
 templ TerminalSessionCreateForm(accountUsername string) {
 	<form class="flex flex-col gap-2" @submit.prevent="createSession()">
-		@componentForm.InputField(componentForm.InputFieldDto{
-			Type:               "text",
-			Id:                 "name",
-			Label:              "Name (optional)",
-			BindModelValuePath: "createSessionForm.name",
+		@uiForm.InputField(uiForm.InputFieldSettings{
+			InputType:       uiForm.InputTypeText,
+			InputName:       "name",
+			Label:           "Name (optional)",
+			TwoWayStatePath: "createSessionForm.name",
 		})
-		@componentForm.SelectInput(
-			"runAsUsername", "Run as", "createSessionForm.runAsUsername",
-			"applyRunAsUsernameDefault()", []string{"nobody", accountUsername}, false,
-		)
-		@componentForm.InputField(componentForm.InputFieldDto{
-			Type:               "text",
-			Id:                 "workingDir",
-			Label:              "Working Directory",
-			BindModelValuePath: "createSessionForm.workingDir",
+		@uiForm.SelectInput(uiForm.SelectInputSettings{
+			InputName:               "runAsUsername",
+			Label:                   "Run as",
+			FlatOptions:             []string{"nobody", accountUsername},
+			TwoWayStatePath:         "createSessionForm.runAsUsername",
+			OnChangeFunc:            "applyRunAsUsernameDefault()",
+			DropdownBackgroundColor: "primary-500/95",
 		})
-		@componentForm.InputField(componentForm.InputFieldDto{
-			Type:               "text",
-			Id:                 "command",
-			Label:              "Command (optional)",
-			BindModelValuePath: "createSessionForm.command",
+		@uiForm.InputField(uiForm.InputFieldSettings{
+			InputType:       uiForm.InputTypeText,
+			InputName:       "workingDir",
+			Label:           "Working Directory",
+			TwoWayStatePath: "createSessionForm.workingDir",
+		})
+		@uiForm.InputField(uiForm.InputFieldSettings{
+			InputType:       uiForm.InputTypeText,
+			InputName:       "command",
+			Label:           "Command (optional)",
+			TwoWayStatePath: "createSessionForm.command",
 		})
 		<div class="flex justify-end gap-2">
-			@componentStructural.LabeledButton(
-				"cancel", "", "os-200", "os-100",
-				"collapseCreateSessionForm()", true,
-			)
-			@componentForm.DeactivableSubmitButton(
-				"create session", "ph-plus", "", "isCreateSessionLoading", true,
-			)
+			@uiControl.Button(uiControl.ButtonSettings{
+				Label:                "cancel",
+				BackgroundColor:      "os-200",
+				BackgroundColorHover: "os-100",
+				OnClickFunc:          "collapseCreateSessionForm()",
+			})
+			@uiControl.Button(uiControl.ButtonSettings{
+				Label:                     "create session",
+				IconLeft:                  "ph-plus",
+				IsSubmit:                  true,
+				IsDisabledOneWayStatePath: "isCreateSessionLoading",
+				BackgroundColor:           "infinite-500",
+				BackgroundColorHover:      "infinite-300",
+			})
 		</div>
 	</form>
 }

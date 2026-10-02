@@ -5,6 +5,7 @@ import (
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
+	uiControl "github.com/goinfinite/ui/src/control"
 )
 
 templ FooterSkeleton() {
@@ -236,11 +237,14 @@ templ Footer(
 		)
 		<!-- Footer Layout HTML -->
 		<div class="mr-2 flex h-full items-center">
-			<i
-				id="terminal-sessions-footer-trigger"
-				class="ph-bold ph-terminal-window cursor-pointer px-1 text-xl"
-				@click="$store.main.openTerminalSessionsModal()"
-			></i>
+			@uiControl.Button(uiControl.ButtonSettings{
+				Id:                   "terminal-sessions-footer-trigger",
+				IconLeft:             "ph-terminal-window",
+				BackgroundColor:      "transparent",
+				BackgroundColorHover: "os-300",
+				OnClickFunc:          "$store.main.openTerminalSessionsModal()",
+				AriaLabel:            "Terminal Sessions",
+			})
 		</div>
 		<div
 			class="mr-5 flex h-full items-center"
