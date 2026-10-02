@@ -6,18 +6,41 @@ UiToolset.RegisterAlpineState(() => {
       this.mountRetryLimit = 25;
       this.mountRetryDelayMs = 200;
       this.reconnectDelayMs = 2000;
+      this.terminalFontName = "JetBrains Mono";
+      this.terminalFontFamily = `"${this.terminalFontName}", monospace`;
+      this.terminalFontSize = 15;
+      this.fontWaitTimeoutMs = 3000;
     }
 
     resize(sessionId) {
       const sessionTerminal = this.sessionTerminals.get(sessionId);
-      if (!sessionTerminal?.socket) {
+      if (!sessionTerminal?.fitAddon) {
         return;
       }
-      if (sessionTerminal.socket.readyState !== WebSocket.OPEN) {
+
+      const terminalContainer = sessionTerminal.term.element?.parentElement;
+      if (
+        !terminalContainer ||
+        terminalContainer.offsetWidth === 0 ||
+        terminalContainer.offsetHeight === 0
+      ) {
         return;
       }
 
       sessionTerminal.fitAddon.fit();
+
+      if (sessionTerminal.socket?.readyState !== WebSocket.OPEN) {
+        return;
+      }
+      if (
+        sessionTerminal.lastSentCols === sessionTerminal.term.cols &&
+        sessionTerminal.lastSentRows === sessionTerminal.term.rows
+      ) {
+        return;
+      }
+
+      sessionTerminal.lastSentCols = sessionTerminal.term.cols;
+      sessionTerminal.lastSentRows = sessionTerminal.term.rows;
       sessionTerminal.socket.send(
         JSON.stringify({
           type: "resize",
@@ -32,6 +55,9 @@ UiToolset.RegisterAlpineState(() => {
       if (!sessionTerminal) {
         return;
       }
+
+      sessionTerminal.lastSentCols = 0;
+      sessionTerminal.lastSentRows = 0;
 
       const attachUrl = new URL(
         `api/v1/terminal-sessions/${sessionId}/attach/`,
@@ -63,7 +89,40 @@ UiToolset.RegisterAlpineState(() => {
       socket.onerror = () => socket.close();
     }
 
-    mount(sessionId) {
+    async waitForTerminalFont() {
+      const fontStylesheet = document.getElementById(
+        "terminal-font-stylesheet",
+      );
+      const stylesheetReady = new Promise((resolve) => {
+        if (!fontStylesheet || fontStylesheet.sheet) {
+          resolve();
+          return;
+        }
+        fontStylesheet.addEventListener("load", resolve, { once: true });
+        fontStylesheet.addEventListener("error", resolve, { once: true });
+      });
+
+      const fontReady = stylesheetReady.then(() =>
+        document.fonts.load(
+          `${this.terminalFontSize}px "${this.terminalFontName}"`,
+        ),
+      );
+
+      let fontWaitTimer;
+      const fontWaitTimeout = new Promise((resolve) => {
+        fontWaitTimer = setTimeout(resolve, this.fontWaitTimeoutMs);
+      });
+
+      try {
+        await Promise.race([fontReady, fontWaitTimeout]);
+      } catch (error) {
+        console.error(`LoadTerminalFontError: ${error}`);
+      } finally {
+        clearTimeout(fontWaitTimer);
+      }
+    }
+
+    async mount(sessionId) {
       const sessionTerminal = this.sessionTerminals.get(sessionId);
       if (!sessionTerminal || sessionTerminal.term) {
         return;
@@ -92,9 +151,20 @@ UiToolset.RegisterAlpineState(() => {
         return;
       }
 
+      await this.waitForTerminalFont();
+
+      if (
+        this.sessionTerminals.get(sessionId) !== sessionTerminal ||
+        sessionTerminal.term
+      ) {
+        return;
+      }
+
       const term = new Terminal({
         cursorBlink: true,
-        fontFamily: "monospace",
+        fontFamily: this.terminalFontFamily,
+        fontSize: this.terminalFontSize,
+        lineHeight: 1,
         theme: { background: "#041118" },
       });
       const fitAddon = new FitAddon.FitAddon();
@@ -114,6 +184,10 @@ UiToolset.RegisterAlpineState(() => {
 
       sessionTerminal.term = term;
       sessionTerminal.fitAddon = fitAddon;
+      sessionTerminal.resizeObserver = new ResizeObserver(() =>
+        this.resize(sessionId),
+      );
+      sessionTerminal.resizeObserver.observe(terminalContainer);
       this.connect(sessionId);
     }
 
@@ -129,6 +203,9 @@ UiToolset.RegisterAlpineState(() => {
         reconnectTimer: null,
         mountRetryTimer: null,
         mountAttempts: 0,
+        resizeObserver: null,
+        lastSentCols: 0,
+        lastSentRows: 0,
       });
 
       this.mount(sessionId);
@@ -145,6 +222,9 @@ UiToolset.RegisterAlpineState(() => {
       }
       if (sessionTerminal.reconnectTimer) {
         clearTimeout(sessionTerminal.reconnectTimer);
+      }
+      if (sessionTerminal.resizeObserver) {
+        sessionTerminal.resizeObserver.disconnect();
       }
       if (sessionTerminal.socket) {
         sessionTerminal.socket.onclose = null;
