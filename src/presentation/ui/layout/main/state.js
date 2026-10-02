@@ -127,9 +127,6 @@ document.addEventListener("alpine:initializing", () => {
 
       window.dispatchEvent(new CustomEvent("focus:terminal-session"));
     },
-    closeTerminalSessionsModal() {
-      this.isTerminalSessionsModalOpen = false;
-    },
     refreshPageContent() {
       this.navigateTo(this.activeRoute, "#htmx-indicator-attributes-element");
     },

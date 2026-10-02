@@ -5,7 +5,6 @@ import (
 	layoutFooter "github.com/goinfinite/os/src/presentation/ui/layout/footer"
 	layoutSidebar "github.com/goinfinite/os/src/presentation/ui/layout/sidebar"
 	infraHelper "github.com/goinfinite/os/src/infra/helper"
-	uiControl "github.com/goinfinite/ui/src/control"
 	"github.com/goinfinite/ui/src/display"
 	uiImport "github.com/goinfinite/ui/src/import"
 	"github.com/goinfinite/ui/src/toolset"
@@ -67,36 +66,19 @@ templ ScheduledTaskCompletedBanner() {
 	</div>
 }
 
-templ TerminalSessionsModalHeader() {
-	<div class="flex items-center justify-between">
-		<h2 class="text-3xl font-bold">Terminal Sessions</h2>
-		@uiControl.Button(uiControl.ButtonSettings{
-			Id:                   "terminal-sessions-modal-close",
-			IconLeft:             "ph-x",
-			Shape:                uiControl.ButtonShapeCircular,
-			Size:                 uiControl.ButtonSizeSm,
-			BackgroundColor:      "os-200",
-			BackgroundColorHover: "os-100",
-			OnClickFunc:          "$store.main.closeTerminalSessionsModal()",
-			AriaLabel:            "Close",
-		})
-	</div>
-}
-
 templ TerminalSessionsModalBody() {
 	<div id="terminal-sessions-modal-body" class="h-full min-h-0"></div>
 }
 
 templ TerminalSessionsModal() {
-	<div x-data>
+	<div id="terminal-sessions-modal" x-data>
 		@uiDisplay.Modal(uiDisplay.ModalSettings{
 			MiddleContent:                 TerminalSessionsModalBody(),
-			HeaderContent:                 TerminalSessionsModalHeader(),
+			Title:                         "Terminal Sessions",
 			InitialSize:                   uiDisplay.ModalSizeXxl,
 			BackgroundColor:               "os-400",
 			IsMiddleContentScrollDisabled: true,
 			IsUnresizable:                 true,
-			IsUncloseable:                 true,
 			IsVisibleTwoWayStatePath:      "$store.main.isTerminalSessionsModalOpen",
 		})
 	</div>
