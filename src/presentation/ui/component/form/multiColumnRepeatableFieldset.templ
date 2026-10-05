@@ -67,7 +67,7 @@ templ MultiColumnRepeatableFieldset(
 	@MultiColumnRepeatableFieldsetLocalState(id)
 	<!-- MultiColumnRepeatableFieldset HTML -->
 	<div
-		class="bg-os-400 flex flex-col gap-6 rounded-md p-4"
+		class="flex flex-col gap-3"
 		x-data={ id + "MultiColumnRepeatableFieldset" }
 		x-init={ "$watch('" + bindValuePath + "', value => {registeredFieldsets = value; flattenRegisteredFieldsets()})" }
 	>

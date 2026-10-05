@@ -225,7 +225,7 @@ templ CreateVirtualHostForm(existingHostnames []string) {
 	<!-- CreateVirtualHostForm -->
 	<form
 		id="create-vhost-form"
-		class="flex flex-col gap-5"
+		class="flex flex-col gap-5 pt-3"
 		hx-post="api/v1/vhost/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -456,6 +456,9 @@ templ CreateMappingForm(
 					Content: MappingFormAdvancedSettings(secRulesLabelValueOptions),
 				},
 			},
+			BackgroundColor:        "neutral-950/20",
+			OpenBackgroundColor:    "neutral-950/30",
+			ContentBackgroundColor: "os-400",
 		})
 		@componentForm.DeactivableSubmitButton(
 			"Create", "ph-check-fat", "",
@@ -486,7 +489,7 @@ templ UpdateMappingForm(
 	<!-- UpdateMappingForm -->
 	<form
 		hx-put="api/v1/vhost/mapping/"
-		class="flex flex-col gap-5"
+		class="flex flex-col gap-5 pt-3"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 		@submit="closeUpdateMappingModal()"
@@ -550,6 +553,9 @@ templ UpdateMappingForm(
 					Content: MappingFormAdvancedSettings(secRulesLabelValueOptions),
 				},
 			},
+			BackgroundColor:        "neutral-950/20",
+			OpenBackgroundColor:    "neutral-950/30",
+			ContentBackgroundColor: "os-400",
 		})
 		@componentForm.SubmitButton(
 			"update-mapping-button", "Update", "ph-check-fat", "closeUpdateMappingModal()", false,

@@ -271,6 +271,38 @@ templ MarketplaceCatalogItemCarouselImageLightbox() {
 	</div>
 }
 
+templ ScheduleSelectedMarketplaceItemInstallationParameters() {
+	@uiDisplay.Alert(uiDisplay.AlertSettings{
+		Variation:   uiDisplay.AlertVariationWarning,
+		Description: "All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
+		Size:        uiDisplay.AlertSizeXs,
+		IsCloseable: false,
+	})
+	<div class="grid grid-cols-2 gap-4">
+		<template x-for="dataField in marketplaceItem.dataFields">
+			<div>
+				<template x-if="dataField.type === 'text' || dataField.type === 'email'">
+					@componentForm.InputFieldClientSide(
+						"dataField.type", "dataField.label", "dataField.value",
+					)
+				</template>
+				<template x-if="dataField.type === 'password'">
+					@componentForm.PasswordInputClientSide(
+						"dataField.label", "dataField.value", true,
+					)
+				</template>
+				<template x-if="dataField.type === 'select'">
+					@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+						BindLabel:     "dataField.label",
+						BindModelPath: "dataField.value",
+						BindOptions:   "dataField.options",
+					})
+				</template>
+			</div>
+		</template>
+	</div>
+}
+
 templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) {
 	<!-- ScheduleSelectedMarketplaceItemInstallationForm -->
 	<form
@@ -283,7 +315,7 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 		<input type="hidden" name="id" :value="marketplaceItem.id"/>
 		<input type="hidden" name="dataFields" :value="dataFieldsAsString"/>
 		@templ.JSONScript("marketplaceInstallVhostHostnames", vhostsHostnames)
-		<div class="my-6 space-y-2">
+		<div class="mt-3 mb-6 space-y-2">
 			<div class="w-100% inline-flex space-x-2">
 				<div class="w-60%">
 					@uiForm.SelectInput(uiForm.SelectInputSettings{
@@ -310,37 +342,18 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 				</div>
 			</div>
 			<template x-if="marketplaceItem.id !== ''">
-				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
-					@uiDisplay.Alert(uiDisplay.AlertSettings{
-						Variation:   uiDisplay.AlertVariationWarning,
-						Description: "All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
-						Size:        uiDisplay.AlertSizeXs,
-						IsCloseable: false,
-					})
-					<div class="mt-2 grid grid-cols-2 gap-4">
-						<template x-for="dataField in marketplaceItem.dataFields">
-							<div>
-								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
-									@componentForm.InputFieldClientSide(
-										"dataField.type", "dataField.label", "dataField.value",
-									)
-								</template>
-								<template x-if="dataField.type === 'password'">
-									@componentForm.PasswordInputClientSide(
-										"dataField.label", "dataField.value", true,
-									)
-								</template>
-								<template x-if="dataField.type === 'select'">
-									@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
-										BindLabel:     "dataField.label",
-										BindModelPath: "dataField.value",
-										BindOptions:   "dataField.options",
-									})
-								</template>
-							</div>
-						</template>
-					</div>
-				}
+				@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+					Items: []uiDisplay.AccordionItemSettings{
+						{
+							Title:   "Install Parameters",
+							Icon:    "ph-brackets-curly",
+							Content: ScheduleSelectedMarketplaceItemInstallationParameters(),
+						},
+					},
+					BackgroundColor:        "neutral-950/20",
+					OpenBackgroundColor:    "neutral-950/30",
+					ContentBackgroundColor: "os-400",
+				})
 			</template>
 		</div>
 		@componentForm.SubmitButton(

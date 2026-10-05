@@ -140,7 +140,7 @@ templ DataTableTextCell(text string) {
 templ DataTableCarouselStyleEmptyState(
 	icon, message, ctaLabel, ctaIcon, ctaOnClick string,
 ) {
-	<div class="bg-os-500 mx-auto flex w-fit items-center gap-4 rounded-md p-4">
+	<div class="bg-neutral-950/20 mx-auto flex w-fit items-center gap-4 rounded-md p-4">
 		<i class={ "ph-duotone " + icon + " text-3xl text-infinite-500" }></i>
 		<div class="text-wrap max-w-56 break-words text-sm text-neutral-300">
 			{ message }
@@ -428,14 +428,41 @@ templ InstalledMarketplaceItemsDataTable(
 	))
 }
 
+templ CarouselItemHoverCard(description, icon, estimatedSize string) {
+	<!-- CarouselItemHoverCard -->
+	<template x-teleport="body">
+		<div
+			x-ref="tooltip"
+			role="tooltip"
+			:style="resolvedTooltipStyle"
+			class="bg-os-600 pointer-events-none invisible fixed z-100 w-100 rounded-md p-3 text-xs text-neutral-50 opacity-0 shadow-lg transition-opacity duration-150"
+		>
+			<div class="flex flex-row items-center gap-3">
+				<div class="basis-3/4 text-xs">{ description }</div>
+				<div class="basis-1/4 space-y-1.5">
+					@uiDisplay.Tag(uiDisplay.TagSettings{
+						Size:                 uiDisplay.TagSizeXs,
+						OuterBackgroundColor: "infinite-800",
+						OuterLeftIcon:        icon,
+						InnerLabel:           estimatedSize,
+					})
+				</div>
+			</div>
+		</div>
+	</template>
+}
+
 templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalogItem) {
 	<div>
 		<!-- MarketplaceCatalogItemsCarousel JavaScript -->
 		@templ.JSONScript("marketplaceCatalogItem_"+catalogItemEntity.Id.String(), catalogItemEntity)
 		<!-- MarketplaceCatalogItemsCarousel HTML -->
 		<div
+			x-data="carouselItemTooltip"
+			@mouseenter="showTooltip()"
+			@mouseleave="hideTooltip()"
 			@click={ "updateSelectedMarketplaceItem(" + catalogItemEntity.Id.String() + ")" }
-			class="bg-os-500 hover:ring-infinite-500 hover:text-infinite-500 group relative flex cursor-pointer flex-col items-center justify-center rounded-md p-2 transition-all duration-300 hover:ring-1"
+			class="bg-os-500 hover:ring-infinite-500 hover:text-infinite-500 group flex cursor-pointer flex-col items-center justify-center rounded-md p-2 transition-all duration-300 hover:ring-1"
 			:class={ "{'text-infinite-500 ring-1 ring-infinite-500': selectedMarketplaceItemId === " + catalogItemEntity.Id.String() + "}" }
 		>
 			<img
@@ -449,21 +476,11 @@ templ MarketplaceCatalogItemsCarousel(catalogItemEntity entity.MarketplaceCatalo
 			<div class="text-wrap mt-1 break-words text-center text-xs">
 				{ catalogItemEntity.Name.String() }
 			</div>
-			<div class="bg-os-600 min-w-100 absolute left-1/2 top-full z-10 mt-1 hidden -translate-x-1/2 transform rounded-md p-3 text-xs text-neutral-50 shadow-lg transition-all duration-500 group-hover:block group-hover:translate-y-0.5">
-				<div class="flex flex-row items-center gap-3">
-					<div class="basis-3/4 text-xs">
-						{ catalogItemEntity.Description.String() }
-					</div>
-					<div class="basis-1/4 space-y-1.5">
-						@uiDisplay.Tag(uiDisplay.TagSettings{
-							Size:                 uiDisplay.TagSizeXs,
-							OuterBackgroundColor: "infinite-800",
-							OuterLeftIcon:        "ph-hard-drives",
-							InnerLabel:           catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(),
-						})
-					</div>
-				</div>
-			</div>
+			@CarouselItemHoverCard(
+				catalogItemEntity.Description.String(),
+				"ph-hard-drives",
+				catalogItemEntity.EstimatedSizeBytes.StringWithSuffix(),
+			)
 		</div>
 	</div>
 }
@@ -480,6 +497,38 @@ func transformMarketplaceCatalogItemsIntoCarouselItems(
 	return carouselItems
 }
 
+templ ScheduleMarketplaceItemInstallationParameters() {
+	@uiDisplay.Alert(uiDisplay.AlertSettings{
+		Variation:   uiDisplay.AlertVariationWarning,
+		Description: "All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
+		Size:        uiDisplay.AlertSizeXs,
+		IsCloseable: false,
+	})
+	<div class="grid grid-cols-2 gap-4">
+		<template x-for="dataField in marketplaceItem.dataFields">
+			<div>
+				<template x-if="dataField.type === 'text' || dataField.type === 'email'">
+					@componentForm.InputFieldClientSide(
+						"dataField.type", "dataField.label", "dataField.value",
+					)
+				</template>
+				<template x-if="dataField.type === 'password'">
+					@componentForm.PasswordInputClientSide(
+						"dataField.label", "dataField.value", true,
+					)
+				</template>
+				<template x-if="dataField.type === 'select'">
+					@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+						BindLabel:     "dataField.label",
+						BindModelPath: "dataField.value",
+						BindOptions:   "dataField.options",
+					})
+				</template>
+			</div>
+		</template>
+	</div>
+}
+
 templ ScheduleMarketplaceItemInstallationForm(
 	vhostsHostnames []string,
 	marketplaceCatalogItems presenterMarketplace.CatalogItemsGroupedByType,
@@ -487,7 +536,6 @@ templ ScheduleMarketplaceItemInstallationForm(
 	<!-- ScheduleMarketplaceItemInstallationForm -->
 	<form
 		id="schedule-marketplace-item-installation-form"
-		class="pb-16"
 		hx-post="api/v1/marketplace/catalog/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -496,7 +544,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 		<input type="hidden" name="id" :value="marketplaceItem.id"/>
 		<input type="hidden" name="dataFields" :value="dataFieldsAsString"/>
 		@templ.JSONScript("marketplaceInstallVhostHostnames", vhostsHostnames)
-		<div class="my-6 space-y-2">
+		<div class="mt-3 mb-6 space-y-2">
 			<div class="w-100% inline-flex space-x-2">
 				<div class="w-60%">
 					@uiForm.SelectInput(uiForm.SelectInputSettings{
@@ -522,7 +570,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 					})
 				</div>
 			</div>
-			<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
+			<div class="bg-neutral-950/20 flex flex-col gap-4 rounded-md p-3">
 				<div class="flex justify-stretch gap-4">
 					<div>
 						@componentStructural.VerticalTabHeader(
@@ -560,37 +608,18 @@ templ ScheduleMarketplaceItemInstallationForm(
 				</div>
 			</div>
 			<template x-if="marketplaceItem.id !== ''">
-				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
-					@uiDisplay.Alert(uiDisplay.AlertSettings{
-						Variation:   uiDisplay.AlertVariationWarning,
-						Description: "All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
-						Size:        uiDisplay.AlertSizeXs,
-						IsCloseable: false,
-					})
-					<div class="mt-6 grid grid-cols-2 gap-4">
-						<template x-for="dataField in marketplaceItem.dataFields">
-							<div>
-								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
-									@componentForm.InputFieldClientSide(
-										"dataField.type", "dataField.label", "dataField.value",
-									)
-								</template>
-								<template x-if="dataField.type === 'password'">
-									@componentForm.PasswordInputClientSide(
-										"dataField.label", "dataField.value", true,
-									)
-								</template>
-								<template x-if="dataField.type === 'select'">
-									@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
-										BindLabel:     "dataField.label",
-										BindModelPath: "dataField.value",
-										BindOptions:   "dataField.options",
-									})
-								</template>
-							</div>
-						</template>
-					</div>
-				}
+				@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+					Items: []uiDisplay.AccordionItemSettings{
+						{
+							Title:   "Install Parameters",
+							Icon:    "ph-brackets-curly",
+							Content: ScheduleMarketplaceItemInstallationParameters(),
+						},
+					},
+					BackgroundColor:        "neutral-950/20",
+					OpenBackgroundColor:    "neutral-950/30",
+					ContentBackgroundColor: "os-400",
+				})
 			</template>
 		</div>
 		@componentForm.SubmitButton(
@@ -991,8 +1020,11 @@ templ InstallableServiceItemsCarousel(installableServiceEntity entity.Installabl
 		@templ.JSONScript("installableServiceEntity_"+installableServiceEntity.Name.String(), installableServiceEntity)
 		<!-- InstallableServicesCarousel HTML -->
 		<div
+			x-data="carouselItemTooltip"
+			@mouseenter="showTooltip()"
+			@mouseleave="hideTooltip()"
 			@click={ "updateSelectedInstallableService('" + installableServiceEntity.Name.String() + "')" }
-			class="bg-os-500 hover:ring-infinite-500 hover:text-infinite-500 group relative flex cursor-pointer flex-col items-center justify-center rounded-md p-2 transition-all duration-300 hover:ring-1"
+			class="bg-os-500 hover:ring-infinite-500 hover:text-infinite-500 group flex cursor-pointer flex-col items-center justify-center rounded-md p-2 transition-all duration-300 hover:ring-1"
 			:class={ "{'text-infinite-500 ring-1 ring-infinite-500': selectedInstallableServiceName === '" + installableServiceEntity.Name.String() + "'}" }
 		>
 			<img
@@ -1006,21 +1038,11 @@ templ InstallableServiceItemsCarousel(installableServiceEntity entity.Installabl
 			<div class="text-wrap mt-1 break-words text-center text-xs">
 				{ installableServiceEntity.Name.String() }
 			</div>
-			<div class="bg-os-600 min-w-100 absolute left-1/2 top-full z-10 mt-1 hidden -translate-x-1/2 transform rounded-md p-3 text-xs text-neutral-50 shadow-lg transition-all duration-500 group-hover:block group-hover:translate-y-0.5">
-				<div class="flex flex-row items-center gap-3">
-					<div class="basis-3/4 text-xs">
-						{ installableServiceEntity.Description.String() }
-					</div>
-					<div class="basis-1/4 space-y-1.5">
-						@uiDisplay.Tag(uiDisplay.TagSettings{
-							Size:                 uiDisplay.TagSizeXs,
-							OuterBackgroundColor: "infinite-800",
-							OuterLeftIcon:        "ph-memory",
-							InnerLabel:           installableServiceEntity.EstimatedSizeBytes.StringWithSuffix(),
-						})
-					</div>
-				</div>
-			</div>
+			@CarouselItemHoverCard(
+				installableServiceEntity.Description.String(),
+				"ph-memory",
+				installableServiceEntity.EstimatedSizeBytes.StringWithSuffix(),
+			)
 		</div>
 	</div>
 }
@@ -1070,7 +1092,7 @@ templ InstallableServiceAdvancedSettings(
 		<template
 			x-if={ strconv.FormatBool(installableServices == nil) + " || selectedInstallableServiceName !== ''" }
 		>
-			<div class="mt-4 grid grid-rows-2 gap-2">
+			<div class="grid grid-rows-2 gap-2">
 				<div class="grid grid-cols-2 gap-2">
 					@uiForm.InputField(uiForm.InputFieldSettings{
 						InputType:       uiForm.InputTypeNumber,
@@ -1118,7 +1140,7 @@ templ InstallableServiceForm(
 ) {
 	<!-- InstallableServiceForm -->
 	if installableServices != nil {
-		<div class="bg-os-500 flex flex-col gap-4 rounded-md p-3">
+		<div class="bg-neutral-950/20 flex flex-col gap-4 rounded-md p-3">
 			<div class="flex justify-center gap-4">
 				for _, serviceType := range valueObject.ValidServiceTypes {
 					if serviceType != "system" {
@@ -1183,6 +1205,9 @@ templ InstallableServiceForm(
 					Content: InstallableServiceAdvancedSettings(installableServices),
 				},
 			},
+			BackgroundColor:        "neutral-950/20",
+			OpenBackgroundColor:    "neutral-950/30",
+			ContentBackgroundColor: "os-400",
 		})
 	</div>
 	@uiControl.Button(uiControl.ButtonSettings{
@@ -1323,6 +1348,9 @@ templ CustomServiceForm(
 					Content: CustomServiceAdvancedSettings(),
 				},
 			},
+			BackgroundColor:        "neutral-950/20",
+			OpenBackgroundColor:    "neutral-950/30",
+			ContentBackgroundColor: "os-400",
 		})
 	</div>
 	@uiControl.Button(uiControl.ButtonSettings{
@@ -1339,7 +1367,7 @@ templ CustomServiceForm(
 
 templ ServiceInstallationForm(installableServices InstallableServicesGroupedByType) {
 	<form @submit.prevent="">
-		<div class="-mt-4 mb-4 flex justify-start gap-4">
+		<div class="mb-4 flex justify-start gap-4">
 			@uiForm.RadioInput(uiForm.RadioInputSettings{
 				Label:           "Installable",
 				StateValue:      "installables",
@@ -1391,7 +1419,7 @@ templ UpdateInstalledServiceForm() {
 				"updateService()", nil,
 			)
 		</div>
-		<div x-show="service.nature === 'custom'">
+		<div class="pt-3" x-show="service.nature === 'custom'">
 			@CustomServiceForm(
 				"update-installed-service-button", "update service", "ph-check-fat",
 				"updateService()",

@@ -211,7 +211,7 @@ templ CreateDatabaseUserForm(selectedDbOverview DatabaseOverview) {
 	<!-- CreateDatabaseUserForm -->
 	<form
 		id="create-database-user-form"
-		class="flex flex-col gap-5"
+		class="flex flex-col gap-5 pt-3"
 		hx-post={ "api/v1/database/" + selectedDbOverview.Type.String() + "/user/" }
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -242,6 +242,9 @@ templ CreateDatabaseUserForm(selectedDbOverview DatabaseOverview) {
 						Content: componentDatabases.DatabaseUserPrivilegesCheckboxInputsSwitchToggles(),
 					},
 				},
+				BackgroundColor:        "neutral-950/20",
+				OpenBackgroundColor:    "neutral-950/30",
+				ContentBackgroundColor: "os-400",
 			})
 		}
 		@componentForm.DeactivableSubmitButton(

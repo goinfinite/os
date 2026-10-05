@@ -170,4 +170,63 @@ test.describe("overview", () => {
     const title = await page.title();
     expect(title).toBe("Infinite OS");
   });
+
+  test("switches the service installation form to custom", async ({ page }) => {
+    await page.goto("overview/");
+    await page
+      .locator('#services button:has-text("install service")')
+      .first()
+      .click();
+
+    const installableLabel = page
+      .locator("label:visible")
+      .filter({ hasText: "Installable" });
+    const customLabel = page
+      .locator("label:visible")
+      .filter({ hasText: "Custom" });
+    await expect(installableLabel).toBeVisible();
+    await expect(customLabel).toBeVisible();
+
+    await customLabel.click();
+
+    const installationForm = page.locator("form:has(#install-service-button)");
+    await expect(installationForm.locator('input[name="name"]')).toBeVisible();
+    await expect(
+      installationForm.locator('input[name="startCmd"]'),
+    ).toBeVisible();
+  });
+
+  test("keeps the marketplace installation modal free of scroll overflow", async ({
+    page,
+  }) => {
+    await page.goto("overview/");
+    await page
+      .locator('#marketplace button:has-text("install catalog item")')
+      .first()
+      .click();
+
+    const modalContent = page
+      .locator("#schedule-marketplace-item-installation-form")
+      .locator("..");
+    const lastVisibleCard = page
+      .locator("#schedule-marketplace-item-installation-form .group:visible")
+      .last();
+    await lastVisibleCard.hover();
+
+    await expect(page.locator("body > [role=tooltip]:visible")).toHaveCount(1);
+    await expect
+      .poll(() =>
+        modalContent.evaluate(
+          (element) => element.scrollWidth - element.clientWidth,
+        ),
+      )
+      .toBe(0);
+    await expect
+      .poll(() =>
+        modalContent.evaluate(
+          (element) => element.scrollHeight - element.clientHeight,
+        ),
+      )
+      .toBe(0);
+  });
 });

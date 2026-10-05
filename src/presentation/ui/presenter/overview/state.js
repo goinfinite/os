@@ -430,4 +430,65 @@ UiToolset.RegisterAlpineState(() => {
         .finally(() => this.closeUninstallServiceModal());
     },
   }));
+
+  Alpine.data("carouselItemTooltip", () => ({
+    isTooltipVisible: false,
+    tooltipCoordinates: { top: 0, left: 0 },
+    viewportChangeHandler: null,
+
+    get resolvedTooltipStyle() {
+      return {
+        visibility: this.isTooltipVisible ? "visible" : "hidden",
+        opacity: this.isTooltipVisible ? "1" : "0",
+        top: `${this.tooltipCoordinates.top}px`,
+        left: `${this.tooltipCoordinates.left}px`,
+      };
+    },
+
+    init() {
+      this.viewportChangeHandler = () => {
+        if (this.isTooltipVisible) {
+          this.showTooltip();
+        }
+      };
+      window.addEventListener("scroll", this.viewportChangeHandler, true);
+      window.addEventListener("resize", this.viewportChangeHandler);
+    },
+
+    destroy() {
+      window.removeEventListener("scroll", this.viewportChangeHandler, true);
+      window.removeEventListener("resize", this.viewportChangeHandler);
+    },
+
+    showTooltip() {
+      const viewportPaddingPx = 4;
+      const tooltipOffsetPx = 6;
+      const triggerRect = this.$el.getBoundingClientRect();
+      const tooltipRect = this.$refs.tooltip.getBoundingClientRect();
+
+      let top = triggerRect.bottom + tooltipOffsetPx;
+      if (top + tooltipRect.height > window.innerHeight - viewportPaddingPx) {
+        top = triggerRect.top - tooltipRect.height - tooltipOffsetPx;
+      }
+      top = Math.max(top, viewportPaddingPx);
+
+      const centeredLeft =
+        triggerRect.left + triggerRect.width / 2 - tooltipRect.width / 2;
+      const maximumLeft = Math.max(
+        viewportPaddingPx,
+        window.innerWidth - tooltipRect.width - viewportPaddingPx,
+      );
+      const left = Math.min(
+        Math.max(centeredLeft, viewportPaddingPx),
+        maximumLeft,
+      );
+
+      this.tooltipCoordinates = { top, left };
+      this.isTooltipVisible = true;
+    },
+
+    hideTooltip() {
+      this.isTooltipVisible = false;
+    },
+  }));
 });
