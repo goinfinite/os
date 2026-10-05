@@ -163,7 +163,7 @@ templ CreateAccountForm() {
 		hx-swap="none"
 		@htmx:after-request="$dispatch('refresh:accounts-page-content')"
 	>
-		<div class="mb-6 space-y-6">
+		<div class="pt-3 mb-6 space-y-6">
 			<div class="flex items-center justify-center gap-2">
 				@componentForm.InputField(componentForm.InputFieldDto{
 					Type:               "text",
@@ -212,7 +212,7 @@ templ UpdateAccountForm() {
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
 	>
-		<div class="mb-6">
+		<div class="pt-3 mb-6">
 			<input type="hidden" name="id" x-bind:value="account.id"/>
 			@componentForm.PasswordInput(componentForm.PasswordInputDto{
 				Id:                                "password",
@@ -249,7 +249,7 @@ templ UpdateAccountModal() {
 
 templ UpdateApiKeyContent() {
 	<!-- UpdateApiKeyContent -->
-	<div class="mb-6">
+	<div class="pt-3 mb-6">
 		@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
 			Id:                 "apiKey",
 			Name:               "apiKey",

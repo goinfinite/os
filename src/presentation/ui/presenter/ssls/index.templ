@@ -173,7 +173,7 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 	<!-- ImportSslCertificateForm -->
 	<form
 		id="import-ssl-certificate-form"
-		class="flex flex-col gap-4"
+		class="pt-3 flex flex-col gap-4"
 		hx-post="api/v1/ssl/"
 		hx-indicator="#loading-overlay"
 		hx-swap="none"
@@ -254,7 +254,7 @@ templ ImportSslCertificateModal(vhostsHostnames []string) {
 }
 
 templ ViewPemFilesContent() {
-	<div class="space-y-6">
+	<div class="pt-3 space-y-6">
 		@componentForm.InputFieldReadOnly("text", "id", "Ssl Pair Id", "sslPair.id", "")
 		<div class="space-y-1">
 			@componentForm.TextAreaReadOnly(componentForm.TextAreaReadOnlyDto{
