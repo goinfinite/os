@@ -44,6 +44,7 @@ fix(terminal): set the UTF-8 locale on the session environment
 chore: resolve sonar findings
 feat(ui): refresh the overview carousels and adopt the shared accordion
 fix(ui): keep the modal form labels and spacing aligned
+chore: move the sonar suppression to the flagged line
 
 0.3.4 - 2026/09/15
 chore: update go deps

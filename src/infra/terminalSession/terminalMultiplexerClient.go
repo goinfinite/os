@@ -420,11 +420,10 @@ func (client *TerminalMultiplexerClient) Attach(
 	terminalSessionId valueObject.TerminalSessionId,
 ) (repository.TerminalSessionAttachHandle, error) {
 	attachArgs := client.BuildAttachArgs(terminalSessionId)
-	attachCmd := exec.Command("tmux", attachArgs...)
+	attachCmd := exec.Command("tmux", attachArgs...) // NOSONAR - every PATH directory is root-owned and fixed; the run-as user cannot write to any of them.
 	attachCmd.Dir = infraEnvs.ApplicationRootDir
 	attachCmd.Env = append(
 		client.buildAccountShellEnvironment(),
-		// NOSONAR - every PATH directory is root-owned and fixed; the run-as user cannot write to any of them.
 		"PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin",
 	)
 	attachCmd.SysProcAttr = &syscall.SysProcAttr{
