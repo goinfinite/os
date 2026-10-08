@@ -331,7 +331,6 @@ func (client *TerminalMultiplexerClient) ListSessions() (
 type terminalMultiplexerAttachHandle struct {
 	attachCmd *exec.Cmd
 	ptyFile   *os.File
-	sessionId valueObject.TerminalSessionId
 
 	closeErr  error
 	closeOnce sync.Once
@@ -359,50 +358,11 @@ func (handle *terminalMultiplexerAttachHandle) Wait() error {
 	return handle.waitErr
 }
 
-func (handle *terminalMultiplexerAttachHandle) hasKillSignalExit() bool {
-	processState := handle.attachCmd.ProcessState
-	if processState == nil {
-		return false
-	}
-
-	waitStatus, isWaitStatus := processState.Sys().(syscall.WaitStatus)
-	if !isWaitStatus {
-		return false
-	}
-
-	return waitStatus.Signaled() && waitStatus.Signal() == syscall.SIGKILL
-}
-
-func (handle *terminalMultiplexerAttachHandle) logAttachProcessEnd(
-	killErr, waitErr error,
-) {
-	if handle.hasKillSignalExit() {
-		return
-	}
-
-	exitStatus := "exit status 0"
-	if waitErr != nil {
-		exitStatus = waitErr.Error()
-	}
-
-	logContext := []any{
-		slog.String("sessionId", handle.sessionId.String()),
-		slog.Int("pid", handle.attachCmd.Process.Pid),
-		slog.String("exitStatus", exitStatus),
-	}
-	if killErr != nil {
-		logContext = append(logContext, slog.String("killErr", killErr.Error()))
-	}
-
-	slog.Debug("AttachProcessEndedWithoutKillSignal", logContext...)
-}
-
 func (handle *terminalMultiplexerAttachHandle) Close() error {
 	handle.closeOnce.Do(func() {
-		killErr := handle.attachCmd.Process.Kill()
+		_ = handle.attachCmd.Process.Kill()
 		handle.closeErr = handle.ptyFile.Close()
-		waitErr := handle.Wait()
-		handle.logAttachProcessEnd(killErr, waitErr)
+		_ = handle.Wait()
 	})
 
 	return handle.closeErr
@@ -441,6 +401,5 @@ func (client *TerminalMultiplexerClient) Attach(
 	return &terminalMultiplexerAttachHandle{
 		attachCmd: attachCmd,
 		ptyFile:   ptyFile,
-		sessionId: terminalSessionId,
 	}, nil
 }

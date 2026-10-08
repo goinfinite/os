@@ -3,11 +3,25 @@ package terminalSessionInfra
 import (
 	"os/exec"
 	"sync"
+	"syscall"
 	"testing"
 
 	"github.com/creack/pty"
-	"github.com/goinfinite/os/src/domain/valueObject"
 )
+
+func exitedByKillSignal(command *exec.Cmd) bool {
+	processState := command.ProcessState
+	if processState == nil {
+		return false
+	}
+
+	waitStatus, isWaitStatus := processState.Sys().(syscall.WaitStatus)
+	if !isWaitStatus {
+		return false
+	}
+
+	return waitStatus.Signaled() && waitStatus.Signal() == syscall.SIGKILL
+}
 
 func TestAttachHandleClose(t *testing.T) {
 	newAttachHandleForClose := func(t *testing.T, command *exec.Cmd) *terminalMultiplexerAttachHandle {
@@ -16,15 +30,9 @@ func TestAttachHandleClose(t *testing.T) {
 			t.Fatalf("StartAttachPtyFailed: %v", ptyErr)
 		}
 
-		sessionId, sessionIdErr := valueObject.NewTerminalSessionId("0123456789abcdef")
-		if sessionIdErr != nil {
-			t.Fatalf("NewTerminalSessionIdFailed: %v", sessionIdErr)
-		}
-
 		return &terminalMultiplexerAttachHandle{
 			attachCmd: command,
 			ptyFile:   ptyFile,
-			sessionId: sessionId,
 		}
 	}
 
@@ -45,7 +53,7 @@ func TestAttachHandleClose(t *testing.T) {
 			t.Fatal("CloseShouldReapTheChildProcess")
 		}
 
-		if !handle.hasKillSignalExit() {
+		if !exitedByKillSignal(handle.attachCmd) {
 			t.Error("CloseShouldStopTheChildWithAKillSignal")
 		}
 	})
@@ -68,7 +76,7 @@ func TestAttachHandleClose(t *testing.T) {
 			t.Fatal("ConcurrentCloseShouldReapTheChildProcess")
 		}
 
-		if !handle.hasKillSignalExit() {
+		if !exitedByKillSignal(handle.attachCmd) {
 			t.Error("ConcurrentCloseShouldStopTheChildWithAKillSignal")
 		}
 	})
@@ -86,7 +94,7 @@ func TestAttachHandleClose(t *testing.T) {
 			t.Fatalf("CloseShouldSucceed: %v", closeErr)
 		}
 
-		if handle.hasKillSignalExit() {
+		if exitedByKillSignal(handle.attachCmd) {
 			t.Error("OwnExitShouldNotCarryAKillSignal")
 		}
 	})
