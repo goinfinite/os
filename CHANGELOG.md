@@ -45,6 +45,7 @@ chore: resolve sonar findings
 feat(ui): refresh the overview carousels and adopt the shared accordion
 fix(ui): keep the modal form labels and spacing aligned
 chore: move the sonar suppression to the flagged line
+test(ui): migrate the browser suite to Lightpanda and tier the engines by level
 
 0.3.4 - 2026/09/15
 chore: update go deps
