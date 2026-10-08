@@ -550,9 +550,9 @@ UiToolset.RegisterAlpineState(() => {
 
       const filePermissionsParts = fileEntity.permissions.split("");
       this.file.permissions = {
-        owner: parseInt(filePermissionsParts[0], 10),
-        group: parseInt(filePermissionsParts[1], 10),
-        others: parseInt(filePermissionsParts[2], 10),
+        owner: Number.parseInt(filePermissionsParts[0], 10),
+        group: Number.parseInt(filePermissionsParts[1], 10),
+        others: Number.parseInt(filePermissionsParts[2], 10),
       };
 
       this.isUpdateFilePermissionsModalOpen = true;
