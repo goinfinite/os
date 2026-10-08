@@ -1,4 +1,4 @@
-import { expect, test as setup } from "@playwright/test";
+import { expect, test as setup } from "./fixtures";
 
 const username = process.env.OS_TEST_ACCOUNT_USERNAME as string;
 const password = process.env.OS_TEST_ACCOUNT_PASSWORD as string;

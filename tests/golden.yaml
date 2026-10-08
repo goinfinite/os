@@ -100,6 +100,12 @@ ui.browser/standard:
   info_ms: 90000
   warn_ms: 180000
   relative_warn_percent: 50
+ui.browser/exhaustive:
+  baseline_p50_ms: 205000
+  baseline_p90_ms: 205000
+  info_ms: 300000
+  warn_ms: 600000
+  relative_warn_percent: 50
 mktplace.list:
   baseline_p50_ms: 100
   baseline_p90_ms: 150

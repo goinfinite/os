@@ -15,8 +15,8 @@ export default defineConfig({
   use: {
     baseURL,
     ignoreHTTPSErrors: true,
-    screenshot: "only-on-failure",
-    trace: "retain-on-failure",
+    screenshot: "off",
+    trace: "off",
   },
   projects: [
     {
@@ -24,8 +24,33 @@ export default defineConfig({
       testMatch: /auth\.setup\.ts/,
     },
     {
+      name: "lightpanda",
+      use: {
+        ...devices["Desktop Chrome"],
+        // Lightpanda has no rendering or scroll support, so the tall viewport keeps click targets inside the interaction frame.
+        viewport: { width: 1280, height: 100000 },
+      },
+      testIgnore: /visual\.spec\.ts/,
+      dependencies: ["setup"],
+    },
+    {
       name: "chromium",
-      use: { ...devices["Desktop Chrome"], storageState: "storageState.json" },
+      use: {
+        ...devices["Desktop Chrome"],
+        storageState: "storageState.json",
+        screenshot: "only-on-failure",
+        trace: "retain-on-failure",
+      },
+      dependencies: ["setup"],
+    },
+    {
+      name: "firefox",
+      use: {
+        ...devices["Desktop Firefox"],
+        storageState: "storageState.json",
+        screenshot: "only-on-failure",
+        trace: "retain-on-failure",
+      },
       dependencies: ["setup"],
     },
   ],

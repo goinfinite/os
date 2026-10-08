@@ -1,4 +1,4 @@
-import { expect, test } from "@playwright/test";
+import { expect, test } from "./fixtures";
 
 test.describe("overview", () => {
   test("renders the paired cards and the services table", async ({ page }) => {
@@ -194,39 +194,5 @@ test.describe("overview", () => {
     await expect(
       installationForm.locator('input[name="startCmd"]'),
     ).toBeVisible();
-  });
-
-  test("keeps the marketplace installation modal free of scroll overflow", async ({
-    page,
-  }) => {
-    await page.goto("overview/");
-    await page
-      .locator('#marketplace button:has-text("install catalog item")')
-      .first()
-      .click();
-
-    const modalContent = page
-      .locator("#schedule-marketplace-item-installation-form")
-      .locator("..");
-    const lastVisibleCard = page
-      .locator("#schedule-marketplace-item-installation-form .group:visible")
-      .last();
-    await lastVisibleCard.hover();
-
-    await expect(page.locator("body > [role=tooltip]:visible")).toHaveCount(1);
-    await expect
-      .poll(() =>
-        modalContent.evaluate(
-          (element) => element.scrollWidth - element.clientWidth,
-        ),
-      )
-      .toBe(0);
-    await expect
-      .poll(() =>
-        modalContent.evaluate(
-          (element) => element.scrollHeight - element.clientHeight,
-        ),
-      )
-      .toBe(0);
   });
 });

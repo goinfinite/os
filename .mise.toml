@@ -4,6 +4,7 @@ go = "1.27.1"
 
 # Development
 "npm:@biomejs/biome" = "2.5.13"
+"go:github.com/a-h/templ/cmd/templ" = { version = "0.3.1070", minimum_release_age = "0" }
 golangci-lint = "latest"
 staticcheck = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
@@ -15,6 +16,7 @@ shellcheck = "latest"
 node = "lts"
 jq = "latest"
 yq = "latest"
+"github:lightpanda-io/browser" = { version = "latest", rename_exe = "lightpanda", minimum_release_age = "0", prerelease = true, version_order = "semver" }
 
 [settings]
 minimum_release_age = "7d"
