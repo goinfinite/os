@@ -1,6 +1,6 @@
 [tools]
 # Production
-go = "1.27.1"
+go = "1.27.2"
 
 # Development
 "npm:@biomejs/biome" = "2.5.13"
