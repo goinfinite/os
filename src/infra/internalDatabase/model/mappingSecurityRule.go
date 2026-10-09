@@ -30,7 +30,7 @@ func (MappingSecurityRule) TableName() string {
 	return "mapping_security_rules"
 }
 
-func (MappingSecurityRule) InitialEntries() (initialEntries []interface{}, err error) {
+func (MappingSecurityRule) InitialEntries() (initialEntries []any, err error) {
 	for _, initialPreset := range entity.MappingSecurityRuleInitialPresets() {
 		initialEntries = append(initialEntries, MappingSecurityRule{}.ToModel(initialPreset))
 	}

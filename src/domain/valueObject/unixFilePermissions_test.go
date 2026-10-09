@@ -4,7 +4,7 @@ import "testing"
 
 func TestUnixFilePermissions(t *testing.T) {
 	t.Run("ValidUnixFilePermissions", func(t *testing.T) {
-		validUnixFilePermissions := []interface{}{
+		validUnixFilePermissions := []any{
 			"000", "500", "555", "644", "755", "1644", "4755",
 		}
 
@@ -19,7 +19,7 @@ func TestUnixFilePermissions(t *testing.T) {
 	})
 
 	t.Run("InvalidUnixFilePermissions", func(t *testing.T) {
-		invalidUnixFilePermissions := []interface{}{
+		invalidUnixFilePermissions := []any{
 			"", "0", "5", "55", "-1", "7778", "00000", "aaaaa", "b",
 		}
 

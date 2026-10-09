@@ -1,6 +1,6 @@
 package uiLayout
 
-import "github.com/goinfinite/ui/src/display"
+import "github.com/goinfinite/ui/src/structural"
 
 import (
 	_ "embed"
@@ -113,12 +113,12 @@ templ SidebarFooter() {
 templ Sidebar(baseHref string) {
 	<!-- Sidebar HTML -->
 	<div x-data="{isSidebarCollapsed: $persist(false).as('osDash.isSidebarCollapsed')}">
-		@uiDisplay.Sidebar(uiDisplay.SidebarSettings{
+		@uiStructural.Sidebar(uiStructural.SidebarSettings{
 			MiddleContent:              SidebarMiddle(baseHref),
 			HeaderContent:              SidebarHeader(),
 			FooterContent:              SidebarFooter(),
 			IsCollapsedTwoWayStatePath: "isSidebarCollapsed",
-			AttachmentMode:             uiDisplay.SidebarAttachmentModeFixed,
+			AttachmentMode:             uiStructural.SidebarAttachmentModeFixed,
 			BackgroundColor:            "bg-primary-800",
 			Width:                      "w-42",
 		})

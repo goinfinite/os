@@ -11,7 +11,7 @@ import (
 
 type ServiceName string
 
-const ServiceNameRegex string = `^[a-z0-9\.\_\-]{1,64}$`
+var ServiceNameRegex = regexp.MustCompile(`^[a-z0-9\.\_\-]{1,64}$`)
 
 var (
 	ServiceNameMainWebServer  = ServiceName("nginx")
@@ -30,15 +30,14 @@ var (
 	}
 )
 
-func NewServiceName(value interface{}) (serviceName ServiceName, err error) {
+func NewServiceName(value any) (serviceName ServiceName, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceName, errors.New("ServiceNameValueMustBeString")
 	}
 	svcName := ServiceNameAdapter(stringValue)
 
-	re := regexp.MustCompile(ServiceNameRegex)
-	if !re.MatchString(svcName) {
+	if !ServiceNameRegex.MatchString(svcName) {
 		return serviceName, errors.New("InvalidServiceName")
 	}
 

@@ -4,7 +4,7 @@ import "testing"
 
 func TestUrlPath(t *testing.T) {
 	t.Run("ValidUrlPath", func(t *testing.T) {
-		validUrlPath := []interface{}{
+		validUrlPath := []any{
 			"", "/", "blog",
 			"news/new-product-from-Infinite-revolutionizes-the-market",
 			"/app/html", "/info.php", "/app/html/goinfinite.net",
@@ -23,7 +23,7 @@ func TestUrlPath(t *testing.T) {
 	})
 
 	t.Run("InvalidUrlPath", func(t *testing.T) {
-		invalidUrlPath := []interface{}{
+		invalidUrlPath := []any{
 			"/app/html@", "/info.php?id=1", "/path to download", "index.js=",
 			"/how-to-get-habbo-coins?/2011",
 			"//evil.com", "//evil.com/",

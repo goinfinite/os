@@ -33,7 +33,7 @@ func (controller *ServicesController) ReadInstalledItems() *cobra.Command {
 		Use:   "get",
 		Short: "ReadServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"shouldIncludeMetrics": shouldIncludeMetricsStr,
 			}
 
@@ -120,7 +120,7 @@ func (controller *ServicesController) ReadInstallableItems() *cobra.Command {
 		Use:   "get-installables",
 		Short: "ReadInstallableServices",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			if installedItemNameStr != "" {
 				requestBody["name"] = installedItemNameStr
@@ -205,7 +205,7 @@ func (controller *ServicesController) CreateInstallable() *cobra.Command {
 		Use:   "create-installable",
 		Short: "CreateInstallableService",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"name":                           nameStr,
 				"autoStart":                      autoStartBoolStr,
 				"autoRestart":                    autoRestartBoolStr,
@@ -312,7 +312,7 @@ func (controller *ServicesController) CreateCustom() *cobra.Command {
 		Use:   "create-custom",
 		Short: "CreateCustomService",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"name":                           nameStr,
 				"type":                           typeStr,
 				"startCmd":                       startCmdStr,
@@ -415,7 +415,7 @@ func (controller *ServicesController) Update() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateService",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"name": nameStr,
 			}
 
@@ -481,7 +481,7 @@ func (controller *ServicesController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteService",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"name": nameStr,
 			}
 

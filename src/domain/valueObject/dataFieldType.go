@@ -15,7 +15,7 @@ var validDataFieldTypes = []string{
 	"range", "search", "select", "tel", "text", "time", "url",
 }
 
-func NewDataFieldType(value interface{}) (
+func NewDataFieldType(value any) (
 	dataFieldType DataFieldType, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

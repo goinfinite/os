@@ -322,7 +322,7 @@ func (repo *ServicesQueryRepo) ReadInstalledItems(
 	stoppedServicesNames, err := repo.readStoppedServicesNames()
 	if err != nil {
 		return installedItemsDto, errors.New(
-			"FailedToReadStoppedServicesNames: " + err.Error(),
+			"ReadStoppedServicesNamesError: " + err.Error(),
 		)
 	}
 

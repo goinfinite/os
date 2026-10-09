@@ -4,11 +4,14 @@ import (
 	_ "embed"
 	"github.com/goinfinite/os/src/domain/entity"
 	"github.com/goinfinite/os/src/domain/valueObject"
-	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	componentForm "github.com/goinfinite/os/src/presentation/ui/component/form"
 	componentMisc "github.com/goinfinite/os/src/presentation/ui/component/misc"
 	componentStructural "github.com/goinfinite/os/src/presentation/ui/component/structural"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
+	uiControl "github.com/goinfinite/ui/src/control"
 	uiDisplay "github.com/goinfinite/ui/src/display"
+	uiForm "github.com/goinfinite/ui/src/form"
 	"github.com/goinfinite/ui/src/toolset"
 )
 
@@ -19,20 +22,25 @@ type CatalogItemsGroupedByType struct {
 }
 
 type MarketplaceOverview struct {
-	ListType           string
-	InstalledItemsList []entity.MarketplaceInstalledItem
-	CatalogItemsList   CatalogItemsGroupedByType
+	ListType                 string
+	InstalledItemsList       []entity.MarketplaceInstalledItem
+	InstalledItemsPagination tkDto.Pagination
+	CatalogItemsList         CatalogItemsGroupedByType
 }
 
 //go:embed state.js
 var marketplaceIndexAlpineState string
+
+templ MarketplaceAlpineState() {
+	@uiToolset.MinifierTemplateJs(&marketplaceIndexAlpineState)
+}
 
 templ MarketplaceIndex(
 	vhostsHostnames []string,
 	marketplaceOverview MarketplaceOverview,
 ) {
 	<!-- Marketplace Page JavaScript -->
-	@uiToolset.MinifierTemplateJs(&marketplaceIndexAlpineState)
+	@MarketplaceAlpineState()
 	<!-- Marketplace Page HTML -->
 	<div class="flex flex-col" x-data="marketplace">
 		@componentStructural.PageTitle(
@@ -50,12 +58,15 @@ templ MarketplaceIndex(
 		>
 			@MarketplaceTabs(marketplaceOverview)
 			@MarketplaceCatalogItemCarouselImageLightbox()
-			@componentStructural.ScheduleDeletionModal(
-				"isUninstallMarketplaceItemModalOpen",
-				"closeUninstallMarketplaceItemModal()",
-				"uninstallMarketplaceItem()",
-				"marketplaceItem.name", "marketplaceItem.id",
-			)
+			@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+				IsVisibleTwoWayStatePath: "isUninstallMarketplaceItemModalOpen",
+				OnConfirmFunc:            "uninstallMarketplaceItem()",
+				CancelButtonLabel:        "No, Keep it.",
+				TargetNameStatePath:      "marketplaceItem.name",
+				TargetIdStatePath:        "marketplaceItem.id",
+				ConfirmButtonLabel:       "Yes, Schedule Delete!",
+				ConfirmButtonIcon:        "ph-queue",
+			})
 			@ScheduleSelectedMarketplaceItemInstallationModal(vhostsHostnames)
 		</div>
 	</div>
@@ -81,6 +92,7 @@ templ MarketplaceInstalledItemsTable(
 		<tbody>
 			for _, installedItem := range installedItemsList {
 				<tr class="odd:bg-os-300 even:bg-os-500 border-b border-neutral-500 border-opacity-30 text-center">
+					@templ.JSONScript("installedMarketplaceItem_"+installedItem.Id.String(), installedItem)
 					<th scope="row" class="w-1/6 px-5 py-3 text-left font-normal">
 						<div class="inline-flex items-center">
 							<img class="mr-2 h-10 w-10 rounded-full" src={ installedItem.AvatarUrl.String() }/>
@@ -95,11 +107,17 @@ templ MarketplaceInstalledItemsTable(
 					<th scope="row" class="w-1/6 px-5 py-3 font-normal">{ installedItem.CreatedAt.ReadDateOnly() }</th>
 					<th scope="row" class="w-1/6 px-5 py-3 text-right font-normal">
 						<div class="inline-flex">
-							@componentStructural.CircularIconButtonWithTooltip(
-								"ph-trash", "red-800", "red-600",
-								"openUninstallMarketplaceItemModal("+installedItem.Id.String()+", '"+installedItem.Name.String()+"')",
-								"Uninstall", "red-500",
-							)
+							@uiControl.Button(uiControl.ButtonSettings{
+								IconLeft:               "ph-trash",
+								Shape:                  uiToolset.ShapeCircular,
+								Size:                   uiControl.ButtonSizeSm,
+								BackgroundColor:        "red-800",
+								BackgroundColorHover:   "red-600",
+								OnClickFunc:            "openUninstallMarketplaceItemModal('" + installedItem.Id.String() + "')",
+								AriaLabel:              "Uninstall",
+								TooltipContent:         "Uninstall",
+								TooltipBackgroundColor: "red-500",
+							})
 						</div>
 					</th>
 				</tr>
@@ -152,7 +170,6 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 					<h3>{ item.Name.String() }</h3>
 				</div>
 				@componentStructural.CollapsibleText(
-					item.Slugs[0].String(),
 					item.Description.String(), "sm", 180,
 				)
 				if len(item.ScreenshotUrls) == 0 {
@@ -253,6 +270,38 @@ templ MarketplaceCatalogItemCarouselImageLightbox() {
 	</div>
 }
 
+templ ScheduleSelectedMarketplaceItemInstallationParameters() {
+	@uiDisplay.Alert(uiDisplay.AlertSettings{
+		Variation:   uiDisplay.AlertVariationWarning,
+		Description: "All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
+		Size:        uiDisplay.AlertSizeXs,
+		IsCloseable: false,
+	})
+	<div class="grid grid-cols-2 gap-4">
+		<template x-for="dataField in marketplaceItem.dataFields">
+			<div>
+				<template x-if="dataField.type === 'text' || dataField.type === 'email'">
+					@componentForm.InputFieldClientSide(
+						"dataField.type", "dataField.label", "dataField.value",
+					)
+				</template>
+				<template x-if="dataField.type === 'password'">
+					@componentForm.PasswordInputClientSide(
+						"dataField.label", "dataField.value", true,
+					)
+				</template>
+				<template x-if="dataField.type === 'select'">
+					@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
+						BindLabel:     "dataField.label",
+						BindModelPath: "dataField.value",
+						BindOptions:   "dataField.options",
+					})
+				</template>
+			</div>
+		</template>
+	</div>
+}
+
 templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) {
 	<!-- ScheduleSelectedMarketplaceItemInstallationForm -->
 	<form
@@ -264,57 +313,46 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 	>
 		<input type="hidden" name="id" :value="marketplaceItem.id"/>
 		<input type="hidden" name="dataFields" :value="dataFieldsAsString"/>
-		<div class="my-6 space-y-2">
+		@templ.JSONScript("marketplaceInstallVhostHostnames", vhostsHostnames)
+		<div class="mt-3 mb-6 space-y-2">
 			<div class="w-100% inline-flex space-x-2">
 				<div class="w-60%">
-					@componentForm.SelectInput(
-						"hostname", "Hostname", "marketplaceItem.hostname",
-						"", vhostsHostnames, true,
-					)
+					@uiForm.SelectInput(uiForm.SelectInputSettings{
+						InputName:                "hostname",
+						Label:                    "Hostname",
+						FlatOptions:              vhostsHostnames,
+						TwoWayStatePath:          "marketplaceItem.hostname",
+						Size:                     uiForm.SelectInputSizeLg,
+						ShouldIncludeBlankOption: true,
+						DropdownBackgroundColor:  "primary-500/95",
+					})
 				</div>
 				<div class="w-40%">
-					@componentForm.InputFieldWithPrefix(componentForm.InputFieldWithPrefixDto{
-						Type:                "text",
-						Id:                  "urlPath",
-						Label:               "URL Path",
-						BindInputValuePath:  "marketplaceItem.urlPath",
-						BindPrefixValuePath: "hostnameWithTrailingSlash",
-						InfoTooltipContent:  "Path where the respective installed item will be available for access.",
+					@uiForm.InputField(uiForm.InputFieldSettings{
+						InputType:          uiForm.InputTypeText,
+						InputName:          "urlPath",
+						Label:              "URL Path",
+						TwoWayStatePath:    "marketplaceItem.urlPath",
+						AffixLeftStatePath: "hostnameWithTrailingSlash",
+						HintValue:          "Path where the respective installed item will be available for access.",
+						HintDisplay:        uiForm.InputHintDisplayTooltip,
+						Size:               uiForm.InputFieldSizeLg,
 					})
 				</div>
 			</div>
 			<template x-if="marketplaceItem.id !== ''">
-				@componentStructural.CollapsibleSection("Install Parameters", "ph-brackets-curly", true) {
-					@uiDisplay.Alert(uiDisplay.AlertSettings{
-						Variation:   uiDisplay.AlertVariationWarning,
-						Description: "All fields without pre-filled values must be completed as they are required. Otherwise, the installation will fail!",
-						Size:        uiDisplay.AlertSizeXs,
-						IsCloseable: false,
-					})
-					<div class="mt-2 grid grid-cols-2 gap-4">
-						<template x-for="dataField in marketplaceItem.dataFields">
-							<div>
-								<template x-if="dataField.type === 'text' || dataField.type === 'email'">
-									@componentForm.InputFieldClientSide(
-										"dataField.type", "dataField.label", "dataField.value",
-									)
-								</template>
-								<template x-if="dataField.type === 'password'">
-									@componentForm.PasswordInputClientSide(
-										"dataField.label", "dataField.value", true,
-									)
-								</template>
-								<template x-if="dataField.type === 'select'">
-									@componentForm.SelectInputClientSide(componentForm.SelectInputClientSideDto{
-										BindLabel:     "dataField.label",
-										BindModelPath: "dataField.value",
-										BindOptions:   "dataField.options",
-									})
-								</template>
-							</div>
-						</template>
-					</div>
-				}
+				@uiDisplay.Accordion(uiDisplay.AccordionSettings{
+					Items: []uiDisplay.AccordionItemSettings{
+						{
+							Title:   "Install Parameters",
+							Icon:    "ph-brackets-curly",
+							Content: ScheduleSelectedMarketplaceItemInstallationParameters(),
+						},
+					},
+					BackgroundColor:        "neutral-950/20",
+					OpenBackgroundColor:    "neutral-950/30",
+					ContentBackgroundColor: "os-400",
+				})
 			</template>
 		</div>
 		@componentForm.SubmitButton(
@@ -325,10 +363,12 @@ templ ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames []string) 
 }
 
 templ ScheduleSelectedMarketplaceItemInstallationModal(vhostsHostnames []string) {
-	@componentStructural.RegularModal(
-		"Install Marketplace Item", "isScheduleSelectedMarketplaceItemInstallationModalOpen",
-		"closeScheduleSelectedMarketplaceItemInstallationModal()", "marketplaceItem.name",
-	) {
-		@ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            ScheduleSelectedMarketplaceItemInstallationForm(vhostsHostnames),
+		TitleOneWayStatePath:     "'Install Marketplace Item #' + marketplaceItem.name",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isScheduleSelectedMarketplaceItemInstallationModalOpen",
+		OnCloseFunc:              "closeScheduleSelectedMarketplaceItemInstallationModal()",
+	})
 }

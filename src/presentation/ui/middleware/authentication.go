@@ -87,13 +87,16 @@ func Authentication(
 			}
 
 			authQueryRepo := authInfra.NewAuthQueryRepo(persistentDbSvc)
-			_, err = authHelper.ReadAccessTokenAccountId(
+			accountId, err := authHelper.ReadAccessTokenAccountId(
 				authQueryRepo, accessToken, operatorIpAddress,
 			)
 			if err != nil {
 				slog.Debug("InvalidAccessTokenDetails", slog.String("err", err.Error()))
 				return echoContext.Redirect(http.StatusTemporaryRedirect, loginPath)
 			}
+
+			echoContext.Set("operatorAccountId", accountId)
+			echoContext.Set("operatorIpAddress", operatorIpAddress)
 			return subsequentHandler(echoContext)
 		}
 	}

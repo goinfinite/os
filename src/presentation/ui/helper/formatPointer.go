@@ -6,7 +6,7 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-func FormatPointer[ParamType interface{}](pointer *ParamType) string {
+func FormatPointer[ParamType any](pointer *ParamType) string {
 	if pointer == nil {
 		return "-"
 	}

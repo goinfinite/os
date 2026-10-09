@@ -12,7 +12,7 @@ import (
 
 func TestScheduledTaskQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	persistentDbSvc := testHelpers.GetPersistentDbSvc()
+	persistentDbSvc := testHelpers.ReadPersistentDbSvc()
 	scheduledTaskCmdRepo := NewScheduledTaskCmdRepo(persistentDbSvc)
 	scheduledTaskQueryRepo := NewScheduledTaskQueryRepo(persistentDbSvc)
 

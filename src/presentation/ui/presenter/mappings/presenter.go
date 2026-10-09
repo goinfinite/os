@@ -35,7 +35,7 @@ func (presenter *MappingsPresenter) readVirtualHostWithMappings() []dto.VirtualH
 	virtualHostLiaison := liaison.NewVirtualHostLiaison(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
-	readVirtualHostsLiaisonOutput := virtualHostLiaison.ReadWithMappings(map[string]interface{}{
+	readVirtualHostsLiaisonOutput := virtualHostLiaison.ReadWithMappings(map[string]any{
 		"itemsPerPage": 1000,
 	})
 	if readVirtualHostsLiaisonOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
@@ -68,7 +68,7 @@ func (presenter *MappingsPresenter) readInstalledServiceNames() []string {
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
 	installedServicesResponseOutput := servicesLiaison.ReadInstalledItems(
-		map[string]interface{}{"itemsPerPage": 1000},
+		map[string]any{"itemsPerPage": 1000},
 	)
 	if installedServicesResponseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		slog.Debug("ReadInstalledItemsFailed", slog.Any("output", installedServicesResponseOutput))
@@ -101,7 +101,7 @@ func (presenter *MappingsPresenter) readSecRulesLabelValueOptions() []uiForm.Sel
 	virtualHostLiaison := liaison.NewVirtualHostLiaison(
 		presenter.persistentDbSvc, presenter.trailDbSvc,
 	)
-	readSecRulesLiaisonOutput := virtualHostLiaison.ReadMappingSecurityRules(map[string]interface{}{
+	readSecRulesLiaisonOutput := virtualHostLiaison.ReadMappingSecurityRules(map[string]any{
 		"itemsPerPage": 1000,
 	})
 

@@ -4,7 +4,7 @@ import "testing"
 
 func TestScheduledTaskName(t *testing.T) {
 	t.Run("ValidScheduledTaskName", func(t *testing.T) {
-		validScheduledTaskNames := []interface{}{
+		validScheduledTaskNames := []any{
 			"installWordpress", "CreateCronTaskWhenOsInitialize",
 			"testAllComponentsBeforeStart", "CheckIfPort443UsingSelfSignedSsl",
 		}
@@ -20,7 +20,7 @@ func TestScheduledTaskName(t *testing.T) {
 	})
 
 	t.Run("InvalidScheduledTaskName", func(t *testing.T) {
-		invalidScheduledTaskNames := []interface{}{
+		invalidScheduledTaskNames := []any{
 			"", "1failedRequest", "ValidateUserInput!",
 		}
 

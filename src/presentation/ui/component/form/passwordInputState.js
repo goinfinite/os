@@ -48,7 +48,7 @@ UiToolset.RegisterAlpineState(() => {
         passwordStrengthPercentage += 20;
       }
 
-      if (/[!@#\$%\^\&*\)\(+=._-]/.test(password)) {
+      if (/[!@#$%^&*)(+=._-]/.test(password)) {
         this.passwordStrengthCriteria.hasSpecialChars = true;
         passwordStrengthPercentage += 20;
       }

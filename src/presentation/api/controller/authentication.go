@@ -11,6 +11,7 @@ import (
 
 type AuthenticationController struct {
 	authenticationLiaison *liaison.AuthenticationLiaison
+	inputReader           tkPresentation.ApiRequestInputReader
 }
 
 func NewAuthenticationController(
@@ -21,6 +22,7 @@ func NewAuthenticationController(
 		authenticationLiaison: liaison.NewAuthenticationLiaison(
 			persistentDbSvc, trailDbSvc,
 		),
+		inputReader: tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -35,8 +37,7 @@ func NewAuthenticationController(
 // @Failure      401 {object} string
 // @Router       /v1/auth/login/ [post]
 func (controller *AuthenticationController) Login(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

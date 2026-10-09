@@ -2,6 +2,7 @@ package componentMappings
 
 import "github.com/goinfinite/os/src/domain/entity"
 import "github.com/goinfinite/ui/src/display"
+import uiToolset "github.com/goinfinite/ui/src/toolset"
 import "strconv"
 
 templ MappingSecurityRuleSummary(ruleEntity entity.MappingSecurityRule) {
@@ -23,24 +24,24 @@ templ MappingSecurityRuleSummary(ruleEntity entity.MappingSecurityRule) {
 				@uiDisplay.Tag(uiDisplay.TagSettings{
 					Size:                 uiDisplay.TagSizeXs,
 					OuterRingColor:       "neutral-50/10",
-					OuterRingThickness:   uiDisplay.TagRingThicknessSm,
+					OuterRingThickness:   uiToolset.RingThicknessSm,
 					OuterBackgroundColor: "transparent",
-					OuterRadius:          uiDisplay.TagRadiusLg,
+					OuterRadius:          uiToolset.BorderRadiusLg,
 					OuterLeftLabel:       "RequestsPerSec",
 					InnerLabel:           rpsInnerLabel,
-					InnerRadius:          uiDisplay.TagRadiusMd,
+					InnerRadius:          uiToolset.BorderRadiusMd,
 				})
 			}
 			if ruleEntity.MaxConnectionsPerIp != nil {
 				@uiDisplay.Tag(uiDisplay.TagSettings{
 					Size:                 uiDisplay.TagSizeXs,
 					OuterRingColor:       "neutral-50/10",
-					OuterRingThickness:   uiDisplay.TagRingThicknessSm,
+					OuterRingThickness:   uiToolset.RingThicknessSm,
 					OuterBackgroundColor: "transparent",
-					OuterRadius:          uiDisplay.TagRadiusLg,
+					OuterRadius:          uiToolset.BorderRadiusLg,
 					OuterLeftLabel:       "MaxConns",
 					InnerLabel:           strconv.Itoa(int(*ruleEntity.MaxConnectionsPerIp)),
-					InnerRadius:          uiDisplay.TagRadiusMd,
+					InnerRadius:          uiToolset.BorderRadiusMd,
 				})
 			}
 			if ruleEntity.BandwidthBpsLimitPerConnection != nil {
@@ -51,12 +52,12 @@ templ MappingSecurityRuleSummary(ruleEntity entity.MappingSecurityRule) {
 				@uiDisplay.Tag(uiDisplay.TagSettings{
 					Size:                 uiDisplay.TagSizeXs,
 					OuterRingColor:       "neutral-50/10",
-					OuterRingThickness:   uiDisplay.TagRingThicknessSm,
+					OuterRingThickness:   uiToolset.RingThicknessSm,
 					OuterBackgroundColor: "transparent",
-					OuterRadius:          uiDisplay.TagRadiusLg,
+					OuterRadius:          uiToolset.BorderRadiusLg,
 					OuterLeftLabel:       "BandwidthLimit",
 					InnerLabel:           bpsLimitInnerLabel,
-					InnerRadius:          uiDisplay.TagRadiusMd,
+					InnerRadius:          uiToolset.BorderRadiusMd,
 				})
 			}
 		</div>

@@ -10,9 +10,9 @@ import (
 
 type MarketplaceInstalledItemUuid string
 
-const marketplaceInstalledItemUuidRegexExpression = `^\w{10,16}$`
+var marketplaceInstalledItemUuidRegex = regexp.MustCompile(`^\w{10,16}$`)
 
-func NewMarketplaceInstalledItemUuid(value interface{}) (
+func NewMarketplaceInstalledItemUuid(value any) (
 	marketplaceInstalledItemUuid MarketplaceInstalledItemUuid, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -23,8 +23,7 @@ func NewMarketplaceInstalledItemUuid(value interface{}) (
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	re := regexp.MustCompile(marketplaceInstalledItemUuidRegexExpression)
-	if !re.MatchString(stringValue) {
+	if !marketplaceInstalledItemUuidRegex.MatchString(stringValue) {
 		return marketplaceInstalledItemUuid, errors.New(
 			"InvalidMarketplaceInstalledItemUuid",
 		)

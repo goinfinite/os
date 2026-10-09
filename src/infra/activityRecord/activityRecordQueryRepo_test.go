@@ -9,7 +9,7 @@ import (
 
 func TestActivityRecordQueryRepo(t *testing.T) {
 	testHelpers.LoadEnvVars()
-	trailDbSvc := testHelpers.GetTrailDbSvc()
+	trailDbSvc := testHelpers.ReadTrailDbSvc()
 	activityRecordQueryRepo := NewActivityRecordQueryRepo(trailDbSvc)
 
 	t.Run("ReadActivityRecordQuery", func(t *testing.T) {

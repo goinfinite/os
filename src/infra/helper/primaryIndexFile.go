@@ -35,7 +35,7 @@ func BackupPrimaryIndexFile() error {
 		return errors.New("MoveIndexFileError: " + err.Error())
 	}
 
-	err = UpdateOwnershipForWebServerUse(
+	err = PathOwnership{}.UpdateForWebServerUse(
 		IndexFileBackupPath, false, false,
 	)
 	if err != nil {
@@ -62,7 +62,7 @@ func RestorePrimaryIndexFile() error {
 		return errors.New("CopyIndexFileError: " + err.Error())
 	}
 
-	err = UpdateOwnershipForWebServerUse(IndexFilePath, false, false)
+	err = PathOwnership{}.UpdateForWebServerUse(IndexFilePath, false, false)
 	if err != nil {
 		return errors.New(
 			"UpdateOwnershipForWebServerUseError: " + err.Error(),

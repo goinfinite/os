@@ -23,6 +23,8 @@ import (
 
 const phpDirectiveKeywordPattern = `php_(?:value|flag)`
 
+var priorityPrefixRegex = regexp.MustCompile(`^\d{1,5}-`)
+
 type RuntimeCmdRepo struct {
 	persistentDbSvc  *internalDbInfra.PersistentDatabaseService
 	runtimeQueryRepo *RuntimeQueryRepo
@@ -50,7 +52,7 @@ func (repo *RuntimeCmdRepo) RunPhpCommand(
 	if err != nil {
 		return runResponse, err
 	}
-	phpVersionWithoutDots := phpVersionEntity.Value.GetWithoutDots()
+	phpVersionWithoutDots := phpVersionEntity.Value.RemoveDots()
 	if phpVersionWithoutDots == "" {
 		return runResponse, errors.New("PhpVersionNotFound")
 	}
@@ -323,7 +325,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 		return err
 	}
 
-	newLsapiLine := "lsapi:lsphp" + version.GetWithoutDots()
+	newLsapiLine := "lsapi:lsphp" + version.RemoveDots()
 	lsapiLineRegex := regexp.MustCompile(`lsapi:lsphp[0-9][0-9]\b`)
 	_, err = repo.replaceFileContentByRegex(
 		phpConfFilePath, repo.resolvePhpVirtualHostTrustedOwners(),
@@ -336,7 +338,7 @@ func (repo *RuntimeCmdRepo) UpdatePhpVersion(
 	isPrimaryVirtualHost := repo.vhostHelpers.IsPrimaryVirtualHost(hostname)
 	if isPrimaryVirtualHost {
 		sourcePhpCliPath := "/usr/local/lsws/lsphp" +
-			version.GetWithoutDots() + "/bin/php"
+			version.RemoveDots() + "/bin/php"
 		updatePhpCliVersionCmd := "unlink /usr/bin/php; ln -s " +
 			sourcePhpCliPath + " /usr/bin/php"
 		_, err = tkInfra.NewShell(tkInfra.ShellSettings{
@@ -495,7 +497,7 @@ func (repo *RuntimeCmdRepo) phpExtensionPackageNameResolver(
 	phpVersion valueObject.PhpVersion,
 	moduleName string,
 ) string {
-	lsphpPackagePrefix := "lsphp" + phpVersion.GetWithoutDots() + "-"
+	lsphpPackagePrefix := "lsphp" + phpVersion.RemoveDots() + "-"
 	switch moduleName {
 	case "mysqli", "pdo_mysql":
 		return lsphpPackagePrefix + "mysql"
@@ -508,18 +510,38 @@ func (repo *RuntimeCmdRepo) phpExtensionPackageNameResolver(
 	}
 }
 
-func (repo *RuntimeCmdRepo) isPhpModuleIniFilePresent(
-	filePath string,
-) (bool, error) {
-	fileInfo, err := os.Lstat(filePath)
+func (repo *RuntimeCmdRepo) phpModuleIniFilePathResolver(
+	modulesDir, moduleName string,
+) (iniFilePath string, err error) {
+	dirEntries, err := os.ReadDir(modulesDir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return false, nil
+			return "", nil
 		}
-		return false, err
+		return "", err
 	}
 
-	return !fileInfo.IsDir(), nil
+	expectedIniFileName := moduleName + ".ini"
+	lastLoadedIniFilePath := ""
+	for _, dirEntry := range dirEntries {
+		if dirEntry.IsDir() {
+			continue
+		}
+
+		entryName := dirEntry.Name()
+		if entryName == expectedIniFileName {
+			return filepath.Join(modulesDir, entryName), nil
+		}
+
+		priorityPrefix := priorityPrefixRegex.FindString(entryName)
+		isPriorityPrefixedModuleIni := priorityPrefix != "" &&
+			strings.TrimPrefix(entryName, priorityPrefix) == expectedIniFileName
+		if isPriorityPrefixedModuleIni {
+			lastLoadedIniFilePath = filepath.Join(modulesDir, entryName)
+		}
+	}
+
+	return lastLoadedIniFilePath, nil
 }
 
 func (repo *RuntimeCmdRepo) enablePhpModule(
@@ -527,21 +549,22 @@ func (repo *RuntimeCmdRepo) enablePhpModule(
 	moduleEntity entity.PhpModule,
 ) error {
 	moduleNameStr := moduleEntity.Name.String()
-	lsphpDir := "/usr/local/lsws/lsphp" + phpVersion.GetWithoutDots()
+	lsphpDir := "/usr/local/lsws/lsphp" + phpVersion.RemoveDots()
 	iniRootDir := lsphpDir + "/etc/php/" + phpVersion.String()
 	modsAvailableDir := iniRootDir + "/mods-available"
 	modsDisabledDir := iniRootDir + "/mods-disabled"
 
-	disabledIniFile := filepath.Join(modsDisabledDir, moduleNameStr+".ini")
-	isDisabledIniFilePresent, err := repo.isPhpModuleIniFilePresent(
-		disabledIniFile,
+	disabledIniFilePath, err := repo.phpModuleIniFilePathResolver(
+		modsDisabledDir, moduleNameStr,
 	)
 	if err != nil {
 		return errors.New("ReadDisabledPhpModuleIniFileFailed: " + err.Error())
 	}
-	if isDisabledIniFilePresent {
-		enabledIniFile := filepath.Join(modsAvailableDir, moduleNameStr+".ini")
-		err = os.Rename(disabledIniFile, enabledIniFile)
+	if disabledIniFilePath != "" {
+		enabledIniFilePath := filepath.Join(
+			modsAvailableDir, filepath.Base(disabledIniFilePath),
+		)
+		err = os.Rename(disabledIniFilePath, enabledIniFilePath)
 		if err != nil {
 			return errors.New("EnablePhpModuleFailed: " + err.Error())
 		}
@@ -576,28 +599,31 @@ func (repo *RuntimeCmdRepo) disablePhpModule(
 	}
 
 	iniRootDir := "/usr/local/lsws/lsphp" +
-		phpVersion.GetWithoutDots() + "/etc/php/" + phpVersion.String()
+		phpVersion.RemoveDots() + "/etc/php/" + phpVersion.String()
 	modsAvailableDir := iniRootDir + "/mods-available"
 	modsDisabledDir := iniRootDir + "/mods-disabled"
 
-	enabledIniFile := filepath.Join(modsAvailableDir, moduleNameStr+".ini")
-	isEnabledIniFilePresent, err := repo.isPhpModuleIniFilePresent(
-		enabledIniFile,
+	enabledIniFilePath, err := repo.phpModuleIniFilePathResolver(
+		modsAvailableDir, moduleNameStr,
 	)
 	if err != nil {
 		return errors.New("ReadEnabledPhpModuleIniFileFailed: " + err.Error())
 	}
-	if !isEnabledIniFilePresent {
-		return errors.New("PhpModuleIniFileNotFound: " + enabledIniFile)
+	if enabledIniFilePath == "" {
+		return errors.New(
+			"PhpModuleIniFileNotFound: " + moduleNameStr + " in " + modsAvailableDir,
+		)
 	}
 
-	disabledIniFile := filepath.Join(modsDisabledDir, moduleNameStr+".ini")
 	err = os.MkdirAll(modsDisabledDir, 0755)
 	if err != nil {
 		return errors.New("CreatePhpModulesDisabledDirFailed: " + err.Error())
 	}
 
-	err = os.Rename(enabledIniFile, disabledIniFile)
+	disabledIniFilePath := filepath.Join(
+		modsDisabledDir, filepath.Base(enabledIniFilePath),
+	)
+	err = os.Rename(enabledIniFilePath, disabledIniFilePath)
 	if err != nil {
 		return errors.New("DisablePhpModuleFailed: " + err.Error())
 	}

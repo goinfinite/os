@@ -9,7 +9,7 @@ import (
 
 type CronId uint64
 
-func NewCronId(value interface{}) (cronId CronId, err error) {
+func NewCronId(value any) (cronId CronId, err error) {
 	uint64Value, err := tkVoUtil.InterfaceToUint64(value)
 	if err != nil {
 		return cronId, errors.New("CronIdMustBeUint64")

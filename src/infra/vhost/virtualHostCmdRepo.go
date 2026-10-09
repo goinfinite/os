@@ -51,7 +51,7 @@ func (repo *VirtualHostCmdRepo) WebServerUnitFileFactory(
 		mainServerName += " *." + vhostHostnameStr
 	}
 
-	confVariables := map[string]interface{}{
+	confVariables := map[string]any{
 		"VirtualHostHostname": vhostHostnameStr,
 		"MainServerName":      mainServerName,
 		"AliasesHostnames":    aliasesHostnamesStr,
@@ -152,17 +152,12 @@ func (repo *VirtualHostCmdRepo) createWebServerUnitFile(
 		return errors.New("ReadWebServerUnitConfFilePathError: " + err.Error())
 	}
 
-	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
 	unitConfFilePermissions := os.FileMode(0644)
 	err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
 		FilePath:        unitConfFilePath,
 		Permissions:     &unitConfFilePermissions,
 		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-		OwnerUsername:   &webServerUsername,
-		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-			webServerUsername,
-		},
 	}, []byte(unitConfFileContent))
 	if err != nil {
 		return errors.New("CreateWebServerConfUnitFileFailed: " + err.Error())
@@ -225,18 +220,13 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 		}
 	}
 
-	webServerConfDir, err := tkValueObject.NewUnixAbsoluteFilePath(infraEnvs.VirtualHostsConfDir, false)
-	if err != nil {
-		return errors.New("InvalidWebServerConfDir")
-	}
-
 	vhostRelatedDirectories := []tkValueObject.UnixAbsoluteFilePath{
-		publicDir, pkiConfDir, webServerConfDir,
+		publicDir,
 	}
 	for _, directory := range vhostRelatedDirectories {
 		chownRecursively := true
 		chownSymlinksToo := false
-		err := infraHelper.UpdateOwnershipForWebServerUse(
+		err := infraHelper.PathOwnership{}.UpdateForWebServerUse(
 			directory.String(), chownRecursively, chownSymlinksToo,
 		)
 		if err != nil {
@@ -269,7 +259,7 @@ func (repo *VirtualHostCmdRepo) Create(createDto dto.CreateVirtualHost) error {
 }
 
 func (repo *VirtualHostCmdRepo) Update(updateDto dto.UpdateVirtualHost) error {
-	zeroableFieldsUpdateMap := map[string]interface{}{}
+	zeroableFieldsUpdateMap := map[string]any{}
 	if updateDto.IsWildcard != nil {
 		zeroableFieldsUpdateMap["is_wildcard"] = *updateDto.IsWildcard
 		zeroableFieldsUpdateMap["type"] = valueObject.VirtualHostTypeWildcard.String()

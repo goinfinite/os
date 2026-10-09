@@ -4,7 +4,7 @@ import "testing"
 
 func TestVirtualHostType(t *testing.T) {
 	t.Run("ValidVirtualHostType", func(t *testing.T) {
-		validVhostTypes := []interface{}{
+		validVhostTypes := []any{
 			"primary", "top-level", "subdomain", "wildcard", "alias",
 		}
 
@@ -17,7 +17,7 @@ func TestVirtualHostType(t *testing.T) {
 	})
 
 	t.Run("InvalidVirtualHostType", func(t *testing.T) {
-		invalidVhostTypes := []interface{}{
+		invalidVhostTypes := []any{
 			"extradomain", "low-level", "secondary", "legacy",
 		}
 

@@ -14,7 +14,7 @@ var validServiceManifestVersions = []string{
 	"v1",
 }
 
-func NewServiceManifestVersion(value interface{}) (
+func NewServiceManifestVersion(value any) (
 	version ServiceManifestVersion, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

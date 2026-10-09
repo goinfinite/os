@@ -4,7 +4,7 @@ import "testing"
 
 func TestPhpVersion(t *testing.T) {
 	t.Run("ValidPhpVersions", func(t *testing.T) {
-		validPhpVersions := []interface{}{
+		validPhpVersions := []any{
 			"1.0", "20",
 		}
 
@@ -19,7 +19,7 @@ func TestPhpVersion(t *testing.T) {
 	})
 
 	t.Run("InvalidPhpVersions", func(t *testing.T) {
-		invalidPhpVersions := []interface{}{
+		invalidPhpVersions := []any{
 			"1.0.0", "1.0.", "1..", "100",
 		}
 

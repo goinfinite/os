@@ -8,11 +8,17 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const cronScheduleRegex string = `^((?P<frequencyStr>(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)) ?|((?P<minute>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<hour>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<day>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<month>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<weekday>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )?)$`
+var cronScheduleRegex = regexp.MustCompile(
+	`^((?P<frequencyStr>(@(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(ns|us|µs|ms|s|m|h))+)) ?|((?P<minute>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<hour>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<day>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<month>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )((?P<weekday>(\d+,)+\d+|(\d+(\/|-)\d+)|\d+|\*|\*/\d+){1})(?: )?)$`,
+)
+
+var cronPredefinedScheduleRegex = regexp.MustCompile(
+	`^((@?(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(?:ns|us|µs|ms|s|m|h))+))$`,
+)
 
 type CronSchedule string
 
-func NewCronSchedule(value interface{}) (cronSchedule CronSchedule, err error) {
+func NewCronSchedule(value any) (cronSchedule CronSchedule, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return cronSchedule, errors.New("CronScheduleMustBeString")
@@ -25,8 +31,7 @@ func NewCronSchedule(value interface{}) (cronSchedule CronSchedule, err error) {
 		}
 	}
 
-	re := regexp.MustCompile(cronScheduleRegex)
-	if !re.MatchString(stringValue) {
+	if !cronScheduleRegex.MatchString(stringValue) {
 		return cronSchedule, errors.New("InvalidCronSchedule")
 	}
 
@@ -34,9 +39,7 @@ func NewCronSchedule(value interface{}) (cronSchedule CronSchedule, err error) {
 }
 
 func shouldHaveAtSign(value string) bool {
-	cronPredefinedScheduleRegex := `^((@?(annually|yearly|monthly|weekly|daily|hourly|reboot))|(@every (\d+(?:ns|us|µs|ms|s|m|h))+))$`
-	frequencyRegex := regexp.MustCompile(cronPredefinedScheduleRegex)
-	return frequencyRegex.MatchString(value)
+	return cronPredefinedScheduleRegex.MatchString(value)
 }
 
 func (vo CronSchedule) String() string {

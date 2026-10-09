@@ -37,7 +37,7 @@ UiToolset.RegisterAlpineState(() => {
       this.resetPrimaryStates();
 
       const secRuleEntity = JSON.parse(
-        document.getElementById("secRuleEntity_" + secRuleId).textContent
+        document.getElementById(`secRuleEntity_${secRuleId}`).textContent,
       );
       this.mappingSecurityRule = secRuleEntity;
       this.isUpdateMappingSecurityRuleModalOpen = true;
@@ -61,12 +61,13 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + "/v1/vhost/mapping/security-rule/" +
+          Infinite.OsApiBasePath +
+            "/v1/vhost/mapping/security-rule/" +
             this.mappingSecurityRule.id +
             "/",
           {
             swap: "none",
-          }
+          },
         )
         .then(() => this.$dispatch("refresh:mapping-security-rules-table"));
     },

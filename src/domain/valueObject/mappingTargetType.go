@@ -24,7 +24,7 @@ var ValidMappingTargetTypes = []string{
 	MappingTargetTypeStaticFiles.String(),
 }
 
-func NewMappingTargetType(value interface{}) (
+func NewMappingTargetType(value any) (
 	mappingTargetType MappingTargetType, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
