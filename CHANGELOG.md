@@ -49,6 +49,11 @@ test(ui): migrate the browser suite to Lightpanda and tier the engines by level
 refactor(terminal): drop the attach process ended log
 refactor(ui): use Number.parseInt in the file manager state
 chore: bump go to 1.27.2
+chore(deps): bump go, templ, tk and ui
+feat(ui): round the overview tags and tint the filter and pagination dropdowns
+fix(files): reject a malformed upload files field
+chore: float the dev tool pins in mise
+docs: note the dev-build rebuild behavior
 
 0.3.4 - 2026/09/15
 chore: update go deps
