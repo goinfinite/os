@@ -1,7 +1,8 @@
 UiToolset.RegisterAlpineState(() => {
   class SessionTerminalManager {
-    constructor(onConnectionStatusChange) {
+    constructor(onConnectionStatusChange, onSessionExit) {
       this.onConnectionStatusChange = onConnectionStatusChange;
+      this.onSessionExit = onSessionExit;
       this.sessionTerminals = new Map();
       this.mountRetryLimit = 25;
       this.mountRetryDelayMs = 200;
@@ -74,13 +75,22 @@ UiToolset.RegisterAlpineState(() => {
         this.resize(sessionId);
       };
       socket.onmessage = (event) => {
-        if (typeof event.data === "string") {
+        if (typeof event.data !== "string") {
+          sessionTerminal.term.write(new Uint8Array(event.data));
           return;
         }
-        sessionTerminal.term.write(new Uint8Array(event.data));
+
+        const serverMessage = JSON.parse(event.data);
+        if (serverMessage.type === "exit") {
+          sessionTerminal.isExited = true;
+          this.onSessionExit(sessionId);
+        }
       };
       socket.onclose = () => {
         this.onConnectionStatusChange(sessionId, false);
+        if (sessionTerminal.isExited) {
+          return;
+        }
         sessionTerminal.reconnectTimer = setTimeout(
           () => this.connect(sessionId),
           this.reconnectDelayMs,
@@ -206,6 +216,7 @@ UiToolset.RegisterAlpineState(() => {
         resizeObserver: null,
         lastSentCols: 0,
         lastSentRows: 0,
+        isExited: false,
       });
 
       void this.mount(sessionId);
@@ -518,6 +529,11 @@ UiToolset.RegisterAlpineState(() => {
             return;
           }
           openTab.isConnected = isConnected;
+        },
+        (sessionId) => {
+          this.closeTab(sessionId);
+          void this.loadSessions();
+          window.dispatchEvent(new Event("update:terminal-session"));
         },
       );
 
