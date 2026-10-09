@@ -54,6 +54,7 @@ feat(ui): round the overview tags and tint the filter and pagination dropdowns
 fix(files): reject a malformed upload files field
 chore: float the dev tool pins in mise
 docs: note the dev-build rebuild behavior
+fix(terminal): drop an exited session from the rail and the table
 
 0.3.4 - 2026/09/15
 chore: update go deps
