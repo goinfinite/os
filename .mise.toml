@@ -3,8 +3,8 @@
 go = "1.27.2"
 
 # Development
-"npm:@biomejs/biome" = "2.5.13"
-"go:github.com/a-h/templ/cmd/templ" = { version = "0.3.1070", minimum_release_age = "0" }
+"npm:@biomejs/biome" = "latest"
+"go:github.com/a-h/templ/cmd/templ" = { version = "latest", minimum_release_age = "0" }
 golangci-lint = "latest"
 staticcheck = "latest"
 "go:golang.org/x/tools/gopls" = "latest"
