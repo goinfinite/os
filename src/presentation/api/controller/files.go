@@ -973,18 +973,30 @@ func (controller *FilesController) Upload(echoContext echo.Context) error {
 		)
 	}
 
+	filesByField, isFilesMap := requestData["files"].(map[string][]*multipart.FileHeader)
+	if !isFilesMap {
+		return tkPresentation.LiaisonApiResponseEmitter(
+			echoContext,
+			tkPresentation.NewLiaisonResponseNoMessage(
+				tkPresentation.LiaisonResponseStatusUserError, "InvalidFilesStructure",
+			),
+		)
+	}
+
 	var filesToUpload []valueObject.FileStreamHandler
-	for _, requestDataFile := range requestData["files"].(map[string]*multipart.FileHeader) {
-		fileStreamHandler, err := valueObject.NewFileStreamHandler(requestDataFile)
-		if err != nil {
-			return tkPresentation.LiaisonApiResponseEmitter(
-				echoContext,
-				tkPresentation.NewLiaisonResponseNoMessage(
-					tkPresentation.LiaisonResponseStatusUserError, err.Error(),
-				),
-			)
+	for _, fieldFiles := range filesByField {
+		for _, requestDataFile := range fieldFiles {
+			fileStreamHandler, err := valueObject.NewFileStreamHandler(requestDataFile)
+			if err != nil {
+				return tkPresentation.LiaisonApiResponseEmitter(
+					echoContext,
+					tkPresentation.NewLiaisonResponseNoMessage(
+						tkPresentation.LiaisonResponseStatusUserError, err.Error(),
+					),
+				)
+			}
+			filesToUpload = append(filesToUpload, fileStreamHandler)
 		}
-		filesToUpload = append(filesToUpload, fileStreamHandler)
 	}
 
 	rawAccountId := requestData["operatorAccountId"]

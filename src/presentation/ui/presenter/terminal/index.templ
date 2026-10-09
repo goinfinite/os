@@ -63,7 +63,7 @@ templ TerminalSessionRailRow() {
 		<div class="flex shrink-0 items-center gap-1">
 			@uiControl.Button(uiControl.ButtonSettings{
 				IconLeft:             "ph-pencil-simple",
-				Shape:                uiControl.ButtonShapeCircular,
+				Shape:                uiToolset.ShapeCircular,
 				Size:                 uiControl.ButtonSizeSm,
 				BackgroundColor:      "transparent",
 				BackgroundColorHover: "neutral-50/10",
@@ -74,7 +74,7 @@ templ TerminalSessionRailRow() {
 			})
 			@uiControl.Button(uiControl.ButtonSettings{
 				IconLeft:             "ph-trash",
-				Shape:                uiControl.ButtonShapeCircular,
+				Shape:                uiToolset.ShapeCircular,
 				Size:                 uiControl.ButtonSizeSm,
 				BackgroundColor:      "red-800",
 				BackgroundColorHover: "red-600",
@@ -102,7 +102,7 @@ templ TerminalSessionRenameRow() {
 		@TerminalSessionRenameInput("submitRename(session.id)")
 		@uiControl.Button(uiControl.ButtonSettings{
 			IconLeft:             "ph-check",
-			Shape:                uiControl.ButtonShapeCircular,
+			Shape:                uiToolset.ShapeCircular,
 			Size:                 uiControl.ButtonSizeSm,
 			BackgroundColor:      "infinite-500",
 			BackgroundColorHover: "secondary-500",
@@ -199,7 +199,7 @@ templ TerminalSessionsContent(accountUsername string, accountHomeDir string) {
 					})
 					@uiControl.Button(uiControl.ButtonSettings{
 						IconLeft:               "ph-gear",
-						Shape:                  uiControl.ButtonShapeCircular,
+						Shape:                  uiToolset.ShapeCircular,
 						Size:                   uiControl.ButtonSizeSm,
 						BackgroundColor:        "os-200",
 						BackgroundColorHover:   "os-300",
@@ -207,7 +207,7 @@ templ TerminalSessionsContent(accountUsername string, accountHomeDir string) {
 						AriaLabel:              "Custom Session Settings",
 						TooltipContent:         "create with a custom working dir and command",
 						TooltipBackgroundColor: "os-200",
-						TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
+						TooltipPosition:        uiToolset.TooltipPositionLeft,
 					})
 				</div>
 			</template>

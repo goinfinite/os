@@ -167,7 +167,9 @@ templ TerminalSessionNameCell(session entity.TerminalSession) {
 				Size:                 uiDisplay.TagSizeXs,
 				OuterBackgroundColor: "infinite-800",
 				OuterLeftLabel:       "path",
+				OuterRadius:          uiToolset.BorderRadiusXl,
 				InnerLabel:           session.WorkingDir.String(),
+				InnerRadius:          uiToolset.BorderRadiusXl,
 			})
 		</div>
 	</template>
@@ -192,7 +194,7 @@ templ TerminalSessionActionsCell(session entity.TerminalSession) {
 	<div class="flex items-center justify-end gap-2">
 		@uiControl.Button(uiControl.ButtonSettings{
 			IconLeft:               "ph-plug",
-			Shape:                  uiControl.ButtonShapeCircular,
+			Shape:                  uiToolset.ShapeCircular,
 			Size:                   uiControl.ButtonSizeSm,
 			BackgroundColor:        "cyan-900",
 			BackgroundColorHover:   "cyan-700",
@@ -203,7 +205,7 @@ templ TerminalSessionActionsCell(session entity.TerminalSession) {
 		})
 		@uiControl.Button(uiControl.ButtonSettings{
 			IconLeft:               "ph-pencil-simple",
-			Shape:                  uiControl.ButtonShapeCircular,
+			Shape:                  uiToolset.ShapeCircular,
 			Size:                   uiControl.ButtonSizeSm,
 			BackgroundColor:        "os-200",
 			BackgroundColorHover:   "os-300",
@@ -214,7 +216,7 @@ templ TerminalSessionActionsCell(session entity.TerminalSession) {
 		})
 		@uiControl.Button(uiControl.ButtonSettings{
 			IconLeft:               "ph-trash",
-			Shape:                  uiControl.ButtonShapeCircular,
+			Shape:                  uiToolset.ShapeCircular,
 			Size:                   uiControl.ButtonSizeSm,
 			BackgroundColor:        "red-800",
 			BackgroundColorHover:   "red-600",
@@ -245,7 +247,7 @@ func terminalSessionsTableSettingsBuilder(
 			},
 			{
 				Label:        "Attached",
-				Alignment:    uiStructural.DataTableAlignmentCenter,
+				Alignment:    uiStructural.TextAlignmentCenter,
 				WidthPercent: 15,
 				CellRenderer: func(session entity.TerminalSession) templ.Component {
 					return DataTableTextCell(strconv.Itoa(int(session.AttachedClients)))
@@ -261,7 +263,7 @@ func terminalSessionsTableSettingsBuilder(
 			},
 			{
 				Label:        "",
-				Alignment:    uiStructural.DataTableAlignmentRight,
+				Alignment:    uiStructural.TextAlignmentRight,
 				WidthPercent: 20,
 				CellRenderer: func(session entity.TerminalSession) templ.Component {
 					return TerminalSessionActionsCell(session)
@@ -281,7 +283,8 @@ func terminalSessionsTableSettingsBuilder(
 			"new session", "ph-plus", "createSessionWithDefaults()",
 		),
 		PageNumber:   paginationSettings.PageNumber,
-		ItemsPerPage: uiStructural.DataTablePageSize(paginationSettings.ItemsPerPage),
+		ItemsPerPage: uiStructural.ItemsPerPage(paginationSettings.ItemsPerPage),
+		ItemsPerPageDropdownBackgroundColor: "primary-500/95",
 		QueryUrlTemplate: "fragment/overview/terminal-sessions-table/?" +
 			"pageNumber=" + uiStructural.DataTableUrlPlaceholderPageNumber +
 			"&itemsPerPage=" + uiStructural.DataTableUrlPlaceholderItemsPerPage +
@@ -315,7 +318,7 @@ templ MarketplaceInstalledItemActionsCell(installedItem entity.MarketplaceInstal
 		@templ.JSONScript("installedMarketplaceItem_"+installedItem.Id.String(), installedItem)
 		@uiControl.Button(uiControl.ButtonSettings{
 			IconLeft:               "ph-trash",
-			Shape:                  uiControl.ButtonShapeCircular,
+			Shape:                  uiToolset.ShapeCircular,
 			Size:                   uiControl.ButtonSizeSm,
 			BackgroundColor:        "red-800",
 			BackgroundColorHover:   "red-600",
@@ -339,7 +342,7 @@ func marketplaceItemsTableSettingsBuilder(
 				Label:        "Name",
 				SortKey:      "name",
 				WidthPercent: 30,
-				Alignment:    uiStructural.DataTableAlignmentLeft,
+				Alignment:    uiStructural.TextAlignmentLeft,
 				CellRenderer: func(
 					installedItem entity.MarketplaceInstalledItem,
 				) templ.Component {
@@ -357,8 +360,10 @@ func marketplaceItemsTableSettingsBuilder(
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "infinite-800",
 						OuterLeftLabel:       installedItem.Type.String(),
+						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel: installedItem.Hostname.String() +
 							installedItem.UrlPath.String(),
+						InnerRadius: uiToolset.BorderRadiusXl,
 					})
 				},
 			},
@@ -383,7 +388,7 @@ func marketplaceItemsTableSettingsBuilder(
 			},
 			{
 				Label:        "",
-				Alignment:    uiStructural.DataTableAlignmentRight,
+				Alignment:    uiStructural.TextAlignmentRight,
 				WidthPercent: 10,
 				CellRenderer: func(
 					installedItem entity.MarketplaceInstalledItem,
@@ -406,7 +411,8 @@ func marketplaceItemsTableSettingsBuilder(
 			"openMarketplaceItemInstallationModal()",
 		),
 		PageNumber:   paginationSettings.PageNumber,
-		ItemsPerPage: uiStructural.DataTablePageSize(paginationSettings.ItemsPerPage),
+		ItemsPerPage: uiStructural.ItemsPerPage(paginationSettings.ItemsPerPage),
+		ItemsPerPageDropdownBackgroundColor: "primary-500/95",
 		QueryUrlTemplate: "fragment/overview/marketplace-table/?" +
 			"pageNumber=" + uiStructural.DataTableUrlPlaceholderPageNumber +
 			"&itemsPerPage=" + uiStructural.DataTableUrlPlaceholderItemsPerPage +
@@ -444,7 +450,9 @@ templ CarouselItemHoverCard(description, icon, estimatedSize string) {
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "infinite-800",
 						OuterLeftIcon:        icon,
+						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel:           estimatedSize,
+						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				</div>
 			</div>
@@ -675,7 +683,9 @@ templ SystemInfoTable(o11yOverview entity.O11yOverview) {
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "infinite-800",
 						OuterLeftIcon:        "ph-memory",
+						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel:           o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				</div>
 				<div class="flex justify-end">
@@ -683,7 +693,9 @@ templ SystemInfoTable(o11yOverview entity.O11yOverview) {
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "infinite-800",
 						OuterLeftIcon:        "ph-cpu",
+						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel:           transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				</div>
 				<div class="flex justify-end">
@@ -691,7 +703,9 @@ templ SystemInfoTable(o11yOverview entity.O11yOverview) {
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "infinite-800",
 						OuterLeftIcon:        "ph-sim-card",
+						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel:           o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
+						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				</div>
 			</div>
@@ -749,19 +763,25 @@ templ InstalledServiceNameCell(
 			Size:                 uiDisplay.TagSizeXs,
 			OuterBackgroundColor: "infinite-800",
 			OuterLeftLabel:       "type",
+			OuterRadius:          uiToolset.BorderRadiusXl,
 			InnerLabel:           installedServiceEntity.Type.String(),
+			InnerRadius:          uiToolset.BorderRadiusXl,
 		})
 		@uiDisplay.Tag(uiDisplay.TagSettings{
 			Size:                 uiDisplay.TagSizeXs,
 			OuterBackgroundColor: "infinite-800",
 			OuterLeftLabel:       "version",
+			OuterRadius:          uiToolset.BorderRadiusXl,
 			InnerLabel:           installedServiceEntity.Version.String(),
+			InnerRadius:          uiToolset.BorderRadiusXl,
 		})
 		@uiDisplay.Tag(uiDisplay.TagSettings{
 			Size:                 uiDisplay.TagSizeXs,
 			OuterBackgroundColor: "infinite-800",
 			OuterLeftLabel:       "nature",
+			OuterRadius:          uiToolset.BorderRadiusXl,
 			InnerLabel:           installedServiceEntity.Nature.String(),
+			InnerRadius:          uiToolset.BorderRadiusXl,
 		})
 	</div>
 }
@@ -785,7 +805,7 @@ templ InstalledServiceActionsCell(
 	<div class="flex justify-end space-x-2">
 		@uiControl.Button(uiControl.ButtonSettings{
 			IconLeft:               "ph-arrow-clockwise",
-			Shape:                  uiControl.ButtonShapeCircular,
+			Shape:                  uiToolset.ShapeCircular,
 			Size:                   uiControl.ButtonSizeSm,
 			BackgroundColor:        "os-200",
 			BackgroundColorHover:   "os-300",
@@ -793,14 +813,13 @@ templ InstalledServiceActionsCell(
 			AriaLabel:              "Restart",
 			TooltipContent:         "Restart",
 			TooltipBackgroundColor: "os-200",
-			TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
 		})
 		if installedServiceEntity.Type != valueObject.ServiceTypeSystem {
 			switch installedServiceEntity.Status {
 				case valueObject.ServiceStatusRunning:
 					@uiControl.Button(uiControl.ButtonSettings{
 						IconLeft:               "ph-pause",
-						Shape:                  uiControl.ButtonShapeCircular,
+						Shape:                  uiToolset.ShapeCircular,
 						Size:                   uiControl.ButtonSizeSm,
 						BackgroundColor:        "yellow-900",
 						BackgroundColorHover:   "yellow-700",
@@ -808,12 +827,11 @@ templ InstalledServiceActionsCell(
 						AriaLabel:              "Pause",
 						TooltipContent:         "Pause",
 						TooltipBackgroundColor: "yellow-700",
-						TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
 					})
 				case valueObject.ServiceStatusStopped:
 					@uiControl.Button(uiControl.ButtonSettings{
 						IconLeft:               "ph-play",
-						Shape:                  uiControl.ButtonShapeCircular,
+						Shape:                  uiToolset.ShapeCircular,
 						Size:                   uiControl.ButtonSizeSm,
 						BackgroundColor:        "cyan-900",
 						BackgroundColorHover:   "cyan-700",
@@ -821,13 +839,12 @@ templ InstalledServiceActionsCell(
 						AriaLabel:              "Start",
 						TooltipContent:         "Start",
 						TooltipBackgroundColor: "cyan-700",
-						TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
 					})
 			}
 			if installedServiceEntity.Nature != valueObject.ServiceNatureSolo {
 				@uiControl.Button(uiControl.ButtonSettings{
 					IconLeft:               "ph-gear",
-					Shape:                  uiControl.ButtonShapeCircular,
+					Shape:                  uiToolset.ShapeCircular,
 					Size:                   uiControl.ButtonSizeSm,
 					BackgroundColor:        "os-200",
 					BackgroundColorHover:   "os-300",
@@ -835,12 +852,11 @@ templ InstalledServiceActionsCell(
 					AriaLabel:              "Edit",
 					TooltipContent:         "Edit",
 					TooltipBackgroundColor: "os-200",
-					TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
 				})
 			}
 			@uiControl.Button(uiControl.ButtonSettings{
 				IconLeft:               "ph-trash",
-				Shape:                  uiControl.ButtonShapeCircular,
+				Shape:                  uiToolset.ShapeCircular,
 				Size:                   uiControl.ButtonSizeSm,
 				BackgroundColor:        "red-800",
 				BackgroundColorHover:   "red-600",
@@ -848,7 +864,6 @@ templ InstalledServiceActionsCell(
 				AriaLabel:              "Uninstall",
 				TooltipContent:         "Uninstall",
 				TooltipBackgroundColor: "red-500",
-				TooltipPosition:        uiControl.ButtonTooltipPositionLeft,
 			})
 		}
 	</div>
@@ -886,7 +901,7 @@ func installedServicesTableSettingsBuilder(
 				Label:        "Service",
 				SortKey:      "name",
 				WidthPercent: 30,
-				Alignment:    uiStructural.DataTableAlignmentLeft,
+				Alignment:    uiStructural.TextAlignmentLeft,
 				CellRenderer: func(
 					installedServiceEntity dto.InstalledServiceWithMetrics,
 				) templ.Component {
@@ -948,7 +963,7 @@ func installedServicesTableSettingsBuilder(
 			},
 			{
 				Label:        "",
-				Alignment:    uiStructural.DataTableAlignmentRight,
+				Alignment:    uiStructural.TextAlignmentRight,
 				WidthPercent: 28,
 				CellRenderer: func(
 					installedServiceEntity dto.InstalledServiceWithMetrics,
@@ -966,7 +981,7 @@ func installedServicesTableSettingsBuilder(
 		IsStriped:            true,
 		Density:              uiStructural.DataTableDensityDense,
 		PageNumber:           paginationSettings.PageNumber,
-		ItemsPerPage:         uiStructural.DataTablePageSize(paginationSettings.ItemsPerPage),
+		ItemsPerPage:         uiStructural.ItemsPerPage(paginationSettings.ItemsPerPage),
 		Filters: []uiStructural.FilterSettings{
 			{
 				Key:   "name",
@@ -993,6 +1008,15 @@ func installedServicesTableSettingsBuilder(
 			},
 		},
 		FilterDropdownBackgroundColor: "primary-500/95",
+		ItemsPerPageDropdownBackgroundColor: "primary-500/95",
+		FilterChipStyle: uiStructural.FilterChipStyle{
+			TextCase:             uiToolset.TextCaseLower,
+			OuterBackgroundColor: "secondary-950",
+			OuterRingColor:       "secondary-800",
+			OuterTextColor:       "neutral-50",
+			InnerBackgroundColor: "secondary-900",
+			InnerTextColor:       "neutral-50",
+		},
 		QueryUrlTemplate: "fragment/overview/services-table/?" +
 			"pageNumber=" + uiStructural.DataTableUrlPlaceholderPageNumber +
 			"&itemsPerPage=" + uiStructural.DataTableUrlPlaceholderItemsPerPage +

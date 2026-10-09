@@ -6,6 +6,7 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 	uiControl "github.com/goinfinite/ui/src/control"
 	"github.com/goinfinite/ui/src/display"
+	uiToolset "github.com/goinfinite/ui/src/toolset"
 )
 
 templ VirtualHostMappingsList(
@@ -23,14 +24,18 @@ templ VirtualHostMappingsList(
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "teal-950",
 						OuterLeftLabel:       "service",
+						OuterRadius:          uiToolset.BorderRadiusMd,
 						InnerLabel:           mappingEntity.TargetValue.String(),
+						InnerRadius:          uiToolset.BorderRadiusMd,
 					})
 				case "url":
 					@uiDisplay.Tag(uiDisplay.TagSettings{
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "violet-950",
 						OuterLeftLabel:       "url",
+						OuterRadius:          uiToolset.BorderRadiusMd,
 						InnerLabel:           mappingEntity.TargetValue.String(),
+						InnerRadius:          uiToolset.BorderRadiusMd,
 					})
 					if mappingEntity.TargetHttpResponseCode != nil &&
 					mappingEntity.TargetHttpResponseCode.String() != "301" &&
@@ -39,7 +44,9 @@ templ VirtualHostMappingsList(
 							Size:                 uiDisplay.TagSizeXs,
 							OuterBackgroundColor: "cyan-950",
 							OuterLeftLabel:       "responseCode",
+							OuterRadius:          uiToolset.BorderRadiusMd,
 							InnerLabel:           mappingEntity.TargetHttpResponseCode.String(),
+							InnerRadius:          uiToolset.BorderRadiusMd,
 						})
 					}
 				case "response-code":
@@ -47,7 +54,9 @@ templ VirtualHostMappingsList(
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "cyan-950",
 						OuterLeftLabel:       "responseCode",
+						OuterRadius:          uiToolset.BorderRadiusMd,
 						InnerLabel:           mappingEntity.TargetHttpResponseCode.String(),
+						InnerRadius:          uiToolset.BorderRadiusMd,
 					})
 				case "inline-html":
 					{{ inlineHtmlValue := mappingEntity.TargetValue.String() }}
@@ -58,65 +67,77 @@ templ VirtualHostMappingsList(
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "stone-700",
 						OuterLeftLabel:       "inlineHtml",
+						OuterRadius:          uiToolset.BorderRadiusMd,
 						InnerLabel:           inlineHtmlValue,
+						InnerRadius:          uiToolset.BorderRadiusMd,
 					})
 				case "static-files":
 					@uiDisplay.Tag(uiDisplay.TagSettings{
 						Size:                 uiDisplay.TagSizeXs,
 						OuterBackgroundColor: "yellow-700",
 						OuterLeftLabel:       "staticFiles",
+						OuterRadius:          uiToolset.BorderRadiusMd,
 						InnerLabel:           rootDirectory.String(),
+						InnerRadius:          uiToolset.BorderRadiusMd,
 					})
 			}
 			if mappingEntity.MatchPattern != valueObject.MappingMatchPatternBeginsWith {
 				@uiDisplay.Tag(uiDisplay.TagSettings{
 					Size:                 uiDisplay.TagSizeXs,
 					OuterRingColor:       "neutral-400",
-					OuterRingThickness:   uiDisplay.TagRingThicknessXs,
+					OuterRingThickness:   uiToolset.RingThicknessXs,
 					OuterBackgroundColor: "transparent",
 					OuterTextColor:       "neutral-400",
 					OuterLeftIcon:        "ph-map-pin",
+					OuterRadius:          uiToolset.BorderRadiusMd,
 					InnerLabel:           mappingEntity.MatchPattern.String(),
+					InnerRadius:          uiToolset.BorderRadiusMd,
 				})
 			}
 			if mappingEntity.MarketplaceInstalledItemName != nil {
 				@uiDisplay.Tag(uiDisplay.TagSettings{
 					Size:                 uiDisplay.TagSizeXs,
 					OuterRingColor:       "amber-500",
-					OuterRingThickness:   uiDisplay.TagRingThicknessXs,
+					OuterRingThickness:   uiToolset.RingThicknessXs,
 					OuterBackgroundColor: "transparent",
 					OuterTextColor:       "amber-500",
 					OuterLeftIcon:        "ph-storefront",
+					OuterRadius:          uiToolset.BorderRadiusMd,
 					InnerLabel:           mappingEntity.MarketplaceInstalledItemName.String() + " (#" + mappingEntity.MarketplaceInstalledItemId.String() + ")",
+					InnerRadius:          uiToolset.BorderRadiusMd,
 				})
 			}
 			if mappingEntity.ShouldUpgradeInsecureRequests != nil && *mappingEntity.ShouldUpgradeInsecureRequests {
 				@uiDisplay.Tag(uiDisplay.TagSettings{
 					Size:                 uiDisplay.TagSizeXs,
 					OuterRingColor:       "lime-700",
-					OuterRingThickness:   uiDisplay.TagRingThicknessXs,
+					OuterRingThickness:   uiToolset.RingThicknessXs,
 					OuterBackgroundColor: "transparent",
 					OuterTextColor:       "lime-700",
 					OuterLeftIcon:        "ph-lock",
+					OuterRadius:          uiToolset.BorderRadiusMd,
 					InnerLabel:           "httpsOnly",
+					InnerRadius:          uiToolset.BorderRadiusMd,
 				})
 			}
 			if mappingEntity.MappingSecurityRuleId != nil {
 				@uiDisplay.Tag(uiDisplay.TagSettings{
 					Size:                 uiDisplay.TagSizeXs,
 					OuterRingColor:       "red-600",
-					OuterRingThickness:   uiDisplay.TagRingThicknessXs,
+					OuterRingThickness:   uiToolset.RingThicknessXs,
 					OuterBackgroundColor: "transparent",
 					OuterTextColor:       "red-600",
 					OuterLeftIcon:        "ph-shield",
+					OuterRadius:          uiToolset.BorderRadiusMd,
 					InnerLabel:           "#" + mappingEntity.MappingSecurityRuleId.String(),
+					InnerRadius:          uiToolset.BorderRadiusMd,
 				})
 			}
 		</div>
 		<div class="flex gap-2">
 			@uiControl.Button(uiControl.ButtonSettings{
 				IconLeft:               "ph-pencil",
-				Shape:                  uiControl.ButtonShapeCircular,
+				Shape:                  uiToolset.ShapeCircular,
 				Size:                   uiControl.ButtonSizeSm,
 				BackgroundColor:        "neutral-50/10",
 				BackgroundColorHover:   "neutral-50/30",
@@ -127,7 +148,7 @@ templ VirtualHostMappingsList(
 			})
 			@uiControl.Button(uiControl.ButtonSettings{
 				IconLeft:               "ph-trash",
-				Shape:                  uiControl.ButtonShapeCircular,
+				Shape:                  uiToolset.ShapeCircular,
 				Size:                   uiControl.ButtonSizeSm,
 				BackgroundColor:        "red-800",
 				BackgroundColorHover:   "red-600",

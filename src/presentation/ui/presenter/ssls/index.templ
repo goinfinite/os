@@ -118,7 +118,7 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 							<div class="inline-flex space-x-2">
 								@uiControl.Button(uiControl.ButtonSettings{
 									IconLeft:               "ph-file-magnifying-glass",
-									Shape:                  uiControl.ButtonShapeCircular,
+									Shape:                  uiToolset.ShapeCircular,
 									Size:                   uiControl.ButtonSizeSm,
 									BackgroundColor:        "neutral-50/10",
 									BackgroundColorHover:   "neutral-50/30",
@@ -129,7 +129,7 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 								})
 								@uiControl.Button(uiControl.ButtonSettings{
 									IconLeft:               "ph-swap",
-									Shape:                  uiControl.ButtonShapeCircular,
+									Shape:                  uiToolset.ShapeCircular,
 									Size:                   uiControl.ButtonSizeSm,
 									BackgroundColor:        "cyan-800/50",
 									BackgroundColorHover:   "cyan-600/50",
@@ -140,7 +140,7 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 								})
 								@uiControl.Button(uiControl.ButtonSettings{
 									IconLeft:               "ph-certificate",
-									Shape:                  uiControl.ButtonShapeCircular,
+									Shape:                  uiToolset.ShapeCircular,
 									Size:                   uiControl.ButtonSizeSm,
 									BackgroundColor:        "green-800/50",
 									BackgroundColorHover:   "green-600/50",
@@ -151,7 +151,7 @@ templ SslPairsTable(sslPairEntities []entity.SslPair) {
 								})
 								@uiControl.Button(uiControl.ButtonSettings{
 									IconLeft:               "ph-trash",
-									Shape:                  uiControl.ButtonShapeCircular,
+									Shape:                  uiToolset.ShapeCircular,
 									Size:                   uiControl.ButtonSizeSm,
 									BackgroundColor:        "red-800",
 									BackgroundColorHover:   "red-600",
@@ -181,11 +181,12 @@ templ ImportSslCertificateForm(vhostsHostnames []string) {
 		@htmx:after-request={ "$dispatch('" + SslPairsRecordsDisplayRefreshEventName + "')" }
 	>
 		@templ.JSONScript("importSslCertificateVhostHostnames", vhostsHostnames)
-		@uiForm.MultiSelectInput(uiForm.MultiSelectInputSettings{
+		@uiForm.SelectInput(uiForm.SelectInputSettings{
 			InputName:               "virtualHostsHostnames",
 			Label:                   "Virtual Hosts Hostnames",
 			FlatOptions:             vhostsHostnames,
 			TwoWayStatePath:         "sslPair.virtualHostsHostnames",
+			IsMultiSelect:           true,
 			IsRequired:              true,
 			DropdownBackgroundColor: "os-400",
 			HintDisplay:             uiForm.InputHintDisplayDescription,

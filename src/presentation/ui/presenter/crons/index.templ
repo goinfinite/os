@@ -85,7 +85,7 @@ templ CronsTable(crons []entity.Cron) {
 								<div class="inline-flex space-x-2">
 									@uiControl.Button(uiControl.ButtonSettings{
 										IconLeft:               "ph-pencil",
-										Shape:                  uiControl.ButtonShapeCircular,
+										Shape:                  uiToolset.ShapeCircular,
 										Size:                   uiControl.ButtonSizeSm,
 										BackgroundColor:        "os-200",
 										BackgroundColorHover:   "os-100",
@@ -96,7 +96,7 @@ templ CronsTable(crons []entity.Cron) {
 									})
 									@uiControl.Button(uiControl.ButtonSettings{
 										IconLeft:               "ph-trash",
-										Shape:                  uiControl.ButtonShapeCircular,
+										Shape:                  uiToolset.ShapeCircular,
 										Size:                   uiControl.ButtonSizeSm,
 										BackgroundColor:        "red-800",
 										BackgroundColorHover:   "red-600",

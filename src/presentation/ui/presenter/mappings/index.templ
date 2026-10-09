@@ -123,7 +123,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						<div class="flex space-x-2">
 							@uiControl.Button(uiControl.ButtonSettings{
 								IconLeft:               "ph-plus",
-								Shape:                  uiControl.ButtonShapeCircular,
+								Shape:                  uiToolset.ShapeCircular,
 								Size:                   uiControl.ButtonSizeSm,
 								BackgroundColor:        "infinite-500",
 								BackgroundColorHover:   "infinite-200",
@@ -134,7 +134,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 							})
 							@uiControl.Button(uiControl.ButtonSettings{
 								IconLeft:               "ph-pencil",
-								Shape:                  uiControl.ButtonShapeCircular,
+								Shape:                  uiToolset.ShapeCircular,
 								Size:                   uiControl.ButtonSizeSm,
 								BackgroundColor:        "neutral-50/10",
 								BackgroundColorHover:   "neutral-50/30",
@@ -146,7 +146,7 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 							if !vhostWithMappings.IsPrimary {
 								@uiControl.Button(uiControl.ButtonSettings{
 									IconLeft:               "ph-trash",
-									Shape:                  uiControl.ButtonShapeCircular,
+									Shape:                  uiToolset.ShapeCircular,
 									Size:                   uiControl.ButtonSizeSm,
 									BackgroundColor:        "red-800",
 									BackgroundColorHover:   "red-600",
@@ -163,7 +163,9 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 							Size:                 uiDisplay.TagSizeXs,
 							OuterBackgroundColor: "neutral-50/10",
 							OuterLeftIcon:        "ph-folder-open",
+							OuterRadius:          uiToolset.BorderRadiusMd,
 							InnerLabel:           vhostWithMappings.RootDirectory.String(),
+							InnerRadius:          uiToolset.BorderRadiusMd,
 						})
 						{{ vhostType := vhostWithMappings.Type.String() }}
 						if vhostWithMappings.IsWildcard {
@@ -173,7 +175,9 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 							Size:                 uiDisplay.TagSizeXs,
 							OuterBackgroundColor: "neutral-50/10",
 							OuterLeftIcon:        "ph-tree-view",
+							OuterRadius:          uiToolset.BorderRadiusMd,
 							InnerLabel:           vhostType,
+							InnerRadius:          uiToolset.BorderRadiusMd,
 						})
 					</div>
 					<div>
@@ -196,14 +200,14 @@ templ MappingsFormTable(vhostsWithMappings []dto.VirtualHostWithMappings) {
 						<div class="mt-1.5 flex justify-center">
 							@uiControl.Button(uiControl.ButtonSettings{
 								IconLeft:               "ph-plus",
-								Shape:                  uiControl.ButtonShapeCircular,
+								Shape:                  uiToolset.ShapeCircular,
 								Size:                   uiControl.ButtonSizeXs,
 								BackgroundColor:        "neutral-50/10",
 								BackgroundColorHover:   "neutral-50/30",
 								OnClickFunc:            "openCreateVirtualHostModalForAlias('" + vhostWithMappings.Hostname.String() + "')",
 								TooltipContent:         "add alias",
 								TooltipBackgroundColor: "neutral-50/10",
-								TooltipPosition:        uiControl.ButtonTooltipPositionBottom,
+								TooltipPosition:        uiToolset.TooltipPositionBottom,
 							})
 						</div>
 					</div>

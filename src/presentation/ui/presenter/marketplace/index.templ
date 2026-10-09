@@ -109,7 +109,7 @@ templ MarketplaceInstalledItemsTable(
 						<div class="inline-flex">
 							@uiControl.Button(uiControl.ButtonSettings{
 								IconLeft:               "ph-trash",
-								Shape:                  uiControl.ButtonShapeCircular,
+								Shape:                  uiToolset.ShapeCircular,
 								Size:                   uiControl.ButtonSizeSm,
 								BackgroundColor:        "red-800",
 								BackgroundColorHover:   "red-600",
@@ -170,7 +170,6 @@ templ MarketplaceCatalogItemsTabContent(catalogItems []entity.MarketplaceCatalog
 					<h3>{ item.Name.String() }</h3>
 				</div>
 				@componentStructural.CollapsibleText(
-					item.Slugs[0].String(),
 					item.Description.String(), "sm", 180,
 				)
 				if len(item.ScreenshotUrls) == 0 {
