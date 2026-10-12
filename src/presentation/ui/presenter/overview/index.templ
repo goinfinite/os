@@ -169,6 +169,7 @@ templ TerminalSessionNameCell(session entity.TerminalSession) {
 				OuterLeftLabel:       "path",
 				OuterRadius:          uiToolset.BorderRadiusXl,
 				InnerLabel:           session.WorkingDir.String(),
+				InnerBackgroundColor: "os-400",
 				InnerRadius:          uiToolset.BorderRadiusXl,
 			})
 		</div>
@@ -363,7 +364,8 @@ func marketplaceItemsTableSettingsBuilder(
 						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel: installedItem.Hostname.String() +
 							installedItem.UrlPath.String(),
-						InnerRadius: uiToolset.BorderRadiusXl,
+						InnerBackgroundColor: "os-400",
+						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				},
 			},
@@ -452,6 +454,7 @@ templ CarouselItemHoverCard(description, icon, estimatedSize string) {
 						OuterLeftIcon:        icon,
 						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel:           estimatedSize,
+						InnerBackgroundColor: "os-600",
 						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				</div>
@@ -627,6 +630,7 @@ templ ScheduleMarketplaceItemInstallationForm(
 					BackgroundColor:        "neutral-950/20",
 					OpenBackgroundColor:    "neutral-950/30",
 					ContentBackgroundColor: "os-400",
+					IsFirstItemOpen:        true,
 				})
 			</template>
 		</div>
@@ -685,6 +689,7 @@ templ SystemInfoTable(o11yOverview entity.O11yOverview) {
 						OuterLeftIcon:        "ph-memory",
 						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel:           o11yOverview.HardwareSpecs.MemoryTotal.StringWithSuffix() + " RAM",
+						InnerBackgroundColor: "os-400",
 						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				</div>
@@ -695,6 +700,7 @@ templ SystemInfoTable(o11yOverview entity.O11yOverview) {
 						OuterLeftIcon:        "ph-cpu",
 						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel:           transformCpuInfoIntoHumanReadable(o11yOverview.HardwareSpecs.CpuCores, o11yOverview.HardwareSpecs.CpuFrequency),
+						InnerBackgroundColor: "os-400",
 						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				</div>
@@ -705,6 +711,7 @@ templ SystemInfoTable(o11yOverview entity.O11yOverview) {
 						OuterLeftIcon:        "ph-sim-card",
 						OuterRadius:          uiToolset.BorderRadiusXl,
 						InnerLabel:           o11yOverview.HardwareSpecs.StorageTotal.StringWithSuffix() + " Storage",
+						InnerBackgroundColor: "os-400",
 						InnerRadius:          uiToolset.BorderRadiusXl,
 					})
 				</div>
@@ -765,6 +772,7 @@ templ InstalledServiceNameCell(
 			OuterLeftLabel:       "type",
 			OuterRadius:          uiToolset.BorderRadiusXl,
 			InnerLabel:           installedServiceEntity.Type.String(),
+			InnerBackgroundColor: "os-400",
 			InnerRadius:          uiToolset.BorderRadiusXl,
 		})
 		@uiDisplay.Tag(uiDisplay.TagSettings{
@@ -773,6 +781,7 @@ templ InstalledServiceNameCell(
 			OuterLeftLabel:       "version",
 			OuterRadius:          uiToolset.BorderRadiusXl,
 			InnerLabel:           installedServiceEntity.Version.String(),
+			InnerBackgroundColor: "os-400",
 			InnerRadius:          uiToolset.BorderRadiusXl,
 		})
 		@uiDisplay.Tag(uiDisplay.TagSettings{
@@ -781,6 +790,7 @@ templ InstalledServiceNameCell(
 			OuterLeftLabel:       "nature",
 			OuterRadius:          uiToolset.BorderRadiusXl,
 			InnerLabel:           installedServiceEntity.Nature.String(),
+			InnerBackgroundColor: "os-400",
 			InnerRadius:          uiToolset.BorderRadiusXl,
 		})
 	</div>
