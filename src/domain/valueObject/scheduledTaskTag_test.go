@@ -4,7 +4,7 @@ import "testing"
 
 func TestScheduledTaskTag(t *testing.T) {
 	t.Run("ValidScheduledTaskTag", func(t *testing.T) {
-		validScheduledTaskTag := []interface{}{
+		validScheduledTaskTag := []any{
 			"services", "marketplace", "ssl", "cron", "account",
 		}
 
@@ -19,7 +19,7 @@ func TestScheduledTaskTag(t *testing.T) {
 	})
 
 	t.Run("InvalidScheduledTaskTag", func(t *testing.T) {
-		invalidScheduledTaskTag := []interface{}{
+		invalidScheduledTaskTag := []any{
 			"", "123", "container!",
 		}
 

@@ -210,7 +210,7 @@ func (repo FilesCmdRepo) Create(createDto dto.CreateUnixFile) error {
 	}
 
 	if createDto.MimeType.IsDir() {
-		err := os.MkdirAll(filePathStr, createDto.Permissions.GetFileMode())
+		err := os.MkdirAll(filePathStr, createDto.Permissions.FileMode())
 		if err != nil {
 			return err
 		}
@@ -391,7 +391,7 @@ func (repo FilesCmdRepo) UpdateContent(
 		return errors.New("PathIsADir")
 	}
 
-	decodedContent, err := updateContentDto.Content.GetDecodedContent()
+	decodedContent, err := updateContentDto.Content.DecodeContent()
 	if err != nil {
 		return err
 	}
@@ -411,7 +411,7 @@ func (repo FilesCmdRepo) UpdateContent(
 		return errors.New("ReadParentDirOwnerError: " + err.Error())
 	}
 
-	filePermissions := fileToUpdate.Permissions.GetFileMode()
+	filePermissions := fileToUpdate.Permissions.FileMode()
 	return repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
 		FilePath:        updateContentDto.SourcePath,
 		Permissions:     &filePermissions,

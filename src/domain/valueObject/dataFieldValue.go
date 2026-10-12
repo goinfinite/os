@@ -8,7 +8,7 @@ import (
 
 type DataFieldValue string
 
-func NewDataFieldValue(value interface{}) (
+func NewDataFieldValue(value any) (
 	dataFieldValue DataFieldValue, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

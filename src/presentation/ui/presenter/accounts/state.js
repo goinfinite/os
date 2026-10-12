@@ -60,9 +60,9 @@ UiToolset.RegisterAlpineState(() => {
       const shouldDisplayToast = false;
       UiToolset.JsonAjax(
         "PUT",
-        Infinite.OsApiBasePath + "/v1/account/",
+        `${Infinite.OsApiBasePath}/v1/account/`,
         { id: this.account.id, shouldUpdateApiKey: true },
-        shouldDisplayToast
+        shouldDisplayToast,
       ).then((apiKey) => (this.account.apiKey = apiKey));
     },
     isSecureAccessPublicKeysModalOpen: false,
@@ -72,7 +72,7 @@ UiToolset.RegisterAlpineState(() => {
       this.account.id = id;
       this.account.username = username;
       this.account.secureAccessPublicKeys = JSON.parse(
-        document.getElementById("secureAccessPublicKeys_" + id).textContent
+        document.getElementById(`secureAccessPublicKeys_${id}`).textContent,
       );
 
       this.isSecureAccessPublicKeysModalOpen = true;
@@ -102,7 +102,7 @@ UiToolset.RegisterAlpineState(() => {
           "DELETE",
           Infinite.OsApiBasePath +
             `/v1/account/secure-access-public-key/${this.secureAccessPublicKey.id}/`,
-          { swap: "none" }
+          { swap: "none" },
         )
         .then(() => this.$dispatch("delete:secure-access-public-key"))
         .finally(() => this.closeDeleteSecureAccessPublicKeyModal());
@@ -124,8 +124,8 @@ UiToolset.RegisterAlpineState(() => {
       htmx
         .ajax(
           "DELETE",
-          Infinite.OsApiBasePath + `/v1/account/` + this.account.id + "/",
-          { swap: "none" }
+          `${Infinite.OsApiBasePath}/v1/account/${this.account.id}/`,
+          { swap: "none" },
         )
         .then(() => this.$dispatch("delete:account"))
         .finally(() => this.closeDeleteAccountModal());

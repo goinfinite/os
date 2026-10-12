@@ -31,7 +31,7 @@ func (controller *CronController) Read() *cobra.Command {
 		Use:   "get",
 		Short: "ReadCrons",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			if idUint != 0 {
 				requestBody["id"] = idUint
@@ -95,7 +95,7 @@ func (controller *CronController) Create() *cobra.Command {
 		Use:   "create",
 		Short: "CreateNewCron",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"schedule": scheduleStr,
 				"command":  commandStr,
 			}
@@ -125,7 +125,7 @@ func (controller *CronController) Update() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateCron",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"id": idStr,
 			}
 
@@ -162,7 +162,7 @@ func (controller *CronController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteCron",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			if idStr != "" {
 				requestBody["cronId"] = idStr

@@ -105,7 +105,6 @@ func (sync *PrimaryVirtualHostSynchronizer) webServerConfUpdater() error {
 		return errors.New("InvalidPrimaryVirtualHostConfPath: " + parseErr.Error())
 	}
 
-	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
 	fileClerk := tkInfra.FileClerk{}
 	confFilePermissions := os.FileMode(0644)
 	writeErr := fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
@@ -113,10 +112,6 @@ func (sync *PrimaryVirtualHostSynchronizer) webServerConfUpdater() error {
 		Permissions:     &confFilePermissions,
 		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-		OwnerUsername:   &webServerUsername,
-		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-			webServerUsername,
-		},
 	}, []byte(confContent))
 	if writeErr != nil {
 		return errors.New("WritePrimaryVirtualHostConfFailed: " + writeErr.Error())

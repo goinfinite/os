@@ -1,8 +1,8 @@
 package uiPresenterHelper
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
@@ -17,7 +17,7 @@ func ReadVirtualHostHostnames(
 	vhostHostnames := []string{}
 	virtualHostLiaison := liaison.NewVirtualHostLiaison(persistentDbSvc, trailDbSvc)
 
-	vhostResponseLiaisonOutput := virtualHostLiaison.Read(map[string]interface{}{
+	vhostResponseLiaisonOutput := virtualHostLiaison.Read(map[string]any{
 		"itemsPerPage": 1000,
 		"withMappings": false,
 	})
@@ -30,12 +30,21 @@ func ReadVirtualHostHostnames(
 		return vhostHostnames, errors.New("AssertReadVirtualHostsResponseFailed")
 	}
 
+	primaryHostname := ""
 	for _, vhostEntity := range vhostReadResponse.VirtualHosts {
 		if vhostEntity.Type == valueObject.VirtualHostTypeAlias {
 			continue
 		}
+		if vhostEntity.IsPrimary {
+			primaryHostname = vhostEntity.Hostname.String()
+			continue
+		}
 
 		vhostHostnames = append(vhostHostnames, vhostEntity.Hostname.String())
+	}
+
+	if primaryHostname != "" {
+		vhostHostnames = append([]string{primaryHostname}, vhostHostnames...)
 	}
 
 	return vhostHostnames, nil

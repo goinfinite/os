@@ -32,7 +32,7 @@ func (controller *VirtualHostController) Read() *cobra.Command {
 		Use:   "get",
 		Short: "ReadVirtualHosts",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			if hostnameStr != "" {
 				requestBody["hostname"] = hostnameStr
@@ -104,7 +104,7 @@ func (controller *VirtualHostController) Create() *cobra.Command {
 		Use:   "create",
 		Short: "CreateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname":   hostnameStr,
 				"isWildcard": isWildcardBoolStr,
 			}
@@ -142,7 +142,7 @@ func (controller *VirtualHostController) Update() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname":   hostnameStr,
 				"isWildcard": isWildcardBoolStr,
 			}
@@ -168,7 +168,7 @@ func (controller *VirtualHostController) Delete() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteVirtualHost",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname": hostnameStr,
 			}
 
@@ -193,7 +193,7 @@ func (controller *VirtualHostController) ReadWithMappings() *cobra.Command {
 		Use:   "get",
 		Short: "ReadVirtualHostsWithMappings",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"withMappings": true,
 			}
 
@@ -265,7 +265,7 @@ func (controller *VirtualHostController) CreateMapping() *cobra.Command {
 		Use:   "create",
 		Short: "CreateVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"hostname":                      hostnameStr,
 				"path":                          pathStr,
 				"targetType":                    targetTypeStr,
@@ -333,7 +333,7 @@ func (controller *VirtualHostController) UpdateMapping() *cobra.Command {
 		Use:   "update",
 		Short: "UpdateVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"id": mappingIdUint,
 			}
 
@@ -403,7 +403,7 @@ func (controller *VirtualHostController) DeleteMapping() *cobra.Command {
 		Use:   "delete",
 		Short: "DeleteVirtualHostMapping",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"id": mappingIdUint,
 			}
 
@@ -430,7 +430,7 @@ func (controller *VirtualHostController) ReadMappingSecurityRules() *cobra.Comma
 		Use:   "get",
 		Short: "ReadMappingSecurityRules",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{}
+			requestBody := map[string]any{}
 
 			if ruleIdUint != 0 {
 				requestBody["id"] = ruleIdUint
@@ -513,7 +513,7 @@ func (controller *VirtualHostController) CreateMappingSecurityRule() *cobra.Comm
 		Use:   "create",
 		Short: "CreateMappingSecurityRule",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"name": nameStr,
 			}
 
@@ -621,7 +621,7 @@ func (controller *VirtualHostController) UpdateMappingSecurityRule() *cobra.Comm
 		Use:   "update",
 		Short: "UpdateMappingSecurityRule",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"id": ruleIdUint,
 			}
 
@@ -728,7 +728,7 @@ func (controller *VirtualHostController) DeleteMappingSecurityRule() *cobra.Comm
 		Use:   "delete",
 		Short: "DeleteMappingSecurityRule",
 		Run: func(cmd *cobra.Command, args []string) {
-			requestBody := map[string]interface{}{
+			requestBody := map[string]any{
 				"id": ruleIdUint,
 			}
 

@@ -24,7 +24,7 @@ func NewCronsPresenter(
 }
 
 func (presenter *CronsPresenter) Handler(c echo.Context) error {
-	responseOutput := presenter.cronLiaison.Read(map[string]interface{}{})
+	responseOutput := presenter.cronLiaison.Read(map[string]any{})
 	if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return nil
 	}

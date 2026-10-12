@@ -394,18 +394,12 @@ func (repo *SslCmdRepo) Create(
 			certContentStr += "\n" + createDto.ChainCertificates.CertificateContent.String()
 		}
 
-		webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
-
 		vhostCertPermissions := os.FileMode(0644)
 		err = repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
 			FilePath:        vhostCertFilePath,
 			Permissions:     &vhostCertPermissions,
 			SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 			OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-			OwnerUsername:   &webServerUsername,
-			TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-				webServerUsername,
-			},
 		}, []byte(certContentStr))
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertFileError: " + err.Error())
@@ -417,10 +411,6 @@ func (repo *SslCmdRepo) Create(
 			Permissions:     &vhostCertKeyPermissions,
 			SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 			OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-			OwnerUsername:   &webServerUsername,
-			TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-				webServerUsername,
-			},
 		}, []byte(createDto.Key.String()))
 		if err != nil {
 			return sslPairId, errors.New("UpdateCertKeyFileError: " + err.Error())

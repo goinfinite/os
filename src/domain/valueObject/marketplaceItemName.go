@@ -9,9 +9,9 @@ import (
 
 type MarketplaceItemName string
 
-const marketplaceItemNameRegexExpression = `^[A-z0-9][\p{L}0-9\'\ \-]{1,30}$`
+var marketplaceItemNameRegex = regexp.MustCompile(`^[A-z0-9][\p{L}0-9\'\ \-]{1,30}$`)
 
-func NewMarketplaceItemName(value interface{}) (
+func NewMarketplaceItemName(value any) (
 	marketplaceItemName MarketplaceItemName, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -19,8 +19,7 @@ func NewMarketplaceItemName(value interface{}) (
 		return marketplaceItemName, errors.New("MarketplaceItemNameMustBeString")
 	}
 
-	re := regexp.MustCompile(marketplaceItemNameRegexExpression)
-	if !re.MatchString(stringValue) {
+	if !marketplaceItemNameRegex.MatchString(stringValue) {
 		return marketplaceItemName, errors.New("InvalidMarketplaceItemName")
 	}
 

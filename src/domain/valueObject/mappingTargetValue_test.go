@@ -5,7 +5,7 @@ import "testing"
 func TestNewMappingTargetValue(t *testing.T) {
 	t.Run("ValidMappingTargetValueBasedOnType (Url)", func(t *testing.T) {
 		urlTargetType, _ := NewMappingTargetType("url")
-		validMappingTargetUrlValues := []interface{}{
+		validMappingTargetUrlValues := []any{
 			"localhost", "localhost:8080", "goinfinite.net", "http://goinfinite.net/",
 			"http://www.goinfinite.net", "https://goinfinite.net/",
 			"https://www.goinfinite.net/", "www.GoOgle.com/",
@@ -25,7 +25,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Url)", func(t *testing.T) {
 		urlTargetType, _ := NewMappingTargetType("url")
-		invalidMappingTargetUrlValues := []interface{}{
+		invalidMappingTargetUrlValues := []any{
 			"", " ", "http://", "https://", "http://notãvalidurl.com/",
 			"https://invalidmaçalink.com.br/", ":8080:/",
 			"/home/downloads/", "DROP TABLE users;", "SELECT * FROM users;",
@@ -44,7 +44,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("ValidMappingTargetValueBasedOnType (Service)", func(t *testing.T) {
 		svcNameTargetType, _ := NewMappingTargetType("service")
-		validMappingTargetServiceNameValues := []interface{}{
+		validMappingTargetServiceNameValues := []any{
 			"openlitespeed",
 			"litespeed",
 			"nginx",
@@ -64,7 +64,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Service)", func(t *testing.T) {
 		svcNameTargetType, _ := NewMappingTargetType("service")
-		invalidMappingTargetServiceNameValues := []interface{}{
+		invalidMappingTargetServiceNameValues := []any{
 			"nginx@",
 			"my<>sql",
 			"php#fpm",
@@ -81,7 +81,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("ValidMappingTargetValueBasedOnType (HTTP Response Code)", func(t *testing.T) {
 		responseCodeTargetType, _ := NewMappingTargetType("response-code")
-		validMappingTargetResponseCodeValues := []interface{}{
+		validMappingTargetResponseCodeValues := []any{
 			"100",
 			"200",
 			"300",
@@ -104,7 +104,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("InvalidMappingTargetValueBasedOnType (HTTP Response Code)", func(t *testing.T) {
 		responseCodeTargetType, _ := NewMappingTargetType("response-code")
-		invalidMappingTargetResponseCodeValues := []interface{}{
+		invalidMappingTargetResponseCodeValues := []any{
 			0,
 			100000,
 			"@blabla",
@@ -125,7 +125,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("ValidMappingTargetValueBasedOnType (Inline HTML Content)", func(t *testing.T) {
 		inlineHtmlContentTargetType, _ := NewMappingTargetType("inline-html")
-		validMappingTargetInlineHtmlContentValues := []interface{}{
+		validMappingTargetInlineHtmlContentValues := []any{
 			"Some nice inline html content",
 			"<h1>Nice title here</h1>",
 			"<p>With some regular text here too...<h2>",
@@ -141,7 +141,7 @@ func TestNewMappingTargetValue(t *testing.T) {
 
 	t.Run("InvalidMappingTargetValueBasedOnType (Inline HTML Content)", func(t *testing.T) {
 		inlineHtmlContentTargetType, _ := NewMappingTargetType("inline-html")
-		invalidMappingTargetInlineHtmlContentValues := []interface{}{
+		invalidMappingTargetInlineHtmlContentValues := []any{
 			"",
 		}
 

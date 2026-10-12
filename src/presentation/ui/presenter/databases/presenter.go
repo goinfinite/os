@@ -41,7 +41,7 @@ func (presenter *DatabasesPresenter) databaseOverviewFactory(
 		databaseType, isInstalled, databaseEntities,
 	}
 
-	requestBody := map[string]interface{}{
+	requestBody := map[string]any{
 		"dbType":       databaseType.String(),
 		"itemsPerPage": 1000,
 	}

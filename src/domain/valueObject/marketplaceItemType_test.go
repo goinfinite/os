@@ -4,7 +4,7 @@ import "testing"
 
 func TestMarketplaceItemType(t *testing.T) {
 	t.Run("ValidMarketplaceItemType", func(t *testing.T) {
-		validMarketplaceItemTypes := []interface{}{
+		validMarketplaceItemTypes := []any{
 			"app", "framework", "stack",
 		}
 
@@ -17,7 +17,7 @@ func TestMarketplaceItemType(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemType", func(t *testing.T) {
-		invalidMarketplaceItemTypes := []interface{}{
+		invalidMarketplaceItemTypes := []any{
 			"", "service", "mobile", "ml-model", "repository",
 		}
 

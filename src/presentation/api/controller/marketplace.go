@@ -18,6 +18,7 @@ import (
 type MarketplaceController struct {
 	marketplaceLiaison *liaison.MarketplaceLiaison
 	persistentDbSvc    *internalDbInfra.PersistentDatabaseService
+	inputReader        tkPresentation.ApiRequestInputReader
 }
 
 func NewMarketplaceController(
@@ -27,6 +28,7 @@ func NewMarketplaceController(
 	return &MarketplaceController{
 		marketplaceLiaison: liaison.NewMarketplaceLiaison(persistentDbSvc, trailDbSvc),
 		persistentDbSvc:    persistentDbSvc,
+		inputReader:        tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -49,8 +51,7 @@ func NewMarketplaceController(
 // @Success      200 {object} dto.ReadMarketplaceCatalogItemsResponse
 // @Router       /v1/marketplace/catalog/ [get]
 func (controller *MarketplaceController) ReadCatalog(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -62,14 +63,13 @@ func (controller *MarketplaceController) ReadCatalog(echoContext echo.Context) e
 
 func (controller *MarketplaceController) transformDataFieldsIntoMap(
 	rawDataFields string,
-) []map[string]interface{} {
-	dataFieldsMapSlice := []map[string]interface{}{}
+) []map[string]any {
+	dataFieldsMapSlice := []map[string]any{}
 	if len(rawDataFields) == 0 {
 		return dataFieldsMapSlice
 	}
 
-	rawDataFieldsSlice := strings.Split(rawDataFields, ";")
-	for _, rawDataField := range rawDataFieldsSlice {
+	for rawDataField := range strings.SplitSeq(rawDataFields, ";") {
 		rawDataFieldParts := strings.Split(rawDataField, ":")
 		if len(rawDataFieldParts) != 2 {
 			slog.Debug(
@@ -79,7 +79,7 @@ func (controller *MarketplaceController) transformDataFieldsIntoMap(
 			continue
 		}
 
-		dataFieldMap := map[string]interface{}{
+		dataFieldMap := map[string]any{
 			"name":  rawDataFieldParts[0],
 			"value": rawDataFieldParts[1],
 		}
@@ -91,28 +91,28 @@ func (controller *MarketplaceController) transformDataFieldsIntoMap(
 
 // DataFields has multiple possible structures which this parser can handle:
 // "dataFieldName:dataFieldValue;dataFieldName:dataFieldValue" (string slice, semicolon separated items)
-// { "dataFieldName": "dataFieldValue" } (map[string]interface{})
-// [{ "dataFieldName": "dataFieldValue" }] (map[string]interface{} slice)
+// { "dataFieldName": "dataFieldValue" } (map[string]any)
+// [{ "dataFieldName": "dataFieldValue" }] (map[string]any slice)
 func (controller *MarketplaceController) parseDataFields(
 	dataFieldsAsUnknownType any,
 ) []valueObject.MarketplaceInstallableItemDataField {
 	dataFields := []valueObject.MarketplaceInstallableItemDataField{}
 
-	rawDataFieldsSlice := []interface{}{}
+	rawDataFieldsSlice := []any{}
 	switch dataFieldsValues := dataFieldsAsUnknownType.(type) {
-	case map[string]interface{}:
-		rawDataFieldsSlice = []interface{}{dataFieldsValues}
+	case map[string]any:
+		rawDataFieldsSlice = []any{dataFieldsValues}
 	case string:
 		dataFieldsMaps := controller.transformDataFieldsIntoMap(dataFieldsValues)
 		for _, dataFieldMap := range dataFieldsMaps {
 			rawDataFieldsSlice = append(rawDataFieldsSlice, dataFieldMap)
 		}
-	case []interface{}:
+	case []any:
 		rawDataFieldsSlice = dataFieldsValues
 	}
 
 	for index, rawDataField := range rawDataFieldsSlice {
-		rawDataFieldMap, assertOk := rawDataField.(map[string]interface{})
+		rawDataFieldMap, assertOk := rawDataField.(map[string]any)
 		if !assertOk {
 			slog.Debug("InvalidDataFieldStructure", slog.Any("fieldIndex", index))
 			continue
@@ -149,8 +149,7 @@ func (controller *MarketplaceController) parseDataFields(
 // @Success      201 {object} object{} "MarketplaceCatalogItemInstallationScheduled"
 // @Router       /v1/marketplace/catalog/ [post]
 func (controller *MarketplaceController) InstallCatalogItem(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -195,8 +194,7 @@ func (controller *MarketplaceController) InstallCatalogItem(echoContext echo.Con
 // @Success      200 {object} dto.ReadMarketplaceInstalledItemsResponse
 // @Router       /v1/marketplace/installed/ [get]
 func (controller *MarketplaceController) ReadInstalledItems(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -218,8 +216,7 @@ func (controller *MarketplaceController) ReadInstalledItems(echoContext echo.Con
 // @Success      200 {object} object{} "MarketplaceInstalledItemDeleted"
 // @Router       /v1/marketplace/installed/{installedId}/ [delete]
 func (controller *MarketplaceController) DeleteInstalledItem(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

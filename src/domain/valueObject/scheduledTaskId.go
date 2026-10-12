@@ -9,7 +9,7 @@ import (
 
 type ScheduledTaskId uint64
 
-func NewScheduledTaskId(value interface{}) (
+func NewScheduledTaskId(value any) (
 	scheduledTaskId ScheduledTaskId, err error,
 ) {
 	uintValue, err := tkVoUtil.InterfaceToUint64(value)

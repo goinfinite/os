@@ -15,7 +15,7 @@ var databaseTypesWithAliases = map[string][]string{
 	"postgresql": {"postgres"},
 }
 
-func NewDatabaseType(value interface{}) (dbType DatabaseType, err error) {
+func NewDatabaseType(value any) (dbType DatabaseType, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return dbType, errors.New("DatabaseTypeMustBeString")

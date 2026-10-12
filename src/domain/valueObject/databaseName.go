@@ -7,18 +7,17 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const databaseNameRegex string = `^\w[\w-]{1,30}\w$`
+var databaseNameRegex = regexp.MustCompile(`^\w[\w-]{1,30}\w$`)
 
 type DatabaseName string
 
-func NewDatabaseName(value interface{}) (dbName DatabaseName, err error) {
+func NewDatabaseName(value any) (dbName DatabaseName, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return dbName, errors.New("DatabaseNameMustBeString")
 	}
 
-	re := regexp.MustCompile(databaseNameRegex)
-	if !re.MatchString(stringValue) {
+	if !databaseNameRegex.MatchString(stringValue) {
 		return dbName, errors.New("InvalidDatabaseName")
 	}
 

@@ -7,11 +7,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const dataFieldNameRegex string = `^\w[\w-]{1,128}\w$`
+var dataFieldNameRegex = regexp.MustCompile(`^\w[\w-]{1,128}\w$`)
 
 type DataFieldName string
 
-func NewDataFieldName(value interface{}) (
+func NewDataFieldName(value any) (
 	dataFieldName DataFieldName, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -19,8 +19,7 @@ func NewDataFieldName(value interface{}) (
 		return dataFieldName, errors.New("DataFieldNameMustBeString")
 	}
 
-	re := regexp.MustCompile(dataFieldNameRegex)
-	if !re.MatchString(stringValue) {
+	if !dataFieldNameRegex.MatchString(stringValue) {
 		return dataFieldName, errors.New("InvalidDataFieldName")
 	}
 

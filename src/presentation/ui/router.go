@@ -22,6 +22,7 @@ import (
 	presenterRuntimes "github.com/goinfinite/os/src/presentation/ui/presenter/runtimes"
 	presenterSetup "github.com/goinfinite/os/src/presentation/ui/presenter/setup"
 	presenterSsls "github.com/goinfinite/os/src/presentation/ui/presenter/ssls"
+	presenterTerminal "github.com/goinfinite/os/src/presentation/ui/presenter/terminal"
 	tkInfraDb "github.com/goinfinite/tk/src/infra/db"
 	"github.com/gorilla/websocket"
 	"github.com/labstack/echo/v4"
@@ -178,6 +179,9 @@ var devWsUpgrader = websocket.Upgrader{}
 func (router *Router) devRoutes() {
 	devGroup := router.baseRoute.Group("/dev")
 	devGroup.GET("/hot-reload", func(echoContext echo.Context) error {
+		// Dev-only route. gorilla's default CheckOrigin already rejects
+		// cross-origin handshakes.
+		// nosemgrep: go.gorilla.security.audit.websocket-missing-origin-check.websocket-missing-origin-check
 		hotReloadConn, err := devWsUpgrader.Upgrade(
 			echoContext.Response(), echoContext.Request(), nil,
 		)
@@ -185,7 +189,12 @@ func (router *Router) devRoutes() {
 			slog.Error("UpgradeHotReloadWsFailed", slog.String("err", err.Error()))
 			return nil
 		}
-		defer hotReloadConn.Close()
+		defer func() {
+			closeErr := hotReloadConn.Close()
+			if closeErr != nil {
+				slog.Debug("CloseHotReloadWsFailed", slog.String("err", closeErr.Error()))
+			}
+		}()
 
 		for {
 			_, _, readErr := hotReloadConn.ReadMessage()
@@ -203,6 +212,18 @@ func (router *Router) fragmentRoutes() {
 		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
 	)
 	fragmentGroup.GET("/footer/", footerPresenter.Handler)
+
+	terminalPresenter := presenterTerminal.NewTerminalPresenter(router.persistentDbSvc)
+	fragmentGroup.GET("/terminal-sessions/", terminalPresenter.FragmentHandler)
+
+	overviewPresenter := presenterOverview.NewOverviewPresenter(
+		router.persistentDbSvc, router.transientDbSvc, router.trailDbSvc,
+	)
+	fragmentGroup.GET(
+		"/overview/terminal-sessions-table/", overviewPresenter.TerminalSessionsTableHandler,
+	)
+	fragmentGroup.GET("/overview/services-table/", overviewPresenter.ServicesTableHandler)
+	fragmentGroup.GET("/overview/marketplace-table/", overviewPresenter.MarketplaceTableHandler)
 }
 
 func (router *Router) RegisterRoutes() {

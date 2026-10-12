@@ -1,136 +1,160 @@
 # [Infinite OS](https://goinfinite.net/os/) &middot; [![Roadmap](https://img.shields.io/badge/roadmap-014737)](https://github.com/orgs/goinfinite/projects/9) [![Demo](https://img.shields.io/badge/read--only_demo-233876)](https://os.demo.goinfinite.net:1618/login/?prefilledUsername=demo&prefilledPassword=abc123!) [![/r/goinfinite](https://img.shields.io/badge/%2Fr%2Fgoinfinite-FF4500?logo=reddit&logoColor=ffffff)](https://www.reddit.com/r/goinfinite/) [![Discussions](https://img.shields.io/badge/discussions-751A3D?logo=github)](https://github.com/orgs/goinfinite/discussions) [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=goinfinite_os&metric=alert_status)](https://sonarcloud.io/project/overview?id=goinfinite_os) [![License](https://img.shields.io/badge/license-EPL-blue.svg)](https://github.com/goinfinite/os/blob/main/LICENSE.md)
 
-Infinite OS is **the simplest way to deploy containerized applications**. Even if containers sound like rocket science to you, you'll be launching apps with just a few clicks. 🚀
+**A hosting environment in a container.** Think cPanel-style shared hosting, rebuilt so each project gets its own lightweight host. No Dockerfile, no rebuilds: start the container, then add runtimes, databases, domains, files, and applications from the dashboard, CLI, or API.
 
-![Infinite OS Screenshots](docs/os-screenshots.webp)
+![Infinite OS demo: running OpenCode in the web terminal, installing WordPress, and managing files and databases](docs/os-screenshots.webp)
+
+### Quick Start
+
+Try the [read-only demo](https://os.demo.goinfinite.net:1618/login/?prefilledUsername=demo&prefilledPassword=abc123!) first: `demo` / `abc123!`. Or run your own - Docker and Podman both work:
+
+```
+docker run -d --name 'myapp.net' \
+  --env 'PRIMARY_VHOST=myapp.net' \
+  -p 8080:80 -p 8443:443 -p 127.0.0.1:1618:1618 \
+  docker.io/goinfinite/os:latest
+```
+
+Open [`https://localhost:1618/`](https://localhost:1618/). Your browser warns once about the self-signed certificate, then the first login creates the admin account.
+
+### What Is Infinite OS?
+
+Most container images are built around an application: everything inside is decided at build time, and adding a service means rebuilding and redeploying.
+
+Infinite OS is different. The container is the hosting environment: a generic host you fill in after it starts, with PHP, Node.js, Bun, Python, Ruby, Java, databases, applications, and other services.
+
+We call it a "wildcard container image" because the same base image becomes whatever the project needs. It is a host in a box, stateful by design: the container filesystem holds the state, restarts preserve the environment, and image upgrades are handled as migrations. See [State and Upgrades](docs/STATE-AND-UPGRADES.md).
+
+If you have used traditional hosting before, the workflow will feel familiar.
+
+Infinite OS is built for developers, vibe coders, homelabbers, students, and agencies who want to run applications without turning infrastructure into a project. Use the dashboard and barely touch the terminal, or script everything through the CLI and REST API.
+
+### One Environment per Project
+
+The easiest way to think about the architecture:
+
+- **Traditional hosting:** one OS → many projects
+- **Docker Compose:** one project → many service containers
+- **Infinite OS:** one project → one hosting container → many project services
+
+Traditional shared hosting puts unrelated projects on one server and isolates them inside the operating system. Infinite OS moves that boundary to the container runtime: the services of one project live together, and unrelated projects get separate environments.
+
+A Laravel project, for example, might have nginx, PHP, MariaDB, workers, cron jobs, and a coding agent inside the same Infinite OS container. Another project would get another container.
+
+Infinite OS starts as a single Go binary on a lightweight Debian base, using about 80MB of RAM. That makes running several small environments side by side practical. It is also the model behind [our own cloud hosting](https://goinfinite.net/en/): many Infinite OS environments instead of one large shared-hosting server.
+
+### Coding Agents
+
+That same project boundary makes Infinite OS a good workspace for coding agents. Run an agent such as OpenCode in the built-in web terminal and it gets a complete environment: project files, runtimes, databases, domains, and the `os` CLI. It can install dependencies and deploy the application end to end.
 
 > [!TIP]
-> **Working with an AI agent?** Point it to [`SKILL.md`](SKILL.md) before it deploys or manages applications with Infinite OS. The skill maps the dashboard, CLI, and REST API, and gives the core deployment workflows.
+> **Using an AI coding agent?** Point it at [`SKILL.md`](SKILL.md). It maps the dashboard, CLI, and REST API, and covers the core deployment workflows.
 
-### What's This All About Then?
+### Deploy Something
 
-We've created something rather special: **a "wildcard" container image**. Yes, we made up that term because **nothing else quite does what Infinite OS does**!
-
-The traditional container dance goes: write Dockerfile, build image, run container, repeat until your coffee goes cold. Tedious, isn't it?
-
-With Infinite OS, **you can skip all that faff**. No Dockerfile wizardry required. Simply run our container image and then deploy your applications with minimal fuss with the web dashboard, CLI or REST API. Like a magic box. 🧞
-
-For the tech wizards among you - yes, you can still build your own custom Dockerfile images on top of Infinite OS with your preferred applications pre-installed. We're flexible like that.
-
-### Plays Well With Others
-
-Infinite OS works flawlessly with any container orchestration tool that speaks OCI: Docker, Podman, Docker Swarm, Rancher, Kubernetes - the lot.
-
-Though if you fancy an even smoother experience, do check out our sibling project [Infinite Ez](https://github.com/goinfinite/ez-issue-tracker/) - a self-hosted PaaS solution that pairs perfectly with Infinite OS. Also free and refreshingly straightforward.
-
-### What Infinite OS Is
-
-- Your get-out-of-jail-free card for never writing another Dockerfile;
-- A shape-shifting container that becomes what you need AFTER you run it;
-- A lightweight web dashboard, CLI and REST API that sips resources (mere ~80MB RAM);
-- A handy marketplace to quickly launch and manage apps, databases, etc.
-
-### What Infinite OS Isn't
-
-- A container engine itself (like Docker or Podman);
-- A self-hosted PaaS solution (that's [Infinite Ez's](https://github.com/goinfinite/ez) job);
-- A replacement for Docker, Podman, Kubernetes or any container orchestration tool.
-
-## Online Demo
-
-A read-only demo of the dashboard is available at [https://os.demo.goinfinite.net:1618/](https://os.demo.goinfinite.net:1618/login/?prefilledUsername=demo&prefilledPassword=abc123!). The default credentials are `demo` (user) and `abc123!` (password). You can use this demo to explore the dashboard and see how it works. Please note that this is a read-only demo, so you won't be able to make any changes or deploy any applications.
-
-## Features
-
-- **Web Dashboard**: A slick web interface where you can manage your environment and deploy apps without breaking a sweat;
-- **CLI and REST API**: Everything you can do with clicks, you can do with commands or calls - choose your weapon!
-- **Services Catalog**: Runtimes, programming languages, databases - all deployed with fewer clicks than ordering a takeaway;
-- **Marketplace Catalog**: Applications, frameworks and entire tech stacks just waiting for you to press the big friendly button;
-- **Cron Jobs**: Schedule tasks to run whenever you fancy - while you're sleeping, on tea breaks, or precisely at 3:42 PM on Thursdays;
-- **File Manager**: Built-in interface to poke around your container's files and folders without needing to be a terminal ninja;
-- **Automatic SSL**: Let's Encrypt certificates that sort themselves out - because life's too short to manually configure SSL;
-- **Automatic Mappings**: Your marketplace apps magically appear at exactly the right path and domain name - no configuration gymnastics required;
-- **Auto-Sync Primary Vhost**: Change `PRIMARY_VHOST` and restart the container - the web server config, PHP vhost, and database record all update themselves. No manual reconfiguration needed;
-- **Mapping Security Rules**: Protect your applications with custom rate, bandwidth and connection limits;
-- **NGINX baked-in**: NGINX comes pre-configured and ready to rock with both the dashboard and your applications;
-- **Runtime Settings**: Tweak PHP versions, NGINX configurations and more - all the knobs and dials you need;
-- **User Management**: Create accounts for the whole team (or just yourself with different hats on) and manage them all in one place.
-
-## Get Started
-
-### Deploying the Container
-
-Infinite OS is designed to be flexible, so you can run it with your preferred graphical user interface (GUI) or command line interface (CLI). This includes popular tools like Docker Desktop, Podman Desktop, Rancher Desktop, Orbstack, Portainer, Kubernetes, and any other OCI-compliant container manager.
-
-#### Command Line Interface (CLI) Example
+In the dashboard, open Marketplace, pick WordPress, and click Install. Or run it from the host:
 
 ```
-docker run --rm --name 'myapp.net' \
-  --env 'PRIMARY_VHOST=myapp.net' \
-  -p 8080:80 -p 8443:443 -p 1618:1618 \
-  -it docker.io/goinfinite/os:latest
-```
-
-#### Graphical User Interfaces (GUI) Example
-
-If you prefer a GUI, the process is similar across most tools:
-
-1. Define the container image URL as `docker.io/goinfinite/os:latest`;
-2. Define the container name to your domain name, e.g. `myapp.net`;
-3. Set the environment variable `PRIMARY_VHOST` also to your domain name, e.g. `myapp.net`;
-4. The only necessary port to publish is 1618, which is the API and dashboard port. The other ports are optional and only needed if you want to access the applications directly from the host. Common used ports are 8080 for the container HTTP port (80) and 8443 for the container HTTPS port (443);
-5. Start the container and you're good to go!
-
-### Accessing the Dashboard
-
-Once the container is up and running, you can access the dashboard with your web browser. The dashboard is available at [`https://localhost:1618/`](https://localhost:1618/) (or the IP address of your host machine if you're not using localhost).
-
-The first time you log in, you'll be prompted to create an admin account via the setup wizard. This one-time process allows you to create an admin account for managing your applications.
-
-The dashboard is where the magic happens. You can deploy applications with just a few clicks using the Marketplace feature. Plus, every action you take in the dashboard has a corresponding CLI and REST API command, making it easy to automate your deployments and manage your applications programmatically.
-
-For example, to deploy a WordPress application, you can use the following CLI command inside the container:
-
-```
-os mktplace install -s wp \
+docker exec myapp.net os mktplace install -s wp \
   -f 'adminUsername:admin' \
   -f 'adminPassword:abc123!' \
   -f 'adminMailAddress:user@example.com'
 ```
 
+The same command works from the built-in web terminal. Infinite OS installs the dependencies, starts the services, and creates the mapping.
+
+Your own application works the same way: clone it into the environment, install its runtime, create its database, and map it to a hostname. [`SKILL.md`](SKILL.md) has examples for PHP, Node.js, Python, and more.
+
+For another project, start another container: each project gets its own filesystem, services, configuration, terminal, and agent workspace.
+
+### What You Get
+
+#### Deploy
+
+- **Marketplace:** WordPress, n8n, and dozens more, installed in a few clicks
+- **Services:** PHP, Node.js, Bun, Python, Ruby, Java, databases, and other building blocks, installed on demand
+- **Automatic Mappings:** apps get their hostname and route on install
+- **Automatic SSL:** free TLS certificates for public domains
+- **Primary Domain Sync:** change the domain once; nginx, PHP, and database records follow
+
+#### Operate
+
+- **Web Terminal:** a terminal in your browser, no SSH setup. Use it for quick commands or to run an AI coding agent like OpenCode
+- **File Manager:** browse, edit, upload, and extract files
+- **Cron Jobs:** schedule recurring tasks
+- **Runtime Settings:** switch PHP versions and edit PHP settings from the dashboard
+- **Team Accounts:** one login per person
+- **Security Rules:** rate, bandwidth, and connection limits per route
+
+#### Automate
+
+- **CLI and REST API:** most actions have a matching command
+
+You can also build your own image on top of Infinite OS: pre-install what your environment needs and keep the dashboard, CLI, and API available.
+
+### How It Compares
+
+**Traditional hosting and cPanel:** the same workflow, a different isolation model. Instead of many hosting accounts inside one OS, each project gets its own container.
+
+**Docker and Docker Compose:** Compose describes a project's services ahead of time, usually one container per service. Infinite OS gives the project one small, mutable environment instead: the web server, runtimes, databases, workers, and other services are installed and managed together after launch. Compose treats infrastructure as a declared stack; Infinite OS treats it as a server you operate.
+
+**VM or VPS:** the closest day-to-day analogy. You get an environment you can configure after it starts, but it shares the host kernel instead of booting a guest OS, so it is much lighter.
+
+Infinite OS is also not a PaaS such as Coolify, Dokku, or CapRover. Those tools manage deployments and containers; Infinite OS is the hosting environment inside one container. Our sibling project [Infinite Ez](https://github.com/goinfinite/ez-issue-tracker/) handles the multi-environment layer.
+
+### Setup Details
+
+`PRIMARY_VHOST` is the primary hostname served by the environment. Use a real domain or a placeholder such as `myapp.net` for local experimentation.
+
+Port `1618` serves the dashboard and API. The example binds it to `127.0.0.1` so the setup wizard is not exposed. On a production server, deploy through a PaaS: we recommend [Infinite Ez](https://github.com/goinfinite/ez-issue-tracker/), which makes the setup straightforward.
+
+Ports `8080` and `8443` map to HTTP and HTTPS inside the environment for local testing. For a public deployment with automatic TLS, point the domain's DNS at the host and expose ports `80` and `443` directly instead:
+
+```
+-p 80:80 -p 443:443
+```
+
+We left `--rm` out on purpose. The container is the server: everything you install lives on its filesystem.
+
+Prefer a GUI? Docker Desktop, Podman Desktop, Rancher Desktop, OrbStack, and Portainer all work: point yours at `docker.io/goinfinite/os:latest`, set `PRIMARY_VHOST`, publish port 1618.
+
+### What Infinite OS Isn't
+
+- A replacement for Docker or Podman. It runs on top of a container runtime
+- A traditional shared-hosting monolith. Unrelated projects are better kept apart
+- A multi-server PaaS. Infinite OS manages one environment; our sibling project [Infinite Ez](https://github.com/goinfinite/ez-issue-tracker/) manages many
+- A walled garden. Run it locally, on a server, or through container platforms and orchestrators that can support its stateful model
+
 ## Support
 
-Need help or have questions? We got you covered!
-
-Open an issue on our [GitHub repository](https://github.com/goinfinite/os), start a discussion on [GitHub discussions](https://github.com/orgs/goinfinite/discussions) or [Reddit](https://www.reddit.com/r/goinfinite/), or hear me out - consider our cloud offerings at [goinfinite.net](https://goinfinite.net)! ♥️
+Open an issue on our [GitHub repository](https://github.com/goinfinite/os), start a discussion on [GitHub discussions](https://github.com/orgs/goinfinite/discussions) or [Reddit](https://www.reddit.com/r/goinfinite/), or check our [cloud offerings](https://goinfinite.net)! ♥️
 
 ## Sponsorship
 
-Your support means the world to us! If you find Infinite OS useful, please consider sponsoring us on [GitHub](https://github.com/sponsors/goinfinite) or choosing one of our [cloud offerings](https://goinfinite.net). Your contributions help us maintain and improve the project, ensuring its continued development and support.
+If Infinite OS is useful to you, sponsor us on [GitHub](https://github.com/sponsors/goinfinite) or choose one of our [cloud offerings](https://goinfinite.net).
 
 ## Contributing
 
-Ready to contribute to Infinite OS? Please refer to our [CONTRIBUTING.md](docs/CONTRIBUTING.md) file for more information on how to get involved.
+Want to contribute? See [CONTRIBUTING.md](docs/CONTRIBUTING.md).
 
 > [!IMPORTANT]
-> **Human Reviewed**: Although AI models are employed to assist development, every
-> line in our codebase is meticulously reviewed by senior developers who care
-> deeply about the software's coherence, readability, and maintainability.
+> **Human Reviewed**: AI models assist development, and senior developers review
+> every line for coherence, readability, and maintainability.
 
 ## Roadmap
 
-The public roadmap is available at [GitHub Projects](https://github.com/orgs/goinfinite/projects/9). Before opening an issue, please discuss your feature requests with our community. We're open to suggestions and feedback, and we encourage you to share your ideas with us.
+The public roadmap lives at [GitHub Projects](https://github.com/orgs/goinfinite/projects/9). Discuss feature requests with the community before opening an issue.
 
-For bug fixes, please open an issue with as much detail as possible, including steps to reproduce the issue, expected behavior, and any relevant logs or screenshots. This helps us address the problem more efficiently.
+For bug fixes, open an issue with steps to reproduce, expected behavior, and relevant logs or screenshots.
 
 ## License
 
-This project is licensed under the Eclipse Public License (EPL) version 2.0. See the [LICENSE.md](LICENSE.md) file for details.
+Licensed under the Eclipse Public License (EPL) 2.0. See [LICENSE.md](LICENSE.md).
 
 ## Acknowledgements
 
-We're grateful to our contributors, supporters, and the open-source community for making Infinite OS possible. Special thanks to the maintainers of the various open-source libraries and tools that power our project. You can find a complete list of dependencies in our `go.mod` file and on the `Containerfile`.
+Thanks to our contributors and to the maintainers of the open-source projects we build on. The full dependency list is in `go.mod` and the `Containerfile`.
 
 ## Disclaimer
 
-Infinite OS is still in the beta stage of development. While we strive to provide a stable and reliable product, please be aware that there may be bugs and issues. We appreciate your understanding and encourage you to report any problems you encounter, helping us improve the project.
+Infinite OS is in beta. Expect some bugs; reports help us fix them.

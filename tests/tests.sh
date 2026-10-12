@@ -128,6 +128,15 @@ requireHostTools() {
 	done
 }
 
+requireBrowserTools() {
+	if command -v lightpanda >/dev/null 2>&1; then
+		return 0
+	fi
+
+	echo "MissingRequiredTool: lightpanda (run 'mise install')" >&2
+	exit 2
+}
+
 registryFeatures() {
 	yq -r '.features | keys | .[]' "${registryPath}"
 }
@@ -433,6 +442,7 @@ runFeatureGroup() {
 		runCommand="$(jq -r '.run' <<<"${entryJson}")"
 
 		export OS_TEST_SCOPE="${scope}"
+		export OS_TEST_LEVEL="${entryLevel}"
 		runEntry "${feature}" "${scope}" "${entryLevel}" "${runCommand}" || entryFailed=true
 	done <<<"${entriesJson}"
 
@@ -564,6 +574,10 @@ main() {
 	if [[ "${listOnly}" == "true" ]]; then
 		printList
 		exit 0
+	fi
+
+	if selectionHasScope "browser"; then
+		requireBrowserTools
 	fi
 
 	OS_TEST_RUNTIME="$(osTestRuntimeResolver)" || exit 2

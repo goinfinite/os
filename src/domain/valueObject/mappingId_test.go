@@ -4,8 +4,8 @@ import "testing"
 
 func TestMappingId(t *testing.T) {
 	t.Run("ValidMappingId", func(t *testing.T) {
-		validMappingIds := []interface{}{
-			0, 1, 10000000000000, "455", 40.5,
+		validMappingIds := []any{
+			0, 1, 10000000000000, "455", 40.0,
 		}
 
 		for _, mappingId := range validMappingIds {
@@ -17,8 +17,8 @@ func TestMappingId(t *testing.T) {
 	})
 
 	t.Run("InvalidMappingId", func(t *testing.T) {
-		invalidMappingIds := []interface{}{
-			-1, -10000000000000, "-455", -40.5,
+		invalidMappingIds := []any{
+			-1, -10000000000000, "-455", -40.5, 40.5,
 		}
 
 		for _, mappingId := range invalidMappingIds {

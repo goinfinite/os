@@ -4,7 +4,7 @@ import "testing"
 
 func TestDatabaseUsername(t *testing.T) {
 	t.Run("ValidDatabaseUsername", func(t *testing.T) {
-		validDatabaseUsernames := []interface{}{
+		validDatabaseUsernames := []any{
 			"abc", "a_1", "_abc-123", "b-c_d-e",
 			"valid_name_with_30_chars",
 		}
@@ -20,7 +20,7 @@ func TestDatabaseUsername(t *testing.T) {
 	})
 
 	t.Run("InvalidDatabaseUsername", func(t *testing.T) {
-		invalidDatabaseUsernames := []interface{}{
+		invalidDatabaseUsernames := []any{
 			"/1invalid_start_with_digit",
 			"-invalid-start-with-dash",
 			"invalid_character$more_than_30_chars",

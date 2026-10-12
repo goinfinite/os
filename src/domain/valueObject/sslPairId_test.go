@@ -91,7 +91,7 @@ func TestNewSslPairId(t *testing.T) {
 			},
 		)
 		if err != nil {
-			t.Fatalf("FailedToGenerateSslPrivateKey: %s", err.Error())
+			t.Fatalf("GenerateSslPrivateKeyFailed: %s", err.Error())
 		}
 		otherPrivateKey, err := NewSslPrivateKey(otherKeyContentStr)
 		if err != nil {

@@ -8,11 +8,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const mappingPathRegex string = `^[^\s<>;'":#{}?\[\]]{1,512}$`
+var mappingPathRegex = regexp.MustCompile(`^[^\s<>;'":#{}?\[\]]{1,512}$`)
 
 type MappingPath string
 
-func NewMappingPath(value interface{}) (mappingPath MappingPath, err error) {
+func NewMappingPath(value any) (mappingPath MappingPath, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return mappingPath, errors.New("MappingPathMustBeString")
@@ -23,8 +23,7 @@ func NewMappingPath(value interface{}) (mappingPath MappingPath, err error) {
 		stringValue = "/" + stringValue
 	}
 
-	re := regexp.MustCompile(mappingPathRegex)
-	if !re.MatchString(stringValue) {
+	if !mappingPathRegex.MatchString(stringValue) {
 		return mappingPath, errors.New("InvalidMappingPath")
 	}
 

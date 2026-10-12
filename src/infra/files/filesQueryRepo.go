@@ -107,7 +107,7 @@ func (repo *FilesQueryRepo) unixFileFactory(
 	if shouldReturnContent && unixFileSize.ToMiB() <= valueObject.FileContentMaxSizeInMb {
 		unixFileContentStr, err := repo.fileClerk.ReadFileContent(filePath.String(), nil)
 		if err != nil {
-			return unixFile, errors.New("FailedToReadFileContent: " + err.Error())
+			return unixFile, errors.New("ReadFileContentError: " + err.Error())
 		}
 
 		unixFileContent, err := valueObject.NewUnixFileContent(unixFileContentStr)

@@ -24,7 +24,7 @@ var ValidServiceTypes = []string{
 	ServiceTypeOther.String(),
 }
 
-func NewServiceType(value interface{}) (serviceType ServiceType, err error) {
+func NewServiceType(value any) (serviceType ServiceType, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceType, errors.New("ServiceTypeValueMustBeString")

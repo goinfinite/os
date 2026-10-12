@@ -6,30 +6,30 @@ import (
 )
 
 type UpdateService struct {
-	Name              valueObject.ServiceName              `json:"name"`
-	Type              *valueObject.ServiceType             `json:"type"`
-	Version           *valueObject.ServiceVersion          `json:"version"`
-	Status            *valueObject.ServiceStatus           `json:"status"`
-	StartCmd          *tkValueObject.UnixCommand           `json:"startCmd"`
-	Envs              []valueObject.ServiceEnv             `json:"envs"`
-	PortBindings      []valueObject.PortBinding            `json:"portBindings"`
-	StopCmdSteps      []tkValueObject.UnixCommand          `json:"stopCmdSteps"`
-	PreStartCmdSteps  []tkValueObject.UnixCommand          `json:"preStartCmdSteps"`
-	PostStartCmdSteps []tkValueObject.UnixCommand          `json:"postStartCmdSteps"`
-	PreStopCmdSteps   []tkValueObject.UnixCommand          `json:"preStopCmdSteps"`
-	PostStopCmdSteps  []tkValueObject.UnixCommand          `json:"postStopCmdSteps"`
-	ExecUser          *tkValueObject.UnixUsername           `json:"execUser"`
-	WorkingDirectory  *tkValueObject.UnixAbsoluteFilePath  `json:"workingDirectory"`
-	StartupFile       *tkValueObject.UnixAbsoluteFilePath  `json:"startupFile"`
-	AutoStart         *bool                                `json:"autoStart"`
-	AutoRestart       *bool                                `json:"autoRestart"`
-	TimeoutStartSecs  *uint                                `json:"timeoutStartSecs"`
-	MaxStartRetries   *uint                                `json:"maxStartRetries"`
-	LogOutputPath     *tkValueObject.UnixAbsoluteFilePath  `json:"logOutputPath"`
-	LogErrorPath      *tkValueObject.UnixAbsoluteFilePath  `json:"logErrorPath"`
-	AvatarUrl         *tkValueObject.Url                   `json:"avatarUrl"`
-	OperatorAccountId tkValueObject.AccountId              `json:"-"`
-	OperatorIpAddress tkValueObject.IpAddress              `json:"-"`
+	Name              valueObject.ServiceName             `json:"name"`
+	Type              *valueObject.ServiceType            `json:"type"`
+	Version           *valueObject.ServiceVersion         `json:"version"`
+	Status            *valueObject.ServiceStatus          `json:"status"`
+	StartCmd          *tkValueObject.UnixCommand          `json:"startCmd"`
+	Envs              []valueObject.ServiceEnv            `json:"envs"`
+	PortBindings      []valueObject.PortBinding           `json:"portBindings"`
+	StopCmdSteps      []tkValueObject.UnixCommand         `json:"stopCmdSteps"`
+	PreStartCmdSteps  []tkValueObject.UnixCommand         `json:"preStartCmdSteps"`
+	PostStartCmdSteps []tkValueObject.UnixCommand         `json:"postStartCmdSteps"`
+	PreStopCmdSteps   []tkValueObject.UnixCommand         `json:"preStopCmdSteps"`
+	PostStopCmdSteps  []tkValueObject.UnixCommand         `json:"postStopCmdSteps"`
+	ExecUser          *tkValueObject.UnixUsername         `json:"execUser"`
+	WorkingDirectory  *tkValueObject.UnixAbsoluteFilePath `json:"workingDirectory"`
+	StartupFile       *tkValueObject.UnixAbsoluteFilePath `json:"startupFile"`
+	AutoStart         *bool                               `json:"autoStart"`
+	AutoRestart       *bool                               `json:"autoRestart"`
+	TimeoutStartSecs  *uint                               `json:"timeoutStartSecs"`
+	MaxStartRetries   *uint                               `json:"maxStartRetries"`
+	LogOutputPath     *tkValueObject.UnixAbsoluteFilePath `json:"logOutputPath"`
+	LogErrorPath      *tkValueObject.UnixAbsoluteFilePath `json:"logErrorPath"`
+	AvatarUrl         *tkValueObject.Url                  `json:"avatarUrl"`
+	OperatorAccountId tkValueObject.AccountId             `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress             `json:"-"`
 }
 
 func NewUpdateService(

@@ -1,8 +1,8 @@
 ---
 name: os-usage
-description: Use when deploying or managing applications on an Infinite OS instance — maps the dashboard, CLI, and REST API, and gives the core deployment workflows.
-version: 1.0.0
-lastUpdated: 2026-09-11
+description: Use when deploying or managing applications on an Infinite OS instance - maps the dashboard, CLI, and REST API, and covers the core deployment workflows.
+version: 1.0.1
+lastUpdated: 2026-10-12
 ---
 
 ## Purpose
@@ -17,7 +17,7 @@ Use this skill to deploy an instance, deploy WordPress or a custom application, 
 
 Before you deploy anything, find out where you are and what is available:
 
-1. Run `os version`. If it answers, you are inside an Infinite OS container. Skip to step 3.
+1. Run `os version`. If it answers, you are inside an Infinite OS container (this includes the built-in web terminal). Skip to step 3.
 2. Run `command -v docker` and `command -v podman`. If neither answers, stop and ask the user to install Docker or Podman, or to run you inside an Infinite OS container. Do not install a container runtime on your own.
 3. List the running containers with `docker ps` or `podman ps`. If an Infinite OS container already runs, note its name (every command below will use it as the `docker exec <container>` prefix) and skip to step 3.
 4. Otherwise, deploy an instance in step 2.
@@ -36,7 +36,7 @@ docker run -d --name 'myapp.net' \
 - Ports `80` and `443` serve the deployed applications directly. Publish them when you do not use a reverse proxy. Map them to `8080` and `8443` on the host when the host ports are taken.
 - Run the container as a long-lived instance. The container itself is the unit of state: the whole filesystem holds the OS databases, the deployed applications, and their data. Do not treat the container as disposable.
 - The container name usually matches the domain.
-- Any OCI runtime works: Docker, Podman, Kubernetes, and others. Container platforms such as Infinite Ez, Kubernetes, and Coolify can run the image too. Infinite Ez, our PaaS, runs one OS container per account, like cPanel runs one account per customer, and can snapshot the entire container to a downloadable `.zip` to move it to another instance.
+- Any OCI runtime works: Docker, Podman, Kubernetes, and others. Container platforms such as Infinite Ez, Kubernetes, and Coolify can run the image too, but schedulers that recreate containers (Kubernetes, Docker Swarm) need persistence planned first. Infinite Ez, our PaaS, runs one OS container per account, like cPanel runs one account per customer, and can snapshot the entire container to a downloadable `.zip` to move it to another instance.
 - Replace `-d` with `-it` to run an attached session.
 
 Open `https://localhost:1618/`. The first login runs a setup wizard that creates the admin account. The instance uses a self-signed certificate, so the browser warns once.
@@ -335,7 +335,7 @@ The instance uses a self-signed certificate by default, so pass `-k`. Every cont
 
 ## Guardrails
 
-- Prefer the CLI — run it directly when you are inside the container, or through `docker exec` when outside. Use the API only when the container shell is out of reach.
+- Prefer the CLI - run it directly when you are inside the container, or through `docker exec` when outside. Use the API only when the container shell is out of reach.
 - Confirm with the user before any delete: `mktplace delete`, `services delete`, `db delete`, `db delete-user`, `account delete`, `ssl delete`, `cron delete`. Deletion destroys data and cannot be undone.
 - Never write passwords or tokens into a file, a log, or a commit.
 - The CLI runs inside the container as root and asks no authentication. Treat every command as a privileged action.

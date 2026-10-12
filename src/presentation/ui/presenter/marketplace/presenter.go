@@ -1,8 +1,9 @@
 package uiPresenter
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"errors"
+	tkDto "github.com/goinfinite/tk/src/domain/dto"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"log/slog"
 	"net/http"
 
@@ -56,45 +57,50 @@ func (presenter *MarketplacePresenter) catalogItemsGroupedByTypeFactory(
 	}
 }
 
-func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(listType string) (
+func (presenter *MarketplacePresenter) MarketplaceOverviewFactory(
+	listType string, installedItemsRequest map[string]any,
+) (
 	overview MarketplaceOverview, err error,
 ) {
 	installedItemsList := []entity.MarketplaceInstalledItem{}
+	installedItemsPagination := tkDto.PaginationUnpaginated
 	if listType == "installed" || listType == "all" {
 		responseOutput := presenter.marketplaceLiaison.ReadInstalledItems(
-			map[string]interface{}{},
+			installedItemsRequest,
 		)
 		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
-			return overview, errors.New("FailedToReadInstalledItems")
+			return overview, errors.New("ReadInstalledItemsError")
 		}
 
 		typedOutputBody, assertOk := responseOutput.Body.(dto.ReadMarketplaceInstalledItemsResponse)
 		if !assertOk {
-			return overview, errors.New("FailedToReadInstalledItems")
+			return overview, errors.New("ReadInstalledItemsError")
 		}
 		installedItemsList = typedOutputBody.MarketplaceInstalledItems
+		installedItemsPagination = typedOutputBody.Pagination
 	}
 
 	catalogItemsList := []entity.MarketplaceCatalogItem{}
 	if listType == "catalog" || listType == "all" {
 		responseOutput := presenter.marketplaceLiaison.ReadCatalog(
-			map[string]interface{}{},
+			map[string]any{},
 		)
 		if responseOutput.Status != tkPresentation.LiaisonResponseStatusSuccess {
-			return overview, errors.New("FailedToReadCatalogItems")
+			return overview, errors.New("ReadCatalogItemsError")
 		}
 
 		typedOutputBody, assertOk := responseOutput.Body.(dto.ReadMarketplaceCatalogItemsResponse)
 		if !assertOk {
-			return overview, errors.New("FailedToReadCatalogItems")
+			return overview, errors.New("ReadCatalogItemsError")
 		}
 		catalogItemsList = typedOutputBody.MarketplaceCatalogItems
 	}
 
 	return MarketplaceOverview{
-		ListType:           listType,
-		InstalledItemsList: installedItemsList,
-		CatalogItemsList:   presenter.catalogItemsGroupedByTypeFactory(catalogItemsList),
+		ListType:                 listType,
+		InstalledItemsList:       installedItemsList,
+		InstalledItemsPagination: installedItemsPagination,
+		CatalogItemsList:         presenter.catalogItemsGroupedByTypeFactory(catalogItemsList),
 	}, nil
 }
 
@@ -116,7 +122,9 @@ func (presenter *MarketplacePresenter) Handler(c echo.Context) error {
 		return nil
 	}
 
-	marketplaceOverview, err := presenter.MarketplaceOverviewFactory(listType)
+	marketplaceOverview, err := presenter.MarketplaceOverviewFactory(
+		listType, map[string]any{},
+	)
 	if err != nil {
 		slog.Error(err.Error())
 		return nil

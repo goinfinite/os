@@ -10,6 +10,7 @@ import (
 
 type CronController struct {
 	cronLiaison *liaison.CronLiaison
+	inputReader tkPresentation.ApiRequestInputReader
 }
 
 func NewCronController(
@@ -17,6 +18,7 @@ func NewCronController(
 ) *CronController {
 	return &CronController{
 		cronLiaison: liaison.NewCronLiaison(trailDbSvc),
+		inputReader: tkPresentation.ApiRequestInputReader{},
 	}
 }
 
@@ -37,8 +39,7 @@ func NewCronController(
 // @Success      200 {object} dto.ReadCronsResponse
 // @Router       /v1/cron/ [get]
 func (controller *CronController) Read(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -59,8 +60,7 @@ func (controller *CronController) Read(echoContext echo.Context) error {
 // @Success      201 {object} object{} "CronCreated"
 // @Router       /v1/cron/ [post]
 func (controller *CronController) Create(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -81,8 +81,7 @@ func (controller *CronController) Create(echoContext echo.Context) error {
 // @Success      200 {object} object{} "CronUpdated message"
 // @Router       /v1/cron/ [put]
 func (controller *CronController) Update(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}
@@ -103,8 +102,7 @@ func (controller *CronController) Update(echoContext echo.Context) error {
 // @Success      200 {object} object{} "CronDeleted"
 // @Router       /v1/cron/{cronId}/ [delete]
 func (controller *CronController) Delete(echoContext echo.Context) error {
-	inputReader := tkPresentation.ApiRequestInputReader{}
-	requestData, requestParsingErr := inputReader.Reader(echoContext)
+	requestData, requestParsingErr := controller.inputReader.Reader(echoContext)
 	if requestParsingErr != nil {
 		return requestParsingErr
 	}

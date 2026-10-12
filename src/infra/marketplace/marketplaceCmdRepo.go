@@ -180,7 +180,7 @@ func (repo *MarketplaceCmdRepo) replaceCmdStepsPlaceholders(
 
 	for _, cmdStep := range cmdSteps {
 		cmdStepStr := cmdStep.String()
-		cmdStepDataFieldPlaceholders := infraHelper.GetAllRegexGroupMatches(
+		cmdStepDataFieldPlaceholders := infraHelper.ReadAllRegexGroupMatches(
 			cmdStepStr, `%(\w{1,256})%`,
 		)
 
@@ -266,7 +266,7 @@ func (repo *MarketplaceCmdRepo) updateFilesPrivileges(
 
 	chownRecursively := true
 	chownSymlinksToo := true
-	err := infraHelper.UpdateOwnershipForWebServerUse(
+	err := infraHelper.PathOwnership{}.UpdateForWebServerUse(
 		targetDirStr, chownRecursively, chownSymlinksToo,
 	)
 	if err != nil {
@@ -455,7 +455,7 @@ func (repo *MarketplaceCmdRepo) InstallItem(
 		installUrlPath = *installDto.UrlPath
 	}
 
-	installDirStr := vhostEntity.RootDirectory.String() + installUrlPath.GetWithoutTrailingSlash()
+	installDirStr := vhostEntity.RootDirectory.String() + installUrlPath.RemoveTrailingSlash()
 	installDir, err := tkValueObject.NewUnixAbsoluteFilePath(installDirStr, false)
 	if err != nil {
 		return errors.New("DefineInstallDirectoryError: " + err.Error())

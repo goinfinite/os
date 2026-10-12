@@ -47,7 +47,7 @@ func (InstalledService) TableName() string {
 	return "installed_services"
 }
 
-func (InstalledService) InitialEntries() (entries []interface{}, err error) {
+func (InstalledService) InitialEntries() (entries []any, err error) {
 	osApiAvatarUrl := "https://goinfinite.github.io/os-services/system/os-api/assets/avatar.jpg"
 	osWorkingDirectory := infraEnvs.InfiniteOsMainDir
 	osLogOutputPath := "/dev/stdout"
@@ -90,7 +90,7 @@ func (InstalledService) InitialEntries() (entries []interface{}, err error) {
 		AvatarUrl:    &nginxAvatarUrl,
 	}
 
-	return []interface{}{osApiService, cronService, nginxService}, nil
+	return []any{osApiService, cronService, nginxService}, nil
 }
 
 func (InstalledService) JoinCmdSteps(cmdSteps []tkValueObject.UnixCommand) string {

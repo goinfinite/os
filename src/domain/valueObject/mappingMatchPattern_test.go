@@ -4,7 +4,7 @@ import "testing"
 
 func TestMappingMatchPattern(t *testing.T) {
 	t.Run("ValidMappingMatchPattern", func(t *testing.T) {
-		validMappingMatchPatterns := []interface{}{
+		validMappingMatchPatterns := []any{
 			"begins-with", "begins with", "contains", "equals", "ends-with",
 			"ends with",
 		}
@@ -20,7 +20,7 @@ func TestMappingMatchPattern(t *testing.T) {
 	})
 
 	t.Run("InvalidMappingMatchPattern", func(t *testing.T) {
-		invalidMappingMatchPatterns := []interface{}{
+		invalidMappingMatchPatterns := []any{
 			"", "bigger-then", "diff", "has-prefix",
 		}
 

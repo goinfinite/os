@@ -14,7 +14,7 @@ var ValidUnixCompressionTypes = []string{
 	"tgz", "zip",
 }
 
-func NewUnixCompressionType(value interface{}) (
+func NewUnixCompressionType(value any) (
 	unixCompressionType UnixCompressionType, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

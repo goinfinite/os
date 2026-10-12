@@ -333,7 +333,7 @@ func (repo RuntimeQueryRepo) phpToolModuleBinaryPath(
 	phpVersion valueObject.PhpVersion,
 	moduleName valueObject.PhpModuleName,
 ) string {
-	return "/usr/local/lsws/lsphp" + phpVersion.GetWithoutDots() +
+	return "/usr/local/lsws/lsphp" + phpVersion.RemoveDots() +
 		"/bin/" + moduleName.String()
 }
 
@@ -444,7 +444,7 @@ func (repo RuntimeQueryRepo) ReadPhpModules(
 	}
 
 	rawPhpModuleOutput, err := tkInfra.NewShell(tkInfra.ShellSettings{
-		Command: "/usr/local/lsws/lsphp" + version.GetWithoutDots() + "/bin/php",
+		Command: "/usr/local/lsws/lsphp" + version.RemoveDots() + "/bin/php",
 		Args:    []string{"-m"},
 	}).Run()
 	if err != nil {

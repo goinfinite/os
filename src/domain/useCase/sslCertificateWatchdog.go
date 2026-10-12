@@ -40,7 +40,7 @@ func (uc *SslCertificateWatchdog) shouldRenewCert(
 		return !sslPairEntity.IsPubliclyTrusted()
 	}
 
-	certAltNamesStrMap := map[string]interface{}{}
+	certAltNamesStrMap := map[string]any{}
 	for _, altName := range sslPairEntity.Certificate.AltNames {
 		certAltNamesStrMap[altName.String()] = nil
 	}

@@ -4,7 +4,7 @@ import "testing"
 
 func TestServiceManifestVersion(t *testing.T) {
 	t.Run("ValidServiceManifestVersion", func(t *testing.T) {
-		validServiceManifestVersions := []interface{}{
+		validServiceManifestVersions := []any{
 			"v1",
 		}
 
@@ -19,7 +19,7 @@ func TestServiceManifestVersion(t *testing.T) {
 	})
 
 	t.Run("InvalidServiceManifestVersion", func(t *testing.T) {
-		invalidServiceManifestVersions := []interface{}{
+		invalidServiceManifestVersions := []any{
 			"v0", 0, false, 1.00,
 		}
 

@@ -10,13 +10,25 @@ import (
 	tkValueObject "github.com/goinfinite/tk/src/domain/valueObject"
 )
 
-var MarketplaceDefaultSortBy tkValueObject.PaginationSortBy = tkValueObject.PaginationSortBy("id")
+var (
+	catalogItemsDefaultSortBy tkValueObject.PaginationSortBy = "id"
 
-var MarketplaceDefaultPagination tkDto.Pagination = tkDto.Pagination{
-	PageNumber:   0,
-	ItemsPerPage: 50,
-	SortBy:       &MarketplaceDefaultSortBy,
-}
+	MarketplaceCatalogDefaultPagination tkDto.Pagination = tkDto.Pagination{
+		PageNumber:   0,
+		ItemsPerPage: 50,
+		SortBy:       &catalogItemsDefaultSortBy,
+	}
+
+	installedItemsDefaultSortBy        tkValueObject.PaginationSortBy        = "name"
+	installedItemsDefaultSortDirection tkValueObject.PaginationSortDirection = "asc"
+
+	MarketplaceInstalledItemsDefaultPagination tkDto.Pagination = tkDto.Pagination{
+		PageNumber:    0,
+		ItemsPerPage:  5,
+		SortBy:        &installedItemsDefaultSortBy,
+		SortDirection: &installedItemsDefaultSortDirection,
+	}
+)
 
 func ReadMarketplaceCatalogItems(
 	marketplaceQueryRepo repository.MarketplaceQueryRepo,

@@ -21,7 +21,7 @@ var ValidServiceNatures = []string{
 	ServiceNatureCustom.String(),
 }
 
-func NewServiceNature(value interface{}) (serviceNature ServiceNature, err error) {
+func NewServiceNature(value any) (serviceNature ServiceNature, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return serviceNature, errors.New("ServiceNatureValueMustBeString")

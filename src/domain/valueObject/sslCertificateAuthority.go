@@ -7,11 +7,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const sslCertificateAuthorityRegex string = `^\w{1,3}[\w\.\,\'\(\)\ \-]{0,100}$`
+var sslCertificateAuthorityRegex = regexp.MustCompile(`^\w{1,3}[\w\.\,\'\(\)\ \-]{0,100}$`)
 
 type SslCertificateAuthority string
 
-func NewSslCertificateAuthority(value interface{}) (
+func NewSslCertificateAuthority(value any) (
 	certificateAuthority SslCertificateAuthority, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -19,8 +19,7 @@ func NewSslCertificateAuthority(value interface{}) (
 		return certificateAuthority, errors.New("SslCertificateAuthorityMustBeString")
 	}
 
-	re := regexp.MustCompile(sslCertificateAuthorityRegex)
-	if !re.MatchString(stringValue) {
+	if !sslCertificateAuthorityRegex.MatchString(stringValue) {
 		return certificateAuthority, errors.New("InvalidSslCertificateAuthority")
 	}
 

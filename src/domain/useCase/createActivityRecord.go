@@ -211,6 +211,69 @@ func (uc *CreateSecurityActivityRecord) DeleteCron(deleteDto dto.DeleteCron) {
 	uc.createActivityRecord(createRecordDto)
 }
 
+func (uc *CreateSecurityActivityRecord) CreateTerminalSession(
+	createDto dto.CreateTerminalSession,
+	ownerAccountId tkValueObject.AccountId,
+	terminalSessionId valueObject.TerminalSessionId,
+) {
+	recordCode, _ := tkValueObject.NewActivityRecordCode("TerminalSessionCreated")
+	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			valueObject.NewTerminalSessionSri(ownerAccountId, terminalSessionId),
+		},
+		RecordDetails:     createDto,
+		OperatorSri:       &operatorSri,
+		OperatorIpAddress: &createDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) DeleteTerminalSession(
+	deleteDto dto.DeleteTerminalSession,
+	ownerAccountId tkValueObject.AccountId,
+) {
+	recordCode, _ := tkValueObject.NewActivityRecordCode("TerminalSessionDeleted")
+	operatorSri := tkValueObject.NewSriAccount(deleteDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			valueObject.NewTerminalSessionSri(ownerAccountId, deleteDto.Id),
+		},
+		RecordDetails: map[string]any{
+			"ownerAccountId": ownerAccountId.String(),
+		},
+		OperatorSri:       &operatorSri,
+		OperatorIpAddress: &deleteDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
+func (uc *CreateSecurityActivityRecord) UpdateTerminalSession(
+	updateDto dto.UpdateTerminalSession,
+	ownerAccountId tkValueObject.AccountId,
+) {
+	recordCode, _ := tkValueObject.NewActivityRecordCode("TerminalSessionUpdated")
+	operatorSri := tkValueObject.NewSriAccount(updateDto.OperatorAccountId)
+	createRecordDto := tkDto.CreateActivityRecord{
+		RecordLevel: uc.recordLevel,
+		RecordCode:  recordCode,
+		AffectedResources: []tkValueObject.SystemResourceIdentifier{
+			valueObject.NewTerminalSessionSri(ownerAccountId, updateDto.Id),
+		},
+		RecordDetails:     updateDto,
+		OperatorSri:       &operatorSri,
+		OperatorIpAddress: &updateDto.OperatorIpAddress,
+	}
+
+	uc.createActivityRecord(createRecordDto)
+}
+
 func (uc *CreateSecurityActivityRecord) CreateDatabase(createDto dto.CreateDatabase) {
 	recordCode, _ := tkValueObject.NewActivityRecordCode("DatabaseCreated")
 	operatorSri := tkValueObject.NewSriAccount(createDto.OperatorAccountId)
@@ -328,7 +391,7 @@ func (uc *CreateSecurityActivityRecord) createPhpRuntimeUpdateActivityRecord(
 	operatorAccountId tkValueObject.AccountId,
 	operatorIpAddress tkValueObject.IpAddress,
 	recordCodeString string,
-	recordDetails interface{},
+	recordDetails any,
 ) {
 	operatorSri := tkValueObject.NewSriAccount(operatorAccountId)
 	createRecordDto := tkDto.CreateActivityRecord{
@@ -470,9 +533,9 @@ func (uc *CreateSecurityActivityRecord) CreateSslPair(
 		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSslSri(createDto.OperatorAccountId, sslPairId),
 		},
-		RecordDetails: map[string]interface{}{
+		RecordDetails: map[string]any{
 			"virtualHostHostnames": createDto.VirtualHostsHostnames,
-			"certificate": map[string]interface{}{
+			"certificate": map[string]any{
 				"commonName": createDto.Certificate.CommonName,
 				"altNames":   createDto.Certificate.AltNames,
 				"authority":  createDto.Certificate.CertificateAuthority,
@@ -534,7 +597,7 @@ func (uc *CreateSecurityActivityRecord) DeleteSslPairVhosts(
 		AffectedResources: []tkValueObject.SystemResourceIdentifier{
 			valueObject.NewSslSri(deleteDto.OperatorAccountId, deleteDto.SslPairId),
 		},
-		RecordDetails: map[string]interface{}{
+		RecordDetails: map[string]any{
 			"sslPairVhosts": deleteDto.VirtualHostsHostnames,
 		},
 		OperatorSri:       &operatorSri,
@@ -695,7 +758,7 @@ func (uc *CreateSecurityActivityRecord) UpdateUnixFiles(updateDto dto.UpdateUnix
 		OperatorIpAddress: &updateDto.OperatorIpAddress,
 	}
 
-	details := map[string]interface{}{
+	details := map[string]any{
 		"sourcePaths": updateDto.SourcePaths,
 	}
 	if updateDto.DestinationPath != nil {
@@ -772,7 +835,7 @@ func (uc *CreateSecurityActivityRecord) UploadUnixFiles(
 		OperatorIpAddress: &uploadDto.OperatorIpAddress,
 	}
 
-	details := map[string]interface{}{"destinationPath": uploadDto.DestinationPath}
+	details := map[string]any{"destinationPath": uploadDto.DestinationPath}
 
 	fileNames := []tkValueObject.UnixFileName{}
 	for _, fileStreamHandler := range uploadDto.FileStreamHandlers {

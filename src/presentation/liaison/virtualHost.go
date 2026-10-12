@@ -639,9 +639,9 @@ func (liaison *VirtualHostLiaison) UpdateMapping(untrustedInput map[string]any) 
 
 	clearableFields := []string{}
 	var mappingSecurityRuleIdPtr *valueObject.MappingSecurityRuleId
-	switch mappingSecurityRuleIdValue := untrustedInput["mappingSecurityRuleId"]; {
-	case mappingSecurityRuleIdValue == nil:
-	case mappingSecurityRuleIdValue == "" || mappingSecurityRuleIdValue == " ":
+	switch mappingSecurityRuleIdValue := untrustedInput["mappingSecurityRuleId"]; mappingSecurityRuleIdValue {
+	case nil:
+	case "", " ":
 		clearableFields = append(clearableFields, "mappingSecurityRuleId")
 	default:
 		mappingSecurityRuleId, err := valueObject.NewMappingSecurityRuleId(mappingSecurityRuleIdValue)
@@ -939,7 +939,7 @@ func (liaison *VirtualHostLiaison) CreateMappingSecurityRule(
 
 	return tkPresentation.NewLiaisonResponseNoMessage(
 		tkPresentation.LiaisonResponseStatusCreated,
-		map[string]interface{}{
+		map[string]any{
 			"id": mappingSecurityRuleId.Uint64(),
 		},
 	)
@@ -980,9 +980,9 @@ func (liaison *VirtualHostLiaison) UpdateMappingSecurityRule(
 	clearableFields := []string{}
 
 	var descriptionPtr *valueObject.MappingSecurityRuleDescription
-	switch descriptionValue := untrustedInput["description"]; {
-	case descriptionValue == nil:
-	case descriptionValue == "" || descriptionValue == " ":
+	switch descriptionValue := untrustedInput["description"]; descriptionValue {
+	case nil:
+	case "", " ":
 		clearableFields = append(clearableFields, "description")
 	default:
 		description, err := valueObject.NewMappingSecurityRuleDescription(descriptionValue)

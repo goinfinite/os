@@ -8,7 +8,7 @@ import (
 
 type CronComment string
 
-func NewCronComment(value interface{}) (cronComment CronComment, err error) {
+func NewCronComment(value any) (cronComment CronComment, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return cronComment, errors.New("CronCommentMustBeString")

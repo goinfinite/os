@@ -6,19 +6,20 @@ UiToolset.RegisterAlpineState(() => {
       const shouldDisplayToast = false;
       UiToolset.JsonAjax(
         "POST",
-        Infinite.OsApiBasePath + "/v1/auth/login/",
+        `${Infinite.OsApiBasePath}/v1/auth/login/`,
         {
           username: this.username,
           password: this.password,
         },
-        shouldDisplayToast
+        shouldDisplayToast,
       )
         .then((authResponse) => {
           Alpine.store("toast").displayToast("LoginSuccessful", "success");
 
           UiToolset.ToggleLoadingOverlay(true);
+          // biome-ignore lint/suspicious/noDocumentCookie: the access token cookie must be set synchronously before the redirect.
           document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=${authResponse.tokenStr}; path=/; Secure; SameSite=Lax;`;
-          window.location.href = document.baseURI + "overview/";
+          window.location.href = `${document.baseURI}overview/`;
         })
         .catch((error) => {
           UiToolset.ToggleLoadingOverlay(false);
@@ -26,14 +27,17 @@ UiToolset.RegisterAlpineState(() => {
         });
     },
     init() {
+      // biome-ignore lint/suspicious/noDocumentCookie: clears a stale access token cookie on the login page.
       document.cookie = `${Infinite.Envs.AccessTokenCookieKey}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
-      const prefilledUsername = document.getElementById("prefilledUsername")?.value;
-      const usernameBasicRegex = /^[\w\-]{2,64}$/;
+      const prefilledUsername =
+        document.getElementById("prefilledUsername")?.value;
+      const usernameBasicRegex = /^[\w-]{2,64}$/;
       if (usernameBasicRegex.test(prefilledUsername)) {
         this.username = prefilledUsername;
       }
-      
-      const prefilledPassword = document.getElementById("prefilledPassword")?.value;
+
+      const prefilledPassword =
+        document.getElementById("prefilledPassword")?.value;
       const passwordBasicRegex = /^.{4,128}$/;
       if (passwordBasicRegex.test(prefilledPassword)) {
         this.password = prefilledPassword;

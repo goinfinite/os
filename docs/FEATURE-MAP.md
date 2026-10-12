@@ -170,7 +170,7 @@ Display system health, hardware specs, uptime, IP address, and operational metri
 **Flow:**
 
 1. `src/presentation/api/controller/o11y.go` — System metrics REST endpoint
-2. `src/presentation/ui/presenter/overview/` — Web dashboard system overview page
+2. `src/presentation/ui/presenter/overview/` — Web dashboard system overview page; paired cards around a full-width services table, with the terminal sessions, marketplace and services data tables
 3. `src/infra/o11y/` — System observability and metrics collection
 4. `src/infra/internalDatabase/` — Historical metric storage
 
@@ -279,6 +279,27 @@ Create, revoke, and manage API keys for secure programmatic access to the system
 2. `src/domain/useCase/createSecureAccessPublicKey.go` — Key generation
 3. `src/infra/auth/` — Key validation middleware
 4. `src/infra/internalDatabase/` — API key storage and retrieval
+
+---
+
+## Web Terminal
+
+Open persistent terminal sessions. By default a session runs as `nobody`, the same user that owns the web files, so the account can manage `/app` and its sites. The custom create form can run the session as the account's own Linux user instead, with the account home as the working directory. tmux holds every session, so it survives a browser close and an os-api restart. The dashboard, the REST API and the CLI expose the same resource. A session carries an optional display name stored in the tmux user option `@os-name`, so the name dies with the session. Sessions get `$HOME/.local/bin` on PATH and `COLORTERM=truecolor`, and tmux advertises RGB to the browser, so installed tools and truecolor TUIs work.
+
+**Flow:**
+
+1. `src/presentation/api/controller/terminalSession.go` — terminal session REST endpoints and the WebSocket attach
+2. `src/presentation/cli/controller/terminal.go` — CLI `terminal` commands, including `rename`, `--run-as-username` and an `su`-based interactive attach
+3. `src/presentation/ui/presenter/terminal/` — the sessions modal fragment with the vertical session rail, the new-session button with its gear button for the custom create form, the run-as selector and the xterm.js client
+4. `src/presentation/ui/presenter/overview/` — terminal sessions data table with per-row attach, rename and kill, and a new-session button that creates a session with the defaults
+5. `src/presentation/ui/layout/main/main.templ` — layout-level terminal sessions modal
+6. `src/presentation/liaison/terminalSession.go` — untrusted input to DTOs and the attach handle
+7. `src/domain/useCase/createTerminalSession.go` — owner resolution, run-as validation, the working-dir default and the thirty-session per-account cap
+8. `src/domain/useCase/readTerminalSessions.go` — operator-scoped read; super-admins enumerate accounts
+9. `src/domain/useCase/updateTerminalSession.go` — authorized rename
+10. `src/domain/useCase/deleteTerminalSession.go` — authorized delete
+11. `src/infra/terminalSession/` — tmux client and PTY attach; each identity gets its own credential, environment and socket, and the query repo merges the owner's and the nobody lists
+12. `Containerfile` — tmux package, the root-owned `/app` with the group-writable sticky bit, the shared mise toolchain dir, the `$HOME/.local/bin` PATH entry and the tmux RGB config
 
 ---
 

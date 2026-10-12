@@ -38,18 +38,18 @@ func LoadEnvVars() {
 	}
 }
 
-func GetPersistentDbSvc() *internalDbInfra.PersistentDatabaseService {
+func ReadPersistentDbSvc() *internalDbInfra.PersistentDatabaseService {
 	persistentDbSvc, err := internalDbInfra.NewPersistentDatabaseService()
 	if err != nil {
-		panic("GetPersistentDbSvcError: " + err.Error())
+		panic("ReadPersistentDbSvcError: " + err.Error())
 	}
 	return persistentDbSvc
 }
 
-func GetTrailDbSvc() *internalDbInfra.TrailDatabaseService {
+func ReadTrailDbSvc() *internalDbInfra.TrailDatabaseService {
 	trailDbSvc, err := internalDbInfra.NewTrailDatabaseService()
 	if err != nil {
-		panic("GetTrailDbSvcError: " + err.Error())
+		panic("ReadTrailDbSvcError: " + err.Error())
 	}
 	return trailDbSvc
 }

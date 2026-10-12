@@ -1,13 +1,13 @@
 package uiPresenterHelper
 
 import (
-	tkPresentation "github.com/goinfinite/tk/src/presentation"
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/presentation/liaison"
+	tkPresentation "github.com/goinfinite/tk/src/presentation"
 )
 
 func ShouldEnableInitialSetup(accountLiaison *liaison.AccountLiaison) bool {
-	accountsServiceResponse := accountLiaison.Read(map[string]interface{}{})
+	accountsServiceResponse := accountLiaison.Read(map[string]any{})
 	if accountsServiceResponse.Status != tkPresentation.LiaisonResponseStatusSuccess {
 		return false
 	}

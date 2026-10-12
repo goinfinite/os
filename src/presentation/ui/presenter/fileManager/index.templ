@@ -50,10 +50,14 @@ templ FileManagerIndex(
 			@MoveFilesModal(workingDirPath, readFilesResponseDto.FileTree)
 			@RenameFileModal()
 			@MoveFilesToTrashModal()
-			@componentStructural.DeleteModal(
-				"isEmptyTrashModalOpen", "closeEmptyTrashModal()",
-				"deleteFiles(true); closeEmptyTrashModal()", "", "",
-			)
+			@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+				IsVisibleTwoWayStatePath:   "isEmptyTrashModalOpen",
+				OnConfirmFunc:              "deleteFiles(true); closeEmptyTrashModal()",
+				CancelButtonLabel:          "No, Keep it.",
+				TypeToConfirmExpectedValue: "empty trash",
+				HeaderTitle:                "Empty Trash",
+				ConfirmButtonLabel:         "Yes, Empty Trash!",
+			})
 			@UpdateFilePermissionsModal()
 			@CompressFilesModal()
 		</div>
@@ -434,20 +438,25 @@ templ CreateFileForm(
 }
 
 templ CreateFileModal() {
-	@componentStructural.RegularModal(
-		"Create File", "isCreateFileModalOpen", "closeCreateFileModal()", "",
-	) {
-		@CreateFileForm(tkValueObject.MimeTypeGeneric, "closeCreateFileModal()")
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateFileForm(tkValueObject.MimeTypeGeneric, "closeCreateFileModal()"),
+		Title:                    "Create File",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateFileModalOpen",
+		OnCloseFunc:              "closeCreateFileModal()",
+	})
 }
 
 templ CreateDirectoryModal() {
-	@componentStructural.RegularModal(
-		"Create Directory", "isCreateDirectoryModalOpen", "closeCreateDirectoryModal()",
-		"",
-	) {
-		@CreateFileForm(tkValueObject.MimeTypeDirectory, "closeCreateDirectoryModal()")
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CreateFileForm(tkValueObject.MimeTypeDirectory, "closeCreateDirectoryModal()"),
+		Title:                    "Create Directory",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateDirectoryModalOpen",
+		OnCloseFunc:              "closeCreateDirectoryModal()",
+	})
 }
 
 templ UploadFilesForm() {
@@ -475,11 +484,14 @@ templ UploadFilesForm() {
 }
 
 templ UploadFilesModal() {
-	@componentStructural.RegularModal(
-		"Upload Files", "isUploadFilesModalOpen", "closeUploadFilesModal()", "",
-	) {
-		@UploadFilesForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UploadFilesForm(),
+		Title:                    "Upload Files",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUploadFilesModalOpen",
+		OnCloseFunc:              "closeUploadFilesModal()",
+	})
 }
 
 templ UpdateFileContentForm() {
@@ -500,24 +512,24 @@ templ UpdateFileContentForm() {
 						OnClickFunc:            "codeEditorInstance.undo()",
 						OnClickPreventDefault:  true,
 						Size:                   uiControl.ButtonSizeLg,
-						Shape:                  uiControl.ButtonShapeCircular,
+						Shape:                  uiToolset.ShapeCircular,
 						BackgroundColor:        "primary-200",
 						BackgroundColorHover:   "primary-100",
 						TooltipContent:         "Undo",
 						TooltipBackgroundColor: "primary-200",
-						TooltipPosition:        uiControl.ButtonTooltipPositionBottom,
+						TooltipPosition:        uiToolset.TooltipPositionBottom,
 					})
 					@uiControl.Button(uiControl.ButtonSettings{
 						IconLeft:               "ph-arrow-clockwise",
 						OnClickFunc:            "codeEditorInstance.redo()",
 						OnClickPreventDefault:  true,
 						Size:                   uiControl.ButtonSizeLg,
-						Shape:                  uiControl.ButtonShapeCircular,
+						Shape:                  uiToolset.ShapeCircular,
 						BackgroundColor:        "primary-200",
 						BackgroundColorHover:   "primary-100",
 						TooltipContent:         "Redo",
 						TooltipBackgroundColor: "primary-200",
-						TooltipPosition:        uiControl.ButtonTooltipPositionBottom,
+						TooltipPosition:        uiToolset.TooltipPositionBottom,
 					})
 				</div>
 				<div class="flex items-center space-x-2">
@@ -526,12 +538,12 @@ templ UpdateFileContentForm() {
 						OnClickFunc:            "resizeCodeEditorFont('decrease')",
 						OnClickPreventDefault:  true,
 						Size:                   uiControl.ButtonSizeLg,
-						Shape:                  uiControl.ButtonShapeCircular,
+						Shape:                  uiToolset.ShapeCircular,
 						BackgroundColor:        "primary-200",
 						BackgroundColorHover:   "primary-100",
 						TooltipContent:         "Decrease",
 						TooltipBackgroundColor: "primary-200",
-						TooltipPosition:        uiControl.ButtonTooltipPositionBottom,
+						TooltipPosition:        uiToolset.TooltipPositionBottom,
 					})
 					<label x-text="codeEditorFontSize"></label>
 					@uiControl.Button(uiControl.ButtonSettings{
@@ -539,12 +551,12 @@ templ UpdateFileContentForm() {
 						OnClickFunc:            "resizeCodeEditorFont('increase')",
 						OnClickPreventDefault:  true,
 						Size:                   uiControl.ButtonSizeLg,
-						Shape:                  uiControl.ButtonShapeCircular,
+						Shape:                  uiToolset.ShapeCircular,
 						BackgroundColor:        "primary-200",
 						BackgroundColorHover:   "primary-100",
 						TooltipContent:         "Increase",
 						TooltipBackgroundColor: "primary-200",
-						TooltipPosition:        uiControl.ButtonTooltipPositionBottom,
+						TooltipPosition:        uiToolset.TooltipPositionBottom,
 					})
 				</div>
 			</div>
@@ -554,24 +566,24 @@ templ UpdateFileContentForm() {
 					OnClickFunc:            "codeEditorInstance.execCommand('find')",
 					OnClickPreventDefault:  true,
 					Size:                   uiControl.ButtonSizeLg,
-					Shape:                  uiControl.ButtonShapeCircular,
+					Shape:                  uiToolset.ShapeCircular,
 					BackgroundColor:        "primary-200",
 					BackgroundColorHover:   "primary-100",
 					TooltipContent:         "Search",
 					TooltipBackgroundColor: "primary-200",
-					TooltipPosition:        uiControl.ButtonTooltipPositionBottom,
+					TooltipPosition:        uiToolset.TooltipPositionBottom,
 				})
 				@uiControl.Button(uiControl.ButtonSettings{
 					IconLeft:               "ph-download-simple",
 					OnClickFunc:            "downloadFile(); closeUpdateFileContentModal()",
 					OnClickPreventDefault:  true,
 					Size:                   uiControl.ButtonSizeLg,
-					Shape:                  uiControl.ButtonShapeRounded,
+					Shape:                  uiToolset.ShapeRounded,
 					BackgroundColor:        "primary-200",
 					BackgroundColorHover:   "infinite-500",
 					TooltipContent:         "Download",
 					TooltipBackgroundColor: "infinite-500",
-					TooltipPosition:        uiControl.ButtonTooltipPositionBottom,
+					TooltipPosition:        uiToolset.TooltipPositionBottom,
 				})
 			</div>
 		</div>
@@ -591,15 +603,16 @@ templ UpdateFileContentForm() {
 
 templ UpdateFileContentModal() {
 	@uiDisplay.Modal(uiDisplay.ModalSettings{
-		MiddleContent:            UpdateFileContentForm(),
-		TitleOneWayStatePath:     "'Update File Content ('+ file.name + ')'",
-		Size:                     uiDisplay.ModalSizeXl,
-		SizeTwoWayStatePath:      "codeEditorWindowSize",
-		BackdropColor:            "primary-950/80",
-		BackgroundColor:          "primary-400",
-		IsVisibleTwoWayStatePath: "isUpdateFileContentModalOpen",
-		OnResizeFunc:             "isCodeEditorFullScreen = !isCodeEditorFullScreen; codeEditorInstance.resize()",
-		OnCloseFunc:              "resetCodeEditorWindowSize()",
+		MiddleContent:              UpdateFileContentForm(),
+		TitleOneWayStatePath:       "'Update File Content (' + file.name + ')'",
+		InitialSize:                uiDisplay.ModalSizeXl,
+		CurrentSizeTwoWayStatePath: "codeEditorWindowSize",
+		ShouldHeightMatchContent:   true,
+		BackdropColor:              "primary-950/80",
+		BackgroundColor:            "primary-400",
+		IsVisibleTwoWayStatePath:   "isUpdateFileContentModalOpen",
+		OnResizeFunc:               "isCodeEditorFullScreen = !isCodeEditorFullScreen; codeEditorInstance.resize()",
+		OnCloseFunc:                "resetCodeEditorWindowSize()",
 	})
 }
 
@@ -635,11 +648,14 @@ templ MoveFilesModal(
 	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 	unixFileTree *dto.UnixFileBranch,
 ) {
-	@componentStructural.RegularModal(
-		"Move Files", "isMoveFilesModalOpen", "closeMoveFilesModal()", "",
-	) {
-		@MoveFilesForm(workingDirPath, unixFileTree)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            MoveFilesForm(workingDirPath, unixFileTree),
+		Title:                    "Move Files",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isMoveFilesModalOpen",
+		OnCloseFunc:              "closeMoveFilesModal()",
+	})
 }
 
 templ CopyFilesForm(
@@ -674,11 +690,14 @@ templ CopyFilesModal(
 	workingDirPath tkValueObject.UnixAbsoluteFilePath,
 	unixFileTree *dto.UnixFileBranch,
 ) {
-	@componentStructural.RegularModal(
-		"Copy Files", "isCopyFilesModalOpen", "closeCopyFilesModal()", "",
-	) {
-		@CopyFilesForm(workingDirPath, unixFileTree)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CopyFilesForm(workingDirPath, unixFileTree),
+		Title:                    "Copy Files",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCopyFilesModalOpen",
+		OnCloseFunc:              "closeCopyFilesModal()",
+	})
 }
 
 templ RenameFileForm() {
@@ -710,24 +729,32 @@ templ RenameFileForm() {
 }
 
 templ RenameFileModal() {
-	@componentStructural.RegularModal(
-		"Rename File", "isRenameFileModalOpen", "closeRenameFileModal()", "",
-	) {
-		@RenameFileForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            RenameFileForm(),
+		Title:                    "Rename File",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isRenameFileModalOpen",
+		OnCloseFunc:              "closeRenameFileModal()",
+	})
+}
+
+templ MoveFilesToTrashWarningContent() {
+	<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
+		Are You Sure You Want to Move to Trash?
+	</h3>
+	<p>Files and directories can still be recovered from the Trash.</p>
 }
 
 templ MoveFilesToTrashModal() {
-	@componentStructural.WarningModal(
-		"isMoveFilesToTrashModalOpen", "closeMoveFilesToTrashModal()",
-		"No, Keep it.", "deleteFiles(false)", "move-files-to-trash",
-		"ph-trash-simple", "Yes, Move to Trash!",
-	) {
-		<h3 class="text-pretty mb-3 text-xl font-bold leading-relaxed">
-			Are You Sure You Want to Move to Trash?
-		</h3>
-		<p>Files and directories can still be recovered from the Trash.</p>
-	}
+	@uiDisplay.WarningDialog(uiDisplay.ConfirmationDialogSettings{
+		IsVisibleTwoWayStatePath: "isMoveFilesToTrashModalOpen",
+		OnConfirmFunc:            "deleteFiles(false)",
+		CancelButtonLabel:        "No, Keep it.",
+		MessageContent:           MoveFilesToTrashWarningContent(),
+		ConfirmButtonLabel:       "Yes, Move to Trash!",
+		ConfirmButtonIcon:        "ph-trash-simple",
+	})
 }
 
 templ UpdateFilePermissionsForm() {
@@ -772,12 +799,14 @@ templ UpdateFilePermissionsForm() {
 }
 
 templ UpdateFilePermissionsModal() {
-	@componentStructural.RegularModal(
-		"Update File Permissions", "isUpdateFilePermissionsModalOpen",
-		"closeUpdateFilePermissionsModal()", "",
-	) {
-		@UpdateFilePermissionsForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            UpdateFilePermissionsForm(),
+		Title:                    "Update File Permissions",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateFilePermissionsModalOpen",
+		OnCloseFunc:              "closeUpdateFilePermissionsModal()",
+	})
 }
 
 templ CompressFilesForm() {
@@ -819,9 +848,12 @@ templ CompressFilesForm() {
 }
 
 templ CompressFilesModal() {
-	@componentStructural.RegularModal(
-		"Compress Files", "isCompressFilesModalOpen", "closeCompressFilesModal()", "",
-	) {
-		@CompressFilesForm()
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            CompressFilesForm(),
+		Title:                    "Compress Files",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCompressFilesModalOpen",
+		OnCloseFunc:              "closeCompressFilesModal()",
+	})
 }

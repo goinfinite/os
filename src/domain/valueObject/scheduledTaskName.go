@@ -7,11 +7,11 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const scheduledTaskNameRegex string = `^[a-zA-Z][\w\-]{1,256}[\w\-\ ]{0,512}$`
+var scheduledTaskNameRegex = regexp.MustCompile(`^[a-zA-Z][\w\-]{1,256}[\w\-\ ]{0,512}$`)
 
 type ScheduledTaskName string
 
-func NewScheduledTaskName(value interface{}) (
+func NewScheduledTaskName(value any) (
 	scheduledTaskName ScheduledTaskName, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -19,8 +19,7 @@ func NewScheduledTaskName(value interface{}) (
 		return scheduledTaskName, errors.New("ScheduledTaskNameMustBeString")
 	}
 
-	re := regexp.MustCompile(scheduledTaskNameRegex)
-	if !re.MatchString(stringValue) {
+	if !scheduledTaskNameRegex.MatchString(stringValue) {
 		return scheduledTaskName, errors.New("InvalidScheduledTaskName")
 	}
 

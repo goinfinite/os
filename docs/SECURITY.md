@@ -35,3 +35,7 @@ If you follow these guidelines when reporting an issue to us:
 - We will not take legal action against or suspend or terminate your access to the project.
 
 We strive to keep all our users safe and will make our best effort to promptly fix any security issue.
+
+## Coding Agents
+
+Infinite OS is useful as a workspace for coding agents, but the container boundary is a scope limit, not a complete security sandbox. It does not, by itself, restrict the network access or credentials available inside the project.

@@ -179,9 +179,9 @@ func (liaison *CronLiaison) Update(untrustedInput map[string]any) tkPresentation
 	clearableFields := []string{}
 
 	var commentPtr *valueObject.CronComment
-	switch commentValue := untrustedInput["comment"]; {
-	case commentValue == nil:
-	case commentValue == "" || commentValue == " ":
+	switch commentValue := untrustedInput["comment"]; commentValue {
+	case nil:
+	case "", " ":
 		clearableFields = append(clearableFields, "comment")
 	default:
 		comment, err := valueObject.NewCronComment(commentValue)

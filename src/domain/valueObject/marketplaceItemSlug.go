@@ -10,9 +10,9 @@ import (
 
 type MarketplaceItemSlug string
 
-const marketplaceItemSlugRegexExpression = `^[a-z0-9\_\-]{2,64}$`
+var marketplaceItemSlugRegex = regexp.MustCompile(`^[a-z0-9\_\-]{2,64}$`)
 
-func NewMarketplaceItemSlug(value interface{}) (
+func NewMarketplaceItemSlug(value any) (
 	marketplaceItemSlug MarketplaceItemSlug, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
@@ -21,8 +21,7 @@ func NewMarketplaceItemSlug(value interface{}) (
 	}
 	stringValue = strings.ToLower(stringValue)
 
-	re := regexp.MustCompile(marketplaceItemSlugRegexExpression)
-	if !re.MatchString(stringValue) {
+	if !marketplaceItemSlugRegex.MatchString(stringValue) {
 		return marketplaceItemSlug, errors.New("InvalidMarketplaceItemSlug")
 	}
 

@@ -10,7 +10,6 @@ import (
 	"github.com/goinfinite/os/src/domain/dto"
 	"github.com/goinfinite/os/src/domain/valueObject"
 	infraEnvs "github.com/goinfinite/os/src/infra/envs"
-	infraHelper "github.com/goinfinite/os/src/infra/helper"
 	internalDbInfra "github.com/goinfinite/os/src/infra/internalDatabase"
 	dbModel "github.com/goinfinite/os/src/infra/internalDatabase/model"
 	servicesInfra "github.com/goinfinite/os/src/infra/services"
@@ -380,17 +379,12 @@ location {{ locationUriConfigFactory .MatchPattern .Path }} {
 		return errors.New("ReadVirtualHostMappingsFilePathError: " + err.Error())
 	}
 
-	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
 	mappingFilePermissions := os.FileMode(0644)
 	return repo.fileClerk.UpsertFile(tkInfra.FileUpsertSettings{
 		FilePath:        mappingFilePath,
 		Permissions:     &mappingFilePermissions,
 		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-		OwnerUsername:   &webServerUsername,
-		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-			webServerUsername,
-		},
 	}, []byte(mappingFileContent.String()))
 }
 
@@ -490,7 +484,7 @@ func (repo *MappingCmdRepo) Update(updateDto dto.UpdateMapping) error {
 		return err
 	}
 
-	updateMap := map[string]interface{}{}
+	updateMap := map[string]any{}
 
 	if updateDto.Path != nil {
 		updateMap["path"] = updateDto.Path.String()
@@ -605,8 +599,6 @@ limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m; #MaxConnectio
 		return errors.New("CreateSecurityRulesDirError: " + err.Error())
 	}
 
-	webServerUsername := tkValueObject.UnixUsername(infraEnvs.PhpWebServerUsername)
-
 	ruleGlobalFilePath, err := tkValueObject.NewUnixAbsoluteFilePath(
 		infraEnvs.MappingsSecurityRulesConfDir+"/"+
 			mappingSecurityRuleId.String()+".global.conf",
@@ -622,10 +614,6 @@ limit_conn_zone $binary_remote_addr zone=conn_limit_{{ .Id }}:10m; #MaxConnectio
 		Permissions:     &ruleGlobalFilePermissions,
 		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-		OwnerUsername:   &webServerUsername,
-		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-			webServerUsername,
-		},
 	}, []byte(ruleGlobalFileContent.String()))
 	if err != nil {
 		return errors.New("CreateSecurityRuleGlobalFileError: " + err.Error())
@@ -693,18 +681,9 @@ deny {{ . }};
 		Permissions:     &ruleEmbeddableFilePermissions,
 		SymlinkPolicy:   &tkInfra.FileClerkSymlinkPolicyResolve,
 		OverwritePolicy: &tkInfra.FileClerkOverwritePolicyReplace,
-		OwnerUsername:   &webServerUsername,
-		TrustedDirOwnerUsernames: []tkValueObject.UnixUsername{
-			webServerUsername,
-		},
 	}, []byte(ruleEmbeddableFileContent.String()))
 	if err != nil {
 		return errors.New("CreateSecurityRuleEmbeddableFileError: " + err.Error())
-	}
-
-	err = infraHelper.UpdateOwnershipForWebServerUse(infraEnvs.MappingsSecurityRulesConfDir, true, false)
-	if err != nil {
-		return errors.New("UpdateSecurityRulesDirOwnershipError: " + err.Error())
 	}
 
 	return nil
@@ -807,7 +786,7 @@ func (repo *MappingCmdRepo) CreateSecurityRule(
 func (repo *MappingCmdRepo) UpdateSecurityRule(
 	updateDto dto.UpdateMappingSecurityRule,
 ) error {
-	updateMap := map[string]interface{}{}
+	updateMap := map[string]any{}
 
 	if updateDto.Name != nil {
 		updateMap["name"] = updateDto.Name.String()

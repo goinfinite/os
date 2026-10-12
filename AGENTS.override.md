@@ -45,3 +45,7 @@
   ignored, and bash cannot trap a signal it started ignoring. `SIGTERM` is the reliable
   stop for the detached launch. Ctrl-C still works in a foreground terminal.
 - Do not use the `http` argument: it changes host sysctl settings through `sudo`.
+- Always use `dev-build.sh` for dashboard work. Do not run the app any other way.
+- The watcher rebuilds templ and Go on every source edit, then restarts `os-api`.
+  Do not run `templ generate`, `go build`, or `supervisorctl restart` yourself while
+  it runs. Edit the source and wait for the rebuild.

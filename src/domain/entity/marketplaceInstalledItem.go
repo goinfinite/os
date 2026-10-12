@@ -8,7 +8,7 @@ import (
 type MarketplaceInstalledItem struct {
 	Id               valueObject.MarketplaceItemId            `json:"id"`
 	Name             valueObject.MarketplaceItemName          `json:"name"`
-	Hostname         tkValueObject.Fqdn                      `json:"hostname"`
+	Hostname         tkValueObject.Fqdn                       `json:"hostname"`
 	Type             valueObject.MarketplaceItemType          `json:"type"`
 	UrlPath          valueObject.UrlPath                      `json:"urlPath"`
 	InstallDirectory tkValueObject.UnixAbsoluteFilePath       `json:"installDirectory"`

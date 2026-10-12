@@ -7,7 +7,7 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
-func GetRootDomain(hostname tkValueObject.Fqdn) (tkValueObject.Fqdn, error) {
+func ReadRootDomain(hostname tkValueObject.Fqdn) (tkValueObject.Fqdn, error) {
 	var rootDomain tkValueObject.Fqdn
 
 	rootDomainStr, err := publicsuffix.EffectiveTLDPlusOne(hostname.String())

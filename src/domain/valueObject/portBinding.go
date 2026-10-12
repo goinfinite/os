@@ -13,7 +13,7 @@ type PortBinding struct {
 	Protocol tkValueObject.NetworkProtocol `json:"protocol"`
 }
 
-func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
+func NewPortBinding(value any) (portBinding PortBinding, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return portBinding, errors.New("PortBindingValueMustBeString")
@@ -46,14 +46,6 @@ func NewPortBinding(value interface{}) (portBinding PortBinding, err error) {
 	return PortBinding{
 		Port: port, Protocol: protocol,
 	}, nil
-}
-
-func (vo PortBinding) GetPort() tkValueObject.NetworkPort {
-	return vo.Port
-}
-
-func (vo PortBinding) GetProtocol() tkValueObject.NetworkProtocol {
-	return vo.Protocol
 }
 
 func (vo PortBinding) String() string {

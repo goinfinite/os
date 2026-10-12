@@ -4,7 +4,7 @@ import "testing"
 
 func TestScheduledTaskStatus(t *testing.T) {
 	t.Run("ValidScheduledTaskStatus", func(t *testing.T) {
-		validScheduledTaskStatus := []interface{}{
+		validScheduledTaskStatus := []any{
 			"pending", "running", "completed", "failed", "cancelled", "timeout",
 		}
 
@@ -19,7 +19,7 @@ func TestScheduledTaskStatus(t *testing.T) {
 	})
 
 	t.Run("InvalidScheduledTaskStatus", func(t *testing.T) {
-		invalidScheduledTaskStatus := []interface{}{
+		invalidScheduledTaskStatus := []any{
 			"started", "success", "error",
 		}
 

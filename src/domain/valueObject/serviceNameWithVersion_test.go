@@ -4,7 +4,7 @@ import "testing"
 
 func TestServiceNameWithVersion(t *testing.T) {
 	t.Run("ValidServiceNameWithVersion (from string)", func(t *testing.T) {
-		validServiceNameWithVersion := []interface{}{
+		validServiceNameWithVersion := []any{
 			"php-webserver:8.0", "mariadb:latest", "mysql:lts", "postgresql:alpha",
 			"python:alpha", "java:beta", "nodejs", "redis-server:1.0.0", "nginx:1",
 		}
@@ -21,7 +21,7 @@ func TestServiceNameWithVersion(t *testing.T) {
 	})
 
 	t.Run("InvalidServiceNameWithVersion (from string)", func(t *testing.T) {
-		invalidServiceNameWithVersion := []interface{}{
+		invalidServiceNameWithVersion := []any{
 			"", "my<>sql", "nodejs:1.0<0", "mysql:",
 		}
 

@@ -7,18 +7,17 @@ import (
 	tkVoUtil "github.com/goinfinite/tk/src/domain/valueObject/util"
 )
 
-const phpSettingNameRegex string = `^[a-zA-Z_][a-zA-Z0-9_.-]{1,62}[a-zA-Z0-9_]$`
+var phpSettingNameRegex = regexp.MustCompile(`^[a-zA-Z_][a-zA-Z0-9_.-]{1,62}[a-zA-Z0-9_]$`)
 
 type PhpSettingName string
 
-func NewPhpSettingName(value interface{}) (settingName PhpSettingName, err error) {
+func NewPhpSettingName(value any) (settingName PhpSettingName, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return settingName, errors.New("PhpSettingNameMustBeString")
 	}
 
-	re := regexp.MustCompile(phpSettingNameRegex)
-	if !re.MatchString(stringValue) {
+	if !phpSettingNameRegex.MatchString(stringValue) {
 		return settingName, errors.New("InvalidPhpSettingName")
 	}
 

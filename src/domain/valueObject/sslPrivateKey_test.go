@@ -18,7 +18,7 @@ func TestSslPrivateKey(t *testing.T) {
 		for keyIndex, settings := range keySettings {
 			validKey, err := synthesizer.PrivateKeyPemFactory(settings)
 			if err != nil {
-				t.Fatalf("FailedToGenerateSslPrivateKey: %s", err.Error())
+				t.Fatalf("GenerateSslPrivateKeyFailed: %s", err.Error())
 			}
 
 			_, err = NewSslPrivateKey(validKey)

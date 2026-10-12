@@ -11,11 +11,14 @@ import (
 )
 
 var (
-	servicesSortByName          tkValueObject.PaginationSortBy = "name"
-	ServicesDefaultPagination   tkDto.Pagination               = tkDto.Pagination{
-		PageNumber:   0,
-		ItemsPerPage: 10,
-		SortBy:       &servicesSortByName,
+	servicesDefaultSortBy        tkValueObject.PaginationSortBy        = "name"
+	servicesDefaultSortDirection tkValueObject.PaginationSortDirection = "asc"
+
+	ServicesDefaultPagination tkDto.Pagination = tkDto.Pagination{
+		PageNumber:    0,
+		ItemsPerPage:  10,
+		SortBy:        &servicesDefaultSortBy,
+		SortDirection: &servicesDefaultSortDirection,
 	}
 )
 

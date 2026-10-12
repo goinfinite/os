@@ -33,10 +33,13 @@ templ MappingSecurityRulesIndex(mappingSecurityRules []entity.MappingSecurityRul
 		@MappingSecurityRulesTable(mappingSecurityRules)
 		@CreateMappingSecurityRuleModal()
 		@UpdateMappingSecurityRuleModal()
-		@componentStructural.DeleteModal(
-			"isDeleteMappingSecurityRuleModalOpen", "closeDeleteMappingSecurityRuleModal()",
-			"deleteMappingSecurityRule()", "mappingSecurityRule.name", "mappingSecurityRule.id",
-		)
+		@uiDisplay.DeleteDialog(uiDisplay.ConfirmationDialogSettings{
+			IsVisibleTwoWayStatePath: "isDeleteMappingSecurityRuleModalOpen",
+			OnConfirmFunc:            "deleteMappingSecurityRule()",
+			CancelButtonLabel:        "No, Keep it.",
+			TargetNameStatePath:      "mappingSecurityRule.name",
+			TargetIdStatePath:        "mappingSecurityRule.id",
+		})
 	</div>
 }
 
@@ -117,12 +120,12 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 										ThumbValue:                           uiHelper.FormatPointer(secRuleEntity.RpsSoftLimitPerIp),
 										ThumbBackgroundColor:                 "amber-500",
 										ThumbValueBubbleEnabled:              true,
-										ThumbValueBubbleShape:                uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleShape:                uiToolset.ShapeRounded,
 										ThumbValueBubbleBackgroundColor:      "amber-500",
 										ThumbUpperValue:                      uiHelper.FormatPointer(secRuleEntity.RpsHardLimitPerIp),
 										ThumbUpperBackgroundColor:            "red-500",
 										ThumbUpperValueBubbleEnabled:         true,
-										ThumbUpperValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbUpperValueBubbleShape:           uiToolset.ShapeRounded,
 										ThumbUpperValueBubblePosition:        uiControl.RangeSliderThumbValueBubblePositionBottom,
 										ThumbUpperValueBubbleBackgroundColor: "red-500",
 									})
@@ -136,7 +139,7 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 										ThumbValue:                      uiHelper.FormatPointer(secRuleEntity.RpsSoftLimitPerIp),
 										ThumbBackgroundColor:            "amber-500",
 										ThumbValueBubbleEnabled:         true,
-										ThumbValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleShape:           uiToolset.ShapeRounded,
 										ThumbValueBubbleBackgroundColor: "amber-500",
 									})
 								} else if secRuleEntity.RpsHardLimitPerIp != nil {
@@ -149,7 +152,7 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 										ThumbValue:                      uiHelper.FormatPointer(secRuleEntity.RpsHardLimitPerIp),
 										ThumbBackgroundColor:            "red-500",
 										ThumbValueBubbleEnabled:         true,
-										ThumbValueBubbleShape:           uiControl.RangeSliderThumbValueBubbleShapeRounded,
+										ThumbValueBubbleShape:           uiToolset.ShapeRounded,
 										ThumbValueBubbleBackgroundColor: "red-500",
 									})
 								} else {
@@ -161,7 +164,9 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 											Size:                 uiDisplay.TagSizeXs,
 											OuterBackgroundColor: "neutral-50/10",
 											OuterLeftLabel:       "responseCode",
+											OuterRadius:          uiToolset.BorderRadiusMd,
 											InnerLabel:           uiHelper.FormatPointer(secRuleEntity.ResponseCodeOnMaxRequests),
+											InnerRadius:          uiToolset.BorderRadiusMd,
 										})
 									</div>
 								}
@@ -179,7 +184,9 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 												Size:                 uiDisplay.TagSizeXs,
 												OuterBackgroundColor: "neutral-50/10",
 												OuterLeftLabel:       "responseCode",
+												OuterRadius:          uiToolset.BorderRadiusMd,
 												InnerLabel:           uiHelper.FormatPointer(secRuleEntity.ResponseCodeOnMaxConnections),
+												InnerRadius:          uiToolset.BorderRadiusMd,
 											})
 										</div>
 									}
@@ -209,7 +216,7 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 								BackgroundColorHover:   "cyan-600/50",
 								IconLeft:               "ph-pencil",
 								Size:                   uiControl.ButtonSizeMd,
-								Shape:                  uiControl.ButtonShapeCircular,
+								Shape:                  uiToolset.ShapeCircular,
 								OnClickFunc:            "openUpdateMappingSecurityRuleModal('" + secRuleEntity.Id.String() + "')",
 								TooltipContent:         "edit security rule",
 								TooltipBackgroundColor: "cyan-800",
@@ -219,7 +226,7 @@ templ MappingSecurityRulesTable(mappingSecurityRuleEntities []entity.MappingSecu
 								BackgroundColorHover:   "red-600",
 								IconLeft:               "ph-trash",
 								Size:                   uiControl.ButtonSizeMd,
-								Shape:                  uiControl.ButtonShapeCircular,
+								Shape:                  uiToolset.ShapeCircular,
 								OnClickFunc:            "openDeleteMappingSecurityRuleModal('" + secRuleEntity.Id.String() + "', '" + secRuleEntity.Name.String() + "')",
 								TooltipContent:         "delete security rule",
 								TooltipBackgroundColor: "red-800",
@@ -244,7 +251,7 @@ templ ListManager(inputName, inputLabel, listTwoWayStatePath string) {
 			})
 			@uiControl.Button(uiControl.ButtonSettings{
 				IconLeft:              "ph-plus",
-				Shape:                 uiControl.ButtonShapeRounded,
+				Shape:                 uiToolset.ShapeRounded,
 				BackgroundColor:       "secondary-500",
 				OnClickFunc:           listTwoWayStatePath + ".push(currentItem); currentItem = ''",
 				OnClickPreventDefault: true,
@@ -444,19 +451,23 @@ templ MappingSecurityRuleForm(isUpdate bool) {
 }
 
 templ CreateMappingSecurityRuleModal() {
-	@componentStructural.RegularModal(
-		"Create Mapping Security Rule", "isCreateMappingSecurityRuleModalOpen",
-		"closeCreateMappingSecurityRuleModal()", "",
-	) {
-		@MappingSecurityRuleForm(false)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            MappingSecurityRuleForm(false),
+		Title:                    "Create Mapping Security Rule",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isCreateMappingSecurityRuleModalOpen",
+		OnCloseFunc:              "closeCreateMappingSecurityRuleModal()",
+	})
 }
 
 templ UpdateMappingSecurityRuleModal() {
-	@componentStructural.RegularModal(
-		"Update Mapping Security Rule", "isUpdateMappingSecurityRuleModalOpen",
-		"closeUpdateMappingSecurityRuleModal()", "",
-	) {
-		@MappingSecurityRuleForm(true)
-	}
+	@uiDisplay.Modal(uiDisplay.ModalSettings{
+		MiddleContent:            MappingSecurityRuleForm(true),
+		Title:                    "Update Mapping Security Rule",
+		BackgroundColor:          "os-400",
+		ShouldHeightMatchContent: true,
+		IsVisibleTwoWayStatePath: "isUpdateMappingSecurityRuleModalOpen",
+		OnCloseFunc:              "closeUpdateMappingSecurityRuleModal()",
+	})
 }

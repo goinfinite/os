@@ -6,7 +6,7 @@ import (
 
 func TestSecureAccessPublicKeyFingerprint(t *testing.T) {
 	t.Run("ValidSecureAccessPublicKeyFingerprint", func(t *testing.T) {
-		rawValidSecureAccessPublicKeyFingerprint := []interface{}{
+		rawValidSecureAccessPublicKeyFingerprint := []any{
 			"SHA256:+DZVNCZhuX6xKglL9R3mUkvRJpMeL8ptNi8kaxAShg4",
 			"SHA256:4/A1a6zPZdue6c03mG9DBk7e0Mqt7167wK5ikSvxynw",
 			"SHA256:fTmGqpEJy0oCGGobdzvH9KeBvPrQRFTxn1zr/ss4Wow",
@@ -23,7 +23,7 @@ func TestSecureAccessPublicKeyFingerprint(t *testing.T) {
 	})
 
 	t.Run("InvalidSecureAccessPublicKeyFingerprint", func(t *testing.T) {
-		rawInvalidSecureAccessPublicKeyFingerprint := []interface{}{
+		rawInvalidSecureAccessPublicKeyFingerprint := []any{
 			"", "SHA256", ":+DZVNCZhuX6xKglL9R3mUkvRJpMeL8ptNi8kaxAShg4",
 			"SHA256+DZVNCZhuX6xKglL9R3mUkvRJpMeL8ptNi8kaxAShg4",
 			"+DZVNCZhuX6xKglL9R3mUkvRJpMeL8ptNi8kaxAShg4",

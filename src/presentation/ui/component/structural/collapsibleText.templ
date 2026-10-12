@@ -1,45 +1,27 @@
 package componentStructural
 
-script CollapsibleTextLocalState(
-	id, originalTextContent string,
-	maxCharsToDisplay int,
-) {
-	const localStateData = {
-		isTextContentBiggerThanAllowed: originalTextContent.length > maxCharsToDisplay,
-		shouldDisplayPartialContent: true,
-		get truncatedTextContent() {
-			let truncatedTextContent = originalTextContent;
-			if (this.shouldDisplayPartialContent && this.isTextContentBiggerThanAllowed) {
-				truncatedTextContent = originalTextContent.substring(0, maxCharsToDisplay) + '...';
-			}
-			return truncatedTextContent;
-		},
-		toggleTextContentDisplay() {
-			this.shouldDisplayPartialContent = !this.shouldDisplayPartialContent;
-		},
-	};
+import (
+	_ "embed"
+	"strconv"
 
-	const alpineAlreadyInitialized = window.Alpine !== undefined;
-	if (alpineAlreadyInitialized) {
-		Alpine.data(id + 'CollapsibleText', () => localStateData);
-		return;
-	}
+	uiToolset "github.com/goinfinite/ui/src/toolset"
+)
 
-	document.addEventListener('alpine:init', () => {
-		Alpine.data(id + 'CollapsibleText', () => (localStateData));
-	});
-}
+//go:embed collapsibleTextState.js
+var collapsibleTextAlpineState string
 
-templ CollapsibleText(
-	id, textContent, textSize string,
-	maxCharsToDisplay int,
-) {
-	<!-- CollapsibleText JavaScript -->
-	@CollapsibleTextLocalState(id, textContent, maxCharsToDisplay)
+var collapsibleTextAlpineStateOnce = templ.NewOnceHandle(
+	templ.WithComponent(uiToolset.MinifierTemplateJs(&collapsibleTextAlpineState)),
+)
+
+templ CollapsibleText(textContent, textSize string, maxCharsToDisplay int) {
+	@collapsibleTextAlpineStateOnce.Once()
 	<!-- CollapsibleText HTML -->
 	<div
 		class={ "items-center text-justify text-" + textSize }
-		x-data={ id + "CollapsibleText" }
+		x-data="collapsibleText"
+		data-text-content={ textContent }
+		data-max-chars-to-display={ strconv.Itoa(maxCharsToDisplay) }
 	>
 		<span x-text="truncatedTextContent"></span>
 		<span

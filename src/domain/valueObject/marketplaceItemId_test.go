@@ -4,7 +4,7 @@ import "testing"
 
 func TestMarketplaceItemId(t *testing.T) {
 	t.Run("ValidMarketplaceItemId", func(t *testing.T) {
-		validMarketplaceItemIds := []interface{}{
+		validMarketplaceItemIds := []any{
 			0, 1, 3, 1000, 65365, "12345",
 		}
 
@@ -17,7 +17,7 @@ func TestMarketplaceItemId(t *testing.T) {
 	})
 
 	t.Run("InvalidMarketplaceItemId", func(t *testing.T) {
-		invalidMarketplaceItemIds := []interface{}{
+		invalidMarketplaceItemIds := []any{
 			-1, 9223372036854775807, "-455",
 		}
 

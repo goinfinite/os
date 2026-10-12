@@ -4,7 +4,7 @@ import "testing"
 
 func TestDataFieldValue(t *testing.T) {
 	t.Run("ValidDataFieldValue", func(t *testing.T) {
-		validDataFieldValues := []interface{}{
+		validDataFieldValues := []any{
 			"/", "This is my username", "new_email@mail.net", "localhost:8000",
 			"https://www.google.com/search", 1239218, 1212.123, true, false,
 		}
@@ -18,7 +18,7 @@ func TestDataFieldValue(t *testing.T) {
 	})
 
 	t.Run("InvalidDataFieldValue", func(t *testing.T) {
-		invalidDataFieldValues := []interface{}{
+		invalidDataFieldValues := []any{
 			"",
 		}
 

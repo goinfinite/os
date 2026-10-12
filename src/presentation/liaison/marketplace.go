@@ -88,7 +88,7 @@ func (liaison *MarketplaceLiaison) ReadCatalog(
 	}
 
 	requestPagination, err := tkPresentation.PaginationParser(
-		useCase.MarketplaceDefaultPagination, untrustedInput,
+		useCase.MarketplaceCatalogDefaultPagination, untrustedInput,
 	)
 	if err != nil {
 		return tkPresentation.NewLiaisonResponseNoMessage(
@@ -309,7 +309,7 @@ func (liaison *MarketplaceLiaison) ReadInstalledItems(
 	}
 
 	requestPagination, err := tkPresentation.PaginationParser(
-		useCase.MarketplaceDefaultPagination, untrustedInput,
+		useCase.MarketplaceInstalledItemsDefaultPagination, untrustedInput,
 	)
 	if err != nil {
 		return tkPresentation.NewLiaisonResponseNoMessage(

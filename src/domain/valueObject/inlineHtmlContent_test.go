@@ -4,7 +4,7 @@ import "testing"
 
 func TestInlineHtmlContent(t *testing.T) {
 	t.Run("ValidInlineHtmlContent", func(t *testing.T) {
-		validInlineHtmlContents := []interface{}{
+		validInlineHtmlContents := []any{
 			"Some nice inline html content", "<h1>Nice title here</h1>",
 			"<p>With some regular text here too...<h2>",
 		}
@@ -21,7 +21,7 @@ func TestInlineHtmlContent(t *testing.T) {
 	})
 
 	t.Run("InvalidInlineHtmlContent", func(t *testing.T) {
-		invalidInlineHtmlContents := []interface{}{
+		invalidInlineHtmlContents := []any{
 			"",
 		}
 

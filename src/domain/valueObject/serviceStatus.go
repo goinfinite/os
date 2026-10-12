@@ -36,7 +36,7 @@ var (
 	}
 )
 
-func NewServiceStatus(value interface{}) (status ServiceStatus, err error) {
+func NewServiceStatus(value any) (status ServiceStatus, err error) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)
 	if err != nil {
 		return status, errors.New("ServiceStatusMustBeString")

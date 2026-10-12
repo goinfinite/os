@@ -28,7 +28,7 @@ func requiredDataFieldsInspector(
 		return nil
 	}
 
-	receivedDataFieldNames := map[string]interface{}{}
+	receivedDataFieldNames := map[string]any{}
 	for _, dataField := range receivedDataFields {
 		receivedDataFieldNames[dataField.Name.String()] = nil
 	}

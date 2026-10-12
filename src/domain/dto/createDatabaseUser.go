@@ -7,7 +7,7 @@ import (
 
 type CreateDatabaseUser struct {
 	DatabaseName      valueObject.DatabaseName        `json:"dbName"`
-	Username          valueObject.DatabaseUsername     `json:"username"`
+	Username          valueObject.DatabaseUsername    `json:"username"`
 	Password          tkValueObject.WeakPassword      `json:"password"`
 	Privileges        []valueObject.DatabasePrivilege `json:"privileges"`
 	OperatorAccountId tkValueObject.AccountId         `json:"-"`

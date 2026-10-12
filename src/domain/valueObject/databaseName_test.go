@@ -4,7 +4,7 @@ import "testing"
 
 func TestDatabaseName(t *testing.T) {
 	t.Run("ValidDatabaseName", func(t *testing.T) {
-		validDatabaseNames := []interface{}{
+		validDatabaseNames := []any{
 			"abc-123-xyz", "a1-b2-c3-d4-e5", "username-1234",
 			"a-b-c-d-e-f-g-h-i-j-k-l", "valid-value-12345",
 		}
@@ -18,7 +18,7 @@ func TestDatabaseName(t *testing.T) {
 	})
 
 	t.Run("InvalidDatabaseName", func(t *testing.T) {
-		invalidDatabaseNames := []interface{}{
+		invalidDatabaseNames := []any{
 			"-abc-123-xyz", "abc-123-", "ab", "a!b@c#123",
 			"a-b-c-d-e-f-g-h-i-j-k-l-m-n-o-p-q",
 		}

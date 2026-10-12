@@ -22,7 +22,7 @@ func NewServiceNameWithVersion(
 	}
 }
 
-func NewServiceNameWithVersionFromString(value interface{}) (
+func NewServiceNameWithVersionFromString(value any) (
 	serviceNameWithVersion ServiceNameWithVersion, err error,
 ) {
 	stringValue, err := tkVoUtil.InterfaceToString(value)

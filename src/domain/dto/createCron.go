@@ -6,11 +6,11 @@ import (
 )
 
 type CreateCron struct {
-	Schedule          valueObject.CronSchedule `json:"schedule"`
-	Command           tkValueObject.UnixCommand  `json:"command"`
-	Comment           *valueObject.CronComment `json:"comment"`
-	OperatorAccountId tkValueObject.AccountId    `json:"-"`
-	OperatorIpAddress tkValueObject.IpAddress    `json:"-"`
+	Schedule          valueObject.CronSchedule  `json:"schedule"`
+	Command           tkValueObject.UnixCommand `json:"command"`
+	Comment           *valueObject.CronComment  `json:"comment"`
+	OperatorAccountId tkValueObject.AccountId   `json:"-"`
+	OperatorIpAddress tkValueObject.IpAddress   `json:"-"`
 }
 
 func NewCreateCron(
