@@ -58,6 +58,8 @@ fix(terminal): drop an exited session from the rail and the table
 chore(deps): bump ui to v0.2.7
 fix(ui): open the install parameters accordion in the marketplace modals
 fix(ui): cut out the overview tag inner labels
+fix(ui): set the toast background to os-800/90
+fix(ui): hide the overview table pagination on a single page
 
 0.3.4 - 2026/09/15
 chore: update go deps
