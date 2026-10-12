@@ -55,6 +55,9 @@ fix(files): reject a malformed upload files field
 chore: float the dev tool pins in mise
 docs: note the dev-build rebuild behavior
 fix(terminal): drop an exited session from the rail and the table
+chore(deps): bump ui to v0.2.7
+fix(ui): open the install parameters accordion in the marketplace modals
+fix(ui): cut out the overview tag inner labels
 
 0.3.4 - 2026/09/15
 chore: update go deps
