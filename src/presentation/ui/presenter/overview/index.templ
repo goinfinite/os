@@ -278,6 +278,7 @@ func terminalSessionsTableSettingsBuilder(
 		InitialSortDirection: paginationSettings.SortDirection,
 		Id:                   "terminal-sessions-table",
 		IsStriped:            true,
+		IsPaginationHiddenWhenSinglePage: true,
 		EmptyState: DataTableCarouselStyleEmptyState(
 			"ph-terminal-window",
 			"Open a terminal session and run commands with one-click.",
@@ -406,6 +407,7 @@ func marketplaceItemsTableSettingsBuilder(
 		InitialSortDirection: paginationSettings.SortDirection,
 		Id:                   "marketplace-items-table",
 		IsStriped:            true,
+		IsPaginationHiddenWhenSinglePage: true,
 		EmptyState: DataTableCarouselStyleEmptyState(
 			"ph-storefront",
 			"Install your favorite app/platform with one-click.",
@@ -989,6 +991,7 @@ func installedServicesTableSettingsBuilder(
 		InitialSortDirection: paginationSettings.SortDirection,
 		Id:                   "installed-services-table",
 		IsStriped:            true,
+		IsPaginationHiddenWhenSinglePage: true,
 		Density:              uiStructural.DataTableDensityDense,
 		PageNumber:           paginationSettings.PageNumber,
 		ItemsPerPage:         uiStructural.ItemsPerPage(paginationSettings.ItemsPerPage),
