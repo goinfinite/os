@@ -60,6 +60,12 @@ fix(ui): open the install parameters accordion in the marketplace modals
 fix(ui): cut out the overview tag inner labels
 fix(ui): set the toast background to os-800/90
 fix(ui): hide the overview table pagination on a single page
+docs: rewrite the readme around the hosting environment positioning
+docs: refresh the hero animation with opencode in the web terminal
+docs: add the screenshot guide
+docs: add the state and upgrades page
+docs: note the coding agent boundary in the security policy
+docs: refresh the agent usage skill
 
 0.3.4 - 2026/09/15
 chore: update go deps
